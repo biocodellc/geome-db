@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="biscicol-frontend" default="all">
+
+    <property name="jdk.home.1.6" value="/usr"/>
+
+    <!-- Compiler options -->
+
+    <property name="compiler.debug" value="on"/>
+    <property name="compiler.generate.no.warnings" value="off"/>
+    <property name="compiler.args" value=""/>
+    <property name="compiler.max.memory" value="128m"/>
+    <patternset id="ignored.files">
+        <exclude name="**/CVS/**"/>
+        <exclude name="**/SCCS/**"/>
+        <exclude name="**/RCS/**"/>
+        <exclude name="**/rcs/**"/>
+        <exclude name="**/.DS_Store/**"/>
+        <exclude name="**/.svn/**"/>
+        <exclude name="**/.pyc/**"/>
+        <exclude name="**/.pyo/**"/>
+        <exclude name="**/*.pyc/**"/>
+        <exclude name="**/*.pyo/**"/>
+        <exclude name="**/.git/**"/>
+        <exclude name="**/*.hprof/**"/>
+        <exclude name="**/_svn/**"/>
+        <exclude name="**/.hg/**"/>
+    </patternset>
+    <patternset id="library.patterns">
+        <include name="*.zip"/>
+        <include name="*.war"/>
+        <include name="*.egg"/>
+        <include name="*.ear"/>
+        <include name="*.swc"/>
+        <include name="*.jar"/>
+    </patternset>
+    <patternset id="compiler.resources">
+        <include name="**/?*.properties"/>
+        <include name="**/?*.xml"/>
+        <include name="**/?*.gif"/>
+        <include name="**/?*.png"/>
+        <include name="**/?*.jpeg"/>
+        <include name="**/?*.jpg"/>
+        <include name="**/?*.html"/>
+        <include name="**/?*.dtd"/>
+        <include name="**/?*.tld"/>
+        <include name="**/?*.ftl"/>
+    </patternset>
+
+    <!-- JDK definitions -->
+
+    <property name="jdk.bin.1.6" value="${jdk.home.1.6}/bin"/>
+    <path id="jdk.classpath.1.6">
+    </path>
+
+    <property name="expedition.jdk.home" value="${jdk.home.1.6}"/>
+    <property name="expedition.jdk.bin" value="${jdk.bin.1.6}"/>
+    <property name="expedition.jdk.classpath" value="jdk.classpath.1.6"/>
+
+
+    <!-- Expedition Libraries -->
+
+    <!-- BJS: instead of listing each JAR, switched this to use the "fileset" mechanism -->
+    <path id="library.lib.classpath">
+        <fileset dir="${basedir}/lib">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <!-- Modules -->
+    <dirname property="module.biscicol-frontend.basedir" file="${ant.file}"/>
+
+
+    <property name="module.jdk.home.biscicol-frontend" value="${expedition.jdk.home}"/>
+    <property name="module.jdk.bin.biscicol-frontend" value="${expedition.jdk.bin}"/>
+    <property name="module.jdk.classpath.biscicol-frontend" value="${expedition.jdk.classpath}"/>
+
+    <property name="compiler.args.biscicol-frontend" value="${compiler.args}"/>
+
+    <property name="biscicol-frontend.output.dir" value="${module.biscicol-frontend.basedir}/out/production/biscicol-frontend"/>
+    <property name="biscicol-frontend.testoutput.dir" value="${module.biscicol-frontend.basedir}/out/test/biscicol-frontend"/>
+
+    <path id="biscicol-frontend.module.bootclasspath">
+        <!-- Paths to be included in compilation bootclasspath -->
+    </path>
+
+    <path id="biscicol-frontend.module.production.classpath">
+        <path refid="${module.jdk.classpath.biscicol-frontend}"/>
+        <path refid="library.lib.classpath"/>
+    </path>
+
+    <!-- added by BJS -->
+    <path id="biscicol-frontend.module.buildtests.classpath">
+        <path refid="${module.jdk.classpath.biscicol-frontend}"/>
+        <pathelement location="${biscicol-frontend.output.dir}"/>
+        <path refid="library.lib.classpath"/>
+    </path>
+
+    <!-- added by BJS -->
+    <path id="biscicol-frontend.module.runtests.classpath">
+        <path refid="${module.jdk.classpath.biscicol-frontend}"/>
+        <pathelement location="${biscicol-frontend.output.dir}"/>
+        <pathelement location="${biscicol-frontend.testoutput.dir}"/>
+        <path refid="library.lib.classpath"/>
+    </path>
+
+    <path id="biscicol-frontend.runtime.production.module.classpath">
+        <pathelement location="${biscicol-frontend.output.dir}"/>
+        <path refid="library.lib.classpath"/>
+    </path>
+
+    <path id="biscicol-frontend.module.classpath">
+        <path refid="${module.jdk.classpath.biscicol-frontend}"/>
+        <pathelement location="${biscicol-frontend.output.dir}"/>
+        <path refid="library.lib.classpath"/>
+    </path>
+
+    <path id="biscicol-frontend.runtime.module.classpath">
+        <pathelement location="${biscicol-frontend.output.dir}"/>
+        <pathelement location="${biscicol-frontend.testoutput.dir}"/>
+        <path refid="library.lib.classpath"/>
+    </path>
+
+
+    <patternset id="excluded.from.module.biscicol-frontend">
+        <patternset refid="ignored.files"/>
+    </patternset>
+
+    <patternset id="excluded.from.compilation.biscicol-frontend">
+        <patternset refid="excluded.from.module.biscicol-frontend"/>
+    </patternset>
+
+    <path id="biscicol-frontend.module.sourcepath">
+        <dirset dir="/">
+            <include name="src"/>
+        </dirset>
+    </path>
+
+    <target name="all" depends="build.modules" description="build all"/>
+
+    <target name="build.modules" depends="clean, war" description="build all modules"/>
+
+    <target name="clean" description="cleanup module">
+        <delete dir="${biscicol-frontend.output.dir}"/>
+        <delete dir="${biscicol-frontend.testoutput.dir}"/>
+    </target>
+
+    <target name="war" depends="compile.module.biscicol-frontend">
+        <war destfile="dist/biscicol-frontend.war" webxml="web/WEB-INF/web.xml">
+            <fileset dir="web"/>
+            <lib dir="lib" excludes="servlet-api.jar"/>
+            <classes dir="${biscicol-frontend.output.dir}"/>
+            <classes dir="" includes="biscicol-frontend.props"/>
+        </war>
+    </target>
+
+    <target name="compile.module.biscicol-frontend" description="Compile module biscicol-frontend">
+        <mkdir dir="${biscicol-frontend.output.dir}"/>
+        <javac destdir="${biscicol-frontend.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}"
+               srcdir="src" memorymaximumsize="${compiler.max.memory}" fork="true"
+               executable="${module.jdk.bin.biscicol-frontend}/javac">
+            <compilerarg line="${compiler.args.biscicol-frontend}"/>
+            <bootclasspath refid="biscicol-frontend.module.bootclasspath"/>
+            <classpath refid="biscicol-frontend.module.production.classpath"/>
+            <patternset refid="excluded.from.compilation.biscicol-frontend"/>
+        </javac>
+
+        <copy todir="${biscicol-frontend.output.dir}">
+            <fileset dir="${module.biscicol-frontend.basedir}/src">
+                <patternset refid="compiler.resources"/>
+                <type type="file"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="test" depends="compile.module.biscicol-frontend">
+        <junit>
+            <classpath refid="biscicol-frontend.module.runtests.classpath"/>
+            <formatter type="brief" usefile="false"/>
+            <batchtest>
+                <fileset dir="${biscicol-frontend.testoutput.dir}" includes="**/*Test.class"/>
+            </batchtest>
+        </junit>
+    </target>
+
+</project>
