@@ -24,14 +24,13 @@ import java.net.URL;
 @Path("authenticationService")
 public class AuthenticationService {
 
-    private static SettingsManager sm;
     @Context
     static ServletContext context;
+    private static SettingsManager sm;
 
     // instantiate the SettingsManager
     static {
-        String filename = context.getInitParameter("propsFilename");
-        sm = SettingsManager.getInstance(filename);
+        sm = SettingsManager.getInstance("biscicol-frontend.props");
     }
 
     /**
@@ -140,7 +139,7 @@ public class AuthenticationService {
         }
         */
 
-        FimsConnector FimsConnector = new FimsConnector();
+        FimsConnector FimsConnector = new FimsConnector(null, null);
         String oauthState = null;
      /*   try {
             oauthState = session.getAttribute("oauth_state").toString();

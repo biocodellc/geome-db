@@ -85,7 +85,7 @@ function populateAbstract(targetDivId) {
 }
 
 function populateProjects() {
-    theUrl = "rest/utils/listProjects";
+    theUrl = "rest/projects/list";
     var jqxhr = $.getJSON( theUrl, function(data) {
         var listItems = "";
         listItems+= "<option value='0'>Select a project ...</option>";
