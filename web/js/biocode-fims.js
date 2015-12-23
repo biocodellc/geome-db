@@ -84,6 +84,7 @@ function populateAbstract(targetDivId) {
     });
 }
 
+// **
 function populateProjects() {
     theUrl = "rest/projects/list";
     var jqxhr = $.getJSON( theUrl, function(data) {
