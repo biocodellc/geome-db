@@ -42,11 +42,11 @@
                     </c:if>
 
                     <c:if test="${user == null}">
-                            <li><a id="login" href="login.jsp">Login</a></li>
+                            <li><a id="login" href="/biscicol/login.jsp">Login</a></li>
                     </c:if>
                     <c:if test="${user != null}">
-                            <li><a href="secure/profile.jsp">${user}</a></li>
-                            <li><a id="logout" href="rest/authenticationService/logout/">Logout</a></li>
+                            <li><a href="/biscicol/secure/profile.jsp">${user}</a></li>
+                            <li><a id="logout" href="/biscicol/rest/authenticationService/logout/">Logout</a></li>
                     </c:if>
                     <li><a href="https://github.com/biocodellc/biocode-fims/wiki/WebVersion">Help</a></li>
                 </ul>

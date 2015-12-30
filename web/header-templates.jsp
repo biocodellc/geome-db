@@ -12,16 +12,16 @@
     <link rel="stylesheet" type="text/css" href="css/alerts.css"/>
     <link rel="stylesheet" type="text/css" href="css/biscicol.css"/>
 
-    <script type="text/javascript" src="js/jquery.js"></script>
-    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
-    <script type="text/javascript" src="js/jquery.form.js"></script>
-    <script type="text/javascript" src="js/templates.js"></script>
-    <script type="text/javascript" src="js/BrowserDetect.js"></script>
+    <script type="text/javascript" src="/biscicol/js/jquery.js"></script>
+    <script type="text/javascript" src="/biscicol/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/biscicol/js/jquery.form.js"></script>
+    <script type="text/javascript" src="/biscicol/js/templates.js"></script>
+    <script type="text/javascript" src="/biscicol/js/BrowserDetect.js"></script>
 
-    <script type="text/javascript" src="js/biocode-fims.js"></script>
-    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/biscicol/js/biocode-fims.js"></script>
+    <script type="text/javascript" src="/biscicol/js/bootstrap.min.js"></script>
 
-    <link rel="short icon" href="docs/fimsicon.png" />
+    <link rel="short icon" href="/biscicol/docs/fimsicon.png" />
 
 </head>
 

@@ -52,11 +52,12 @@ public class AuthenticationService extends FimsService {
             session.setAttribute("userId", profileJSON.get("userId"));
             session.setAttribute("accessToken", accessToken);
             session.setAttribute("refreshToken", refreshToken);
+            System.out.println("accessToken= " + accessToken);
 
             //TODO get the Response.seeOther working with ajax call
             // Check if the user has set their own password, if they are just using the temporary password,
             // inform the user to change their password
-            if (!(Boolean) profileJSON.get("hasSetPassword")) {
+            if (!Boolean.getBoolean((String) profileJSON.get("hasSetPassword"))) {
                 Response.ok("{\"url\":\"" + appRoot + "secure/profile.jsp?error=Update Your Password\"}").build();
             }
 

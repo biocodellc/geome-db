@@ -81,4 +81,11 @@ public class Users extends FimsService {
             throw new ServerErrorException(e);
         }
     }
+
+    @GET
+    @Path("{user}/profile/listAsTable")
+    @Produces(MediaType.TEXT_HTML)
+    public String listProfileAsTable() {
+       return "stet";
+    }
 }

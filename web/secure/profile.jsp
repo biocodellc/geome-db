@@ -18,7 +18,7 @@
         // Populate User Profile
         if ("${param.error}" == "") {
             var jqxhr = populateDivFromService(
-                "/id/userService/profile/listAsTable",
+                "/biscicol/rest/users/${user}/profile/listAsTable",
                 "listUserProfile",
                 "Unable to load this user's profile from the Server")
                 .done(function() {
