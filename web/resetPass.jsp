@@ -4,7 +4,7 @@
     <div class="sectioncontent" id="pass_reset">
         <h2>BCID Password Reset</h2>
 
-        <form method="POST" action="/id/authenticationService/reset/" autocomplete="off">
+        <form method="POST" action="/biscicol/users/resetPassword" autocomplete="off">
             <table>
                 <tr>
                     <td align="right">New Password</td>
@@ -22,7 +22,7 @@
                 </tr>
                 </c:if>
                 <tr>
-                    <td><input type="hidden" name="token" value="${param.token}" /></td>
+                    <td><input type="hidden" name="resetToken" value="${param.resetToken}" /></td>
                     <td><input type="submit" value="Submit"></td>
                 </tr>
             </table>

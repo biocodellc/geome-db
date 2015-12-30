@@ -56,7 +56,6 @@ public class AuthenticationService extends FimsService {
             //TODO get the Response.seeOther working with ajax call
 //            return Response.seeOther(new URI(appRoot + "index.jsp")).build();
             return Response.ok("{\"url\":\"" + appRoot + "index.jsp\"}").build();
-//            response.sendRedirect(homepage);
         } catch (MalformedURLException e) {
             throw new ServerErrorException(e);
         }
@@ -79,8 +78,5 @@ public class AuthenticationService extends FimsService {
         } catch (URISyntaxException e) {
             throw new ServerErrorException(e);
         }
-//        res.sendRedirect(File.separator + sm.retrieveValue("rootName") + File.separator  + "index.jsp");
-
-//        return;
     }
 }

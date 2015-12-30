@@ -7,7 +7,7 @@
             <table>
                 <tr>
                     <td align="right">Username</td>
-                    <td><input type="text" name="username"></td>
+                    <td><input type="text" id="username" name="username"></td>
                 </tr>
                 <tr>
                     <td></td>

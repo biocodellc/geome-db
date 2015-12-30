@@ -696,15 +696,24 @@ function populateBCIDPage() {
     return jqxhr;
 }
 
+// **
 // function to submit the reset password form
 function resetPassSubmit() {
-    var jqxhr = $.post("/id/authenticationService/sendResetToken/", $('form').serialize())
+    var jqxhr = $.get("/biscicol/rest/users/" + $("#username").val() + "/sendResetToken/")
         .done(function(data) {
             if (data.success) {
-                $('table').html("Reset password link successfully sent.");
+                var buttons = {
+                    "Ok": function() {
+                        $(this).dialog("close");
+                    }
+                }
+                dialog(data.success, "Password Reset", buttons);
+                return;
+            } else {
+                failError(null);
             }
         }).fail(function(jqxhr) {
-            $(".error").html($.parseJSON(jqxhr.responseText).usrMessage);
+            failError(jqxhr);
         });
     loadingDialog(jqxhr);
 }
@@ -728,6 +737,7 @@ function loadingDialog(promise) {
     });
 }
 
+// **
 // function to login user
 function login() {
     var url = "/biscicol/rest/authenticationService/login";
