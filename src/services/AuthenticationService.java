@@ -49,11 +49,17 @@ public class AuthenticationService extends FimsService {
                     new URL(fimsCoreRoot + "id/userService/oauth?access_token=" + accessToken)));
 
             session.setAttribute("user", profileJSON.get("username"));
-            session.setAttribute("userId", profileJSON.get("user_id"));
+            session.setAttribute("userId", profileJSON.get("userId"));
             session.setAttribute("accessToken", accessToken);
             session.setAttribute("refreshToken", refreshToken);
 
             //TODO get the Response.seeOther working with ajax call
+            // Check if the user has set their own password, if they are just using the temporary password,
+            // inform the user to change their password
+            if (!(Boolean) profileJSON.get("hasSetPassword")) {
+                Response.ok("{\"url\":\"" + appRoot + "secure/profile.jsp?error=Update Your Password\"}").build();
+            }
+
 //            return Response.seeOther(new URI(appRoot + "index.jsp")).build();
             return Response.ok("{\"url\":\"" + appRoot + "index.jsp\"}").build();
         } catch (MalformedURLException e) {
