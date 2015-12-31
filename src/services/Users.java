@@ -1,6 +1,5 @@
 package services;
 
-import biocode.fims.FimsConnector;
 import biocode.fims.FimsService;
 import biocode.fims.SendEmail;
 import biocode.fims.fimsExceptions.ServerErrorException;
@@ -27,7 +26,6 @@ public class Users extends FimsService {
     @Path("{user}/sendResetToken")
     @Produces(MediaType.APPLICATION_JSON)
     public Response sendResetToken(@PathParam("user") String username) {
-        FimsConnector fimsConnector = new FimsConnector(clientId, clientSecret);
         try {
             JSONObject resetToken = (JSONObject) JSONValue.parse(fimsConnector.createPOSTConnnection(
                     new URL(fimsCoreRoot + "id/authenticationService/sendResetToken"),
@@ -68,7 +66,6 @@ public class Users extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response resetPassword(@FormParam("resetToken") String resetToken,
                                   @FormParam("password") String password) {
-        FimsConnector fimsConnector = new FimsConnector(clientId, clientSecret);
         try {
             JSONObject response = (JSONObject) JSONValue.parse(fimsConnector.createPOSTConnnection(
                     new URL(fimsCoreRoot + "id/authenticationService/reset"),

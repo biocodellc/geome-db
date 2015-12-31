@@ -4,12 +4,8 @@ import biocode.fims.FimsService;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import biocode.fims.FimsConnector;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.MalformedURLException;
@@ -35,7 +31,6 @@ public class AuthenticationService extends FimsService {
                           @FormParam("password") String password) {
 
         try {
-            FimsConnector fimsConnector = new FimsConnector(clientId, clientSecret);
             String params = "username=" + username + "&password=" + password + "&grant_type=password" +
                     "&client_id=" + clientId + "&client_secret=" + clientSecret;
 
@@ -46,7 +41,7 @@ public class AuthenticationService extends FimsService {
             refreshToken = tokenJSON.get("refresh_token").toString();
 
             JSONObject profileJSON = (JSONObject) JSONValue.parse(fimsConnector.createGETConnection(
-                    new URL(fimsCoreRoot + "id/userService/oauth?access_token=" + accessToken)));
+                    new URL(fimsCoreRoot + "id/userService/oauth")));
 
             session.setAttribute("user", profileJSON.get("username"));
             session.setAttribute("userId", profileJSON.get("userId"));

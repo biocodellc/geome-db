@@ -61,20 +61,21 @@ function populateColumns(targetDivId) {
      }
 }
 
+// **
 function populateAbstract(targetDivId) {
     $(targetDivId).html("Loading ...");
 
     var e = document.getElementById('projects');
     var projectId = e.options[e.selectedIndex].value;
 
-    theUrl = "rest/templates/abstract/?projectId=" + projectId;
+    theUrl = "rest/projects/" + projectId + "/abstract/";
 
     var jqxhr = $.ajax( {
         url: theUrl,
         async: false,
         dataType : 'html'
     }).done(function(data) {
-        $(targetDivId).html(data +"<p>");
+        $(targetDivId).html(data.abstract +"<p>");
     }).fail(function(jqXHR,textStatus) {
         if (textStatus == "timeout") {
                 showMessage ("Timed out waiting for response!");
@@ -915,8 +916,7 @@ function saveTemplateConfig() {
     dialog(message, title, buttons);
 }
 
-
-
+// **
 function populateConfigs() {
     var projectId = $("#projects").val();
     if (projectId == 0) {
@@ -925,11 +925,11 @@ function populateConfigs() {
         var el = $("#configs");
         el.empty();
         el.append($("<option></option>").attr("value", 0).text("Loading configs..."));
-        $.getJSON("/biocode-fims/rest/templates/getConfigs/" + projectId).done(function(data) {
+        $.getJSON("/biscicol/rest/projects/" + projectId + "/getConfigs").done(function(data) {
             var listItems = "";
 
             el.empty();
-            data.configNames.forEach(function(configName) {
+            data.forEach(function(configName) {
                 el.append($("<option></option>").
                     attr("value", configName).text(configName));
             });
@@ -939,7 +939,7 @@ function populateConfigs() {
             }
 
             // if there are more then the default config, show the remove link
-            if (data.configNames.length > 1) {
+            if (data.length > 1) {
                 if ($('.toggle-content#remove_config_toggle').is(':hidden')) {
                     $('.toggle-content#remove_config_toggle').show(400);
                 }
@@ -959,12 +959,13 @@ function populateConfigs() {
     }
 }
 
+// **
 function updateCheckedBoxes() {
     var configName = $("#configs").val();
     if (configName == "Default") {
         populateColumns("#cat1");
     } else {
-        $.getJSON("/biocode-fims/rest/templates/getConfig/" + $("#projects").val() + "/" + configName.replace(/\//g, "%2F")).done(function(data) {
+        $.getJSON("/biscicol/rest/projects/" + $("#projects").val() + "/getConfig/" + configName.replace(/\//g, "%2F")).done(function(data) {
             if (data.error != null) {
                 showMessage(data.error);
                 return;
@@ -987,6 +988,7 @@ function updateCheckedBoxes() {
     }
 }
 
+// **
 function removeConfig() {
     var configName = $("#configs").val();
     if (configName == "Default") {
@@ -1010,7 +1012,7 @@ function removeConfig() {
             }
             var title = "Remove Template Generator Configuration";
 
-            $.getJSON("/biocode-fims/rest/templates/removeConfig/" + $("#projects").val() + "/" + configName.replace("/\//g", "%2F")).done(function(data) {
+            $.getJSON("/biscicol/rest/projects/" + $("#projects").val() + "/removeConfig/" + configName.replace("/\//g", "%2F")).done(function(data) {
                 if (data.error != null) {
                     showMessage(data.error);
                     return;
