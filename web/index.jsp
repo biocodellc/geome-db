@@ -16,7 +16,6 @@
         <!--<img id='workflowImage' src='docs/Workflow_simple.jpeg'>
         <br><a id='workflowControl' onclick='workflowImageSwap();'>Details</a>-->
     </div>
-    <div id=dialogContainer></div>
 </div>
 
 <script>

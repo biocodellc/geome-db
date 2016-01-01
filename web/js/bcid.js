@@ -150,6 +150,7 @@ function populateSelect(a) {
     return jqxhr;
 }
 
+// **
 // Take the resolver results and populate a table
 function resolverResults() {
     $.get("/id/" + $("#identifier").val()).done(function(data) {
@@ -704,6 +705,7 @@ function resetPassSubmit() {
             if (data.success) {
                 var buttons = {
                     "Ok": function() {
+                        window.location.replace("/biscicol/");
                         $(this).dialog("close");
                     }
                 }
@@ -720,20 +722,15 @@ function resetPassSubmit() {
 
 // function for displaying a loading dialog while waiting for a response from the server
 function loadingDialog(promise) {
-    var dialog = $("<div>Loading ...</div>");
-    dialog.dialog({
-        dialogClass: "ui-loading",
-        modal: true,
-        autoOpen: true,
-        resizable: false,
-        width: 175,
-        height: 60,
-        draggable: false,
-    });
+    var dialogContainer = $("#dialogContainer");
+    var msg = "Loading ...";
+    dialog(msg, "", null);
 
-    // close the dialog when the ajax call has returned
+    // close the dialog when the ajax call has returned only if the html is the same
     promise.always(function(){
-        dialog.dialog("close");
+        if (dialogContainer.html() == msg) {
+            dialogContainer.dialog("close");
+        }
     });
 }
 

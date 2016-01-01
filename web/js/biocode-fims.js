@@ -281,7 +281,8 @@ function graphsMessage(message) {
         $('#graphs').find('option').first().text(message);
 }
 
-// function to open an new or update an already open jquery ui dialog box
+// **
+// function to open a new or update an already open jquery ui dialog box
 function dialog(msg, title, buttons) {
     var dialogContainer = $("#dialogContainer");
     if (dialogContainer.html() != msg) {

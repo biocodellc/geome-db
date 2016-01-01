@@ -10,6 +10,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -63,7 +65,7 @@ public class Users extends FimsService {
      */
     @POST
     @Path("/resetPassword")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_HTML)
     public Response resetPassword(@FormParam("resetToken") String resetToken,
                                   @FormParam("password") String password) {
         try {
@@ -73,8 +75,10 @@ public class Users extends FimsService {
             if (!response.containsKey("success")) {
                 throw new ServerErrorException("Server Error", "Something happened while updating user's password");
             }
-            return Response.ok("{\"success\":\"Your password was successfully updated.\"}").build();
+            return Response.seeOther(new URI(appRoot + "index.jsp")).build();
         } catch (MalformedURLException e) {
+            throw new ServerErrorException(e);
+        } catch (URISyntaxException e) {
             throw new ServerErrorException(e);
         }
     }

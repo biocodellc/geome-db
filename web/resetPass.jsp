@@ -2,9 +2,9 @@
 
 <div class="section">
     <div class="sectioncontent" id="pass_reset">
-        <h2>BCID Password Reset</h2>
+        <h2>Password Reset</h2>
 
-        <form method="POST" action="/biscicol/users/resetPassword" autocomplete="off">
+        <form method="POST" action="/biscicol/rest/users/resetPassword" autocomplete="off">
             <table>
                 <tr>
                     <td align="right">New Password</td>
