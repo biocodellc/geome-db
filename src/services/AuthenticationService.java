@@ -1,6 +1,7 @@
 package services;
 
 import biocode.fims.FimsService;
+import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -39,6 +40,9 @@ public class AuthenticationService extends FimsService {
 
             accessToken = tokenJSON.get("access_token").toString();
             refreshToken = tokenJSON.get("refresh_token").toString();
+
+            fimsConnector.setRefreshToken(refreshToken);
+            fimsConnector.setAccessToken(accessToken);
 
             JSONObject profileJSON = (JSONObject) JSONValue.parse(fimsConnector.createGETConnection(
                     new URL(fimsCoreRoot + "id/userService/oauth")));
