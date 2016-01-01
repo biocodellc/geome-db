@@ -113,6 +113,7 @@ function populateProjects() {
     });
 }
 
+// **
 // Get the graphs for a given projectId
 function populateGraphs(projectId) {
     $("#resultsContainer").hide();
@@ -121,14 +122,14 @@ function populateGraphs(projectId) {
 	    graphsMessage('Choose an project to see loaded spreadsheets');
 	    return;
     }
-    theUrl = "rest/utils/graphs/" + projectId;
+    theUrl = "/biscicol/rest/projects/" + projectId + "/graphs";
     var jqxhr = $.getJSON( theUrl, function(data) {
         // Check for empty object in response
-        if (typeof data['data'][0] === "undefined") {
+        if (data.length == 0) {
 	        graphsMessage('No datasets found for this project');
         } else {
 	        var listItems = "";
-             $.each(data.data,function(index,graph) {
+             $.each(data, function(index,graph) {
                 listItems+= "<option value='" + graph.graph + "'>" + graph.expeditionTitle + "</option>";
             });
             $("#graphs").html(listItems);
@@ -142,10 +143,11 @@ function populateGraphs(projectId) {
     });
 }
 
+// **
 // Get results as JSON
 function queryJSON(params) {
    // serialize the params object using a shallow serialization
-    var jqxhr = $.post("rest/query/json/", $.param(params, true))
+    var jqxhr = $.post("/biscicol/rest/projects/query/json/", $.param(params, true))
         .done(function(data) {
             $("#resultsContainer").show();
            //alert('debugging queries now, will fix soon!');
@@ -161,18 +163,21 @@ function queryJSON(params) {
         });
 }
 
+// **
 // Get results as Excel
 function queryExcel(params) {
     showMessage ("Downloading results as an Excel document<br>this will appear in your browsers download folder.");
-    download("rest/query/excel/", params);
+    download("/biscicol/rest/projects/query/excel/", params);
 }
 
+// **
 // Get results as Excel
 function queryKml(params) {
     showMessage ("Downloading results as an KML document<br>If Google Earth does not open you can point to it directly");
-    download("rest/query/kml/", params);
+    download("/biscicol/rest/projects/query/kml/", params);
 }
 
+// **
 // create a form and then submit that form in order to download files
 function download(url, data) {
     //url and data options are required
@@ -221,6 +226,7 @@ function getFilterKeyValue() {
     return "";
 }
 
+// **
 // Get the projectID
 function getProjectID() {
     var e = document.getElementById('projects');
@@ -232,6 +238,7 @@ function getProjectKeyValue() {
     return "projectId=" + getProjectID();
 }
 
+// **
 // Get the query graph URIs
 function getGraphURIs() {
     var graphs = [];
@@ -700,16 +707,14 @@ function getExpeditionCodes() {
 // a select element with all of the filterable options. Used to add additional filter statements
 var filterSelect = null;
 
+// **
 // populate a select with the filter values of a given project
 function getFilterOptions(projectId) {
-    var jqxhr = $.getJSON("rest/mapping/filterOptions/" + projectId)
+    var jqxhr = $.getJSON("/biscicol/rest/projects/" + projectId + "/filterOptions/")
         .done(function(data) {
-            if (data.error != null) {
-                return;
-            }
             filterSelect = "<select id='uri' style='max-width:100px;'>";
-            $.each(data.attributes, function(k, v) {
-                filterSelect += "<option value=" + v + ">" + k + "</option>";
+            $.each(data, function(index, option) {
+                filterSelect += "<option value=" + option.uri + ">" + option.column + "</option>";
             });
 
             filterSelect += "</select>";
@@ -717,6 +722,7 @@ function getFilterOptions(projectId) {
     return jqxhr;
 }
 
+// **
 // add additional filters to the query
 function addFilter() {
     // change the method to post
@@ -732,6 +738,7 @@ function addFilter() {
     $("#uri").parent().parent().siblings(":last").before(tr);
 }
 
+// **
 // prepare a json object with the query POST params by combining the text and select inputs for each filter statement
 function getQueryPostParams() {
     var params = {

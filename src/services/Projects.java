@@ -2,15 +2,15 @@ package services;
 
 import biocode.fims.FimsService;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.WebResource;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,6 +22,60 @@ import java.util.Set;
 @Path("projects")
 public class Projects extends FimsService {
 
+    @POST
+    @Path("/query/kml")
+    public Response queryKML(MultivaluedMap<String, String> params) {
+        Client client = Client.create();
+        WebResource r = client.resource(fimsCoreRoot + "biocode-fims/rest/query/kml");
+        return r.post(Response.class, params);
+    }
+
+    @POST
+    @Path("/query/excel")
+    public Response queryExcel(MultivaluedMap<String, String> params) {
+        Client client = Client.create();
+        WebResource r = client.resource(fimsCoreRoot + "biocode-fims/rest/query/excel");
+        return r.post(Response.class, params);
+    }
+
+    @POST
+    @Path("/query/json")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response queryJSON(MultivaluedMap<String, String> params) {
+        try {
+            String response = fimsConnector.createPOSTConnnection(
+                    new URL(fimsCoreRoot + "biocode-fims/rest/query/json/"), fimsConnector.getPostParams(params));
+            return Response.status(fimsConnector.getResponseCode()).entity(response).build();
+        } catch (MalformedURLException e) {
+            throw new ServerErrorException(e);
+        }
+    }
+
+    @GET
+    @Path("/{projectId}/filterOptions")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFilterOptions(@PathParam("projectId") int projectId) {
+        try {
+            String response = fimsConnector.createGETConnection(new URL(
+                    fimsCoreRoot + "biocode-fims/rest/mapping/filterOptions/" + projectId));
+            return Response.status(fimsConnector.getResponseCode()).entity(response).build();
+        } catch (MalformedURLException e) {
+            throw new ServerErrorException(e);
+        }
+    }
+
+    @GET
+    @Path("/{projectId}/graphs")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getGraphs(@PathParam("projectId") int projectId) {
+        try {
+            String response = fimsConnector.createGETConnection(new URL(
+                    fimsCoreRoot + "id/projectService/graphs/" + projectId));
+            return Response.status(fimsConnector.getResponseCode()).entity(response).build();
+        } catch (MalformedURLException e) {
+            throw new ServerErrorException(e);
+        }
+    }
 
     @GET
     @Path("/list")
