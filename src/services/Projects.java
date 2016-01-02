@@ -1,14 +1,17 @@
 package services;
 
 import biocode.fims.FimsService;
+import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.WebResource;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import javax.ws.rs.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -25,17 +28,17 @@ public class Projects extends FimsService {
     @POST
     @Path("/query/kml")
     public Response queryKML(MultivaluedMap<String, String> params) {
-        Client client = Client.create();
-        WebResource r = client.resource(fimsCoreRoot + "biocode-fims/rest/query/kml");
-        return r.post(Response.class, params);
+        Client client = ClientBuilder.newClient();
+        WebTarget t = client.target(fimsCoreRoot).path("biocode-fims/rest/query/kml");
+        return t.request().post(Entity.entity(params, MediaType.APPLICATION_FORM_URLENCODED_TYPE), Response.class);
     }
 
     @POST
     @Path("/query/excel")
     public Response queryExcel(MultivaluedMap<String, String> params) {
-        Client client = Client.create();
-        WebResource r = client.resource(fimsCoreRoot + "biocode-fims/rest/query/excel");
-        return r.post(Response.class, params);
+        Client client = ClientBuilder.newClient();
+        WebTarget t = client.target(fimsCoreRoot).path("biocode-fims/rest/query/excel");
+        return t.request().post(Entity.entity(params, MediaType.APPLICATION_FORM_URLENCODED_TYPE), Response.class);
     }
 
     @POST
@@ -55,13 +58,7 @@ public class Projects extends FimsService {
     @Path("/{projectId}/filterOptions")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFilterOptions(@PathParam("projectId") int projectId) {
-        try {
-            String response = fimsConnector.createGETConnection(new URL(
-                    fimsCoreRoot + "biocode-fims/rest/mapping/filterOptions/" + projectId));
-            return Response.status(fimsConnector.getResponseCode()).entity(response).build();
-        } catch (MalformedURLException e) {
-            throw new ServerErrorException(e);
-        }
+        return fimsConnector.createGETConnection(fimsCoreRoot + "biocode-fims/rest/mapping/filterOptions/" + projectId);
     }
 
     @GET
