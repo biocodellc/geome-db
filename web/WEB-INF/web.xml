@@ -16,10 +16,10 @@
     <servlet>
         <servlet-name>Jersey Web Application</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-        <!--<init-param>-->
-            <!--<param-name>javax.ws.rs.core.Application</param-name>-->
-            <!--<param-value>services.FimsFrontEnd</param-value>-->
-        <!--</init-param>-->
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>biocode.fims.FimsApplication</param-value>
+        </init-param>
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
 			<param-value>services</param-value>
@@ -71,13 +71,13 @@
     </filter-mapping>
     -->
 
-    <!--<filter>-->
-        <!--<filter-name>SecureFilter</filter-name>-->
-        <!--<filter-class>biocode.fims.SecureFilter</filter-class>-->
-    <!--</filter>-->
-    <!--<filter-mapping>-->
-        <!--<filter-name>SecureFilter</filter-name>-->
-        <!--<url-pattern>/biscicol/secure/*</url-pattern>-->
-    <!--</filter-mapping>-->
+    <filter>
+        <filter-name>SecureFilter</filter-name>
+        <filter-class>biocode.fims.SecureFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>SecureFilter</filter-name>
+        <url-pattern>/secure/*</url-pattern>
+    </filter-mapping>
 
 </web-app>

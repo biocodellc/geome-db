@@ -1,18 +1,14 @@
 package services;
 
 import biocode.fims.FimsService;
-import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 /**
  * Created by rjewing on 4/12/14.
@@ -27,47 +23,41 @@ public class AuthenticationService extends FimsService {
      */
     @POST
     @Path("login")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(@FormParam("username") String username,
                           @FormParam("password") String password) {
 
-        try {
-            String params = "username=" + username + "&password=" + password + "&grant_type=password" +
-                    "&client_id=" + clientId + "&client_secret=" + clientSecret;
+        String params = "username=" + username + "&password=" + password + "&grant_type=password" +
+                "&client_id=" + clientId + "&client_secret=" + clientSecret;
 
-            JSONObject tokenJSON = (JSONObject) JSONValue.parse(fimsConnector.createPOSTConnnection(new URL(fimsCoreRoot +
-                    "id/authenticationService/oauth/access_token"), params));
+        JSONObject tokenJSON = fimsConnector.postJSONObject(fimsCoreRoot +
+                "id/authenticationService/oauth/access_token", params);
 
-            accessToken = tokenJSON.get("access_token").toString();
-            refreshToken = tokenJSON.get("refresh_token").toString();
+        accessToken = tokenJSON.get("access_token").toString();
+        refreshToken = tokenJSON.get("refresh_token").toString();
 
-            fimsConnector.setRefreshToken(refreshToken);
-            fimsConnector.setAccessToken(accessToken);
+        fimsConnector.setRefreshToken(refreshToken);
+        fimsConnector.setAccessToken(accessToken);
 
-            JSONObject profileJSON = (JSONObject) JSONValue.parse(fimsConnector.createGETConnection(
-                    new URL(fimsCoreRoot + "id/userService/oauth")));
+        JSONObject profileJSON = fimsConnector.getJSONObject(
+                fimsCoreRoot + "id/userService/oauth");
 
-            session.setAttribute("user", profileJSON.get("username"));
-            session.setAttribute("userId", profileJSON.get("userId"));
-            session.setAttribute("accessToken", accessToken);
-            session.setAttribute("refreshToken", refreshToken);
-            System.out.println("accessToken= " + accessToken);
+        session.setAttribute("user", profileJSON.get("username"));
+        session.setAttribute("userId", profileJSON.get("userId"));
+        session.setAttribute("accessToken", accessToken);
+        session.setAttribute("refreshToken", refreshToken);
+        System.out.println("accessToken= " + accessToken);
 
-            //TODO get the Response.seeOther working with ajax call
-            // Check if the user has set their own password, if they are just using the temporary password,
-            // inform the user to change their password
-            if (!Boolean.getBoolean((String) profileJSON.get("hasSetPassword"))) {
-                Response.ok("{\"url\":\"" + appRoot + "secure/profile.jsp?error=Update Your Password\"}").build();
-            }
+        //TODO get the Response.seeOther working with ajax call
+        // Check if the user has set their own password, if they are just using the temporary password,
+        // inform the user to change their password
+        if (!Boolean.getBoolean((String) profileJSON.get("hasSetPassword"))) {
+            Response.ok("{\"url\":\"" + appRoot + "secure/profile.jsp?error=Update Your Password\"}").build();
+        }
 
 //            return Response.seeOther(new URI(appRoot + "index.jsp")).build();
-            return Response.ok("{\"url\":\"" + appRoot + "index.jsp\"}").build();
-        } catch (MalformedURLException e) {
-            throw new ServerErrorException(e);
-        }
-//        } catch (URISyntaxException e) {
-//            throw new ServerErrorException(e);
-//        }
+        return Response.ok("{\"url\":\"" + appRoot + "index.jsp\"}").build();
     }
 
     /**
