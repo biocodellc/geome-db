@@ -15,12 +15,13 @@ function list(url) {
 
 }
 
+// **
 // for template generator, get the definitions when the user clicks on DEF
 function populateDefinitions(column) {
  var e = document.getElementById('projects');
     var projectId = e.options[e.selectedIndex].value;
 
-    theUrl = "/biocode-fims/rest/templates/definition/?projectId=" + projectId + "&column_name=" + column;
+    theUrl = "/biscicol/rest/projects/" + projectId + "/getDefinition/" + column;
 
     $.ajax({
         type: "GET",
@@ -32,6 +33,7 @@ function populateDefinitions(column) {
     });
 }
 
+// **
 function populateColumns(targetDivId) {
     $(targetDivId).html("Loading ...");
 
@@ -39,7 +41,7 @@ function populateColumns(targetDivId) {
     var projectId = e.options[e.selectedIndex].value;
 
     if (projectId != 0) {
-        theUrl = "/biocode-fims/rest/templates/attributes/?projectId=" + projectId;
+        theUrl = "/biscicol/rest/projects/" + projectId + "/attributes/";
 
         var jqxhr = $.ajax( {
             url: theUrl,
@@ -73,7 +75,7 @@ function populateAbstract(targetDivId) {
     var jqxhr = $.ajax( {
         url: theUrl,
         async: false,
-        dataType : 'html'
+        dataType : 'json'
     }).done(function(data) {
         $(targetDivId).html(data.abstract +"<p>");
     }).fail(function(jqXHR,textStatus) {
@@ -871,6 +873,7 @@ function parseSpreadsheet(regExpression, sheetName) {
 
 }
 
+// **jj
 var savedConfig;
 function saveTemplateConfig() {
     var message = "<table><tr><td>Configuration Name:</td><td><input type='text' name='configName' /></td></tr></table>";
@@ -891,7 +894,7 @@ function saveTemplateConfig() {
             });
 
             savedConfig = configName;
-            $.post("/id/projectService/saveTemplateConfig/", $.param(
+            $.post("/biscicol/rest/projects/" + $("#projects").val() + "/saveConfig", $.param(
                                                             {"configName": configName,
                                                             "checkedOptions": checked,
                                                             "projectId": $("#projects").val()
