@@ -153,7 +153,7 @@ function populateSelect(a) {
 // **
 // Take the resolver results and populate a table
 function resolverResults() {
-    $.get("/id/" + $("#identifier").val()).done(function(data) {
+    $.get("/biscicol/rest/" + $("#identifier").val()).done(function(data) {
         $("#results").html(data);
     }).fail(function(jqxhr) {
         var html;
