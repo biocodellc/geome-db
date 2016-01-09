@@ -419,8 +419,18 @@ function profileSubmit(divId) {
             } else {
                 if (data.returnTo) {
                     $(location).attr("href", data.returnTo);
+                } else {
+                    var jqxhr2 = populateDivFromService(
+                        "/biscicol/rest/users/profile/listAsTable",
+                        "listUserProfile",
+                        "Unable to load this user's profile from the Server")
+                        .done(function() {
+                            $("a", "#profile").click( function() {
+                                getProfileEditor();
+                            });
+                        });
+                    loadingDialog(jqxhr2);
                 }
-                $(location).attr("href", $(location).attr("host") + "/biscicol");
             }
         }).fail(function(jqxhr) {
             var json = $.parseJSON(jqxhr.responseText);
@@ -430,6 +440,7 @@ function profileSubmit(divId) {
     }
 }
 
+// **
 // get profile editor
 function getProfileEditor(username) {
     var jqxhr = populateDivFromService(
@@ -440,7 +451,7 @@ function getProfileEditor(username) {
         $(".error").text(getQueryParam("error"));
         $("#cancelButton").click(function() {
             var jqxhr2 = populateDivFromService(
-                "/id/userService/profile/listAsTable",
+                "/biscicol/rest/users/profile/listAsTable",
                 "listUserProfile",
                 "Unable to load this user's profile from the Server")
                 .done(function() {

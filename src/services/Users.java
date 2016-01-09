@@ -170,10 +170,49 @@ public class Users extends FimsService {
     }
 
     @GET
-    @Path("{user}/profile/listAsTable")
+    @Path("/profile/listAsTable")
     @Produces(MediaType.TEXT_HTML)
-    public String listProfileAsTable() {
-       return "stet";
+    public Response listProfileAsTable() {
+        JSONObject profile = fimsConnector.getJSONObject(fimsCoreRoot + "id/userService/profile/");
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("<table id=\"profile\">\n");
+        sb.append("\t<tr>\n");
+        sb.append("\t\t<td>First Name:</td>\n");
+        sb.append("\t\t<td>");
+        sb.append(profile.get("firstName"));
+        sb.append("</td>\n");
+        sb.append("\t</tr>\n");
+
+        sb.append("\t<tr>\n");
+        sb.append("\t\t<td>Last Name:</td>\n");
+        sb.append("\t\t<td>");
+        sb.append(profile.get("lastName"));
+        sb.append("</td>\n");
+        sb.append("\t</tr>\n");
+
+        sb.append("\t<tr>\n");
+        sb.append("\t\t<td>Email:</td>\n");
+        sb.append("\t\t<td>");
+        sb.append(profile.get("email"));
+        sb.append("</td>\n");
+        sb.append("\t</tr>\n");
+
+        sb.append("\t<tr>\n");
+        sb.append("\t\t<td>Institution:</td>\n");
+        sb.append("\t\t<td>");
+        sb.append(profile.get("institution"));
+        sb.append("</td>\n");
+        sb.append("\t</tr>\n");
+
+        sb.append("\t<tr>\n");
+        sb.append("\t\t<td></td>\n");
+        sb.append("\t\t<td><a href=\"javascript:void(0)\">Edit Profile</a></td>\n");
+        sb.append("\t</tr>\n");
+
+        sb.append("\t</tr>\n</table>\n");
+
+        return Response.ok(sb.toString()).build();
     }
 
     private String getProfileEditor(JSONObject profile, Boolean isAdmin) {
