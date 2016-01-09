@@ -15,6 +15,21 @@ import javax.ws.rs.core.Response;
 @Path("projects")
 public class Projects extends FimsService {
 
+    @POST
+    @Path("/{projectId}/admin/addUser/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addUser(MultivaluedMap params) {
+        return fimsConnector.createPOSTConnnection(fimsCoreRoot + "id/projectService/addUser/",
+                fimsConnector.getPostParams(params));
+    }
+
+    @GET
+    @Path("/{projectId}/admin/removeUser/{userId}")
+    public Response removeUser(@PathParam("projectId") int projectId,
+                               @PathParam("userId") int userId) {
+        return fimsConnector.createGETConnection(fimsCoreRoot + "id/projectService/removeUser/" + projectId + "/" + userId);
+    }
+
     @GET
     @Path("/{projectId}/expeditions")
     public Response listExpeditions(@PathParam("projectId") int projectId) {
@@ -22,9 +37,23 @@ public class Projects extends FimsService {
     }
 
     @GET
+    @Path("/admin/list")
+    public Response listAdminProjects() {
+        return fimsConnector.createGETConnection(fimsCoreRoot + "id/projectService/admin/list");
+    }
+
+    @GET
     @Path("/listUserProjects")
     public Response listUserProjects() {
         return fimsConnector.createGETConnection(fimsCoreRoot + "id/projectService/listUserProjects");
+    }
+
+    @POST
+    @Path("/{projectId}/metadata/update")
+    public Response updateMetadata(@PathParam("projectId") int projectId,
+                                   MultivaluedMap<String, String> params) {
+        return fimsConnector.createPOSTConnnection(fimsCoreRoot + "id/projectService/updateConfig/" + projectId,
+                fimsConnector.getPostParams(params));
     }
 
     @POST
@@ -265,8 +294,186 @@ public class Projects extends FimsService {
         return Response.ok(sb.toString()).build();
     }
 
-    public static void main(String[] args) {
-        Projects p = new Projects();
-        p.getAttributes(1);
+    @GET
+    @Path("/{projectId}/metadata")
+    public Response listMetadataAsTable(@PathParam("projectId") int projectId) {
+        JSONObject metadata = fimsConnector.getJSONObject(fimsCoreRoot + "id/projectService/metadata/" + projectId);
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("<table>\n");
+        sb.append("\t<tbody>\n");
+        sb.append("\t\t<tr>\n");
+        sb.append("\t\t\t<td>Title:</td>\n");
+        sb.append("\t\t\t<td>");
+        sb.append(metadata.get("title"));
+        sb.append("</td>\n");
+        sb.append("\t\t</tr>\n");
+
+        sb.append("\t\t<tr>\n");
+        sb.append("\t\t\t<td>Configuration File:</td>\n");
+        sb.append("\t\t\t<td>");
+        sb.append(metadata.get("validationXml"));
+        sb.append("</td>\n");
+        sb.append("\t\t</tr>\n");
+
+        sb.append("\t\t<tr>\n");
+        sb.append("\t\t\t<td>Public Project</td>\n");
+        sb.append("\t\t\t<td>\n");
+        sb.append(metadata.get("public"));
+        sb.append("</td>\n");
+        sb.append("\t\t</tr>\n");
+
+        sb.append("\t\t<tr>\n");
+        sb.append("\t\t\t<td></td>\n");
+        sb.append("\t\t\t<td><a href=\"javascript:void()\" id=\"edit_metadata\">Edit Metadata</a></td>\n");
+        sb.append("\t\t</tr>\n");
+
+        sb.append("\t</tbody>\n</table>\n");
+
+        return Response.ok(sb.toString()).build();
+    }
+
+    @GET
+    @Path("/{projectId}/metadataEditor")
+    public Response listMetadataEditorAsTable(@PathParam("projectId") int projectId) {
+        StringBuilder sb = new StringBuilder();
+        JSONObject metadata = fimsConnector.getJSONObject(fimsCoreRoot + "id/projectService/metadata/" + projectId);
+
+        sb.append("<form id=\"submitForm\" method=\"POST\">\n");
+        sb.append("<table>\n");
+        sb.append("\t<tbody>\n");
+        sb.append("\t\t<tr>\n");
+        sb.append("\t\t\t<td>Title</td>\n");
+        sb.append(("\t\t\t<td><input type=\"text\" class=\"project_metadata\" name=\"title\" value=\""));
+        sb.append(metadata.get("title"));
+        sb.append("\"></td>\n\t\t</tr>\n");
+
+        sb.append("\t\t<tr>\n");
+        sb.append("\t\t\t<td>Configuration File</td>\n");
+        sb.append(("\t\t\t<td><input type=\"text\" class=\"project_metadata\" name=\"validationXml\" value=\""));
+        sb.append(metadata.get("validationXml"));
+        sb.append("\"></td>\n\t\t</tr>\n");
+
+        sb.append("\t\t<tr>\n");
+        sb.append("\t\t\t<td>Public Project</td>\n");
+        sb.append("\t\t\t<td><input type=\"checkbox\" name=\"public\"");
+        if (metadata.get("public").equals("true")) {
+            sb.append(" checked=\"checked\"");
+        }
+        sb.append("></td>\n\t\t</tr>\n");
+
+        sb.append("\t\t<tr>\n");
+        sb.append("\t\t\t<td></td>\n");
+        sb.append("\t\t\t<td class=\"error\" align=\"center\">");
+        sb.append("</td>\n\t\t</tr>\n");
+
+        sb.append("\t\t<tr>\n");
+        sb.append("\t\t\t<td></td>\n");
+        sb.append(("\t\t\t<td><input id=\"metadataSubmit\" type=\"button\" value=\"Submit\">"));
+        sb.append("</td>\n\t\t</tr>\n");
+        sb.append("\t</tbody>\n");
+        sb.append("</table>\n");
+        sb.append("</form>\n");
+
+        return Response.ok(sb.toString()).build();
+    }
+
+    @GET
+    @Path("/{projectId}/users")
+    public Response listUsersAsTable(@PathParam("projectId") int projectId) {
+        JSONObject response = fimsConnector.getJSONObject(fimsCoreRoot + "id/projectService/getUsers/" + projectId);
+        JSONArray projectUsers = (JSONArray) response.get("users");
+        JSONArray users = fimsConnector.getJSONArray(fimsCoreRoot + "id/userService/list");
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("\t<form method=\"POST\">\n");
+
+        sb.append("<table data-projectId=\"" + projectId + "\" data-projectTitle=\"" + response.get("projectTitle") + "\">\n");
+        sb.append("\t<tr>\n");
+
+        for (Object u: projectUsers) {
+            JSONObject user = (JSONObject) u;
+            String username = (String) user.get("username");
+            sb.append("\t<tr>\n");
+            sb.append("\t\t<td>");
+            sb.append(username);
+            sb.append("</td>\n");
+            sb.append("\t\t<td><a id=\"remove_user\" data-userId=\"" + user.get("userId") + "\" data-username=\"" + username + "\" href=\"javascript:void();\">(remove)</a> ");
+            sb.append("<a id=\"edit_profile\" data-username=\"" + username + "\" href=\"javascript:void();\">(edit)</a></td>\n");
+            sb.append("\t</tr>\n");
+        }
+
+        sb.append("\t<tr>\n");
+        sb.append("\t\t<td>Add User:</td>\n");
+        sb.append("\t\t<td>");
+        sb.append("<select name=userId>\n");
+        sb.append("\t\t\t<option value=\"0\">Create New User</option>\n");
+
+        for (Object u: users) {
+            JSONObject user = (JSONObject) u;
+            sb.append("\t\t\t<option value=\"" + user.get("userId") + "\">" + user.get("username") + "</option>\n");
+        }
+
+        sb.append("\t\t</select></td>\n");
+        sb.append("\t</tr>\n");
+        sb.append("\t<tr>\n");
+        sb.append("\t\t<td></td>\n");
+        sb.append("\t\t<td><div class=\"error\" align=\"center\"></div></td>\n");
+        sb.append("\t</tr>\n");
+        sb.append("\t<tr>\n");
+        sb.append("\t\t<td><input type=\"hidden\" name=\"projectId\" value=\"" + projectId + "\"></td>\n");
+        sb.append("\t\t<td><input type=\"button\" value=\"Submit\" onclick=\"projectUserSubmit(\'" +
+                ((String) response.get("projectTitle")).replaceAll(" ", "_") + '_' + projectId + "\')\"></td>\n");
+        sb.append("\t</tr>\n");
+
+        sb.append("</table>\n");
+        sb.append("\t</form>\n");
+
+        return Response.ok(sb.toString()).build();
+    }
+
+    @GET
+    @Path("/{projectId}/admin/expeditions/")
+    public Response listExpeditionsAsTable(@PathParam("projectId") int projectId) {
+        JSONArray expeditions = fimsConnector.getJSONArray(fimsCoreRoot + "id/expeditionService/admin/list/" + projectId);
+        StringBuilder sb = new StringBuilder();
+        sb.append("<form method=\"POST\">\n");
+        sb.append("<table>\n");
+        sb.append("<tbody>\n");
+        sb.append("\t<tr>\n");
+        sb.append("\t\t<th>Username</th>\n");
+        sb.append("\t\t<th>Expedition Title</th>\n");
+        sb.append("\t\t<th>Public</th>\n");
+        sb.append("\t</tr>\n");
+
+        for (Object e: expeditions) {
+            JSONObject expedition = (JSONObject) e;
+            sb.append("\t<tr>\n");
+            sb.append("\t\t<td>");
+            sb.append(expedition.get("username"));
+            sb.append("</td>\n");
+            sb.append("\t\t<td>");
+            sb.append(expedition.get("expeditionTitle"));
+            sb.append("</td>\n");
+            sb.append("\t\t<td><input name=\"");
+            sb.append(expedition.get("expeditionId"));
+            sb.append("\" type=\"checkbox\"");
+            if (Boolean.valueOf(expedition.get("public").toString())) {
+                sb.append(" checked=\"checked\"");
+            }
+            sb.append("/></td>\n");
+            sb.append("\t</tr>\n");
+        }
+
+        sb.append("\t<tr>\n");
+        sb.append("\t\t<td></td>\n");
+        sb.append("\t\t<td><input type=\"hidden\" name=\"projectId\" value=\"" + projectId + "\" /></td>\n");
+        sb.append("\t\t<td><input id=\"expeditionForm\" type=\"button\" value=\"Submit\"></td>\n");
+        sb.append("\t</tr>\n");
+
+        sb.append("</tbody>\n");
+        sb.append("</table>\n");
+        sb.append("</form>\n");
+        return Response.ok(sb.toString()).build();
     }
 }

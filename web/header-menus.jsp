@@ -30,10 +30,10 @@
                             <a href="#" data-toggle="dropdown" class="dropdown-toggle">Management<b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 <li><a href='secure/expeditions.jsp' class='enabled'>Expedition</a></li>
-                                <c:if test="${projectAdmin != null}">
+                                <c:if test="${projectAdmin == true}">
                                     <li><a href='secure/projects.jsp' class='enabled'>Project</a></li>
                                 </c:if>
-                                <c:if test="${projectAdmin == null}">
+                                <c:if test="${projectAdmin == false}">
                                     <li><a href='#' class='disabled'>Project</a></li>
                                 </c:if>
                                 <li><a href='secure/profile.jsp' class='enabled'>User Profile</a></li>

@@ -41,10 +41,11 @@ public class AuthenticationService extends FimsService {
         fimsConnector.setAccessToken(accessToken);
 
         JSONObject profileJSON = fimsConnector.getJSONObject(
-                fimsCoreRoot + "id/userService/oauth");
+                fimsCoreRoot + "id/userService/profile");
 
         session.setAttribute("user", profileJSON.get("username"));
         session.setAttribute("userId", profileJSON.get("userId"));
+        session.setAttribute("projectAdmin", profileJSON.get("projectAdmin"));
         session.setAttribute("accessToken", accessToken);
         session.setAttribute("refreshToken", refreshToken);
         System.out.println("accessToken= " + accessToken);

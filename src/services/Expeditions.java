@@ -7,8 +7,10 @@ import org.json.simple.JSONObject;
 import utils.Utils;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
@@ -143,5 +145,12 @@ public class Expeditions extends FimsService {
                                  @PathParam("publicStatus") Boolean publicStatus) {
         return fimsConnector.createGETConnection(fimsCoreRoot + "id/expeditionService/publicExpedition/"
                 + projectId + "/" + expeditionCode + "/" + publicStatus);
+    }
+
+    @POST
+    @Path("admin/updateStatus")
+    public Response updateMultipleStatus(MultivaluedMap params) {
+        return fimsConnector.createPOSTConnnection(fimsCoreRoot + "id/expeditionService/admin/publicExpeditions",
+                fimsConnector.getPostParams(params));
     }
 }

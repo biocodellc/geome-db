@@ -183,9 +183,10 @@ function getQueryParam(sParam) {
     }
 }
 
+// **
 // function to populate the bcid projects.jsp page
 function populateProjectPage(username) {
-    var jqxhr = listProjects(username, '/id/projectService/admin/list', false
+    var jqxhr = listProjects(username, '/biscicol/rest/projects/admin/list', false
     ).done(function() {
         // attach toggle function to each project
         $(".expand-content").click(function() {
@@ -215,12 +216,12 @@ function listProjects(username, url, expedition) {
             html += expandTemplate.replace('{text}', element.projectTitle).replace('-{section}', '');
             html += '<div id="{project}" class="toggle-content">';
             if (!expedition) {
-                html += expandTemplate.replace('{text}', 'Configuration').replace('{section}', 'config').replace('<br>\n', '');
-                html += '<div id="{project}-config" class="toggle-content">Loading Project Configuration...</div>';
-                html += expandTemplate.replace('{text}', 'Expeditions').replace('{section}', 'expeditions');
-                html += '<div id="{project}-expeditions" class="toggle-content">Loading Expeditions...</div>';
-                html +=  expandTemplate.replace('{text}', 'Users').replace('{section}', 'users');
-                html += '<div id="{project}-users" class="toggle-content">Loading Users...</div>';
+                html += expandTemplate.replace('{text}', 'Project Metadata').replace('{section}', 'metadata').replace('<br>\n', '');
+                html += '<div id="{project}-metadata" class="toggle-content">Loading Project Metadata...</div>';
+                html += expandTemplate.replace('{text}', 'Project Expeditions').replace('{section}', 'expeditions');
+                html += '<div id="{project}-expeditions" class="toggle-content">Loading Project Expeditions...</div>';
+                html +=  expandTemplate.replace('{text}', 'Project Users').replace('{section}', 'users');
+                html += '<div id="{project}-users" class="toggle-content">Loading Project Users...</div>';
             } else {
                 html += 'Loading...';
             }
@@ -245,7 +246,7 @@ function listProjects(username, url, expedition) {
             var project = val.replace(new RegExp('[#. ]', 'g'), '_') + '_' + key;
 
             if (!expedition) {
-                $('div#' + project +'-config').data('projectId', key);
+                $('div#' + project +'-metadata').data('projectId', key);
                 $('div#' + project +'-users').data('projectId', key);
                 $('div#' + project + '-expeditions').data('projectId', key);
             } else {
@@ -259,6 +260,7 @@ function listProjects(username, url, expedition) {
 
 }
 
+// **
 // function to apply the jquery slideToggle effect.
 function projectToggle(id) {
     if ($('.toggle-content#'+id).is(':hidden')) {
@@ -268,28 +270,29 @@ function projectToggle(id) {
     }
     // check if we've loaded this section, if not, load from service
     var divId = 'div#' + id
-    if ((id.indexOf("config") != -1 || id.indexOf("users") != -1 || id.indexOf("expeditions") != -1) &&
+    if ((id.indexOf("metadata") != -1 || id.indexOf("users") != -1 || id.indexOf("expeditions") != -1) &&
         ($(divId).children().length == 0 || $('#submitForm', divId).length !== 0)) {
         populateProjectSubsections(divId);
     }
     $('.toggle-content#'+id).slideToggle('slow');
 }
 
-// populate the config subsection of projects.jsp from REST service
-function populateConfig(id, projectID) {
+// **
+// populate the metadata subsection of projects.jsp from REST service
+function populateMetadata(id, projectID) {
     var jqxhr = populateDivFromService(
-        '/id/projectService/configAsTable/' + projectID,
+        '/biscicol/rest/projects/' + projectID + '/metadata',
         id,
-        'Unable to load this project\'s configuration from server.'
+        'Unable to load this project\'s metadata from server.'
     ).done(function() {
-        $("#edit_config", id).click(function() {
+        $("#edit_metadata", id).click(function() {
             var jqxhr2 = populateDivFromService(
-                '/id/projectService/configEditorAsTable/' + projectID,
+                '/biscicol/rest/projects/' + projectID + '/metadataEditor',
                 id,
-                'Unable to load this project\'s configuration editor.'
+                'Unable to load this project\'s metadata editor.'
             ).done(function() {
-                $('#configSubmit', id).click(function() {
-                    projectConfigSubmit(projectID, id);
+                $('#metadataSubmit', id).click(function() {
+                    projectMetadataSubmit(projectID, id);
                  });
             });
             loadingDialog(jqxhr2);
@@ -299,6 +302,7 @@ function populateConfig(id, projectID) {
     return jqxhr;
 }
 
+// **
 // show a confirmation dialog before removing a user from a project
 function confirmRemoveUserDialog(element) {
     var username = $(element).data('username');
@@ -325,10 +329,11 @@ function confirmRemoveUserDialog(element) {
         });
 }
 
+// **
 // populate the users subsection of projects.jsp from REST service
 function populateUsers(id, projectID) {
     var jqxhr = populateDivFromService(
-        '/id/projectService/listProjectUsersAsTable/' + projectID,
+        '/biscicol/rest/projects/' + projectID + '/users',
         id,
         'Unable to load this project\'s users from server.'
     ).done(function() {
@@ -343,12 +348,12 @@ function populateUsers(id, projectID) {
                 var divId = 'div#' + $(e).closest('div').attr('id');
 
                 var jqxhr2 = populateDivFromService(
-                    "/id/userService/profile/listEditorAsTable/" + username,
+                    "/biscicol/rest/users/" + username + "/profile/listEditorAsTable/",
                     divId,
                     "error loading profile editor"
                 ).done(function() {
                     $("#profile_submit", divId).click(function() {
-                        profileSubmit(username, divId);
+                        profileSubmit(divId);
                     })
                     $("#cancelButton").click(function() {
                         populateProjectSubsections(divId);
@@ -364,21 +369,22 @@ function populateUsers(id, projectID) {
     return jqxhr;
 }
 
-// function to populate the subsections of the projects.jsp page. Populates the configuration, expeditions, and users
+// **
+// function to populate the subsections of the projects.jsp page. Populates the metadata, expeditions, and users
 // subsections
 function populateProjectSubsections(id) {
     var projectID = $(id).data('projectId');
     var jqxhr;
-    if (id.indexOf("config") != -1) {
-        // load project config table from REST service
-        jqxhr = populateConfig(id, projectID);
+    if (id.indexOf("metadata") != -1) {
+        // load project metadata table from REST service
+        jqxhr = populateMetadata(id, projectID);
     } else if (id.indexOf("users") != -1) {
         // load the project users table from REST service
         jqxhr = populateUsers(id, projectID);
     } else {
         // load the project expeditions table from REST service
         jqxhr = populateDivFromService(
-            '/id/expeditionService/admin/listExpeditionsAsTable/' + projectID,
+            '/biscicol/rest/projects/' + projectID + '/admin/expeditions/',
             id,
             'Unable to load this project\'s expeditions from server.'
         ).done(function() {
@@ -391,29 +397,30 @@ function populateProjectSubsections(id) {
     return jqxhr;
 }
 
+// **
 // function to submit the user's profile editor form
-function profileSubmit(username, divId) {
+function profileSubmit(divId) {
     if ($("input.pwcheck", divId).val().length > 0 && $(".label", "#pwindicator").text() == "weak") {
         $(".error", divId).html("password too weak");
     } else if ($("input[name='new_password']").val().length > 0 &&
                     ($("input[name='old_password']").length > 0 && $("input[name='old_password']").val().length == 0)) {
         $(".error", divId).html("Old Password field required to change your Password");
     } else {
-        var postURL = "/id/userService/profile/update/";
+        var postURL = "/biscicol/rest/users/profile/update/";
         var return_to = getQueryParam("return_to");
-        if (username != null) {
-            postURL += username
-        }
         if (return_to != null) {
             postURL += "?return_to=" + encodeURIComponent(return_to);
         }
         var jqxhr = $.post(postURL, $("form", divId).serialize(), 'json'
         ).done (function(data) {
-            // if success == "true", an admin updated the user's password, so no need to redirect
-            if (data.success == "true") {
+            // if adminAccess == true, an admin updated the user's password, so no need to redirect
+            if (data.adminAccess == true) {
                 populateProjectSubsections(divId);
             } else {
-                $(location).attr("href", data.success);
+                if (data.returnTo) {
+                    $(location).attr("href", data.returnTo);
+                }
+                $(location).attr("href", $(location).attr("host") + "/biscicol");
             }
         }).fail(function(jqxhr) {
             var json = $.parseJSON(jqxhr.responseText);
@@ -424,9 +431,9 @@ function profileSubmit(username, divId) {
 }
 
 // get profile editor
-function getProfileEditor() {
+function getProfileEditor(username) {
     var jqxhr = populateDivFromService(
-        "/id/userService/profile/listEditorAsTable",
+        "/biscicol/rest/users/profile/listEditorAsTable",
         "listUserProfile",
         "Unable to load this user's profile editor from the Server"
     ).done(function() {
@@ -444,12 +451,13 @@ function getProfileEditor() {
             loadingDialog(jqxhr2);
         });
         $("#profile_submit").click(function() {
-            profileSubmit(null, 'div#listUserProfile');
+            profileSubmit('div#listUserProfile');
         });
     });
     loadingDialog(jqxhr);
 }
 
+// **
 // function to submit the project's expeditions form. used to update the expedition public attribute.
 function expeditionsPublicSubmit(divId) {
     var inputs = $('form input[name]', divId);
@@ -462,7 +470,7 @@ function expeditionsPublicSubmit(divId) {
         var expedition = '&' + element.name + '=' + element.checked;
         data += expedition;
     });
-    var jqxhr = $.post('/id/expeditionService/admin/publicExpeditions', data.replace('&', '')
+    var jqxhr = $.post('/biscicol/rest/expeditions/admin/updateStatus', data.replace('&', '')
     ).done(function() {
         populateProjectSubsections(divId);
     }).fail(function(jqxhr) {
@@ -471,13 +479,14 @@ function expeditionsPublicSubmit(divId) {
     loadingDialog(jqxhr);
 }
 
+// **
 // function to add an existing user to a project or retrieve the create user form.
 function projectUserSubmit(id) {
     var divId = 'div#' + id + "-users";
     if ($('select option:selected', divId).val() == 0) {
         var projectId = $("input[name='projectId']", divId).val()
         var jqxhr = populateDivFromService(
-            '/id/userService/createFormAsTable',
+            '/biscicol/rest/users/admin/createUserForm',
             divId,
             'error fetching create user form'
         ).done(function() {
@@ -491,7 +500,7 @@ function projectUserSubmit(id) {
         });
         loadingDialog(jqxhr);
     } else {
-        var jqxhr = $.post("/id/projectService/addUser", $('form', divId).serialize()
+        var jqxhr = $.post("/biscicol/rest/projects/" + $("input[name='projectId']").val() + "/admin/addUser", $('form', divId).serialize()
         ).done(function(data) {
             var jqxhr2 = populateProjectSubsections(divId);
         }).fail(function(jqxhr) {
@@ -502,12 +511,13 @@ function projectUserSubmit(id) {
     }
 }
 
+// **
 // function to submit the create user form.
 function createUserSubmit(projectId, divId) {
     if ($(".label", "#pwindicator").text() == "weak") {
         $(".error", divId).html("password too weak");
     } else {
-        var jqxhr = $.post("/id/userService/create", $('form', divId).serialize()
+        var jqxhr = $.post("/biscicol/rest/users/admin/create", $('form', divId).serialize()
         ).done(function() {
             populateProjectSubsections(divId);
         }).fail(function(jqxhr) {
@@ -517,13 +527,14 @@ function createUserSubmit(projectId, divId) {
     }
 }
 
+// **
 // function to remove the user as a member of a project.
 function projectRemoveUser(e) {
-    var userId = $(e).data('userId');
-    var projectId = $(e).closest('table').data('projectId');
+    var userId = $(e).data('userid');
+    var projectId = $(e).closest('table').data('projectid');
     var divId = 'div#' + $(e).closest('div').attr('id');
 
-    var jqxhr = $.getJSON("/id/projectService/removeUser/" + projectId + "/" + userId
+    var jqxhr = $.getJSON("/biscicol/rest/projects/" + projectId + "/admin/removeUser/" + userId
     ).done (function(data) {
         var jqxhr2 = populateProjectSubsections(divId);
     }).fail(function(jqxhr) {
@@ -535,9 +546,10 @@ function projectRemoveUser(e) {
     loadingDialog(jqxhr);
 }
 
-// function to submit the project configuration editor form
-function projectConfigSubmit(projectId, divId) {
-    var jqxhr = $.post("/id/projectService/updateConfig/" + projectId, $('form', divId).serialize()
+// **
+// function to submit the project metadata editor form
+function projectMetadataSubmit(projectId, divId) {
+    var jqxhr = $.post("/biscicol/rest/projects/" + projectId + "/metadata/update", $('form', divId).serialize()
     ).done(function(data) {
         populateProjectSubsections(divId);
     }).fail(function(jqxhr) {
