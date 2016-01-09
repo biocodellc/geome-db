@@ -796,6 +796,7 @@ function projectToggle(id) {
         $(idElement).slideToggle('slow');
 }
 
+// **
 // function to edit an expedition
 function editExpedition(projectId, expeditionCode, e) {
     var currentPublic;
@@ -818,7 +819,7 @@ function editExpedition(projectId, expeditionCode, e) {
         "Update": function() {
             var public = $("[name='public']")[0].checked;
 
-            $.get("/id/expeditionService/publicExpedition/" + projectId + "/" + expeditionCode + "/" + public
+            $.get("/biscicol/rest/expeditions/updateStatus/" + projectId + "/" + expeditionCode + "/" + public
             ).done(function() {
                 var b = {
                     "Ok": function() {

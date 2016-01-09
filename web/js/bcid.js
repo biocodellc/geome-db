@@ -194,6 +194,7 @@ function populateProjectPage(username) {
     });
 }
 
+// **
 // function to retrieve a user's projects and populate the page
 function listProjects(username, url, expedition) {
     var jqxhr = $.getJSON(url
@@ -204,9 +205,9 @@ function listProjects(username, url, expedition) {
             var html = '<h1>Expedition Manager (' + username + ')</h2>\n';
         }
         var expandTemplate = '<br>\n<a class="expand-content" id="{project}-{section}" href="javascript:void(0);">\n'
-                            + '\t <img src="/biocode-fims/images/right-arrow.png" id="arrow" class="img-arrow">{text}'
+                            + '\t <img src="/biscicol/images/right-arrow.png" id="arrow" class="img-arrow">{text}'
                             + '</a>\n';
-        $.each(data.projects, function(index, element) {
+        $.each(data, function(index, element) {
             key=element.projectId;
             val=element.projectTitle;
             var project = val.replace(new RegExp('[#. ]', 'g'), '_') + '_' + key;
@@ -238,7 +239,7 @@ function listProjects(username, url, expedition) {
         $(".sectioncontent").html(html);
 
         // store project id with element, so we don't have to retrieve project id later with an ajax call
-        $.each(data.projects, function(index, element) {
+        $.each(data, function(index, element) {
             key=element.projectId;
             val=element.projectTitle;
             var project = val.replace(new RegExp('[#. ]', 'g'), '_') + '_' + key;
@@ -261,9 +262,9 @@ function listProjects(username, url, expedition) {
 // function to apply the jquery slideToggle effect.
 function projectToggle(id) {
     if ($('.toggle-content#'+id).is(':hidden')) {
-        $('.img-arrow', '#'+id).attr("src","/biocode-fims/images/down-arrow.png");
+        $('.img-arrow', '#'+id).attr("src","/biscicol/images/down-arrow.png");
     } else {
-        $('.img-arrow', '#'+id).attr("src","/biocode-fims/images/right-arrow.png");
+        $('.img-arrow', '#'+id).attr("src","/biscicol/images/right-arrow.png");
     }
     // check if we've loaded this section, if not, load from service
     var divId = 'div#' + id
@@ -545,9 +546,10 @@ function projectConfigSubmit(projectId, divId) {
     loadingDialog(jqxhr);
 }
 
+// **
 // function to populate the expeditions.jsp page
 function populateExpeditionPage(username) {
-    var jqxhr = listProjects(username, '/id/projectService/listUserProjects', true
+    var jqxhr = listProjects(username, '/biscicol/rest/projects/listUserProjects', true
     ).done(function() {
         // attach toggle function to each project
         $(".expand-content").click(function() {
@@ -559,12 +561,13 @@ function populateExpeditionPage(username) {
     loadingDialog(jqxhr);
 }
 
+// **
 // function to load the expeditions.jsp subsections
 function loadExpeditions(id) {
     if ($('.toggle-content#'+id).is(':hidden')) {
-        $('.img-arrow', '#'+id).attr("src","/biocode-fims/images/down-arrow.png");
+        $('.img-arrow', '#'+id).attr("src","/biscicol/images/down-arrow.png");
     } else {
-        $('.img-arrow', '#'+id).attr("src","/biocode-fims/images/right-arrow.png");
+        $('.img-arrow', '#'+id).attr("src","/biscicol/images/right-arrow.png");
     }
     // check if we've loaded this section, if not, load from service
     var divId = 'div#' + id
@@ -577,24 +580,20 @@ function loadExpeditions(id) {
     $('.toggle-content#'+id).slideToggle('slow');
 }
 
+// **
 // retrieve the expeditions for a project and display them on the page
 function listExpeditions(divId) {
-    var projectID = $(divId).data('projectId');
-    var jqxhr = $.getJSON('/id/expeditionService/list/' + projectID)
+    var projectId = $(divId).data('projectId');
+    var jqxhr = $.getJSON('/biscicol/rest/projects/' + projectId + '/expeditions/')
         .done(function(data) {
             var html = '';
             var expandTemplate = '<br>\n<a class="expand-content" id="{expedition}-{section}" href="javascript:void(0);">\n'
-                                + '\t <img src="/biocode-fims/images/right-arrow.png" id="arrow" class="img-arrow">{text}'
+                                + '\t <img src="/biscicol/images/right-arrow.png" id="arrow" class="img-arrow">{text}'
                                 + '</a>\n';
-            $.each(data['expeditions'], function(index, e) {
+            $.each(data, function(index, e) {
                 var expedition = e.expeditionTitle.replace(new RegExp('[#. ]', 'g'), '_') + '_' + e.expeditionId;
 
                 html += expandTemplate.replace('{text}', e.expeditionTitle).replace('-{section}', '');
-//                if (e.public == "true") {
-//                    html += expandTemplate.replace('{text}', e.expeditionTitle + ' (public)').replace('-{section}', '');
-//                } else {
-//                    html += expandTemplate.replace('{text}', e.expeditionTitle + ' (private)').replace('-{section}', '');
-//                }
                 html += '<div id="{expedition}" class="toggle-content">';
                 html += expandTemplate.replace('{text}', 'Expedition Metadata').replace('{section}', 'configuration').replace('<br>\n', '');
                 html += '<div id="{expedition}-configuration" class="toggle-content">Loading Expedition Metadata...</div>';
@@ -612,7 +611,7 @@ function listExpeditions(divId) {
                 html += 'You have no datasets in this project.';
             }
             $(divId).html(html);
-            $.each(data['expeditions'], function(index, e) {
+            $.each(data, function(index, e) {
                 var expedition = e.expeditionTitle.replace(new RegExp('[#. ]', 'g'), '_') + '_' + e.expeditionId;
 
                 $('div#' + expedition +'-configuration').data('expeditionId', e.expeditionId);
@@ -631,25 +630,26 @@ function listExpeditions(divId) {
     loadingDialog(jqxhr);
 }
 
+// **
 // function to populate the expedition resources, datasets, or configuration subsection of expeditions.jsp
 function populateExpeditionSubsections(divId) {
     // load config table from REST service
     var expeditionId= $(divId).data('expeditionId');
     if (divId.indexOf("resources") != -1) {
         var jqxhr = populateDivFromService(
-            '/id/expeditionService/resourcesAsTable/' + expeditionId,
+            '/biscicol/rest/expeditions/' + expeditionId + '/resourcesAsTable/',
             divId,
             'Unable to load this expedition\'s resources from server.');
         loadingDialog(jqxhr);
     } else if (divId.indexOf("datasets") != -1) {
         var jqxhr = populateDivFromService(
-            '/id/expeditionService/datasetsAsTable/' + expeditionId,
+            '/biscicol/rest/expeditions/' + expeditionId + '/datasetsAsTable/',
             divId,
             'Unable to load this expedition\'s datasets from server.');
         loadingDialog(jqxhr);
     } else {
         var jqxhr = populateDivFromService(
-            '/id/expeditionService/configurationAsTable/' + expeditionId,
+            '/biscicol/rest/expeditions/' + expeditionId + '/metadataAsTable/',
             divId,
             'Unable to load this expedition\'s configuration from server.');
         loadingDialog(jqxhr);

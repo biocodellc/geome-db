@@ -15,6 +15,18 @@ import javax.ws.rs.core.Response;
 @Path("projects")
 public class Projects extends FimsService {
 
+    @GET
+    @Path("/{projectId}/expeditions")
+    public Response listExpeditions(@PathParam("projectId") int projectId) {
+        return fimsConnector.createGETConnection(fimsCoreRoot + "id/expeditionService/list/" + projectId);
+    }
+
+    @GET
+    @Path("/listUserProjects")
+    public Response listUserProjects() {
+        return fimsConnector.createGETConnection(fimsCoreRoot + "id/projectService/listUserProjects");
+    }
+
     @POST
     @Path("/query/kml")
     public Response queryKML(MultivaluedMap<String, String> params) {

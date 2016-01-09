@@ -1,8 +1,8 @@
 package services;
 
+import utils.Utils;
 import biocode.fims.FimsService;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import org.glassfish.jersey.client.ClientResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -12,9 +12,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -127,56 +124,32 @@ public class Resolver extends FimsService {
      * @param outputSB
      */
     private void appendExpeditionDatasets(JSONArray datasets, StringBuilder outputSB) {
-        List<JSONObject> sortedDatasets = sortDatasets(datasets);
         outputSB.append("<table>\n");
         outputSB.append("\t<tr>\n");
         outputSB.append("\t\t<th>Date</th>\n");
         outputSB.append("\t\t<th>Identifier</th>\n");
         outputSB.append("\t</tr>\n");
-        for (Object d: sortedDatasets) {
-            JSONObject dataset = (JSONObject) d;
-            outputSB.append("\t<tr>\n");
-            outputSB.append("\t\t<td>");
-            outputSB.append(dataset.get("ts"));
-            outputSB.append("\t\t</td>");
+        if (!datasets.isEmpty()) {
+            Utils u = new Utils();
+            List<JSONObject> sortedDatasets = u.sortDatasets(datasets);
+            for (Object d : sortedDatasets) {
+                JSONObject dataset = (JSONObject) d;
+                outputSB.append("\t<tr>\n");
+                outputSB.append("\t\t<td>");
+                outputSB.append(dataset.get("ts"));
+                outputSB.append("\t\t</td>");
 
-            outputSB.append("\t\t<td>");
-            outputSB.append("<a href=\"" + sm.retrieveValue("appRoot") + "lookup.jsp?id=");
-            outputSB.append(dataset.get("identifier"));
-            outputSB.append("\">");
-            outputSB.append(dataset.get("identifier"));
-            outputSB.append("</a>");
-            outputSB.append("\t\t</td>");
-            outputSB.append("\t</tr>\n");
+                outputSB.append("\t\t<td>");
+                outputSB.append("<a href=\"" + sm.retrieveValue("appRoot") + "lookup.jsp?id=");
+                outputSB.append(dataset.get("identifier"));
+                outputSB.append("\">");
+                outputSB.append(dataset.get("identifier"));
+                outputSB.append("</a>");
+                outputSB.append("\t\t</td>");
+                outputSB.append("\t</tr>\n");
+            }
         }
         outputSB.append("</table>\n");
-    }
-
-    /**
-     * method to sort the datasets by the ts
-     * @param datasets
-     * @return
-     */
-    private List<JSONObject>sortDatasets(JSONArray datasets) {
-        List<JSONObject> datasetsList = new ArrayList<>();
-
-        for (Object d: datasets) {
-            datasetsList.add((JSONObject) d);
-        }
-        Collections.sort(datasetsList, new Comparator<JSONObject>() {
-            //You can change "Name" with "ID" if you want to sort by ID
-            private static final String KEY_NAME = "ts";
-
-            @Override
-            public int compare(JSONObject a, JSONObject b) {
-                String valA = (String) a.get(KEY_NAME);
-                String valB = (String) b.get(KEY_NAME);
-
-                return valB.compareTo(valA);
-            }
-        });
-
-        return datasetsList;
     }
 
     /**
