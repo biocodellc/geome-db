@@ -7,6 +7,10 @@ access_token_uri = http://www.biscicol.org/id/authenticationService/oauth/access
 profile_uri = http://www.biscicol.org/id/userService/oauth
 refreshUri = http://biscicol.org/id/authenticationService/oauth/refresh
 
+
+# get you're access token by visiting https://www.mapbox.com/account/apps/
+mapboxAccessToken = your_access_token
+
 fimsCoreRoot = http://biscicol.org/
 loginUri = http://biscicol.org/login.jsp
 
