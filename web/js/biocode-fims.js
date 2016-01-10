@@ -1,20 +1,3 @@
-// Function to display a simple list in a message
-function list(url) {
-    $.ajax({
-        type: "GET",
-        url: url,
-        dataType: "html",
-        success: function(data) {
-                if (data.split("\n").length > 5) {
-                        showBigMessage(data);
-                } else {
-                        showMessage(data);
-                }
-        }
-   });
-
-}
-
 // **
 // for template generator, get the definitions when the user clicks on DEF
 function populateDefinitions(column) {
@@ -762,40 +745,6 @@ function getQueryPostParams() {
     return params;
 }
 
-// function to retrieve the user's datasets
-function getDatasetDashboard() {
-    theUrl = "rest/utils/getDatasetDashboard";
-    var jqxhr = $.getJSON( theUrl, function(data) {
-        $("#dashboard").html(data.dashboard);
-        // attach toggle function to each project
-        $(".expand-content").click(function() {
-            projectToggle(this.id)
-        });
-    }).fail(function() {
-        $("#mainpage").show();
-    });
-}
-
-// function to apply the jquery slideToggle effect.
-function projectToggle(id) {
-    /*if ($('.toggle-content#'+id).is(':hidden')) {
-        $('.img-arrow', '#'+id).attr("src","images/down-arrow.png");
-    } else {
-        $('.img-arrow', '#'+id).attr("src","images/right-arrow.png");
-    }
-    $('.toggle-content#'+id).slideToggle('slow');   */
-     // escape special characters in id field
-        id = id.replace(/([!@#$%^&*()+=\[\]\\';,./{}|":<>?~_-])/g, "\\$1");
-        // store the element value in a field
-        var idElement = $('.toggle-content#'+id);
-        if (idElement.is(':hidden')) {
-            $('.img-arrow', '#'+id).attr("src","/biscicol/images/down-arrow.png");
-        } else {
-            $('.img-arrow', '#'+id).attr("src","/biscicol/images/right-arrow.png");
-        }
-        $(idElement).slideToggle('slow');
-}
-
 // **
 // function to edit an expedition
 function editExpedition(projectId, expeditionCode, e) {
@@ -846,6 +795,7 @@ function editExpedition(projectId, expeditionCode, e) {
     dialog(message, title, buttons);
 }
 
+// **
 function parseSpreadsheet(regExpression, sheetName) {
     try {
         f = new FileReader();
@@ -874,7 +824,7 @@ function parseSpreadsheet(regExpression, sheetName) {
 
 }
 
-// **jj
+// **
 var savedConfig;
 function saveTemplateConfig() {
     var message = "<table><tr><td>Configuration Name:</td><td><input type='text' name='configName' /></td></tr></table>";
@@ -1045,6 +995,7 @@ function removeConfig() {
     dialog(message, title, buttons);
 }
 
+// **
 // function to apply the jquery slideToggle effect.
 function projectToggle(id) {
     // escape special characters in id field
