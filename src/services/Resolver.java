@@ -33,9 +33,9 @@ public class Resolver extends FimsService {
         JSONObject metadata = fimsConnector.getJSONObject(fimsCoreRoot + "id/metadata/" + element);
 
         // If forwardingResolution is true, then forward to the resolutionTarget
-        if (((JSONObject) metadata.get("forwardingResolution")).get("value").equals("true")) {
+        if (((JSONObject) metadata.get("urn:forwardingResolution")).get("value").equals("true")) {
             try {
-                URI resolutionTarget = new URI(((JSONObject) metadata.get("resolutionTarget")).get("value").toString());
+                URI resolutionTarget = new URI(((JSONObject) metadata.get("urn:resolutionTarget")).get("value").toString());
                 return Response.seeOther(resolutionTarget).build();
             } catch (URISyntaxException e) {
                 throw new ServerErrorException(e);
@@ -77,6 +77,7 @@ public class Resolver extends FimsService {
         tablePropertyRowAppender((JSONObject) metadata.get("dc:title"), "dc:title", outputSB);
         tablePropertyRowAppender((JSONObject) metadata.get("dc:source"), "dc:source", outputSB);
         tablePropertyRowAppender((JSONObject) metadata.get("bsc:suffixPassThrough"), "bsc:suffixPassThrough", outputSB);
+        tablePropertyRowAppender((JSONObject) metadata.get("urn:isPublic"), "urn:isPublic", outputSB);
         outputSB.append("</table>\n");
         if (metadata.containsKey("download")) {
             appendDataset((JSONObject) metadata.get("download"), outputSB);
