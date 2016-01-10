@@ -1,6 +1,6 @@
 package services;
 
-import biocode.fims.SettingsManager;
+import biocode.fims.FimsService;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -12,14 +12,20 @@ import javax.ws.rs.core.Response;
  * Biscicol-Frontend utility services
  */
 @Path("utils/")
-public class Utils {
+public class Utils extends FimsService {
     @GET
     @Path("/getMapboxToken")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMapboxToken() {
-        SettingsManager sm = SettingsManager.getInstance();
         String token = sm.retrieveValue("mapboxAccessToken");
 
         return Response.ok("{\"accessToken\": \"" + token + "\"}").build();
+    }
+
+    @GET
+    @Path("/getNAAN")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getNAAN() {
+        return fimsConnector.createGETConnection(fimsCoreRoot + "biocode-fims/rest/utils/getNAAN");
     }
 }

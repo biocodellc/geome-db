@@ -155,7 +155,7 @@ function generateMap(id, projectId) {
     }
     $('#' + id).html('Loading map...');
     // generate a map with markers for all sample points
-    $.getJSON("rest/utils/getLatLongColumns/" + projectId
+    $.getJSON("/biscicol/rest/projects/" + projectId + "/getLatLongColumns/"
         ).done(function(data) {
             getSampleCoordinates(data).done(function(geoJSONData) {
                 if (geoJSONData.features.length == 0) {

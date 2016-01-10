@@ -31,6 +31,12 @@ public class Projects extends FimsService {
     }
 
     @GET
+    @Path("/{projectId}/getLatLongColumns")
+    public Response getLatLongColumns(@PathParam("projectId") int projectId) {
+        return fimsConnector.createGETConnection(fimsCoreRoot + "biocode-fims/rest/utils/getLatLongColumns/" + projectId);
+    }
+
+    @GET
     @Path("/{projectId}/expeditions")
     public Response listExpeditions(@PathParam("projectId") int projectId) {
         return fimsConnector.createGETConnection(fimsCoreRoot + "id/expeditionService/list/" + projectId);

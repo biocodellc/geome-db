@@ -291,6 +291,7 @@ function dialog(msg, title, buttons) {
     return;
 }
 
+// **
 // write results to the resultsContainer
 function writeResults(message) {
     $("#resultsContainer").show();
@@ -304,6 +305,7 @@ function writeResults(message) {
     $("#resultsContainer").html(message);
 }
 
+// **
 // If the user wants to create a new expedition, get the expedition code
 function createExpedition() {
     var d = new $.Deferred();
@@ -321,12 +323,13 @@ function createExpedition() {
     return d.promise();
 }
 
+// **
 // function to submit the validation form using jquery form plugin to handle the file uploads
 function submitForm(){
     var de = new $.Deferred();
     var promise = de.promise();
     var options = {
-        url: "rest/validate/",
+        url: "/biscicol/rest/validate/",
         type: "POST",
         contentType: "multipart/form-data",
         beforeSerialize: function(form, options) {
@@ -381,6 +384,7 @@ function failError(jqxhr) {
     dialog(message, "Error", buttons);
 }
 
+// **
 // Check that the validation form has a project id and if uploading, has an expedition code
 function validForm(expeditionCode) {
     if ($('#projects').val() == 0 || $("#upload").is(":checked")) {
@@ -414,6 +418,7 @@ function validForm(expeditionCode) {
     return true;
 }
 
+// **
 // submit dataset to be validated/uploaded
 function validatorSubmit() {
     // User wants to create a new expedition
@@ -441,6 +446,7 @@ function validatorSubmit() {
     }
 }
 
+// **
 // keep looping pollStatus every second until results are returned
 function loopStatus(promise) {
     setTimeout( function() {
@@ -458,10 +464,11 @@ function loopStatus(promise) {
     }, 1000);
 }
 
+// **
 // poll the server to get the validation/upload status
 function pollStatus() {
     var def = new $.Deferred();
-    $.getJSON("rest/validate/status")
+    $.getJSON("/biscicol/rest/validate/status")
         .done(function(data) {
             def.resolve(data);
         }).fail(function() {
@@ -470,11 +477,12 @@ function pollStatus() {
     return def.promise();
 }
 
+// **
 // Continue the upload process after getting user consent if there were warnings during validation or if we are creating
 // a new expedition
 function continueUpload(createExpedition) {
     var d = new $.Deferred();
-    var url = "rest/validate/continue";
+    var url = "/biscicol/rest/validate/continue";
     if (createExpedition) {
         url += "?createExpedition=true";
     }
@@ -489,6 +497,7 @@ function continueUpload(createExpedition) {
     loopStatus(d.promise());
 }
 
+// **
 // function to handle the results from the rest service /biocode-fims/rest/validate
 function validationResults(data) {
     var title = "Validation Results";
@@ -520,6 +529,7 @@ function validationResults(data) {
     }
 }
 
+// **
 // function to handle the results from the rest service /biocode-fims/rest/validate/continue
 function uploadResults(data) {
     var title = "Upload Results";
@@ -559,6 +569,7 @@ function uploadResults(data) {
     }
 }
 
+// **
 // function to verify naan's
 function checkNAAN(spreadsheetNaan, naan) {
     if (spreadsheetNaan != naan) {
@@ -578,6 +589,7 @@ function checkNAAN(spreadsheetNaan, naan) {
     }
 }
 
+// **
 // function to toggle the projectId and expeditionCode inputs of the validation form
 function validationFormToggle() {
     $('#dataset').change(function() {
@@ -587,7 +599,7 @@ function validationFormToggle() {
         // Check NAAN
         $.when(parseSpreadsheet("~naan=[0-9]+~", "Instructions")).done(function(spreadsheetNaan) {
             if (spreadsheetNaan > 0) {
-                $.getJSON("rest/utils/getNAAN")
+                $.getJSON("/biscicol/rest/utils/getNAAN")
                         .done(function(data) {
                     checkNAAN(spreadsheetNaan, data.naan);
                 });
@@ -643,6 +655,7 @@ function validationFormToggle() {
     });
 }
 
+// **
 // update the checkbox to reflect the expedition's public status
 function updateExpeditionPublicStatus(expeditionList) {
     $('#expeditionCode').change(function() {
@@ -663,10 +676,11 @@ function updateExpeditionPublicStatus(expeditionList) {
 }
 
 
+// **
 // get the expeditions codes a user owns for a project
 function getExpeditionCodes() {
     var projectID = $("#projects").val();
-    $.getJSON("rest/utils/expeditionCodes/" + projectID)
+    $.getJSON("/biscicol/rest/projects/" + projectID + "/expeditions/")
         .done(function(data) {
             var select = "<select name='expeditionCode' id='expeditionCode' style='max-width:199px'>" +
                 "<option value='0'>Create New Expedition</option>";
