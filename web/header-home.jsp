@@ -29,8 +29,7 @@
 
     <script type="text/javascript" src="/biscicol/js/biocode-fims-xlsx-reader.js"></script>
     <script type-"text/javascript" src="/biscicol/js/biocode-fims-mapping.js"></script>
-    <script type="text/javascript" src="/biscicol/js/biocode-fims.js"></script>
-    <script type="text/javascript" src="/biscicol/js/bcid.js"></script>
+    <script type="text/javascript" src="/biscicol/js/biscicol-fims.js"></script>
     <script type="text/javascript" src="/biscicol/js/bootstrap.min.js"></script>
 
     <link rel="short icon" href="/biscicol/docs/fimsicon.png" />
