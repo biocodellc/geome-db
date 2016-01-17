@@ -1,7 +1,10 @@
 package utils;
 
-import biocode.fims.bcid.*;
+import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.bcid.Renderer.Renderer;
+import biocode.fims.bcid.Resolver;
+import biocode.fims.bcid.ResourceType;
+import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
 

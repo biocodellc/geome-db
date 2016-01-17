@@ -3,13 +3,16 @@ package services;
 import biocode.fims.auth.Authenticator;
 import biocode.fims.bcid.UserMinter;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.rest.FimsService;
 import biocode.fims.utils.SendEmail;
 import org.json.simple.JSONObject;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 

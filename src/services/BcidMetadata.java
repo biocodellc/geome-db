@@ -2,8 +2,8 @@ package services;
 
 import biocode.fims.bcid.Renderer.RDFRenderer;
 import biocode.fims.bcid.Resolver;
-import utils.HTMLTableRenderer;
 import biocode.fims.rest.FimsService;
+import utils.HTMLTableRenderer;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
