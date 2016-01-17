@@ -6,6 +6,7 @@ import utils.HTMLTableRenderer;
 import biocode.fims.rest.FimsService;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
@@ -17,6 +18,7 @@ public class BcidMetadata extends FimsService {
 
     @GET
     @Path("{scheme}:/{naan}/{shoulderPlusIdentifier}")
+    @Produces(MediaType.TEXT_HTML)
     public Response resolver(
             @PathParam("naan") String naan,
             @PathParam("shoulderPlusIdentifier") String shoulderPlusIdentifier,

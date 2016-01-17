@@ -7,8 +7,8 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.rest.Admin;
-import biocode.fims.rest.Authenticated;
+import biocode.fims.rest.filters.Admin;
+import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
 import org.apache.commons.digester3.Digester;
@@ -459,6 +459,7 @@ public class Projects extends FimsService {
     @GET
     @Authenticated
     @Path("/{projectId}/metadataEditor")
+    @Produces(MediaType.TEXT_HTML)
     public Response listMetadataEditorAsTable(@PathParam("projectId") int projectId) {
         StringBuilder sb = new StringBuilder();
         ProjectMinter project = new ProjectMinter();

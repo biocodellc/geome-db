@@ -65,7 +65,31 @@ public class Query extends FimsService {
         }
     }
 
+    /**
+     * Return JSON for a graph query.
+     *
+     * @param graphs indicate a comma-separated list of graphs, or all
+     * @return
+     */
+    @GET
+    @Path("/json/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response queryJson(
+            @QueryParam("graphs") String graphs,
+            @QueryParam("project_id") Integer project_id,
+            @QueryParam("filter") String filter) {
 
+        File file = GETQueryResult(graphs, project_id, filter, "json");
+
+        String response = readFile(file.getAbsolutePath());
+
+        // Return response
+        if (response == null) {
+            return Response.status(204).build();
+        } else {
+            return Response.ok(response).build();
+        }
+    }
 
     /**
      * Return KML for a graph query using POST

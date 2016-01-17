@@ -4,12 +4,14 @@ import biocode.fims.bcid.Database;
 import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
-import biocode.fims.rest.Authenticated;
+import biocode.fims.rest.filters.Authenticated;
 import org.json.simple.JSONObject;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 
@@ -21,6 +23,7 @@ public class Expeditions extends FimsService {
     @GET
     @Authenticated
     @Path("{expeditionId}/resourcesAsTable")
+    @Produces(MediaType.TEXT_HTML)
     public Response listResourcesAsTable(@PathParam("expeditionId") int expeditionId) {
         ExpeditionMinter e = new ExpeditionMinter();
 
@@ -64,6 +67,7 @@ public class Expeditions extends FimsService {
     @GET
     @Authenticated
     @Path("{expeditionId}/datasetsAsTable")
+    @Produces(MediaType.TEXT_HTML)
     public Response listDatasetsAsTable(@PathParam("expeditionId") int expeditionId) {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
         Integer userId = new Database().getUserId(username);
@@ -106,6 +110,7 @@ public class Expeditions extends FimsService {
     @GET
     @Authenticated
     @Path("{expeditionId}/metadataAsTable")
+    @Produces(MediaType.TEXT_HTML)
     public Response listMetadataAsTable(@PathParam("expeditionId") int expeditionId) {
         Integer userId = new Database().getUserId(username);
         ExpeditionMinter e = new ExpeditionMinter();

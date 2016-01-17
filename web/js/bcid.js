@@ -1,107 +1,20 @@
 /** Process submit button for Data Group Creator **/
-function dataGroupCreatorSubmit() {
-    $( "#dataGroupCreatorResults" ).html( "Processing ..." );
+function bcidCreatorSubmit() {
     /* Send the data using post */
-    var posting = $.post( "/id/groupService", $("#dataGroupForm").serialize() );
-    results(posting,"#dataGroupCreatorResults");
-}
-
-function bcidEditorSubmit() {
-    var posting = $.post( "/id/groupService/dataGroup/update", $("#bcidEditForm").serialize())
+    var posting = $.post( "/biscicol/rest/groupService", $("#bcidForm").serialize())
         .done(function(data) {
-            populateBCIDPage();
+            var b = {
+                "Ok": function() {
+                    $('#bcidForm')[0].reset();
+                    $(this).dialog("close");
+                }
+            }
+            var msg = "Successfully created the bcid with identifier: " + data.identifier;
+            dialog(msg, "Success creating bcid!", b);
         }).fail(function(jqxhr) {
-            $(".error").html($.parseJSON(jqxhr.responseText).usrMessage);
+            failError(jqxhr);
         });
     loadingDialog(posting);
-}
-
-/** Process submit button for Data Group Creator **/
-function expeditionCreatorSubmit() {
-    $( "#expeditionCreatorResults" ).html( "Processing ..." );
-    /* Send the data using post */
-    var posting = $.post( "/id/expeditionService", $("#expeditionForm").serialize() );
-    results(posting,"#expeditionCreatorResults");
-}
-
-/** Generic way to display results from creator functions, relies on standardized JSON **/
-function results(posting, a) {
-    // Put the results in a div
-    posting.done(function( data ) {
-        var content = "<table>";
-        content += "<tr><th>Results</th></tr>"
-        content += "<tr><td>"+ data.prefix +"</td></tr>";
-        //$.each(data, function(k,v) {
-        //    content += "<tr><td>"+v+"</td></tr>";
-        //})
-        content += "</table>";
-        $( a ).html( content );
-    });
-   posting.fail(function(jqxhr) {
-        $( a ).html( "<table><tr><th>System error, unable to perform function!!</th></tr><tr><td>" +
-            $.parseJSON(jqxhr.responseText).usrMessage + "</td></tr></table>" );
-   });
-}
-
-// Control functionality when a datasetList is activated in the creator page
-// if it is not option 0, then need to look up values from server to fill
-// in title and concept.
-function datasetListSelector() {
-
-    // Set values when the user chooses a particular dataset
-    if ($("#datasetList").val() != 0) {
-        // Construct the URL
-        var url = "/id/groupService/metadata/" + $("#datasetList").val();
-        // Initialize cells
-        $("#resourceTypesMinusDatasetDiv").html("");
-        $("#suffixPassThroughDiv").html("");
-        $("#titleDiv").html("");
-        $("#doiDiv").html("");
-
-        // Get JSON response
-        var jqxhr = $.getJSON(url, function() {})
-            .done(function(data) {
-                var options = '';
-                $.each(data[0], function(keyData,valData) {
-                    $.each(valData, function(key, val) {
-                        // Assign values from server to JS field names
-                        if (key == "resourceType")
-                            $("#resourceTypesMinusDatasetDiv").html(val);
-                        if (key == "bcidsSuffixPassThrough")
-                            $("#suffixPassThroughDiv").html(val);
-                        if (key == "title")
-                            $("#titleDiv").html(val);
-                        if (key == "doi")
-                            $("#doiDiv").html(val);
-                    });
-                });
-            });
-        // Set styles
-        var color = "#463E3F";
-        $("#titleDiv").css("color",color);
-        $("#resourceTypesMinusDatasetDiv").css("color",color);
-        $("#suffixPassThroughDiv").css("color",color);
-        $("#doiDiv").css("color",color);
-
-    // Set the Creator Defaults
-    } else {
-        creatorDefaults();
-    }
-}
-
-// Set default settings for the Creator Form settings
-function creatorDefaults() {
-    $("#titleDiv").html("<input id=title name=title type=textbox size=40>");
-    $("#resourceTypesMinusDatasetDiv").html("<select name=resourceTypesMinusDataset id=resourceTypesMinusDataset class=''>");
-    $("#suffixPassThroughDiv").html("<input type=checkbox id=suffixPassThrough name=suffixPassThrough checked=yes>");
-    $("#doiDiv").html("<input type=textbox id=doi name=doi checked=yes>");
-
-    $("#titleDiv").css("color","black");
-    $("#resourceTypesMinusDatasetDiv").css("color","black");
-    $("#suffixPassThroughDiv").css("color","black");
-    $("#doiDiv").css("color","black");
-
-    populateSelect("resourceTypesMinusDataset");
 }
 
 // Populate Div element from a REST service with HTML
@@ -119,38 +32,43 @@ function populateDivFromService(url,elementID,failMessage)  {
 }
 
 // Populate a table of data showing resourceTypes
-function populateResourceTypes(a) {
-    var url = "/id/elementService/resourceTypes";
-    var jqxhr = $.ajax(url, function() {})
+function getResourceTypesTable(a) {
+    var url = "/biscicol/rest/resourceTypes";
+    var jqxhr = $.getJSON(url, function() {})
         .done(function(data) {
-           $("#" + a).html(data);
+            var html = "<table><tr><td><b>Name/URI</b></td><td><b>Description</b></td></tr>";
+            $.each(data, function(key, val) {
+                if (!(val.string == "---")) {
+                    html += "<tr><td><a href='" + val.uri + "'>" + val.string + "</a></td>";
+                    html += "<td>" + val.description + "</td></tr>";
+                }
+            })
+           $("#" + a).html(html);
         })
-        .fail(function() {
-            $("#" + a).html("Unable to load resourceTypes!");
+        .fail(function(jqxhr) {
+            failError(jqxhr);
         });
 }
 
 // Populate the SELECT box with resourceTypes from the server
-function populateSelect(a) {
-    // bcid Service Call
-    var url = "/id/elementService/select/" + a;
+function getResourceTypesMinusDataset(id) {
+    var url = "/biscicol/rest/resourceTypes/minusDataset/";
 
     // get JSON from server and loop results
     var jqxhr = $.getJSON(url, function() {})
         .done(function(data) {
-            var options = '';
+            var options = '<option value=0>Select a Concept</option>';
             $.each(data, function(key, val) {
-                options+='<option value="' + key + '">' +val + '</option>';
+                options+='<option value="' + val.resourceType + '">' + val.string + '</option>';
             });
-            $("#" + a).html(options);
-            if (a == "adminProjects") {
-                $("." + a).html(options);
+            $("#" + id).html(options);
+            if (id == "adminProjects") {
+                $("." + id).html(options);
             }
         });
     return jqxhr;
 }
 
-// **
 // Take the resolver results and populate a table
 function resolverResults() {
     $.get("/biscicol/rest/" + $("#identifier").val()).done(function(data) {
@@ -160,7 +78,7 @@ function resolverResults() {
         if (jqxhr.status == 400) {
             html = "Invalid identifier.";
         } else {
-            html = "Failed to retrieve identifier information.";
+            failError(jqxhr);
         }
         $("#results").html(html);
     });
@@ -183,7 +101,6 @@ function getQueryParam(sParam) {
     }
 }
 
-// **
 // function to populate the bcid projects.jsp page
 function populateProjectPage(username) {
     var jqxhr = listProjects(username, '/biscicol/rest/projects/admin/list', false
@@ -195,7 +112,6 @@ function populateProjectPage(username) {
     });
 }
 
-// **
 // function to retrieve a user's projects and populate the page
 function listProjects(username, url, expedition) {
     var jqxhr = $.getJSON(url
@@ -260,7 +176,6 @@ function listProjects(username, url, expedition) {
 
 }
 
-// **
 // function to apply the jquery slideToggle effect.
 function projectToggle(id) {
     if ($('.toggle-content#'+id).is(':hidden')) {
@@ -277,7 +192,6 @@ function projectToggle(id) {
     $('.toggle-content#'+id).slideToggle('slow');
 }
 
-// **
 // populate the metadata subsection of projects.jsp from REST service
 function populateMetadata(id, projectID) {
     var jqxhr = populateDivFromService(
@@ -302,34 +216,26 @@ function populateMetadata(id, projectID) {
     return jqxhr;
 }
 
-// **
 // show a confirmation dialog before removing a user from a project
 function confirmRemoveUserDialog(element) {
     var username = $(element).data('username');
-    $('#confirm').html($('#confirm').html().replace('{user}', username));
-    $('#confirm').dialog({
-        modal: true,
-        autoOpen: true,
-        title: "Remove User",
-        resizable: false,
-        width: 'auto',
-        draggable: false,
-        buttons:{ "Yes": function() {
-                                        projectRemoveUser(element);
-                                        $(this).dialog("close");
-                                        $(this).dialog("destroy");
-                                        $('#confirm').html("Are you sure you wish to remove {user}?");
-                                    },
-                  "Cancel": function(){
-                                        $(this).dialog("close");
-                                        $('#confirm').html("Are you sure you wish to remove {user}?");
-                                        $(this).dialog("destroy");
-                                      }
-                }
-        });
+    var title = "Remove User";
+    var msg = "Are you sure you wish to remove " + username + "?";
+    var buttons = {
+         "Yes": function() {
+            projectRemoveUser(element);
+            $(this).dialog("close");
+            $(this).dialog("destroy");
+            $('#confirm').html("Are you sure you wish to remove {user}?");
+        }, "Cancel": function() {
+            $(this).dialog("close");
+            $('#confirm').html("Are you sure you wish to remove {user}?");
+            $(this).dialog("destroy");
+        }
+    };
+    dialog(msg, title, buttons);
 }
 
-// **
 // populate the users subsection of projects.jsp from REST service
 function populateUsers(id, projectID) {
     var jqxhr = populateDivFromService(
@@ -369,7 +275,6 @@ function populateUsers(id, projectID) {
     return jqxhr;
 }
 
-// **
 // function to populate the subsections of the projects.jsp page. Populates the metadata, expeditions, and users
 // subsections
 function populateProjectSubsections(id) {
@@ -397,7 +302,6 @@ function populateProjectSubsections(id) {
     return jqxhr;
 }
 
-// **
 // function to submit the user's profile editor form
 function profileSubmit(divId) {
     if ($("input.pwcheck", divId).val().length > 0 && $(".label", "#pwindicator").text() == "weak") {
@@ -440,7 +344,6 @@ function profileSubmit(divId) {
     }
 }
 
-// **
 // get profile editor
 function getProfileEditor(username) {
     var jqxhr = populateDivFromService(
@@ -468,7 +371,6 @@ function getProfileEditor(username) {
     loadingDialog(jqxhr);
 }
 
-// **
 // function to submit the project's expeditions form. used to update the expedition public attribute.
 function expeditionsPublicSubmit(divId) {
     var inputs = $('form input[name]', divId);
@@ -490,7 +392,6 @@ function expeditionsPublicSubmit(divId) {
     loadingDialog(jqxhr);
 }
 
-// **
 // function to add an existing user to a project or retrieve the create user form.
 function projectUserSubmit(id) {
     var divId = 'div#' + id + "-users";
@@ -522,7 +423,6 @@ function projectUserSubmit(id) {
     }
 }
 
-// **
 // function to submit the create user form.
 function createUserSubmit(projectId, divId) {
     if ($(".label", "#pwindicator").text() == "weak") {
@@ -538,7 +438,6 @@ function createUserSubmit(projectId, divId) {
     }
 }
 
-// **
 // function to remove the user as a member of a project.
 function projectRemoveUser(e) {
     var userId = $(e).data('userid');
@@ -557,7 +456,6 @@ function projectRemoveUser(e) {
     loadingDialog(jqxhr);
 }
 
-// **
 // function to submit the project metadata editor form
 function projectMetadataSubmit(projectId, divId) {
     var jqxhr = $.post("/biscicol/rest/projects/" + projectId + "/metadata/update", $('form', divId).serialize()
@@ -569,7 +467,6 @@ function projectMetadataSubmit(projectId, divId) {
     loadingDialog(jqxhr);
 }
 
-// **
 // function to populate the expeditions.jsp page
 function populateExpeditionPage(username) {
     var jqxhr = listProjects(username, '/biscicol/rest/projects/user/list', true
@@ -584,7 +481,6 @@ function populateExpeditionPage(username) {
     loadingDialog(jqxhr);
 }
 
-// **
 // function to load the expeditions.jsp subsections
 function loadExpeditions(id) {
     if ($('.toggle-content#'+id).is(':hidden')) {
@@ -603,7 +499,6 @@ function loadExpeditions(id) {
     $('.toggle-content#'+id).slideToggle('slow');
 }
 
-// **
 // retrieve the expeditions for a project and display them on the page
 function listExpeditions(divId) {
     var projectId = $(divId).data('projectId');
@@ -653,7 +548,6 @@ function listExpeditions(divId) {
     loadingDialog(jqxhr);
 }
 
-// **
 // function to populate the expedition resources, datasets, or configuration subsection of expeditions.jsp
 function populateExpeditionSubsections(divId) {
     // load config table from REST service
@@ -679,48 +573,6 @@ function populateExpeditionSubsections(divId) {
     }
 }
 
-// load bcid editor
-function getBCIDEditor(element) {
-    var jqxhr = populateDivFromService(
-        "/id/groupService/dataGroupEditorAsTable?ark=" + element.dataset.ark,
-        "listUserBCIDsAsTable",
-        "Unable to load the BCID editor from Server"
-    ).done(function() {
-        populateSelect("resourceTypesMinusDataset"
-        ).done(function() {
-            var options = $('option')
-            $.each(options, function() {
-                if ($('select').data('resource_type') == this.text) {
-                    $('select').val(this.value);
-                }
-            })
-        });
-        $("#cancelButton").click(function() {
-            populateBCIDPage();
-        });
-    });
-    loadingDialog(jqxhr);
-
-}
-
-// function to populate the bcids.jsp page
-function populateBCIDPage() {
-    var jqxhr = populateDivFromService(
-        "/id/groupService/listUserBCIDsAsTable",
-        "listUserBCIDsAsTable",
-        "Unable to load this user's BCIDs from Server"
-    ).done(function() {
-        $("a.edit").click(function() {
-            getBCIDEditor(this);
-        });
-    }).fail(function(jqxhr) {
-        $("#listUserBCIDsAsTable").html(jqxhr.responseText);
-    });
-    loadingDialog(jqxhr);
-    return jqxhr;
-}
-
-// **
 // function to submit the reset password form
 function resetPassSubmit() {
     var jqxhr = $.get("/biscicol/rest/users/" + $("#username").val() + "/sendResetToken/")
@@ -757,7 +609,6 @@ function loadingDialog(promise) {
     });
 }
 
-// **
 // function to login user
 function login() {
     var url = "/biscicol/rest/authenticationService/login";

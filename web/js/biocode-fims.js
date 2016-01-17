@@ -1,4 +1,3 @@
-// **
 // for template generator, get the definitions when the user clicks on DEF
 function populateDefinitions(column) {
  var e = document.getElementById('projects');
@@ -16,7 +15,6 @@ function populateDefinitions(column) {
     });
 }
 
-// **
 function populateColumns(targetDivId) {
     $(targetDivId).html("Loading ...");
 
@@ -46,7 +44,6 @@ function populateColumns(targetDivId) {
      }
 }
 
-// **
 function populateAbstract(targetDivId) {
     $(targetDivId).html("Loading ...");
 
@@ -70,7 +67,6 @@ function populateAbstract(targetDivId) {
     });
 }
 
-// **
 function populateProjects() {
     theUrl = "rest/projects/list";
     var jqxhr = $.getJSON( theUrl, function(data) {
@@ -98,7 +94,6 @@ function populateProjects() {
     });
 }
 
-// **
 // Get the graphs for a given projectId
 function populateGraphs(projectId) {
     $("#resultsContainer").hide();
@@ -128,7 +123,6 @@ function populateGraphs(projectId) {
     });
 }
 
-// **
 // Get results as JSON
 function queryJSON(params) {
    // serialize the params object using a shallow serialization
@@ -148,21 +142,18 @@ function queryJSON(params) {
         });
 }
 
-// **
 // Get results as Excel
 function queryExcel(params) {
     showMessage ("Downloading results as an Excel document<br>this will appear in your browsers download folder.");
     download("/biscicol/rest/projects/query/excel/", params);
 }
 
-// **
 // Get results as Excel
 function queryKml(params) {
     showMessage ("Downloading results as an KML document<br>If Google Earth does not open you can point to it directly");
     download("/biscicol/rest/projects/query/kml/", params);
 }
 
-// **
 // create a form and then submit that form in order to download files
 function download(url, data) {
     //url and data options are required
@@ -192,26 +183,6 @@ function download(url, data) {
     throw new Error("url and data required");
 }
 
-// Get results as Excel
-function queryGoogleMaps() {
-    //theUrl = "http://biscicol.org/biocode-fims/rest/query/kml/" +encodeURIComponent("?") + getGraphsKeyValue() + encodeURIComponent("&") + getProjectKeyValue() + encodeURIComponent("&") +  getFilterKeyValue
-    theUrl = "rest/query/kml/" +encodeURIComponent("?") + getGraphsKeyValue() + encodeURIComponent("&") + getProjectKeyValue();
-    mapsUrl = "http://maps.google.com/maps?q=" + theUrl;
-    window.open(
-        mapsUrl,
-        '_blank'
-    );
-}
-// Get the URL key/value for the filter specified by the user
-function getFilterKeyValue() {
-    var filter = document.getElementById("filter").value;
-    if (filter != "") {
-     return "filter=" + document.getElementById("filter").value;
-    }
-    return "";
-}
-
-// **
 // Get the projectID
 function getProjectID() {
     var e = document.getElementById('projects');
@@ -223,7 +194,6 @@ function getProjectKeyValue() {
     return "projectId=" + getProjectID();
 }
 
-// **
 // Get the query graph URIs
 function getGraphURIs() {
     var graphs = [];
@@ -232,18 +202,6 @@ function getGraphURIs() {
     });
     return graphs;
 }
-
-// Get the URL key/value for the graphs by parsing return from the BCID service
-function getGraphsKeyValue() {
-    var str = "";
-    var separator = "";
-    $( "select#graphs option:selected" ).each(function() {
-        str += separator + encodeURIComponent($( this ).val());
-        separator = ",";
-    });
-    return "graphs=" + str;
-}
-
 // A short message
 function showMessage(message) {
 $('#alerts').append(
@@ -251,14 +209,6 @@ $('#alerts').append(
             '<button type="button" class="close" data-dismiss="alert">' +
             '&times;</button>' + message + '</div>');
 }
-// A big message
-function showBigMessage(message) {
-$('#alerts').append(
-        '<div class="alert" style="height:400px">' +
-            '<button type="button" class="close" data-dismiss="alert">' +
-            '&times;</button>' + message + '</div>');
-}
-
 // handle displaying messages/results in the graphs(spreadsheets) select list
 function graphsMessage(message) {
         $('#graphs').empty();
@@ -266,7 +216,6 @@ function graphsMessage(message) {
         $('#graphs').find('option').first().text(message);
 }
 
-// **
 // function to open a new or update an already open jquery ui dialog box
 function dialog(msg, title, buttons) {
     var dialogContainer = $("#dialogContainer");
@@ -291,7 +240,6 @@ function dialog(msg, title, buttons) {
     return;
 }
 
-// **
 // write results to the resultsContainer
 function writeResults(message) {
     $("#resultsContainer").show();
@@ -305,7 +253,6 @@ function writeResults(message) {
     $("#resultsContainer").html(message);
 }
 
-// **
 // If the user wants to create a new expedition, get the expedition code
 function createExpedition() {
     var d = new $.Deferred();
@@ -323,7 +270,6 @@ function createExpedition() {
     return d.promise();
 }
 
-// **
 // function to submit the validation form using jquery form plugin to handle the file uploads
 function submitForm(){
     var de = new $.Deferred();
@@ -384,7 +330,6 @@ function failError(jqxhr) {
     dialog(message, "Error", buttons);
 }
 
-// **
 // Check that the validation form has a project id and if uploading, has an expedition code
 function validForm(expeditionCode) {
     if ($('#projects').val() == 0 || $("#upload").is(":checked")) {
@@ -418,7 +363,6 @@ function validForm(expeditionCode) {
     return true;
 }
 
-// **
 // submit dataset to be validated/uploaded
 function validatorSubmit() {
     // User wants to create a new expedition
@@ -446,7 +390,6 @@ function validatorSubmit() {
     }
 }
 
-// **
 // keep looping pollStatus every second until results are returned
 function loopStatus(promise) {
     setTimeout( function() {
@@ -464,7 +407,6 @@ function loopStatus(promise) {
     }, 1000);
 }
 
-// **
 // poll the server to get the validation/upload status
 function pollStatus() {
     var def = new $.Deferred();
@@ -477,7 +419,6 @@ function pollStatus() {
     return def.promise();
 }
 
-// **
 // Continue the upload process after getting user consent if there were warnings during validation or if we are creating
 // a new expedition
 function continueUpload(createExpedition) {
@@ -497,7 +438,6 @@ function continueUpload(createExpedition) {
     loopStatus(d.promise());
 }
 
-// **
 // function to handle the results from the rest service /biocode-fims/rest/validate
 function validationResults(data) {
     var title = "Validation Results";
@@ -529,7 +469,6 @@ function validationResults(data) {
     }
 }
 
-// **
 // function to handle the results from the rest service /biocode-fims/rest/validate/continue
 function uploadResults(data) {
     var title = "Upload Results";
@@ -569,7 +508,6 @@ function uploadResults(data) {
     }
 }
 
-// **
 // function to verify naan's
 function checkNAAN(spreadsheetNaan, naan) {
     if (spreadsheetNaan != naan) {
@@ -589,7 +527,6 @@ function checkNAAN(spreadsheetNaan, naan) {
     }
 }
 
-// **
 // function to toggle the projectId and expeditionCode inputs of the validation form
 function validationFormToggle() {
     $('#dataset').change(function() {
@@ -655,7 +592,6 @@ function validationFormToggle() {
     });
 }
 
-// **
 // update the checkbox to reflect the expedition's public status
 function updateExpeditionPublicStatus(expeditionList) {
     $('#expeditionCode').change(function() {
@@ -676,7 +612,6 @@ function updateExpeditionPublicStatus(expeditionList) {
 }
 
 
-// **
 // get the expeditions codes a user owns for a project
 function getExpeditionCodes() {
     var projectID = $("#projects").val();
@@ -707,7 +642,6 @@ function getExpeditionCodes() {
 // a select element with all of the filterable options. Used to add additional filter statements
 var filterSelect = null;
 
-// **
 // populate a select with the filter values of a given project
 function getFilterOptions(projectId) {
     var jqxhr = $.getJSON("/biscicol/rest/projects/" + projectId + "/filterOptions/")
@@ -722,7 +656,6 @@ function getFilterOptions(projectId) {
     return jqxhr;
 }
 
-// **
 // add additional filters to the query
 function addFilter() {
     // change the method to post
@@ -738,7 +671,6 @@ function addFilter() {
     $("#uri").parent().parent().siblings(":last").before(tr);
 }
 
-// **
 // prepare a json object with the query POST params by combining the text and select inputs for each filter statement
 function getQueryPostParams() {
     var params = {
@@ -759,7 +691,6 @@ function getQueryPostParams() {
     return params;
 }
 
-// **
 // function to edit an expedition
 function editExpedition(projectId, expeditionCode, e) {
     var currentPublic;
@@ -809,7 +740,6 @@ function editExpedition(projectId, expeditionCode, e) {
     dialog(message, title, buttons);
 }
 
-// **
 function parseSpreadsheet(regExpression, sheetName) {
     try {
         f = new FileReader();
@@ -838,7 +768,6 @@ function parseSpreadsheet(regExpression, sheetName) {
 
 }
 
-// **
 var savedConfig;
 function saveTemplateConfig() {
     var message = "<table><tr><td>Configuration Name:</td><td><input type='text' name='configName' /></td></tr></table>";
@@ -892,7 +821,6 @@ function saveTemplateConfig() {
     dialog(message, title, buttons);
 }
 
-// **
 function populateConfigs() {
     var projectId = $("#projects").val();
     if (projectId == 0) {
@@ -935,7 +863,6 @@ function populateConfigs() {
     }
 }
 
-// **
 function updateCheckedBoxes() {
     var configName = $("#configs").val();
     if (configName == "Default") {
@@ -964,7 +891,6 @@ function updateCheckedBoxes() {
     }
 }
 
-// **
 function removeConfig() {
     var configName = $("#configs").val();
     if (configName == "Default") {
@@ -1009,7 +935,6 @@ function removeConfig() {
     dialog(message, title, buttons);
 }
 
-// **
 // function to apply the jquery slideToggle effect.
 function projectToggle(id) {
     // escape special characters in id field
@@ -1023,5 +948,3 @@ function projectToggle(id) {
     }
     $(idElement).slideToggle('slow');
 }
-
-

@@ -22,6 +22,12 @@
                             <li><a href='/biscicol/validation.jsp' class='enabled'>Validation</a></li>
                             <li><a href='/biscicol/query.jsp' class='enabled'>Query</a></li>
                             <li><a href='/biscicol/lookup.jsp' class='enabled'>ID Lookup</a></li>
+                            <c:if test="${username == null}">
+                                <li><a href='#' class='disabled'>BCID Creator</a></li>
+                            </c:if>
+                            <c:if test="${username != null}">
+                                <li><a href='/biscicol/secure/bcidCreator.jsp' class='enabled'>BCID Creator</a></li>
+                            </c:if>
                         </ul>
                     </li>
 

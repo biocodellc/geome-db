@@ -213,6 +213,7 @@ public class Validate extends FimsService {
 
         // create this expedition if the user wants to
         if (createExpedition) {
+            processController.setExpeditionTitle(processController.getExpeditionCode() + " spreadsheet");
             p.runExpeditionCreate();
         }
 
@@ -252,7 +253,8 @@ public class Validate extends FimsService {
         // Mint the data group
         BcidMinter bcidMinter = new BcidMinter(ezidRequest);
         String identifier = bcidMinter.createEntityBcid(new Bcid(processController.getUserId(), "http://purl.org/dc/dcmitype/Dataset",
-                uploader.getEndpoint(), uploader.getGraphID(), null, processController.getFinalCopy(), false));
+                processController.getExpeditionCode() + " Dataset", uploader.getEndpoint(), uploader.getGraphID(), null,
+                processController.getFinalCopy(), false));
         bcidMinter.close();
         String status1 = "\n\nDataset Identifier: http://n2t.net/" + identifier + " (wait 15 minutes for resolution to become active)\n";
 
