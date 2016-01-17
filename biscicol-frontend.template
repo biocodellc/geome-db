@@ -1,24 +1,14 @@
-# OAuth settings
-clientId = public_client_id
-clientSecret = super_secret_code
-redirect_uri = http://biscicol.org/biocode-fims/rest/authenticationService/access_token/
-authorize_uri = http://biscicol.org/id/authenticationService/oauth/authorize?
-access_token_uri = http://www.biscicol.org/id/authenticationService/oauth/access_token
-profile_uri = http://www.biscicol.org/id/userService/oauth
-refreshUri = http://biscicol.org/id/authenticationService/oauth/refresh
-
-
 # get you're access token by visiting https://www.mapbox.com/account/apps/
 mapboxAccessToken = your_access_token
 
-fimsCoreRoot = http://biscicol.org/
 loginUri = http://biscicol.org/login.jsp
+deepRoots = true
+uploadDir = tripleOutput
 
 
 # EVERYTHING BELOW HERE IS FROM BIOCODE-FIMS
 naan = 21547
 
-fims_service_root = http://biscicol.org/biocode-fims/rest/
 rootName = biocode-fims
 
 # location to save spreadsheets to filesystem
@@ -75,7 +65,7 @@ divider = _
 
 rights = http://creativecommons.org/licenses/by/3.0/
 resolverTargetPrefix = http://biscicol.org/id/
-resolverMetadataPrefix = http://biscicol.org/id/metadata/
+*resolverMetadataPrefix = http://biscicol.org/rest/metadata/
 
 # path to use for reseting password token
 resetToken = http://biscicol.org/biocode-fims/resetPass.jsp?token=
@@ -102,5 +92,3 @@ publisher = Biocode FIMS System
 # Set the following only if you want a default creator to override system settings (based on user name)
 # creator = SI-NMNH Field Information Management System
 
-# web root for negotiating different types of content resolution
-contentResolutionRoot = http://biscicol.org:8179/biocode-fims/rest/query/

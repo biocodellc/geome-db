@@ -25,7 +25,7 @@
 
     function download_file(){
         // TODO: create a single place for our biocode-fims service calls
-		var url = '/biocode-fims/rest/templates/createExcel/';
+		var url = '/biscicol/rest/projects/createExcel/';
 		var input_string = '';
 		// Loop through CheckBoxes and find ones that are checked
 		$(".check_boxes").each(function(index) {

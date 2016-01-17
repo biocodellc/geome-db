@@ -348,7 +348,7 @@ function populateUsers(id, projectID) {
                 var divId = 'div#' + $(e).closest('div').attr('id');
 
                 var jqxhr2 = populateDivFromService(
-                    "/biscicol/rest/users/" + username + "/profile/listEditorAsTable/",
+                    "/biscicol/rest/users/admin/profile/listEditorAsTable/" + username,
                     divId,
                     "error loading profile editor"
                 ).done(function() {
@@ -494,8 +494,8 @@ function expeditionsPublicSubmit(divId) {
 // function to add an existing user to a project or retrieve the create user form.
 function projectUserSubmit(id) {
     var divId = 'div#' + id + "-users";
+    var projectId = $("input[name='projectId']", divId).val()
     if ($('select option:selected', divId).val() == 0) {
-        var projectId = $("input[name='projectId']", divId).val()
         var jqxhr = populateDivFromService(
             '/biscicol/rest/users/admin/createUserForm',
             divId,
@@ -511,7 +511,7 @@ function projectUserSubmit(id) {
         });
         loadingDialog(jqxhr);
     } else {
-        var jqxhr = $.post("/biscicol/rest/projects/" + $("input[name='projectId']").val() + "/admin/addUser", $('form', divId).serialize()
+        var jqxhr = $.post("/biscicol/rest/projects/" + projectId + "/admin/addUser", $('form', divId).serialize()
         ).done(function(data) {
             var jqxhr2 = populateProjectSubsections(divId);
         }).fail(function(jqxhr) {
@@ -572,7 +572,7 @@ function projectMetadataSubmit(projectId, divId) {
 // **
 // function to populate the expeditions.jsp page
 function populateExpeditionPage(username) {
-    var jqxhr = listProjects(username, '/biscicol/rest/projects/listUserProjects', true
+    var jqxhr = listProjects(username, '/biscicol/rest/projects/user/list', true
     ).done(function() {
         // attach toggle function to each project
         $(".expand-content").click(function() {

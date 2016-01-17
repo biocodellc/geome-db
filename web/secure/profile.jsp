@@ -3,7 +3,7 @@
 <div id="user" class="section">
 
     <div class="sectioncontent">
-        <h2>User Profile (${user})</h2>
+        <h2>User Profile (${username})</h2>
 
         <br>
 

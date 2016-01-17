@@ -4,7 +4,7 @@
 
 <!--<div id="footer">
     <div>
-    <a href="https://code.google.com/p/bcid/">Biocode FIMS</a> is supported by the NSF-funded
+    <a href="https://github.com/biocodellc/biocode-fims">Biocode FIMS</a> is supported by the NSF-funded
         <a href="http://biscicol.blogspot.com/">BiSciCol project</a> and
         <a href="http://www.nescent.org/">NESCENT</a>, in collaboration with the
         <a href="http://www.barcodeofwildlife.org/">Barcode of Wildlife Project</a> and

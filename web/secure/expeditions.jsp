@@ -6,7 +6,7 @@
 
 <script>
     $(document).ready(function() {
-        populateExpeditionPage("${user}");
+        populateExpeditionPage("${username}");
     });
 </script>
 

@@ -7,7 +7,7 @@
 
 <script>
     $(document).ready(function() {
-        populateProjectPage("${user}");
+        populateProjectPage("${username}");
     });
 </script>
 

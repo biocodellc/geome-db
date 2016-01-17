@@ -1,16 +1,17 @@
 package services;
 
-import biocode.fims.FimsService;
-import biocode.fims.SendEmail;
-import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.auth.Authenticator;
+import biocode.fims.bcid.UserMinter;
+import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.rest.Admin;
+import biocode.fims.rest.Authenticated;
+import biocode.fims.rest.FimsService;
+import biocode.fims.utils.SendEmail;
 import org.json.simple.JSONObject;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * REST services dealing with user management
@@ -26,9 +27,12 @@ public class Users extends FimsService {
     @Path("{user}/sendResetToken")
     @Produces(MediaType.APPLICATION_JSON)
     public Response sendResetToken(@PathParam("user") String username) {
-        JSONObject resetToken = fimsConnector.postJSONObject(
-                fimsCoreRoot + "id/authenticationService/sendResetToken",
-                "username=" + username);
+        if (username.isEmpty()) {
+            throw new BadRequestException("User not found.", "username is null");
+        }
+        Authenticator a = new Authenticator();
+        JSONObject resetToken = a.generateResetToken(username);
+        a.close();
 
         String resetTokenURL = appRoot + "resetPass.jsp?resetToken=" +
                 resetToken.get("resetToken");
@@ -51,63 +55,32 @@ public class Users extends FimsService {
         return Response.ok("{\"success\":\"A password reset token has be sent to your email.\"}").build();
     }
 
-    /**
-     * Rest service to reset a user's password
-     * @param resetToken
-     * @param password
-     * @return
-     */
-    @POST
-    @Path("/resetPassword")
-    @Produces(MediaType.TEXT_HTML)
-    public Response resetPassword(@FormParam("resetToken") String resetToken,
-                                  @FormParam("password") String password) {
-        try {
-            JSONObject response = fimsConnector.postJSONObject(
-                    fimsCoreRoot + "id/authenticationService/reset",
-                    "token=" + resetToken + "&password=" + password);
-            if (!response.containsKey("success")) {
-                throw new ServerErrorException("Server Error", "Something happened while updating user's password");
-            }
-            return Response.seeOther(new URI(appRoot + "index.jsp")).build();
-        } catch (URISyntaxException e) {
-            throw new ServerErrorException(e);
-        }
-    }
-
     @GET
-    @Path("{user}/profile/listEditorAsTable")
+    @Authenticated
+    @Admin
+    @Path("/admin/profile/listEditorAsTable/{user}")
     @Produces(MediaType.TEXT_HTML)
     public Response listAdminProfileEditorAsTable(@PathParam("user") String username) {
-        JSONObject profile = fimsConnector.getJSONObject(fimsCoreRoot + "id/userService/profile/" + username);
+        UserMinter u = new UserMinter();
+        JSONObject profile = u.getUserProfile(username);
+        u.close();
         return Response.ok(getProfileEditor(profile, true)).build();
     }
 
-    @POST
-    @Path("/profile/update")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response updateProfile(MultivaluedMap params) {
-        return fimsConnector.createPOSTConnnection(fimsCoreRoot + "id/userService/profile/update/",
-                fimsConnector.getPostParams(params));
-    }
-
     @GET
+    @Authenticated
     @Path("/profile/listEditorAsTable")
     @Produces(MediaType.TEXT_HTML)
     public Response listProfileEditorAsTable() {
-        JSONObject profile = fimsConnector.getJSONObject(fimsCoreRoot + "id/userService/profile/");
+        UserMinter u = new UserMinter();
+        JSONObject profile = u.getUserProfile(username);
+        u.close();
         return Response.ok(getProfileEditor(profile, false)).build();
     }
 
-    @POST
-    @Path("/admin/create")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response createUser(MultivaluedMap params) {
-        return fimsConnector.createPOSTConnnection(fimsCoreRoot + "id/userService/create/",
-                fimsConnector.getPostParams(params));
-    }
-
     @GET
+    @Authenticated
+    @Admin
     @Path("/admin/createUserForm")
     @Produces(MediaType.TEXT_HTML)
     public Response getCreatUserForm() {
@@ -170,10 +143,13 @@ public class Users extends FimsService {
     }
 
     @GET
+    @Authenticated
     @Path("/profile/listAsTable")
     @Produces(MediaType.TEXT_HTML)
     public Response listProfileAsTable() {
-        JSONObject profile = fimsConnector.getJSONObject(fimsCoreRoot + "id/userService/profile/");
+        UserMinter u = new UserMinter();
+        JSONObject profile = u.getUserProfile(username);
+        u.close();
         StringBuilder sb = new StringBuilder();
 
         sb.append("<table id=\"profile\">\n");

@@ -1,13 +1,31 @@
 package services;
 
-import biocode.fims.FimsService;
+import biocode.fims.bcid.ExpeditionMinter;
+import biocode.fims.bcid.ProjectMinter;
+import biocode.fims.bcid.UserMinter;
+import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.digester.*;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.rest.Admin;
+import biocode.fims.rest.Authenticated;
+import biocode.fims.rest.FimsService;
+import biocode.fims.run.TemplateProcessor;
+import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.*;
+import java.util.List;
 
 /**
  * REST services dealing with projects
@@ -15,136 +33,78 @@ import javax.ws.rs.core.Response;
 @Path("projects")
 public class Projects extends FimsService {
 
-    @POST
-    @Path("/{projectId}/admin/addUser/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response addUser(MultivaluedMap params) {
-        return fimsConnector.createPOSTConnnection(fimsCoreRoot + "id/projectService/addUser/",
-                fimsConnector.getPostParams(params));
-    }
-
-    @GET
-    @Path("/{projectId}/admin/removeUser/{userId}")
-    public Response removeUser(@PathParam("projectId") int projectId,
-                               @PathParam("userId") int userId) {
-        return fimsConnector.createGETConnection(fimsCoreRoot + "id/projectService/removeUser/" + projectId + "/" + userId);
-    }
+    private static Logger logger = LoggerFactory.getLogger(Projects.class);
 
     @GET
     @Path("/{projectId}/getLatLongColumns")
-    public Response getLatLongColumns(@PathParam("projectId") int projectId) {
-        return fimsConnector.createGETConnection(fimsCoreRoot + "id/projectService/getLatLongColumns/" + projectId);
-    }
-
-    @GET
-    @Path("/{projectId}/expeditions")
-    public Response listExpeditions(@PathParam("projectId") int projectId) {
-        return fimsConnector.createGETConnection(fimsCoreRoot + "id/expeditionService/list/" + projectId);
-    }
-
-    @GET
-    @Path("/admin/list")
-    public Response listAdminProjects() {
-        return fimsConnector.createGETConnection(fimsCoreRoot + "id/projectService/admin/list");
-    }
-
-    @GET
-    @Path("/listUserProjects")
-    public Response listUserProjects() {
-        return fimsConnector.createGETConnection(fimsCoreRoot + "id/projectService/listUserProjects");
-    }
-
-    @POST
-    @Path("/{projectId}/metadata/update")
-    public Response updateMetadata(@PathParam("projectId") int projectId,
-                                   MultivaluedMap<String, String> params) {
-        return fimsConnector.createPOSTConnnection(fimsCoreRoot + "id/projectService/updateConfig/" + projectId,
-                fimsConnector.getPostParams(params));
-    }
-
-    @POST
-    @Path("/query/kml")
-    public Response queryKML(MultivaluedMap<String, String> params) {
-        return fimsConnector.createPOSTConnnection(fimsCoreRoot + "biocode-fims/rest/query/kml",
-                fimsConnector.getPostParams(params));
-    }
-
-    @POST
-    @Path("/query/excel")
-    public Response queryExcel(MultivaluedMap<String, String> params) {
-        return fimsConnector.createPOSTConnnection(fimsCoreRoot + "biocode-fims/rest/query/excel",
-                fimsConnector.getPostParams(params));
-    }
-
-    @POST
-    @Path("/query/json")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryJSON(MultivaluedMap<String, String> params) {
-        return fimsConnector.createPOSTConnnection(
-                fimsCoreRoot + "biocode-fims/rest/query/json/", fimsConnector.getPostParams(params));
+    public Response getLatLongColumns(@PathParam("projectId") int projectId) {
+        String decimalLatDefinedBy = "http://rs.tdwg.org/dwc/terms/decimalLatitude";
+        String decimalLongDefinedBy = "http://rs.tdwg.org/dwc/terms/decimalLongitude";
+        JSONObject response = new JSONObject();
+
+        try {
+            File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+
+            Mapping mapping = new Mapping();
+            mapping.addMappingRules(new Digester(), configFile);
+            String defaultSheet = mapping.getDefaultSheetName();
+            ArrayList<Attribute> attributeList = mapping.getAllAttributes(defaultSheet);
+
+            response.put("data_sheet", defaultSheet);
+
+            for (Attribute attribute : attributeList) {
+                // when we find the column corresponding to the definedBy for lat and long, add them to the response
+                if(decimalLatDefinedBy.equalsIgnoreCase(attribute.getDefined_by())) {
+                    response.put("lat_column", attribute.getColumn());
+                } else if (decimalLongDefinedBy.equalsIgnoreCase(attribute.getDefined_by())) {
+                    response.put("long_column", attribute.getColumn());
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new FimsRuntimeException(500, e);
+        }
+        return Response.ok(response.toJSONString()).build();
     }
 
     @GET
     @Path("/{projectId}/filterOptions")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFilterOptions(@PathParam("projectId") int projectId) {
-        return fimsConnector.createGETConnection(fimsCoreRoot + "biocode-fims/rest/mapping/filterOptions/" + projectId);
-    }
+        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
-    @GET
-    @Path("/{projectId}/graphs")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getGraphs(@PathParam("projectId") int projectId) {
-        return fimsConnector.createGETConnection(fimsCoreRoot + "id/projectService/graphs/" + projectId);
-    }
+        Mapping mapping = new Mapping();
+        mapping.addMappingRules(new Digester(), configFile);
+        ArrayList<Attribute> attributeArrayList = mapping.getAllAttributes(mapping.getDefaultSheetName());
 
-    @GET
-    @Path("/list")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response listProjects() {
-        return fimsConnector.createGETConnection(fimsCoreRoot + "id/projectService/list/");
+        JSONArray attributes = new JSONArray();
+
+        Iterator it = attributeArrayList.iterator();
+        while (it.hasNext()) {
+            Attribute a = (Attribute) it.next();
+            JSONObject attribute = new JSONObject();
+            attribute.put("column", a.getColumn());
+            attribute.put("uri", a.getUri());
+
+            attributes.add(attribute);
+        }
+
+        return Response.ok(attributes.toJSONString()).build();
     }
 
     @GET
     @Path("/{projectId}/abstract")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAbstract(@PathParam("projectId") int projectId) {
-        return fimsConnector.createGETConnection(
-                fimsCoreRoot + "biocode-fims/rest/templates/abstract/" + projectId);
-    }
+        JSONObject obj = new JSONObject();
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
 
-    @GET
-    @Path("/{projectId}/removeConfig/{configName}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response removeConfig(@PathParam("configName") String configName,
-                                 @PathParam("projectId") int projectId) {
-        return fimsConnector.createGETConnection(
-                fimsCoreRoot + "id/projectService/removeTemplateConfig/" + projectId + "/" + configName);
-    }
+        // Write the all of the checkbox definitions to a String Variable
+        obj.put("abstract", JSONValue.escape(t.printAbstract()));
 
-    @POST
-    @Path("/{projectId}/saveConfig/")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response saveConfig(MultivaluedMap<String, String> params) {
-        return fimsConnector.createPOSTConnnection(
-                fimsCoreRoot + "id/projectService/saveTemplateConfig/", fimsConnector.getPostParams(params));
-    }
-
-    @GET
-    @Path("/{projectId}/getConfig/{configName}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getConfig(@PathParam("configName") String configName,
-                               @PathParam("projectId") int projectId) {
-        return fimsConnector.createGETConnection(
-                fimsCoreRoot + "id/projectService/getTemplateConfig/" + projectId + "/" + configName);
-    }
-
-    @GET
-    @Path("/{projectId}/getConfigs")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getConfigs(@PathParam("projectId") int projectId) {
-        return fimsConnector.createGETConnection(
-                fimsCoreRoot + "id/projectService/getTemplateConfigs/" + projectId);
+        return Response.ok(obj.toJSONString()).build();
     }
 
     @GET
@@ -152,96 +112,252 @@ public class Projects extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDefinitions(@PathParam("projectId") int projectId,
                                   @PathParam("columnName") String columnName) {
-        JSONObject definition = fimsConnector.getJSONObject(
-                fimsCoreRoot + "biocode-fims/rest/templates/definition/" + projectId + "/" + columnName);
-        StringBuilder sb = new StringBuilder();
-        sb.append("<b>Column Name: " + definition.get("columnName") + "</b><p>");
-        // URI
-        if (!definition.get("uri").equals("")) {
-            sb.append("URI = " +
-                    "<a href='" + definition.get("uri") + "' target='_blank'>" +
-                    definition.get("uri") +
-                    "</a><br>\n");
-        }
-        // Defined_by
-        if (!definition.get("defined_by").equals("")) {
-            sb.append("Defined_by = " +
-                    "<a href='" + definition.get("defined_by") + "' target='_blank'>" +
-                    definition.get("defined_by") +
-                    "</a><br>\n");
-        }
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+        StringBuilder output = new StringBuilder();
 
-        // Definition
-        if (!definition.get("definition").equals("")) {
-            sb.append("<p>\n" +
-                    "<b>Definition:</b>\n" +
-                    "<p>" + definition.get("definition") + "\n");
-        } else {
-            sb.append("<p>\n" +
-                    "<b>Definition:</b>\n" +
-                    "<p>No custom definition available\n");
-        }
+        Iterator attributes = t.getMapping().getAllAttributes(t.getMapping().getDefaultSheetName()).iterator();
+        // Get a list of rules for the first digester.Worksheet instance
+        Worksheet sheet = t.getValidation().getWorksheets().get(0);
 
-        // Synonyms
-        if (!definition.get("synonyms").equals("")) {
-            sb.append("<p>\n" +
-                    "<b>Synonyms:</b>\n" +
-                    "<p>" + definition.get("synonyms") + "\n");
-        }
+        List<Rule> rules = sheet.getRules();
 
-        // Synonyms
-        if (!definition.get("dataFormat").equals("")) {
-            sb.append("<p>\n" +
-                    "<b>Data Formatting Instructions:</b>\n" +
-                    "<p>" + definition.get("dataFormat") + "\n");
-        }
-        JSONArray rules = (JSONArray) definition.get("rules");
 
-        if (!rules.isEmpty()) {
-            sb.append("<p>\n" +
-                    "<b>Validation Rules:</b>\n<p>");
-        }
+        while (attributes.hasNext()) {
+            Attribute a = (Attribute) attributes.next();
+            String column = a.getColumn();
+            if (columnName.trim().equals(column.trim())) {
+                // The column name
+                output.append("<b>Column Name: " + columnName + "</b><p>");
 
-        for (Object r : rules) {
-            JSONObject rule = (JSONObject) r;
-            sb.append("<li>\n");
-            // Display the Rule type
-            sb.append("\t<li>type: " + rule.get("type") + "</li>\n");
-            // Display warning levels
-            sb.append("\t<li>level: " + rule.get("level") + "</li>\n");
-            if (rule.containsKey("value")) {
-                sb.append("\t<li>value: " + rule.get("value") + "</li>\n");
-            }
-            JSONArray list = (JSONArray) rule.get("list");
-            if (!list.isEmpty()) {
-                sb.append("\t<li>list: \n");
-
-                // Look at the Fields
-                sb.append("\t\t<ul>\n");
-
-                for (Object field : list) {
-                    sb.append("\t\t\t<li>" + field + "</li>\n");
+                // URI
+                if (a.getUri() != null) {
+                    output.append("URI = " +
+                            "<a href='" + a.getUri() + "' target='_blank'>" +
+                            a.getUri() +
+                            "</a><br>\n");
                 }
-                sb.append("\t\t</ul>\n");
-                sb.append("\t</li>\n");
+                // Defined_by
+                if (a.getDefined_by() != null) {
+                    output.append("Defined_by = " +
+                            "<a href='" + a.getDefined_by() + "' target='_blank'>" +
+                            a.getDefined_by() +
+                            "</a><br>\n");
+                }
 
-                sb.append("</li>\n");
+                // Definition
+                if (a.getDefinition() != null && !a.getDefinition().trim().equals("")) {
+                    output.append("<p>\n" +
+                            "<b>Definition:</b>\n" +
+                            "<p>" + a.getDefinition() + "\n");
+                } else {
+                    output.append("<p>\n" +
+                            "<b>Definition:</b>\n" +
+                            "<p>No custom definition available\n");
+                }
+
+                // Synonyms
+                if (a.getSynonyms() != null && !a.getSynonyms().trim().equals("")) {
+                    output.append("<p>\n" +
+                            "<b>Synonyms:</b>\n" +
+                            "<p>" + a.getSynonyms() + "\n");
+                }
+
+                // Synonyms
+                if (a.getDataformat() != null && !a.getDataformat().trim().equals("")) {
+                    output.append("<p>\n" +
+                            "<b>Data Formatting Instructions:</b>\n" +
+                            "<p>" + a.getDataformat() + "\n");
+                }
+
+                // Rules
+                Iterator it = rules.iterator();
+                StringBuilder ruleValidations = new StringBuilder();
+                while (it.hasNext()) {
+
+                    Rule r = (Rule) it.next();
+                    r.setDigesterWorksheet(sheet);
+
+                    if (r != null) {
+                        biocode.fims.digester.List sList = t.getValidation().findList(r.getList());
+
+                        // Convert to native state (without underscores)
+                        String ruleColumn = r.getColumn();
+
+                        if (ruleColumn != null) {
+                            // Match column names with or without underscores
+                            if (ruleColumn.replace("_", " ").equals(column) ||
+                                    ruleColumn.equals(column)) {
+                                ruleValidations.append(printRuleMetadata(r, sList));
+                            }
+                        }
+                    }
+                }
+                if (!ruleValidations.toString().equals("")) {
+                    output.append("<p>\n" +
+                            "<b>Validation Rules:</b>\n<p>");
+                    output.append(ruleValidations.toString());
+                }
+
+                return Response.ok(output.toString()).build();
             }
         }
-        return Response.ok(sb.toString()).build();
+
+        return Response.ok("No definition found for " + columnName).build();
+    }
+
+    /**
+     * Print ruleMetadata
+     *
+     * @param sList We pass in a List of fields we want to associate with this rule
+     *
+     * @return
+     */
+    private String printRuleMetadata(Rule r, biocode.fims.digester.List sList) {
+        StringBuilder output = new StringBuilder();
+        output.append("<li>\n");
+        //
+        if (r.getType().equals("checkInXMLFields")) {
+            r.setType("Lookup Value From List");
+        }
+        // Display the Rule type
+        output.append("\t<li>type: " + r.getType() + "</li>\n");
+        // Display warning levels
+        output.append("\t<li>level: " + r.getLevel() + "</li>\n");
+        // Display values
+        if (r.getValue() != null) {
+            try {
+                output.append("\t<li>value: " + URLDecoder.decode(r.getValue(), "utf-8") + "</li>\n");
+            } catch (UnsupportedEncodingException e) {
+                output.append("\t<li>value: " + r.getValue() + "</li>\n");
+                logger.warn("UnsupportedEncodingException", e);
+            }
+        }
+        // Display fields
+        // Convert XML Field values to a Stringified list
+        java.util.List listFields;
+        if (sList != null && sList.getFields().size() > 0) {
+            listFields = sList.getFields();
+        } else {
+            listFields = r.getFields();
+        }
+        Iterator it;
+        try {
+            it = listFields.iterator();
+        } catch (NullPointerException e) {
+            logger.warn("NullPointerException", e);
+            return output.toString();
+        }
+        // One or the other types of list need data
+        if (!it.hasNext())
+            return output.toString();
+
+        output.append("\t<li>list: \n");
+
+        // Look at the Fields
+        output.append("\t\t<ul>\n");
+
+        if (it != null) {
+            while (it.hasNext()) {
+                String field = ((Field) it.next()).getValue();
+                //String field = (String) it.next();
+                output.append("\t\t\t<li>" + field + "</li>\n");
+            }
+        }
+        output.append("\t\t</ul>\n");
+        output.append("\t</li>\n");
+
+        output.append("</li>\n");
+        return output.toString();
     }
 
     @GET
     @Path("/{projectId}/attributes")
     @Produces(MediaType.TEXT_HTML)
     public Response getAttributes(@PathParam("projectId") int projectId) {
-        JSONObject attributes = fimsConnector.getJSONObject(
-                fimsCoreRoot + "biocode-fims/rest/templates/attributes/" + projectId);
-        StringBuilder sb = new StringBuilder();
-        sb.append("<a href='#' id='select_all'>Select ALL</a> | ");
-        sb.append("<a href='#' id='select_none'>Select NONE</a> | ");
-        sb.append("<a href='#' onclick='saveTemplateConfig()'>Save</a>");
-        sb.append("<script>" +
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+        LinkedList<String> requiredColumns = t.getRequiredColumns("error");
+        LinkedList<String> desiredColumns = t.getRequiredColumns("warning");
+        // Use TreeMap for natural sorting of groups
+        Map<String, StringBuilder> groups = new TreeMap<String, StringBuilder>();
+
+        //StringBuilder output = new StringBuilder();
+        // A list of names we've already added
+        ArrayList addedNames = new ArrayList();
+        Iterator attributes = t.getMapping().getAllAttributes(t.getMapping().getDefaultSheetName()).iterator();
+        while (attributes.hasNext()) {
+            Attribute a = (Attribute) attributes.next();
+
+            StringBuilder thisOutput = new StringBuilder();
+            // Set the column name
+            String column = a.getColumn();
+            String group = a.getGroup();
+            String uri = a.getUri();
+
+            // Check that this name hasn't been read already.  This is necessary in some situations where
+            // column names are repeated for different entities in the configuration file
+            if (!addedNames.contains(column)) {
+                // Set boolean to tell us if this is a requiredColumn
+                Boolean aRequiredColumn = false, aDesiredColumn = false;
+                if (requiredColumns == null) {
+                    aRequiredColumn = false;
+                } else if (requiredColumns.contains(a.getColumn())) {
+                    aRequiredColumn = true;
+                }
+                if (desiredColumns == null) {
+                    aDesiredColumn = false;
+                } else if (desiredColumns.contains(a.getColumn())) {
+                    aDesiredColumn = true;
+                }
+
+
+                // Construct the checkbox text
+                thisOutput.append("<input type='checkbox' class='check_boxes' value='" + column + "' data-uri='");
+                thisOutput.append(uri);
+                thisOutput.append("'");
+
+                // If this is a required column then make it checked (and immutable)
+                if (aRequiredColumn)
+                    thisOutput.append(" checked disabled");
+                else if (aDesiredColumn)
+                    thisOutput.append(" checked");
+
+                // Close tag and insert Definition link
+                thisOutput.append(">" + column + " \n" +
+                        "<a href='#' class='def_link' name='" + column + "'>DEF</a>\n" + "<br>\n");
+
+                // Fetch any existing content for this key
+                if (group == null || group.equals("")) {
+                    group = "Default Group";
+                }
+                StringBuilder existing = groups.get(group);
+
+                // Append (not required) or Insert (required) the new content onto any existing in this key
+                if (existing == null) {
+                    existing = thisOutput;
+                } else {
+                    if (aRequiredColumn) {
+                        existing.insert(0, thisOutput);
+                    } else {
+                        existing.append(thisOutput);
+                    }
+                }
+                groups.put(group, existing);
+
+                //groups.put(group, existing == null ? thisOutput : existing.append(thisOutput));
+
+            }
+
+            // Now that we've added this to the output, add it to the ArrayList so we don't add it again
+            addedNames.add(column);
+        }
+
+        // Iterate through any defined groups, which makes the template processor easier to navigate
+        Iterator it = groups.entrySet().iterator();
+        StringBuilder output = new StringBuilder();
+        output.append("<a href='#' id='select_all'>Select ALL</a> | ");
+        output.append("<a href='#' id='select_none'>Select NONE</a> | ");
+        output.append("<a href='#' onclick='saveTemplateConfig()'>Save</a>");
+        output.append("<script>" +
                 "$('#select_all').click(function(event) {\n" +
                 "      // Iterate each checkbox\n" +
                 "      $(':checkbox').each(function() {\n" +
@@ -257,53 +373,54 @@ public class Projects extends FimsService {
                 "</script>");
 
         int count = 0;
-        for (Object groupName: attributes.keySet()) {
-            String massagedGroupName = groupName.toString().replaceAll(" ", "_");
-            JSONArray columns = (JSONArray) attributes.get(groupName);
-                sb.append("<div class=\"panel panel-default\">");
-                sb.append("<div class=\"panel-heading\"> " +
+        while (it.hasNext()) {
+            Map.Entry pairs = (Map.Entry) it.next();
+            String groupName;
+
+            try {
+                groupName = pairs.getKey().toString();
+            } catch (NullPointerException e) {
+                groupName = "Default Group";
+            }
+            if (groupName.equals("") || groupName.equals("null")) {
+                groupName = "Default Group";
+            }
+
+            // Anchors cannot have spaces in the name so we replace them with underscores
+            String massagedGroupName = groupName.replaceAll(" ", "_");
+            if (!pairs.getValue().toString().equals("")) {
+                output.append("<div class=\"panel panel-default\">");
+                output.append("<div class=\"panel-heading\"> " +
                         "<h4 class=\"panel-title\"> " +
                         "<a class=\"accordion-toggle\" data-toggle=\"collapse\" data-parent=\"#accordion\" href=\"#" + massagedGroupName + "\">" + groupName + "</a> " +
                         "</h4> " +
                         "</div>");
-                sb.append("<div id=\"" + massagedGroupName + "\" class=\"panel-collapse collapse");
+                output.append("<div id=\"" + massagedGroupName + "\" class=\"panel-collapse collapse");
                 // Make the first element open initially
                 if (count == 0) {
-                    sb.append(" in");
+                    output.append(" in");
                 }
-                sb.append("\">\n" +
+                output.append("\">\n" +
                         "                <div class=\"panel-body\">\n" +
                         "                    <div id=\"" + massagedGroupName + "\" class=\"panel-collapse collapse in\">");
-            for (Object c: columns) {
-                JSONObject columnObject = (JSONObject) c;
-                for (Object columnName: columnObject.keySet()) {
-                    JSONObject column = (JSONObject) columnObject.get(columnName);
-                    sb.append("<input type='checkbox' class='check_boxes' value='" + columnName + "' data-uri='");
-                    sb.append(column.get("uri"));
-                    sb.append("'");
-
-                    // If this is a required column then make it checked (and immutable)
-                    if (column.get("level").equals("required"))
-                        sb.append(" checked disabled");
-                    else if (column.get("level").equals("desired"))
-                        sb.append(" checked");
-
-                    // Close tag and insert Definition link
-                    sb.append(">" + columnName + " \n" +
-                            "<a href='#' class='def_link' name='" + columnName + "'>DEF</a>\n" + "<br>\n");
-                }
+                output.append(pairs.getValue().toString());
+                output.append("\n</div></div></div></div>");
             }
-            sb.append("\n</div></div></div></div>");
+
+            it.remove(); // avoids a ConcurrentModificationException
             count++;
         }
-
-        return Response.ok(sb.toString()).build();
+        return Response.ok(output.toString()).build();
     }
 
     @GET
+    @Authenticated
+    @Produces(MediaType.TEXT_HTML)
     @Path("/{projectId}/metadata")
     public Response listMetadataAsTable(@PathParam("projectId") int projectId) {
-        JSONObject metadata = fimsConnector.getJSONObject(fimsCoreRoot + "id/projectService/metadata/" + projectId);
+        ProjectMinter project = new ProjectMinter();
+        JSONObject metadata = project.getMetadata(projectId, username);
+        project.close();
         StringBuilder sb = new StringBuilder();
 
         sb.append("<table>\n");
@@ -340,10 +457,13 @@ public class Projects extends FimsService {
     }
 
     @GET
+    @Authenticated
     @Path("/{projectId}/metadataEditor")
     public Response listMetadataEditorAsTable(@PathParam("projectId") int projectId) {
         StringBuilder sb = new StringBuilder();
-        JSONObject metadata = fimsConnector.getJSONObject(fimsCoreRoot + "id/projectService/metadata/" + projectId);
+        ProjectMinter project = new ProjectMinter();
+        JSONObject metadata = project.getMetadata(projectId, username);
+        project.close();
 
         sb.append("<form id=\"submitForm\" method=\"POST\">\n");
         sb.append("<table>\n");
@@ -385,11 +505,26 @@ public class Projects extends FimsService {
     }
 
     @GET
+    @Authenticated
+    @Admin
     @Path("/{projectId}/users")
+    @Produces(MediaType.TEXT_HTML)
     public Response listUsersAsTable(@PathParam("projectId") int projectId) {
-        JSONObject response = fimsConnector.getJSONObject(fimsCoreRoot + "id/projectService/getUsers/" + projectId);
+        ProjectMinter p = new ProjectMinter();
+
+        if (!p.isProjectAdmin(username, projectId)) {
+            // only display system users to project admins
+            throw new ForbiddenRequestException("You are not an admin to this project");
+        }
+
+        JSONObject response = p.getProjectUsers(projectId);
+        p.close();
         JSONArray projectUsers = (JSONArray) response.get("users");
-        JSONArray users = fimsConnector.getJSONArray(fimsCoreRoot + "id/userService/list");
+
+        UserMinter userMinter = new UserMinter();
+        JSONArray users = userMinter.getUsers();
+        userMinter.close();
+
         StringBuilder sb = new StringBuilder();
 
         sb.append("\t<form method=\"POST\">\n");
@@ -439,9 +574,22 @@ public class Projects extends FimsService {
     }
 
     @GET
+    @Authenticated
+    @Admin
+    @Produces(MediaType.TEXT_HTML)
     @Path("/{projectId}/admin/expeditions/")
     public Response listExpeditionsAsTable(@PathParam("projectId") int projectId) {
-        JSONArray expeditions = fimsConnector.getJSONArray(fimsCoreRoot + "id/expeditionService/admin/list/" + projectId);
+        ProjectMinter projectMinter = new ProjectMinter();
+        if (!projectMinter.isProjectAdmin(username, projectId)) {
+            projectMinter.close();
+            throw new ForbiddenRequestException("You must be this project's admin in order to view its expeditions.");
+        }
+        projectMinter.close();
+
+        ExpeditionMinter expeditionMinter = new ExpeditionMinter();
+        JSONArray expeditions = expeditionMinter.getExpeditions(projectId, username);
+        expeditionMinter.close();
+
         StringBuilder sb = new StringBuilder();
         sb.append("<form method=\"POST\">\n");
         sb.append("<table>\n");
@@ -481,5 +629,33 @@ public class Projects extends FimsService {
         sb.append("</table>\n");
         sb.append("</form>\n");
         return Response.ok(sb.toString()).build();
+    }
+
+    @POST
+    @Path("/createExcel/")
+    @Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response createExcel(
+            @FormParam("fields") List<String> fields,
+            @FormParam("projectId") Integer projectId,
+            @FormParam("dataset_code") String expeditionCode) {
+
+        // Create the template processor which handles all functions related to the template, reading, generation
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+
+        // Set the default sheet-name
+        String defaultSheetname = t.getMapping().getDefaultSheetName();
+
+        File file = t.createExcelFile(defaultSheetname, uploadPath(), fields);
+
+        // Catch a null file and return 204
+        if (file == null)
+            return Response.status(204).build();
+
+        // Return response
+        Response.ResponseBuilder response = Response.ok((Object) file);
+        response.header("Content-Disposition",
+                "attachment; filename=" + file.getName());
+        return response.build();
     }
 }
