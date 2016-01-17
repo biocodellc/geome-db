@@ -258,7 +258,7 @@ function getResourceTypesMinusDataset(id) {
 /** Process submit button for Data Group Creator **/
 function bcidCreatorSubmit() {
     /* Send the data using post */
-    var posting = $.post( "/biscicol/rest/groupService", $("#bcidForm").serialize())
+    var posting = $.post( "/biscicol/rest/bcids", $("#bcidForm").serialize())
         .done(function(data) {
             var b = {
                 "Ok": function() {
