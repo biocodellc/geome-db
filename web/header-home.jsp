@@ -19,6 +19,7 @@
     <script type="text/javascript" src="/biscicol/js/lodash.js"></script>
     <script type="text/javascript" src="/biscicol/js/xlsx.js"></script>
     <script type="text/javascript" src="/biscicol/js/papaparse.min.js"></script>
+    <script type="text/javascript" src="/biscicol/js/pwstrength.js"></script>
 
     <script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.css' rel='stylesheet' />

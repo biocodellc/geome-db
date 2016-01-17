@@ -295,8 +295,8 @@ li {
 }
 
 #pwindicator {
-    margin: -4px 2px -2px;
-    font-size: .85em;
+    margin: -4px 0px -2px;
+    font-size: 1.4em;
 }
 
 .pw-weak .label {

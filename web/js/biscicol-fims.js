@@ -431,6 +431,76 @@ function editExpedition(projectId, expeditionCode, e) {
     dialog(message, title, buttons);
 }
 /* ====== profile.jsp Functions ======= */
+
+// function to submit the user's profile editor form
+function profileSubmit(divId) {
+    if ($("input.pwcheck", divId).val().length > 0 && $(".label", "#pwindicator").text() == "weak") {
+        $(".error", divId).html("password too weak");
+    } else if ($("input[name='new_password']").val().length > 0 &&
+                    ($("input[name='old_password']").length > 0 && $("input[name='old_password']").val().length == 0)) {
+        $(".error", divId).html("Old Password field required to change your Password");
+    } else {
+        var postURL = "/biscicol/rest/users/profile/update/";
+        var return_to = getQueryParam("return_to");
+        if (return_to != null) {
+            postURL += "?return_to=" + encodeURIComponent(return_to);
+        }
+        var jqxhr = $.post(postURL, $("form", divId).serialize(), 'json'
+        ).done (function(data) {
+            // if adminAccess == true, an admin updated the user's password, so no need to redirect
+            if (data.adminAccess == true) {
+                populateProjectSubsections(divId);
+            } else {
+                if (data.returnTo) {
+                    $(location).attr("href", data.returnTo);
+                } else {
+                    var jqxhr2 = populateDivFromService(
+                        "/biscicol/rest/users/profile/listAsTable",
+                        "listUserProfile",
+                        "Unable to load this user's profile from the Server")
+                        .done(function() {
+                            $("a", "#profile").click( function() {
+                                getProfileEditor();
+                            });
+                        });
+                    loadingDialog(jqxhr2);
+                }
+            }
+        }).fail(function(jqxhr) {
+            var json = $.parseJSON(jqxhr.responseText);
+            $(".error", divId).html(json.usrMessage);
+        });
+        loadingDialog(jqxhr);
+    }
+}
+
+// get profile editor
+function getProfileEditor(username) {
+    var jqxhr = populateDivFromService(
+        "/biscicol/rest/users/profile/listEditorAsTable",
+        "listUserProfile",
+        "Unable to load this user's profile editor from the Server"
+    ).done(function() {
+        $(".error").text(getQueryParam("error"));
+        $("#cancelButton").click(function() {
+            var jqxhr2 = populateDivFromService(
+                "/biscicol/rest/users/profile/listAsTable",
+                "listUserProfile",
+                "Unable to load this user's profile from the Server")
+                .done(function() {
+                    $("a", "#profile").click( function() {
+                        getProfileEditor();
+                    });
+                });
+            loadingDialog(jqxhr2);
+        });
+        $("#profile_submit").click(function() {
+            profileSubmit('div#listUserProfile');
+        });
+    });
+    loadingDialog(jqxhr);
+}
+
 /* ====== projects.jsp Functions ======= */
 
 // populate the metadata subsection of projects.jsp from REST service
@@ -541,75 +611,6 @@ function populateProjectSubsections(id) {
         loadingDialog(jqxhr);
     }
     return jqxhr;
-}
-
-// function to submit the user's profile editor form
-function profileSubmit(divId) {
-    if ($("input.pwcheck", divId).val().length > 0 && $(".label", "#pwindicator").text() == "weak") {
-        $(".error", divId).html("password too weak");
-    } else if ($("input[name='new_password']").val().length > 0 &&
-                    ($("input[name='old_password']").length > 0 && $("input[name='old_password']").val().length == 0)) {
-        $(".error", divId).html("Old Password field required to change your Password");
-    } else {
-        var postURL = "/biscicol/rest/users/profile/update/";
-        var return_to = getQueryParam("return_to");
-        if (return_to != null) {
-            postURL += "?return_to=" + encodeURIComponent(return_to);
-        }
-        var jqxhr = $.post(postURL, $("form", divId).serialize(), 'json'
-        ).done (function(data) {
-            // if adminAccess == true, an admin updated the user's password, so no need to redirect
-            if (data.adminAccess == true) {
-                populateProjectSubsections(divId);
-            } else {
-                if (data.returnTo) {
-                    $(location).attr("href", data.returnTo);
-                } else {
-                    var jqxhr2 = populateDivFromService(
-                        "/biscicol/rest/users/profile/listAsTable",
-                        "listUserProfile",
-                        "Unable to load this user's profile from the Server")
-                        .done(function() {
-                            $("a", "#profile").click( function() {
-                                getProfileEditor();
-                            });
-                        });
-                    loadingDialog(jqxhr2);
-                }
-            }
-        }).fail(function(jqxhr) {
-            var json = $.parseJSON(jqxhr.responseText);
-            $(".error", divId).html(json.usrMessage);
-        });
-        loadingDialog(jqxhr);
-    }
-}
-
-// get profile editor
-function getProfileEditor(username) {
-    var jqxhr = populateDivFromService(
-        "/biscicol/rest/users/profile/listEditorAsTable",
-        "listUserProfile",
-        "Unable to load this user's profile editor from the Server"
-    ).done(function() {
-        $(".error").text(getQueryParam("error"));
-        $("#cancelButton").click(function() {
-            var jqxhr2 = populateDivFromService(
-                "/biscicol/rest/users/profile/listAsTable",
-                "listUserProfile",
-                "Unable to load this user's profile from the Server")
-                .done(function() {
-                    $("a", "#profile").click( function() {
-                        getProfileEditor();
-                    });
-                });
-            loadingDialog(jqxhr2);
-        });
-        $("#profile_submit").click(function() {
-            profileSubmit('div#listUserProfile');
-        });
-    });
-    loadingDialog(jqxhr);
 }
 
 // function to submit the project's expeditions form. used to update the expedition public attribute.
@@ -726,9 +727,15 @@ function projectToggle(id) {
     // store the element value in a field
     var idElement = $('.toggle-content#'+id);
     if (idElement.is(':hidden')) {
-        $('.img-arrow', '#'+id).attr("src","/biscicol/images/down-arrow.png");
+        $('.img-arrow', 'a#'+id).attr("src","/biscicol/images/down-arrow.png");
     } else {
-        $('.img-arrow', '#'+id).attr("src","/biscicol/images/right-arrow.png");
+        $('.img-arrow', 'a#'+id).attr("src","/biscicol/images/right-arrow.png");
+    }
+    // check if we've loaded this section, if not, load from service
+    var divId = 'div#' + id
+    if ((id.indexOf("metadata") != -1 || id.indexOf("users") != -1 || id.indexOf("expeditions") != -1) &&
+        ($(divId).children().length == 0 || $('#submitForm', divId).length !== 0)) {
+        populateProjectSubsections(divId);
     }
     $(idElement).slideToggle('slow');
 }
