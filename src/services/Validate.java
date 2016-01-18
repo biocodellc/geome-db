@@ -232,9 +232,7 @@ public class Validate extends FimsService {
         // run the triplifier
         String outputPrefix = processController.getExpeditionCode() + "_output";
         Triplifier triplifier = new Triplifier(outputPrefix, uploadPath(), processController);
-        if (Boolean.valueOf(sm.retrieveValue("deepRoots"))) {
-            triplifier.runDeepRoots();
-        }
+
         triplifier.run();
 
         // upload the dataset
