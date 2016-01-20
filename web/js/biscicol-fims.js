@@ -115,7 +115,7 @@ function populateProjects() {
     var jqxhr = $.getJSON( theUrl, function(data) {
         var listItems = "";
         listItems+= "<option value='0'>Select a project ...</option>";
-        $.each(data.projects,function(index,project) {
+        $.each(data, function(index, project) {
             listItems+= "<option value='" + project.projectId + "'>" + project.projectTitle + "</option>";
         });
         $("#projects").html(listItems);
@@ -798,7 +798,7 @@ function populateDefinitions(column) {
 
     theUrl = appRoot + "rest/projects/" + projectId + "/getDefinition/" + column;
 
-    $.ajax({
+    var jqxhr = $.ajax({
         type: "GET",
         url: theUrl,
         dataType: "html",
@@ -806,11 +806,10 @@ function populateDefinitions(column) {
             $("#definition").html(data);
         }
     });
+    loadingDialog(jqxhr);
 }
 
 function populateColumns(targetDivId) {
-    $(targetDivId).html("Loading ...");
-
     var e = document.getElementById('projects');
     var projectId = e.options[e.selectedIndex].value;
 
@@ -830,6 +829,7 @@ function populateColumns(targetDivId) {
                 showMessage ("Error completing request!" );
             }
         });
+        loadingDialog(jqxhr);
 
         $(".def_link").click(function () {
             populateDefinitions($(this).attr('name'));
@@ -858,6 +858,7 @@ function populateAbstract(targetDivId) {
                 showMessage ("Error completing request!" );
         }
     });
+    loadingDialog(jqxhr);
 }
 
 var savedConfig;
@@ -921,7 +922,7 @@ function populateConfigs() {
         var el = $("#configs");
         el.empty();
         el.append($("<option></option>").attr("value", 0).text("Loading configs..."));
-        $.getJSON(appRoot + "rest/projects/" + projectId + "/getConfigs").done(function(data) {
+        var jqxhr = $.getJSON(appRoot + "rest/projects/" + projectId + "/getConfigs").done(function(data) {
             var listItems = "";
 
             el.empty();
@@ -952,6 +953,7 @@ function populateConfigs() {
                 showMessage ("Error fetching template configurations!");
             }
         });
+        loadingDialog(jqxhr);
     }
 }
 

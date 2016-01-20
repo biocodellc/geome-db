@@ -16,12 +16,16 @@
 
 <script>
     $(document).ready(function() {
-        $(".pwcheck").pwstrength({texts:['weak', 'good', 'good', 'strong', 'strong'],
-                                  classes:['pw-weak', 'pw-good', 'pw-good', 'pw-strong', 'pw-strong']});
+        if ($(".pwcheck").length > 0) {
+            $(".pwcheck").pwstrength({texts:['weak', 'good', 'good', 'strong', 'strong'],
+                                      classes:['pw-weak', 'pw-good', 'pw-good', 'pw-strong', 'pw-strong']});
+        }
     });
     $(document).ajaxStop(function() {
-        $(".pwcheck").pwstrength({texts:['weak', 'good', 'good', 'strong', 'strong'],
-                                  classes:['pw-weak', 'pw-good', 'pw-good', 'pw-strong', 'pw-strong']});
+        if ($(".pwcheck").length > 0) {
+            $(".pwcheck").pwstrength({texts:['weak', 'good', 'good', 'strong', 'strong'],
+                                      classes:['pw-weak', 'pw-good', 'pw-good', 'pw-strong', 'pw-strong']});
+        }
     });
 </script>
 </body>

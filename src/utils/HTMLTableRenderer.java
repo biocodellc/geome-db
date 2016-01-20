@@ -1,10 +1,7 @@
 package utils;
 
-import biocode.fims.bcid.ExpeditionMinter;
+import biocode.fims.bcid.*;
 import biocode.fims.bcid.Renderer.Renderer;
-import biocode.fims.bcid.Resolver;
-import biocode.fims.bcid.ResourceType;
-import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
 
@@ -161,8 +158,8 @@ public class HTMLTableRenderer extends Renderer {
 
     private void appendDataset() {
         if (displayDatasets()) {
-            String projectId = resolver.getProjectID(resolver.getBcidId());
-            String graph = resolver.graph;
+            String projectId = resolver.getProjectID(bcid.getBcidsId());
+            String graph = bcid.getGraph();
 
             outputSB.append("<table>\n");
             outputSB.append("\t<tr>\n");
@@ -206,22 +203,28 @@ public class HTMLTableRenderer extends Renderer {
 
     private Boolean displayDatasets() {
         Boolean ignoreUser = Boolean.getBoolean(sm.retrieveValue("ignoreUser"));
-        Integer projectId = Integer.parseInt(resolver.getProjectID(resolver.getBcidId()));
+        Integer projectId = Integer.parseInt(resolver.getProjectID(bcid.getBcidsId()));
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
+        ProjectMinter projectMinter = new ProjectMinter();
 
-        //if public expedition, return true
-        if (expeditionMinter.isPublic(resolver.getExpeditionCode(), projectId)) {
-            return true;
-        }
-        // if ignore_user and user in project, return true
-        if (userId != null) {
-            if (ignoreUser && expeditionMinter.userExistsInProject(userId, projectId)) {
+        try {
+            //if public expedition, return true
+            if (expeditionMinter.isPublic(resolver.getExpeditionCode(), projectId)) {
                 return true;
             }
-            // if !ignore_user and userOwnsExpedition, return true
-            else if (!ignoreUser && expeditionMinter.userOwnsExpedition(userId, resolver.getExpeditionCode(), projectId)) {
-                return true;
+            // if ignore_user and user in project, return true
+            if (userId != null) {
+                if (ignoreUser && projectMinter.userExistsInProject(userId, projectId)) {
+                    return true;
+                }
+                // if !ignore_user and userOwnsExpedition, return true
+                else if (!ignoreUser && expeditionMinter.userOwnsExpedition(userId, resolver.getExpeditionCode(), projectId)) {
+                    return true;
+                }
             }
+        } finally {
+            expeditionMinter.close();
+            projectMinter.close();
         }
 
         return false;
