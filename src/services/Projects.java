@@ -95,19 +95,6 @@ public class Projects extends FimsService {
     }
 
     @GET
-    @Path("/{projectId}/abstract")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAbstract(@PathParam("projectId") int projectId) {
-        JSONObject obj = new JSONObject();
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
-
-        // Write the all of the checkbox definitions to a String Variable
-        obj.put("abstract", JSONValue.escape(t.printAbstract()));
-
-        return Response.ok(obj.toJSONString()).build();
-    }
-
-    @GET
     @Path("/{projectId}/getDefinition/{columnName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDefinitions(@PathParam("projectId") int projectId,
@@ -638,8 +625,7 @@ public class Projects extends FimsService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public Response createExcel(
             @FormParam("fields") List<String> fields,
-            @FormParam("projectId") Integer projectId,
-            @FormParam("dataset_code") String expeditionCode) {
+            @FormParam("projectId") Integer projectId) {
 
         // Create the template processor which handles all functions related to the template, reading, generation
         TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
@@ -654,7 +640,7 @@ public class Projects extends FimsService {
             return Response.status(204).build();
 
         // Return response
-        Response.ResponseBuilder response = Response.ok((Object) file);
+        Response.ResponseBuilder response = Response.ok(file);
         response.header("Content-Disposition",
                 "attachment; filename=" + file.getName());
         return response.build();

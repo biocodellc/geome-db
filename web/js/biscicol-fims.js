@@ -1,4 +1,5 @@
 /* ====== General Utility Functions ======= */
+var appRoot = "/biscicol/";
 
 // function for displaying a loading dialog while waiting for a response from the server
 function loadingDialog(promise) {
@@ -24,7 +25,7 @@ function listProjects(username, url, expedition) {
             var html = '<h1>Expedition Manager (' + username + ')</h2>\n';
         }
         var expandTemplate = '<br>\n<a class="expand-content" id="{project}-{section}" href="javascript:void(0);">\n'
-                            + '\t <img src="/biscicol/images/right-arrow.png" id="arrow" class="img-arrow">{text}'
+                            + '\t <img src="' + appRoot + 'images/right-arrow.png" id="arrow" class="img-arrow">{text}'
                             + '</a>\n';
         $.each(data, function(index, element) {
             key=element.projectId;
@@ -196,7 +197,7 @@ function getProjectID() {
 
 // function to login user
 function login() {
-    var url = "/biscicol/rest/authenticationService/login";
+    var url = appRoot + "rest/authenticationService/login";
     var return_to = getQueryParam("return_to");
     if (return_to != null) {
         url += "?return_to=" + return_to;
@@ -214,12 +215,12 @@ function login() {
 
 // function to submit the reset password form
 function resetPassSubmit() {
-    var jqxhr = $.get("/biscicol/rest/users/" + $("#username").val() + "/sendResetToken/")
+    var jqxhr = $.get(appRoot + "rest/users/" + $("#username").val() + "/sendResetToken/")
         .done(function(data) {
             if (data.success) {
                 var buttons = {
                     "Ok": function() {
-                        window.location.replace("/biscicol/");
+                        window.location.replace(appRoot);
                         $(this).dialog("close");
                     }
                 }
@@ -238,7 +239,7 @@ function resetPassSubmit() {
 
 // Populate the SELECT box with resourceTypes from the server
 function getResourceTypesMinusDataset(id) {
-    var url = "/biscicol/rest/resourceTypes/minusDataset/";
+    var url = appRoot + "rest/resourceTypes/minusDataset/";
 
     // get JSON from server and loop results
     var jqxhr = $.getJSON(url, function() {})
@@ -258,7 +259,7 @@ function getResourceTypesMinusDataset(id) {
 /** Process submit button for Data Group Creator **/
 function bcidCreatorSubmit() {
     /* Send the data using post */
-    var posting = $.post( "/biscicol/rest/bcids", $("#bcidForm").serialize())
+    var posting = $.post(appRoot + "rest/bcids", $("#bcidForm").serialize())
         .done(function(data) {
             var b = {
                 "Ok": function() {
@@ -278,7 +279,7 @@ function bcidCreatorSubmit() {
 
 // function to populate the expeditions.jsp page
 function populateExpeditionPage(username) {
-    var jqxhr = listProjects(username, '/biscicol/rest/projects/user/list', true
+    var jqxhr = listProjects(username, appRoot + 'rest/projects/user/list', true
     ).done(function() {
         // attach toggle function to each project
         $(".expand-content").click(function() {
@@ -293,9 +294,9 @@ function populateExpeditionPage(username) {
 // function to load the expeditions.jsp subsections
 function loadExpeditions(id) {
     if ($('.toggle-content#'+id).is(':hidden')) {
-        $('.img-arrow', '#'+id).attr("src","/biscicol/images/down-arrow.png");
+        $('.img-arrow', '#'+id).attr("src", appRoot + "images/down-arrow.png");
     } else {
-        $('.img-arrow', '#'+id).attr("src","/biscicol/images/right-arrow.png");
+        $('.img-arrow', '#'+id).attr("src", appRoot + "images/right-arrow.png");
     }
     // check if we've loaded this section, if not, load from service
     var divId = 'div#' + id
@@ -311,11 +312,11 @@ function loadExpeditions(id) {
 // retrieve the expeditions for a project and display them on the page
 function listExpeditions(divId) {
     var projectId = $(divId).data('projectId');
-    var jqxhr = $.getJSON('/biscicol/rest/projects/' + projectId + '/expeditions/')
+    var jqxhr = $.getJSON(appRoot + 'rest/projects/' + projectId + '/expeditions/')
         .done(function(data) {
             var html = '';
             var expandTemplate = '<br>\n<a class="expand-content" id="{expedition}-{section}" href="javascript:void(0);">\n'
-                                + '\t <img src="/biscicol/images/right-arrow.png" id="arrow" class="img-arrow">{text}'
+                                + '\t <img src="' + appRoot + 'images/right-arrow.png" id="arrow" class="img-arrow">{text}'
                                 + '</a>\n';
             $.each(data, function(index, e) {
                 var expedition = e.expeditionTitle.replace(new RegExp('[#. ]', 'g'), '_') + '_' + e.expeditionId;
@@ -363,19 +364,19 @@ function populateExpeditionSubsections(divId) {
     var expeditionId= $(divId).data('expeditionId');
     if (divId.indexOf("resources") != -1) {
         var jqxhr = populateDivFromService(
-            '/biscicol/rest/expeditions/' + expeditionId + '/resourcesAsTable/',
+            appRoot + 'rest/expeditions/' + expeditionId + '/resourcesAsTable/',
             divId,
             'Unable to load this expedition\'s resources from server.');
         loadingDialog(jqxhr);
     } else if (divId.indexOf("datasets") != -1) {
         var jqxhr = populateDivFromService(
-            '/biscicol/rest/expeditions/' + expeditionId + '/datasetsAsTable/',
+            appRoot + 'rest/expeditions/' + expeditionId + '/datasetsAsTable/',
             divId,
             'Unable to load this expedition\'s datasets from server.');
         loadingDialog(jqxhr);
     } else {
         var jqxhr = populateDivFromService(
-            '/biscicol/rest/expeditions/' + expeditionId + '/metadataAsTable/',
+            appRoot + 'rest/expeditions/' + expeditionId + '/metadataAsTable/',
             divId,
             'Unable to load this expedition\'s configuration from server.');
         loadingDialog(jqxhr);
@@ -404,7 +405,7 @@ function editExpedition(projectId, expeditionCode, e) {
         "Update": function() {
             var public = $("[name='public']")[0].checked;
 
-            $.get("/biscicol/rest/expeditions/updateStatus/" + projectId + "/" + expeditionCode + "/" + public
+            $.get(appRoot + "rest/expeditions/updateStatus/" + projectId + "/" + expeditionCode + "/" + public
             ).done(function() {
                 var b = {
                     "Ok": function() {
@@ -440,7 +441,7 @@ function profileSubmit(divId) {
                     ($("input[name='old_password']").length > 0 && $("input[name='old_password']").val().length == 0)) {
         $(".error", divId).html("Old Password field required to change your Password");
     } else {
-        var postURL = "/biscicol/rest/users/profile/update/";
+        var postURL = appRoot + "rest/users/profile/update/";
         var return_to = getQueryParam("return_to");
         if (return_to != null) {
             postURL += "?return_to=" + encodeURIComponent(return_to);
@@ -455,7 +456,7 @@ function profileSubmit(divId) {
                     $(location).attr("href", data.returnTo);
                 } else {
                     var jqxhr2 = populateDivFromService(
-                        "/biscicol/rest/users/profile/listAsTable",
+                        appRoot + "rest/users/profile/listAsTable",
                         "listUserProfile",
                         "Unable to load this user's profile from the Server")
                         .done(function() {
@@ -477,14 +478,14 @@ function profileSubmit(divId) {
 // get profile editor
 function getProfileEditor(username) {
     var jqxhr = populateDivFromService(
-        "/biscicol/rest/users/profile/listEditorAsTable",
+        appRoot + "rest/users/profile/listEditorAsTable",
         "listUserProfile",
         "Unable to load this user's profile editor from the Server"
     ).done(function() {
         $(".error").text(getQueryParam("error"));
         $("#cancelButton").click(function() {
             var jqxhr2 = populateDivFromService(
-                "/biscicol/rest/users/profile/listAsTable",
+                appRoot + "rest/users/profile/listAsTable",
                 "listUserProfile",
                 "Unable to load this user's profile from the Server")
                 .done(function() {
@@ -506,13 +507,13 @@ function getProfileEditor(username) {
 // populate the metadata subsection of projects.jsp from REST service
 function populateMetadata(id, projectID) {
     var jqxhr = populateDivFromService(
-        '/biscicol/rest/projects/' + projectID + '/metadata',
+        appRoot + 'rest/projects/' + projectID + '/metadata',
         id,
         'Unable to load this project\'s metadata from server.'
     ).done(function() {
         $("#edit_metadata", id).click(function() {
             var jqxhr2 = populateDivFromService(
-                '/biscicol/rest/projects/' + projectID + '/metadataEditor',
+                appRoot + 'rest/projects/' + projectID + '/metadataEditor',
                 id,
                 'Unable to load this project\'s metadata editor.'
             ).done(function() {
@@ -550,7 +551,7 @@ function confirmRemoveUserDialog(element) {
 // populate the users subsection of projects.jsp from REST service
 function populateUsers(id, projectID) {
     var jqxhr = populateDivFromService(
-        '/biscicol/rest/projects/' + projectID + '/users',
+        appRoot + 'rest/projects/' + projectID + '/users',
         id,
         'Unable to load this project\'s users from server.'
     ).done(function() {
@@ -565,7 +566,7 @@ function populateUsers(id, projectID) {
                 var divId = 'div#' + $(e).closest('div').attr('id');
 
                 var jqxhr2 = populateDivFromService(
-                    "/biscicol/rest/users/admin/profile/listEditorAsTable/" + username,
+                    appRoot + "rest/users/admin/profile/listEditorAsTable/" + username,
                     divId,
                     "error loading profile editor"
                 ).done(function() {
@@ -600,7 +601,7 @@ function populateProjectSubsections(id) {
     } else {
         // load the project expeditions table from REST service
         jqxhr = populateDivFromService(
-            '/biscicol/rest/projects/' + projectID + '/admin/expeditions/',
+            appRoot + 'rest/projects/' + projectID + '/admin/expeditions/',
             id,
             'Unable to load this project\'s expeditions from server.'
         ).done(function() {
@@ -625,7 +626,7 @@ function expeditionsPublicSubmit(divId) {
         var expedition = '&' + element.name + '=' + element.checked;
         data += expedition;
     });
-    var jqxhr = $.post('/biscicol/rest/expeditions/admin/updateStatus', data.replace('&', '')
+    var jqxhr = $.post(appRoot + 'rest/expeditions/admin/updateStatus', data.replace('&', '')
     ).done(function() {
         populateProjectSubsections(divId);
     }).fail(function(jqxhr) {
@@ -640,7 +641,7 @@ function projectUserSubmit(id) {
     var projectId = $("input[name='projectId']", divId).val()
     if ($('select option:selected', divId).val() == 0) {
         var jqxhr = populateDivFromService(
-            '/biscicol/rest/users/admin/createUserForm',
+            appRoot + 'rest/users/admin/createUserForm',
             divId,
             'error fetching create user form'
         ).done(function() {
@@ -654,7 +655,7 @@ function projectUserSubmit(id) {
         });
         loadingDialog(jqxhr);
     } else {
-        var jqxhr = $.post("/biscicol/rest/projects/" + projectId + "/admin/addUser", $('form', divId).serialize()
+        var jqxhr = $.post(appRoot + "rest/projects/" + projectId + "/admin/addUser", $('form', divId).serialize()
         ).done(function(data) {
             var jqxhr2 = populateProjectSubsections(divId);
         }).fail(function(jqxhr) {
@@ -670,7 +671,7 @@ function createUserSubmit(projectId, divId) {
     if ($(".label", "#pwindicator").text() == "weak") {
         $(".error", divId).html("password too weak");
     } else {
-        var jqxhr = $.post("/biscicol/rest/users/admin/create", $('form', divId).serialize()
+        var jqxhr = $.post(appRoot + "rest/users/admin/create", $('form', divId).serialize()
         ).done(function() {
             populateProjectSubsections(divId);
         }).fail(function(jqxhr) {
@@ -686,7 +687,7 @@ function projectRemoveUser(e) {
     var projectId = $(e).closest('table').data('projectid');
     var divId = 'div#' + $(e).closest('div').attr('id');
 
-    var jqxhr = $.getJSON("/biscicol/rest/projects/" + projectId + "/admin/removeUser/" + userId
+    var jqxhr = $.getJSON(appRoot + "rest/projects/" + projectId + "/admin/removeUser/" + userId
     ).done (function(data) {
         var jqxhr2 = populateProjectSubsections(divId);
     }).fail(function(jqxhr) {
@@ -700,7 +701,7 @@ function projectRemoveUser(e) {
 
 // function to submit the project metadata editor form
 function projectMetadataSubmit(projectId, divId) {
-    var jqxhr = $.post("/biscicol/rest/projects/" + projectId + "/metadata/update", $('form', divId).serialize()
+    var jqxhr = $.post(appRoot + "rest/projects/" + projectId + "/metadata/update", $('form', divId).serialize()
     ).done(function(data) {
         populateProjectSubsections(divId);
     }).fail(function(jqxhr) {
@@ -711,7 +712,7 @@ function projectMetadataSubmit(projectId, divId) {
 
 // function to populate the bcid projects.jsp page
 function populateProjectPage(username) {
-    var jqxhr = listProjects(username, '/biscicol/rest/projects/admin/list', false
+    var jqxhr = listProjects(username, appRoot + 'rest/projects/admin/list', false
     ).done(function() {
         // attach toggle function to each project
         $(".expand-content").click(function() {
@@ -727,9 +728,9 @@ function projectToggle(id) {
     // store the element value in a field
     var idElement = $('.toggle-content#'+id);
     if (idElement.is(':hidden')) {
-        $('.img-arrow', 'a#'+id).attr("src","/biscicol/images/down-arrow.png");
+        $('.img-arrow', 'a#'+id).attr("src", appRoot + "images/down-arrow.png");
     } else {
-        $('.img-arrow', 'a#'+id).attr("src","/biscicol/images/right-arrow.png");
+        $('.img-arrow', 'a#'+id).attr("src", appRoot + "images/right-arrow.png");
     }
     // check if we've loaded this section, if not, load from service
     var divId = 'div#' + id
@@ -741,12 +742,61 @@ function projectToggle(id) {
 }
 
 /* ====== templates.jsp Functions ======= */
+// Processing functions
+$(function () {
+    $('input').click(populate_bottom);
+
+    $('#default_bold').click(function() {
+        $('.check_boxes').prop('checked',true);
+        populate_bottom();
+    });
+    $('#excel_button').click(function() {
+        var li_list = new Array();
+        $(".check_boxes").each(function() {
+            li_list.push($(this).text() );
+        });
+        if(li_list.length > 0){
+            download_file();
+        }
+        else{
+            showMessage('You must select at least 1 field in order to export a spreadsheet.');
+        }
+    });
+})
+
+function populate_bottom(){
+    var selected = new Array();
+    var listElement = document.createElement("ul");
+    listElement.className = 'picked_tags';
+    $("#checked_list").html(listElement);
+    $("input:checked").each(function() {
+        var listItem = document.createElement("li");
+        listItem.className = 'picked_tags_li';
+        listItem.innerHTML = ($(this).val());
+        listElement.appendChild(listItem);
+    });
+}
+
+function download_file(){
+    var url = appRoot + 'rest/projects/createExcel/';
+    var input_string = '';
+    // Loop through CheckBoxes and find ones that are checked
+    $(".check_boxes").each(function(index) {
+        if ($(this).is(':checked'))
+            input_string+='<input type="hidden" name="fields" value="' + $(this).val() + '" />';
+    });
+    input_string+='<input type="hidden" name="projectId" value="' + getProjectID() + '" />';
+
+    // Pass the form to the server and submit
+    $('<form action="'+ url +'" method="post">'+input_string+'</form>').appendTo('body').submit().remove();
+}
+
 // for template generator, get the definitions when the user clicks on DEF
 function populateDefinitions(column) {
  var e = document.getElementById('projects');
     var projectId = e.options[e.selectedIndex].value;
 
-    theUrl = "/biscicol/rest/projects/" + projectId + "/getDefinition/" + column;
+    theUrl = appRoot + "rest/projects/" + projectId + "/getDefinition/" + column;
 
     $.ajax({
         type: "GET",
@@ -765,7 +815,7 @@ function populateColumns(targetDivId) {
     var projectId = e.options[e.selectedIndex].value;
 
     if (projectId != 0) {
-        theUrl = "/biscicol/rest/projects/" + projectId + "/attributes/";
+        theUrl = appRoot + "rest/projects/" + projectId + "/attributes/";
 
         var jqxhr = $.ajax( {
             url: theUrl,
@@ -830,7 +880,7 @@ function saveTemplateConfig() {
             });
 
             savedConfig = configName;
-            $.post("/biscicol/rest/projects/" + $("#projects").val() + "/saveConfig", $.param(
+            $.post(appRoot + "rest/projects/" + $("#projects").val() + "/saveConfig", $.param(
                                                             {"configName": configName,
                                                             "checkedOptions": checked,
                                                             "projectId": $("#projects").val()
@@ -871,7 +921,7 @@ function populateConfigs() {
         var el = $("#configs");
         el.empty();
         el.append($("<option></option>").attr("value", 0).text("Loading configs..."));
-        $.getJSON("/biscicol/rest/projects/" + projectId + "/getConfigs").done(function(data) {
+        $.getJSON(appRoot + "rest/projects/" + projectId + "/getConfigs").done(function(data) {
             var listItems = "";
 
             el.empty();
@@ -910,7 +960,7 @@ function updateCheckedBoxes() {
     if (configName == "Default") {
         populateColumns("#cat1");
     } else {
-        $.getJSON("/biscicol/rest/projects/" + $("#projects").val() + "/getConfig/" + configName.replace(/\//g, "%2F")).done(function(data) {
+        $.getJSON(appRoot + "rest/projects/" + $("#projects").val() + "/getConfig/" + configName.replace(/\//g, "%2F")).done(function(data) {
             if (data.error != null) {
                 showMessage(data.error);
                 return;
@@ -956,7 +1006,7 @@ function removeConfig() {
             }
             var title = "Remove Template Generator Configuration";
 
-            $.getJSON("/biscicol/rest/projects/" + $("#projects").val() + "/removeConfig/" + configName.replace("/\//g", "%2F")).done(function(data) {
+            $.getJSON(appRoot + "rest/projects/" + $("#projects").val() + "/removeConfig/" + configName.replace("/\//g", "%2F")).done(function(data) {
                 if (data.error != null) {
                     showMessage(data.error);
                     return;
@@ -1092,7 +1142,7 @@ function loopStatus(promise) {
 // poll the server to get the validation/upload status
 function pollStatus() {
     var def = new $.Deferred();
-    $.getJSON("/biscicol/rest/validate/status")
+    $.getJSON(appRoot + "rest/validate/status")
         .done(function(data) {
             def.resolve(data);
         }).fail(function() {
@@ -1105,7 +1155,7 @@ function pollStatus() {
 // a new expedition
 function continueUpload(createExpedition) {
     var d = new $.Deferred();
-    var url = "/biscicol/rest/validate/continue";
+    var url = appRoot + "rest/validate/continue";
     if (createExpedition) {
         url += "?createExpedition=true";
     }
@@ -1148,7 +1198,7 @@ function validationFormToggle() {
         // Check NAAN
         $.when(parseSpreadsheet("~naan=[0-9]+~", "Instructions")).done(function(spreadsheetNaan) {
             if (spreadsheetNaan > 0) {
-                $.getJSON("/biscicol/rest/utils/getNAAN")
+                $.getJSON(appRoot + "rest/utils/getNAAN")
                         .done(function(data) {
                     checkNAAN(spreadsheetNaan, data.naan);
                 });
@@ -1226,7 +1276,7 @@ function updateExpeditionPublicStatus(expeditionList) {
 // get the expeditions codes a user owny for a project
 function getExpeditionCodes() {
     var projectID = $("#projects").val();
-    $.getJSON("/biscicol/rest/projects/" + projectID + "/expeditions/")
+    $.getJSON(appRoot + "rest/projects/" + projectID + "/expeditions/")
         .done(function(data) {
             var select = "<select name='expeditionCode' id='expeditionCode' style='max-width:199px'>" +
                 "<option value='0'>Create New Expedition</option>";
@@ -1355,7 +1405,7 @@ function submitForm(){
     var de = new $.Deferred();
     var promise = de.promise();
     var options = {
-        url: "/biscicol/rest/validate/",
+        url: appRoot + "rest/validate/",
         type: "POST",
         contentType: "multipart/form-data",
         beforeSerialize: function(form, options) {
@@ -1394,7 +1444,7 @@ function submitForm(){
 
 // Take the resolver results and populate a table
 function resolverResults() {
-    $.get("/biscicol/rest/" + $("#identifier").val()).done(function(data) {
+    $.get(appRoot + "rest/" + $("#identifier").val()).done(function(data) {
         $("#results").html(data);
     }).fail(function(jqxhr) {
         var html;
@@ -1411,7 +1461,7 @@ function resolverResults() {
 
 // Populate a table of data showing resourceTypes
 function getResourceTypesTable(a) {
-    var url = "/biscicol/rest/resourceTypes";
+    var url = appRoot + "rest/resourceTypes";
     var jqxhr = $.getJSON(url, function() {})
         .done(function(data) {
             var html = "<table><tr><td><b>Name/URI</b></td><td><b>Description</b></td></tr>";
@@ -1445,7 +1495,7 @@ function populateGraphs(projectId) {
 	    graphsMessage('Choose an project to see loaded spreadsheets');
 	    return;
     }
-    theUrl = "/biscicol/rest/projects/" + projectId + "/graphs";
+    theUrl = appRoot + "rest/projects/" + projectId + "/graphs";
     var jqxhr = $.getJSON( theUrl, function(data) {
         // Check for empty object in response
         if (data.length == 0) {
@@ -1478,7 +1528,7 @@ function getGraphURIs() {
 // Get results as JSON
 function queryJSON(params) {
    // serialize the params object using a shallow serialization
-    var jqxhr = $.post("/biscicol/rest/projects/query/json/", $.param(params, true))
+    var jqxhr = $.post(appRoot + "rest/projects/query/json/", $.param(params, true))
         .done(function(data) {
             $("#resultsContainer").show();
            //alert('debugging queries now, will fix soon!');
@@ -1497,13 +1547,13 @@ function queryJSON(params) {
 // Get results as Excel
 function queryExcel(params) {
     showMessage ("Downloading results as an Excel document<br>this will appear in your browsers download folder.");
-    download("/biscicol/rest/projects/query/excel/", params);
+    download(appRoot + "rest/projects/query/excel/", params);
 }
 
 // Get results as Excel
 function queryKml(params) {
     showMessage ("Downloading results as an KML document<br>If Google Earth does not open you can point to it directly");
-    download("/biscicol/rest/projects/query/kml/", params);
+    download(appRoot + "rest/projects/query/kml/", params);
 }
 
 // create a form and then submit that form in order to download files

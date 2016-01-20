@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="biscicol-frontend" default="all">
+<project name="biscicol-fims" default="all">
 
     <property name="jdk.home.1.6" value="/usr"/>
 
@@ -67,69 +67,69 @@
     </path>
 
     <!-- Modules -->
-    <dirname property="module.biscicol-frontend.basedir" file="${ant.file}"/>
+    <dirname property="module.biscicol-fims.basedir" file="${ant.file}"/>
 
 
-    <property name="module.jdk.home.biscicol-frontend" value="${expedition.jdk.home}"/>
-    <property name="module.jdk.bin.biscicol-frontend" value="${expedition.jdk.bin}"/>
-    <property name="module.jdk.classpath.biscicol-frontend" value="${expedition.jdk.classpath}"/>
+    <property name="module.jdk.home.biscicol-fims" value="${expedition.jdk.home}"/>
+    <property name="module.jdk.bin.biscicol-fims" value="${expedition.jdk.bin}"/>
+    <property name="module.jdk.classpath.biscicol-fims" value="${expedition.jdk.classpath}"/>
 
-    <property name="compiler.args.biscicol-frontend" value="${compiler.args}"/>
+    <property name="compiler.args.biscicol-fims" value="${compiler.args}"/>
 
-    <property name="biscicol-frontend.output.dir" value="${module.biscicol-frontend.basedir}/out/production/biscicol-frontend"/>
-    <property name="biscicol-frontend.testoutput.dir" value="${module.biscicol-frontend.basedir}/out/test/biscicol-frontend"/>
+    <property name="biscicol-fims.output.dir" value="${module.biscicol-fims.basedir}/out/production/biscicol-fims"/>
+    <property name="biscicol-fims.testoutput.dir" value="${module.biscicol-fims.basedir}/out/test/biscicol-fims"/>
 
-    <path id="biscicol-frontend.module.bootclasspath">
+    <path id="biscicol-fims.module.bootclasspath">
         <!-- Paths to be included in compilation bootclasspath -->
     </path>
 
-    <path id="biscicol-frontend.module.production.classpath">
-        <path refid="${module.jdk.classpath.biscicol-frontend}"/>
+    <path id="biscicol-fims.module.production.classpath">
+        <path refid="${module.jdk.classpath.biscicol-fims}"/>
         <path refid="library.lib.classpath"/>
     </path>
 
     <!-- added by BJS -->
-    <path id="biscicol-frontend.module.buildtests.classpath">
-        <path refid="${module.jdk.classpath.biscicol-frontend}"/>
-        <pathelement location="${biscicol-frontend.output.dir}"/>
+    <path id="biscicol-fims.module.buildtests.classpath">
+        <path refid="${module.jdk.classpath.biscicol-fims}"/>
+        <pathelement location="${biscicol-fims.output.dir}"/>
         <path refid="library.lib.classpath"/>
     </path>
 
     <!-- added by BJS -->
-    <path id="biscicol-frontend.module.runtests.classpath">
-        <path refid="${module.jdk.classpath.biscicol-frontend}"/>
-        <pathelement location="${biscicol-frontend.output.dir}"/>
-        <pathelement location="${biscicol-frontend.testoutput.dir}"/>
+    <path id="biscicol-fims.module.runtests.classpath">
+        <path refid="${module.jdk.classpath.biscicol-fims}"/>
+        <pathelement location="${biscicol-fims.output.dir}"/>
+        <pathelement location="${biscicol-fims.testoutput.dir}"/>
         <path refid="library.lib.classpath"/>
     </path>
 
-    <path id="biscicol-frontend.runtime.production.module.classpath">
-        <pathelement location="${biscicol-frontend.output.dir}"/>
+    <path id="biscicol-fims.runtime.production.module.classpath">
+        <pathelement location="${biscicol-fims.output.dir}"/>
         <path refid="library.lib.classpath"/>
     </path>
 
-    <path id="biscicol-frontend.module.classpath">
-        <path refid="${module.jdk.classpath.biscicol-frontend}"/>
-        <pathelement location="${biscicol-frontend.output.dir}"/>
+    <path id="biscicol-fims.module.classpath">
+        <path refid="${module.jdk.classpath.biscicol-fims}"/>
+        <pathelement location="${biscicol-fims.output.dir}"/>
         <path refid="library.lib.classpath"/>
     </path>
 
-    <path id="biscicol-frontend.runtime.module.classpath">
-        <pathelement location="${biscicol-frontend.output.dir}"/>
-        <pathelement location="${biscicol-frontend.testoutput.dir}"/>
+    <path id="biscicol-fims.runtime.module.classpath">
+        <pathelement location="${biscicol-fims.output.dir}"/>
+        <pathelement location="${biscicol-fims.testoutput.dir}"/>
         <path refid="library.lib.classpath"/>
     </path>
 
 
-    <patternset id="excluded.from.module.biscicol-frontend">
+    <patternset id="excluded.from.module.biscicol-fims">
         <patternset refid="ignored.files"/>
     </patternset>
 
-    <patternset id="excluded.from.compilation.biscicol-frontend">
-        <patternset refid="excluded.from.module.biscicol-frontend"/>
+    <patternset id="excluded.from.compilation.biscicol-fims">
+        <patternset refid="excluded.from.module.biscicol-fims"/>
     </patternset>
 
-    <path id="biscicol-frontend.module.sourcepath">
+    <path id="biscicol-fims.module.sourcepath">
         <dirset dir="/">
             <include name="src"/>
         </dirset>
@@ -140,44 +140,44 @@
     <target name="build.modules" depends="clean, war" description="build all modules"/>
 
     <target name="clean" description="cleanup module">
-        <delete dir="${biscicol-frontend.output.dir}"/>
-        <delete dir="${biscicol-frontend.testoutput.dir}"/>
+        <delete dir="${biscicol-fims.output.dir}"/>
+        <delete dir="${biscicol-fims.testoutput.dir}"/>
     </target>
 
-    <target name="war" depends="compile.module.biscicol-frontend">
-        <war destfile="dist/biscicol-frontend.war" webxml="web/WEB-INF/web.xml">
+    <target name="war" depends="compile.module.biscicol-fims">
+        <war destfile="dist/biscicol-fims.war" webxml="web/WEB-INF/web.xml">
             <fileset dir="web"/>
             <lib dir="lib" excludes="servlet-api.jar"/>
-            <classes dir="${biscicol-frontend.output.dir}"/>
-            <classes dir="" includes="biscicol-frontend.props"/>
+            <classes dir="${biscicol-fims.output.dir}"/>
+            <classes dir="" includes="biscicol-fims.props"/>
         </war>
     </target>
 
-    <target name="compile.module.biscicol-frontend" description="Compile module biscicol-frontend">
-        <mkdir dir="${biscicol-frontend.output.dir}"/>
-        <javac destdir="${biscicol-frontend.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}"
+    <target name="compile.module.biscicol-fims" description="Compile module biscicol-fims">
+        <mkdir dir="${biscicol-fims.output.dir}"/>
+        <javac destdir="${biscicol-fims.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}"
                srcdir="src" memorymaximumsize="${compiler.max.memory}" fork="true"
-               executable="${module.jdk.bin.biscicol-frontend}/javac">
-            <compilerarg line="${compiler.args.biscicol-frontend}"/>
-            <bootclasspath refid="biscicol-frontend.module.bootclasspath"/>
-            <classpath refid="biscicol-frontend.module.production.classpath"/>
-            <patternset refid="excluded.from.compilation.biscicol-frontend"/>
+               executable="${module.jdk.bin.biscicol-fims}/javac">
+            <compilerarg line="${compiler.args.biscicol-fims}"/>
+            <bootclasspath refid="biscicol-fims.module.bootclasspath"/>
+            <classpath refid="biscicol-fims.module.production.classpath"/>
+            <patternset refid="excluded.from.compilation.biscicol-fims"/>
         </javac>
 
-        <copy todir="${biscicol-frontend.output.dir}">
-            <fileset dir="${module.biscicol-frontend.basedir}/src">
+        <copy todir="${biscicol-fims.output.dir}">
+            <fileset dir="${module.biscicol-fims.basedir}/src">
                 <patternset refid="compiler.resources"/>
                 <type type="file"/>
             </fileset>
         </copy>
     </target>
 
-    <target name="test" depends="compile.module.biscicol-frontend">
+    <target name="test" depends="compile.module.biscicol-fims">
         <junit>
-            <classpath refid="biscicol-frontend.module.runtests.classpath"/>
+            <classpath refid="biscicol-fims.module.runtests.classpath"/>
             <formatter type="brief" usefile="false"/>
             <batchtest>
-                <fileset dir="${biscicol-frontend.testoutput.dir}" includes="**/*Test.class"/>
+                <fileset dir="${biscicol-fims.testoutput.dir}" includes="**/*Test.class"/>
             </batchtest>
         </junit>
     </target>

@@ -4,7 +4,7 @@
 
     <context-param>
         <param-name>propsFilename</param-name>
-        <param-value>biscicol-frontend.props</param-value>
+        <param-value>biscicol-fims.props</param-value>
     </context-param>
 
     <session-config>
@@ -63,5 +63,30 @@
         <filter-name>SecureFilter</filter-name>
         <url-pattern>/secure/*</url-pattern>
     </filter-mapping>
+
+    <servlet>
+        <servlet-name>biocode-fims</servlet-name>
+        <jsp-file>index.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>biocode-fims</servlet-name>
+        <url-pattern>/biocode-fims/</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>biocode-fims 2</servlet-name>
+        <jsp-file>index.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>biocode-fims 2</servlet-name>
+        <url-pattern>/biocode-fims/index.jsp</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>biocode-fims 3</servlet-name>
+        <jsp-file>index.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>biocode-fims 3</servlet-name>
+        <url-pattern>/biocode-fims/index.html</url-pattern>
+    </servlet-mapping>
 
 </web-app>

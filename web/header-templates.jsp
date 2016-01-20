@@ -15,7 +15,6 @@
     <script type="text/javascript" src="/biscicol/js/jquery.js"></script>
     <script type="text/javascript" src="/biscicol/js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/biscicol/js/jquery.form.js"></script>
-    <script type="text/javascript" src="/biscicol/js/templates.js"></script>
     <script type="text/javascript" src="/biscicol/js/BrowserDetect.js"></script>
 
     <script type="text/javascript" src="/biscicol/js/biscicol-fims.js"></script>
