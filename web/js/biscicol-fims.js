@@ -1207,7 +1207,7 @@ function validationFormToggle() {
             }
         });
 
-        $.when(parseSpreadsheet("~projectId=[0-9]+~", "Instructions")).done(function(projectId) {
+        $.when(parseSpreadsheet("~project_id=[0-9]+~", "Instructions")).done(function(projectId) {
             if (projectId > 0) {
                 $('#projects').val(projectId);
                 $('#projects').prop('disabled', true);

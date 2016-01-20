@@ -10,7 +10,7 @@ deepRoots = true
 ###########  biocode-fims-commons settings  ##########
 
 # the login page to redirect to when a user needs to login
-loginUri = http://biscicol.org/login.jsp
+loginPageUrl = http://biscicol.org/login.jsp
 
 # the webapp directory to use for caching config file, and storing templates for download
 uploadDir = tripleOutput
