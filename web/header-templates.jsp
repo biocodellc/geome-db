@@ -12,15 +12,15 @@
     <link rel="stylesheet" type="text/css" href="css/alerts.css"/>
     <link rel="stylesheet" type="text/css" href="css/biscicol.css"/>
 
-    <script type="text/javascript" src="/biscicol/js/jquery.js"></script>
-    <script type="text/javascript" src="/biscicol/js/jquery-ui.min.js"></script>
-    <script type="text/javascript" src="/biscicol/js/jquery.form.js"></script>
-    <script type="text/javascript" src="/biscicol/js/BrowserDetect.js"></script>
+    <script type="text/javascript" src="/js/jquery.js"></script>
+    <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/js/jquery.form.js"></script>
+    <script type="text/javascript" src="/js/BrowserDetect.js"></script>
 
-    <script type="text/javascript" src="/biscicol/js/biscicol-fims.js"></script>
-    <script type="text/javascript" src="/biscicol/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/js/biscicol-fims.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.min.js"></script>
 
-    <link rel="short icon" href="/biscicol/docs/fimsicon.png" />
+    <link rel="short icon" href="/docs/fimsicon.png" />
 
 </head>
 

@@ -18,7 +18,7 @@
         // Populate User Profile
         if ("${param.error}" == "") {
             var jqxhr = populateDivFromService(
-                "/biscicol/rest/users/profile/listAsTable",
+                "/biocode-fims/rest/users/profile/listAsTable",
                 "listUserProfile",
                 "Unable to load this user's profile from the Server")
                 .done(function() {

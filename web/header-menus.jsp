@@ -9,7 +9,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/biscicol/index.jsp">Biocode Field Information Management System</a>
+                <a class="navbar-brand" href="/index.jsp">Biocode Field Information Management System</a>
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
@@ -18,15 +18,15 @@
                     <li class="dropdown">
                         <a href="#" data-toggle="dropdown" class="dropdown-toggle">Tools<b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a href='/biscicol/templates.jsp' class='enabled'>Template</a></li>
-                            <li><a href='/biscicol/validation.jsp' class='enabled'>Validation</a></li>
-                            <li><a href='/biscicol/query.jsp' class='enabled'>Query</a></li>
-                            <li><a href='/biscicol/lookup.jsp' class='enabled'>ID Lookup</a></li>
+                            <li><a href='/templates.jsp' class='enabled'>Template</a></li>
+                            <li><a href='/validation.jsp' class='enabled'>Validation</a></li>
+                            <li><a href='/query.jsp' class='enabled'>Query</a></li>
+                            <li><a href='/lookup.jsp' class='enabled'>ID Lookup</a></li>
                             <c:if test="${username == null}">
                                 <li><a href='#' class='disabled'>BCID Creator</a></li>
                             </c:if>
                             <c:if test="${username != null}">
-                                <li><a href='/biscicol/secure/bcidCreator.jsp' class='enabled'>BCID Creator</a></li>
+                                <li><a href='/secure/bcidCreator.jsp' class='enabled'>BCID Creator</a></li>
                             </c:if>
                         </ul>
                     </li>
@@ -35,26 +35,26 @@
                         <li class="dropdown">
                             <a href="#" data-toggle="dropdown" class="dropdown-toggle">Management<b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li><a href='/biscicol/secure/expeditions.jsp' class='enabled'>Expedition</a></li>
+                                <li><a href='/secure/expeditions.jsp' class='enabled'>Expedition</a></li>
                                 <c:if test="${projectAdmin == true}">
-                                    <li><a href='/biscicol/secure/projects.jsp' class='enabled'>Project</a></li>
+                                    <li><a href='/secure/projects.jsp' class='enabled'>Project</a></li>
                                 </c:if>
                                 <c:if test="${projectAdmin == false}">
                                     <li><a href='#' class='disabled'>Project</a></li>
                                 </c:if>
-                                <li><a href='/biscicol/secure/profile.jsp' class='enabled'>User Profile</a></li>
+                                <li><a href='/secure/profile.jsp' class='enabled'>User Profile</a></li>
                             </ul>
                         </li>
                     </c:if>
 
                     <c:if test="${username == null}">
-                            <li><a id="login" href="/biscicol/login.jsp">Login</a></li>
+                            <li><a id="login" href="/login.jsp">Login</a></li>
                     </c:if>
                     <c:if test="${username != null}">
-                            <li><a href="/biscicol/secure/profile.jsp">${username}</a></li>
-                            <li><a id="logout" href="/biscicol/rest/authenticationService/logout/">Logout</a></li>
+                            <li><a href="/secure/profile.jsp">${username}</a></li>
+                            <li><a id="logout" href="/biocode-fims/rest/authenticationService/logout/">Logout</a></li>
                     </c:if>
-                    <li><a href="https://github.com/biocodellc/biocode-fims/wiki/WebVersion">Help</a></li>
+                    <li><a href="https://github.com/biocodellc/biscicol-fims/wiki/WebApp">Help</a></li>
                 </ul>
             </div><!-- /.navbar-collapse -->
         </div>

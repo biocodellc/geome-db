@@ -25,7 +25,7 @@
                     <td><input id=title name=title type=textbox size="40"></td>
                 </tr>
                  <tr>
-                        <td align=right><a href='/biscicol/resourceTypes.jsp'>ResourceType*</a></td>
+                        <td align=right><a href='/resourceTypes.jsp'>ResourceType*</a></td>
                         <td><select name=resourceTypesMinusDataset id=resourceTypesMinusDataset class=""></select></td>
                     </tr>
                 <tr>

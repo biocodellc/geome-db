@@ -21,7 +21,7 @@
         return;
     }
 
-    $.getJSON("/biscicol/rest/utils/getMapboxToken", function(data) {
+    $.getJSON("/biocode-fims/rest/utils/getMapboxToken", function(data) {
         L.mapbox.accessToken = data.accessToken;
     }).fail(function() {
         console.log("Failed to retrieve mapbox accessToken. Mapping features will not work.");
@@ -155,7 +155,7 @@ function generateMap(id, projectId) {
     }
     $('#' + id).html('Loading map...');
     // generate a map with markers for all sample points
-    $.getJSON("/biscicol/rest/projects/" + projectId + "/getLatLongColumns/"
+    $.getJSON("/biocode-fims/rest/projects/" + projectId + "/getLatLongColumns/"
         ).done(function(data) {
             getSampleCoordinates(data).done(function(geoJSONData) {
                 if (geoJSONData.features.length == 0) {

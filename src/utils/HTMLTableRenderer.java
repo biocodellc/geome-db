@@ -168,7 +168,7 @@ public class HTMLTableRenderer extends Renderer {
             outputSB.append("\t\t<th>");
             outputSB.append("<a href='");
             outputSB.append(appRoot);
-            outputSB.append("rest/projects/query/excel?graphs=");
+            outputSB.append("biocode-fims/rest/projects/query/excel?graphs=");
             outputSB.append(graph);
             outputSB.append("&projectId=");
             outputSB.append(projectId);
@@ -179,7 +179,7 @@ public class HTMLTableRenderer extends Renderer {
             // TAB delimited option
             outputSB.append("<a href='");
             outputSB.append(appRoot);
-            outputSB.append("rest/projects/query/tab?graphs=");
+            outputSB.append("biocode-fims/rest/projects/query/tab?graphs=");
             outputSB.append(graph);
             outputSB.append("&projectId=");
             outputSB.append(projectId);

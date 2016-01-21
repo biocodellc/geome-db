@@ -1,5 +1,5 @@
 /* ====== General Utility Functions ======= */
-var appRoot = "/biscicol/";
+var appRoot = "/";
 
 // function for displaying a loading dialog while waiting for a response from the server
 function loadingDialog(promise) {
@@ -111,7 +111,7 @@ function populateDivFromService(url,elementID,failMessage)  {
 }
 
 function populateProjects() {
-    theUrl = "rest/projects/list";
+    theUrl = "biocode-fims/rest/projects/list";
     var jqxhr = $.getJSON( theUrl, function(data) {
         var listItems = "";
         listItems+= "<option value='0'>Select a project ...</option>";
@@ -197,7 +197,7 @@ function getProjectID() {
 
 // function to login user
 function login() {
-    var url = appRoot + "rest/authenticationService/login";
+    var url = appRoot + "biocode-fims/rest/authenticationService/login";
     var return_to = getQueryParam("return_to");
     if (return_to != null) {
         url += "?return_to=" + return_to;
@@ -215,7 +215,7 @@ function login() {
 
 // function to submit the reset password form
 function resetPassSubmit() {
-    var jqxhr = $.get(appRoot + "rest/users/" + $("#username").val() + "/sendResetToken/")
+    var jqxhr = $.get(appRoot + "biocode-fims/rest/users/" + $("#username").val() + "/sendResetToken/")
         .done(function(data) {
             if (data.success) {
                 var buttons = {
@@ -239,7 +239,7 @@ function resetPassSubmit() {
 
 // Populate the SELECT box with resourceTypes from the server
 function getResourceTypesMinusDataset(id) {
-    var url = appRoot + "rest/resourceTypes/minusDataset/";
+    var url = appRoot + "biocode-fims/rest/resourceTypes/minusDataset/";
 
     // get JSON from server and loop results
     var jqxhr = $.getJSON(url, function() {})
@@ -259,7 +259,7 @@ function getResourceTypesMinusDataset(id) {
 /** Process submit button for Data Group Creator **/
 function bcidCreatorSubmit() {
     /* Send the data using post */
-    var posting = $.post(appRoot + "rest/bcids", $("#bcidForm").serialize())
+    var posting = $.post(appRoot + "biocode-fims/rest/bcids", $("#bcidForm").serialize())
         .done(function(data) {
             var b = {
                 "Ok": function() {
@@ -279,7 +279,7 @@ function bcidCreatorSubmit() {
 
 // function to populate the expeditions.jsp page
 function populateExpeditionPage(username) {
-    var jqxhr = listProjects(username, appRoot + 'rest/projects/user/list', true
+    var jqxhr = listProjects(username, appRoot + 'biocode-fims/rest/projects/user/list', true
     ).done(function() {
         // attach toggle function to each project
         $(".expand-content").click(function() {
@@ -312,7 +312,7 @@ function loadExpeditions(id) {
 // retrieve the expeditions for a project and display them on the page
 function listExpeditions(divId) {
     var projectId = $(divId).data('projectId');
-    var jqxhr = $.getJSON(appRoot + 'rest/projects/' + projectId + '/expeditions/')
+    var jqxhr = $.getJSON(appRoot + 'biocode-fims/rest/projects/' + projectId + '/expeditions/')
         .done(function(data) {
             var html = '';
             var expandTemplate = '<br>\n<a class="expand-content" id="{expedition}-{section}" href="javascript:void(0);">\n'
@@ -364,19 +364,19 @@ function populateExpeditionSubsections(divId) {
     var expeditionId= $(divId).data('expeditionId');
     if (divId.indexOf("resources") != -1) {
         var jqxhr = populateDivFromService(
-            appRoot + 'rest/expeditions/' + expeditionId + '/resourcesAsTable/',
+            appRoot + 'biocode-fims/rest/expeditions/' + expeditionId + '/resourcesAsTable/',
             divId,
             'Unable to load this expedition\'s resources from server.');
         loadingDialog(jqxhr);
     } else if (divId.indexOf("datasets") != -1) {
         var jqxhr = populateDivFromService(
-            appRoot + 'rest/expeditions/' + expeditionId + '/datasetsAsTable/',
+            appRoot + 'biocode-fims/rest/expeditions/' + expeditionId + '/datasetsAsTable/',
             divId,
             'Unable to load this expedition\'s datasets from server.');
         loadingDialog(jqxhr);
     } else {
         var jqxhr = populateDivFromService(
-            appRoot + 'rest/expeditions/' + expeditionId + '/metadataAsTable/',
+            appRoot + 'biocode-fims/rest/expeditions/' + expeditionId + '/metadataAsTable/',
             divId,
             'Unable to load this expedition\'s configuration from server.');
         loadingDialog(jqxhr);
@@ -405,7 +405,7 @@ function editExpedition(projectId, expeditionCode, e) {
         "Update": function() {
             var public = $("[name='public']")[0].checked;
 
-            $.get(appRoot + "rest/expeditions/updateStatus/" + projectId + "/" + expeditionCode + "/" + public
+            $.get(appRoot + "biocode-fims/rest/expeditions/updateStatus/" + projectId + "/" + expeditionCode + "/" + public
             ).done(function() {
                 var b = {
                     "Ok": function() {
@@ -441,7 +441,7 @@ function profileSubmit(divId) {
                     ($("input[name='old_password']").length > 0 && $("input[name='old_password']").val().length == 0)) {
         $(".error", divId).html("Old Password field required to change your Password");
     } else {
-        var postURL = appRoot + "rest/users/profile/update/";
+        var postURL = appRoot + "biocode-fims/rest/users/profile/update/";
         var return_to = getQueryParam("return_to");
         if (return_to != null) {
             postURL += "?return_to=" + encodeURIComponent(return_to);
@@ -456,7 +456,7 @@ function profileSubmit(divId) {
                     $(location).attr("href", data.returnTo);
                 } else {
                     var jqxhr2 = populateDivFromService(
-                        appRoot + "rest/users/profile/listAsTable",
+                        appRoot + "biocode-fims/rest/users/profile/listAsTable",
                         "listUserProfile",
                         "Unable to load this user's profile from the Server")
                         .done(function() {
@@ -478,14 +478,14 @@ function profileSubmit(divId) {
 // get profile editor
 function getProfileEditor(username) {
     var jqxhr = populateDivFromService(
-        appRoot + "rest/users/profile/listEditorAsTable",
+        appRoot + "biocode-fims/rest/users/profile/listEditorAsTable",
         "listUserProfile",
         "Unable to load this user's profile editor from the Server"
     ).done(function() {
         $(".error").text(getQueryParam("error"));
         $("#cancelButton").click(function() {
             var jqxhr2 = populateDivFromService(
-                appRoot + "rest/users/profile/listAsTable",
+                appRoot + "biocode-fims/rest/users/profile/listAsTable",
                 "listUserProfile",
                 "Unable to load this user's profile from the Server")
                 .done(function() {
@@ -507,13 +507,13 @@ function getProfileEditor(username) {
 // populate the metadata subsection of projects.jsp from REST service
 function populateMetadata(id, projectID) {
     var jqxhr = populateDivFromService(
-        appRoot + 'rest/projects/' + projectID + '/metadata',
+        appRoot + 'biocode-fims/rest/projects/' + projectID + '/metadata',
         id,
         'Unable to load this project\'s metadata from server.'
     ).done(function() {
         $("#edit_metadata", id).click(function() {
             var jqxhr2 = populateDivFromService(
-                appRoot + 'rest/projects/' + projectID + '/metadataEditor',
+                appRoot + 'biocode-fims/rest/projects/' + projectID + '/metadataEditor',
                 id,
                 'Unable to load this project\'s metadata editor.'
             ).done(function() {
@@ -551,7 +551,7 @@ function confirmRemoveUserDialog(element) {
 // populate the users subsection of projects.jsp from REST service
 function populateUsers(id, projectID) {
     var jqxhr = populateDivFromService(
-        appRoot + 'rest/projects/' + projectID + '/users',
+        appRoot + 'biocode-fims/rest/projects/' + projectID + '/users',
         id,
         'Unable to load this project\'s users from server.'
     ).done(function() {
@@ -566,7 +566,7 @@ function populateUsers(id, projectID) {
                 var divId = 'div#' + $(e).closest('div').attr('id');
 
                 var jqxhr2 = populateDivFromService(
-                    appRoot + "rest/users/admin/profile/listEditorAsTable/" + username,
+                    appRoot + "biocode-fims/rest/users/admin/profile/listEditorAsTable/" + username,
                     divId,
                     "error loading profile editor"
                 ).done(function() {
@@ -601,7 +601,7 @@ function populateProjectSubsections(id) {
     } else {
         // load the project expeditions table from REST service
         jqxhr = populateDivFromService(
-            appRoot + 'rest/projects/' + projectID + '/admin/expeditions/',
+            appRoot + 'biocode-fims/rest/projects/' + projectID + '/admin/expeditions/',
             id,
             'Unable to load this project\'s expeditions from server.'
         ).done(function() {
@@ -626,7 +626,7 @@ function expeditionsPublicSubmit(divId) {
         var expedition = '&' + element.name + '=' + element.checked;
         data += expedition;
     });
-    var jqxhr = $.post(appRoot + 'rest/expeditions/admin/updateStatus', data.replace('&', '')
+    var jqxhr = $.post(appRoot + 'biocode-fims/rest/expeditions/admin/updateStatus', data.replace('&', '')
     ).done(function() {
         populateProjectSubsections(divId);
     }).fail(function(jqxhr) {
@@ -641,7 +641,7 @@ function projectUserSubmit(id) {
     var projectId = $("input[name='projectId']", divId).val()
     if ($('select option:selected', divId).val() == 0) {
         var jqxhr = populateDivFromService(
-            appRoot + 'rest/users/admin/createUserForm',
+            appRoot + 'biocode-fims/rest/users/admin/createUserForm',
             divId,
             'error fetching create user form'
         ).done(function() {
@@ -655,7 +655,7 @@ function projectUserSubmit(id) {
         });
         loadingDialog(jqxhr);
     } else {
-        var jqxhr = $.post(appRoot + "rest/projects/" + projectId + "/admin/addUser", $('form', divId).serialize()
+        var jqxhr = $.post(appRoot + "biocode-fims/rest/projects/" + projectId + "/admin/addUser", $('form', divId).serialize()
         ).done(function(data) {
             var jqxhr2 = populateProjectSubsections(divId);
         }).fail(function(jqxhr) {
@@ -671,7 +671,7 @@ function createUserSubmit(projectId, divId) {
     if ($(".label", "#pwindicator").text() == "weak") {
         $(".error", divId).html("password too weak");
     } else {
-        var jqxhr = $.post(appRoot + "rest/users/admin/create", $('form', divId).serialize()
+        var jqxhr = $.post(appRoot + "biocode-fims/rest/users/admin/create", $('form', divId).serialize()
         ).done(function() {
             populateProjectSubsections(divId);
         }).fail(function(jqxhr) {
@@ -687,7 +687,7 @@ function projectRemoveUser(e) {
     var projectId = $(e).closest('table').data('projectid');
     var divId = 'div#' + $(e).closest('div').attr('id');
 
-    var jqxhr = $.getJSON(appRoot + "rest/projects/" + projectId + "/admin/removeUser/" + userId
+    var jqxhr = $.getJSON(appRoot + "biocode-fims/rest/projects/" + projectId + "/admin/removeUser/" + userId
     ).done (function(data) {
         var jqxhr2 = populateProjectSubsections(divId);
     }).fail(function(jqxhr) {
@@ -701,7 +701,7 @@ function projectRemoveUser(e) {
 
 // function to submit the project metadata editor form
 function projectMetadataSubmit(projectId, divId) {
-    var jqxhr = $.post(appRoot + "rest/projects/" + projectId + "/metadata/update", $('form', divId).serialize()
+    var jqxhr = $.post(appRoot + "biocode-fims/rest/projects/" + projectId + "/metadata/update", $('form', divId).serialize()
     ).done(function(data) {
         populateProjectSubsections(divId);
     }).fail(function(jqxhr) {
@@ -712,7 +712,7 @@ function projectMetadataSubmit(projectId, divId) {
 
 // function to populate the bcid projects.jsp page
 function populateProjectPage(username) {
-    var jqxhr = listProjects(username, appRoot + 'rest/projects/admin/list', false
+    var jqxhr = listProjects(username, appRoot + 'biocode-fims/rest/projects/admin/list', false
     ).done(function() {
         // attach toggle function to each project
         $(".expand-content").click(function() {
@@ -778,7 +778,7 @@ function populate_bottom(){
 }
 
 function download_file(){
-    var url = appRoot + 'rest/projects/createExcel/';
+    var url = appRoot + 'biocode-fims/rest/projects/createExcel/';
     var input_string = '';
     // Loop through CheckBoxes and find ones that are checked
     $(".check_boxes").each(function(index) {
@@ -796,7 +796,7 @@ function populateDefinitions(column) {
  var e = document.getElementById('projects');
     var projectId = e.options[e.selectedIndex].value;
 
-    theUrl = appRoot + "rest/projects/" + projectId + "/getDefinition/" + column;
+    theUrl = appRoot + "biocode-fims/rest/projects/" + projectId + "/getDefinition/" + column;
 
     var jqxhr = $.ajax({
         type: "GET",
@@ -814,7 +814,7 @@ function populateColumns(targetDivId) {
     var projectId = e.options[e.selectedIndex].value;
 
     if (projectId != 0) {
-        theUrl = appRoot + "rest/projects/" + projectId + "/attributes/";
+        theUrl = appRoot + "biocode-fims/rest/projects/" + projectId + "/attributes/";
 
         var jqxhr = $.ajax( {
             url: theUrl,
@@ -843,7 +843,7 @@ function populateAbstract(targetDivId) {
     var e = document.getElementById('projects');
     var projectId = e.options[e.selectedIndex].value;
 
-    theUrl = "rest/projects/" + projectId + "/abstract/";
+    theUrl = "biocode-fims/rest/projects/" + projectId + "/abstract/";
 
     var jqxhr = $.ajax( {
         url: theUrl,
@@ -881,7 +881,7 @@ function saveTemplateConfig() {
             });
 
             savedConfig = configName;
-            $.post(appRoot + "rest/projects/" + $("#projects").val() + "/saveConfig", $.param(
+            $.post(appRoot + "biocode-fims/rest/projects/" + $("#projects").val() + "/saveConfig", $.param(
                                                             {"configName": configName,
                                                             "checkedOptions": checked,
                                                             "projectId": $("#projects").val()
@@ -922,7 +922,7 @@ function populateConfigs() {
         var el = $("#configs");
         el.empty();
         el.append($("<option></option>").attr("value", 0).text("Loading configs..."));
-        var jqxhr = $.getJSON(appRoot + "rest/projects/" + projectId + "/getConfigs").done(function(data) {
+        var jqxhr = $.getJSON(appRoot + "biocode-fims/rest/projects/" + projectId + "/getConfigs").done(function(data) {
             var listItems = "";
 
             el.empty();
@@ -962,7 +962,7 @@ function updateCheckedBoxes() {
     if (configName == "Default") {
         populateColumns("#cat1");
     } else {
-        $.getJSON(appRoot + "rest/projects/" + $("#projects").val() + "/getConfig/" + configName.replace(/\//g, "%2F")).done(function(data) {
+        $.getJSON(appRoot + "biocode-fims/rest/projects/" + $("#projects").val() + "/getConfig/" + configName.replace(/\//g, "%2F")).done(function(data) {
             if (data.error != null) {
                 showMessage(data.error);
                 return;
@@ -1008,7 +1008,7 @@ function removeConfig() {
             }
             var title = "Remove Template Generator Configuration";
 
-            $.getJSON(appRoot + "rest/projects/" + $("#projects").val() + "/removeConfig/" + configName.replace("/\//g", "%2F")).done(function(data) {
+            $.getJSON(appRoot + "biocode-fims/rest/projects/" + $("#projects").val() + "/removeConfig/" + configName.replace("/\//g", "%2F")).done(function(data) {
                 if (data.error != null) {
                     showMessage(data.error);
                     return;
@@ -1144,7 +1144,7 @@ function loopStatus(promise) {
 // poll the server to get the validation/upload status
 function pollStatus() {
     var def = new $.Deferred();
-    $.getJSON(appRoot + "rest/validate/status")
+    $.getJSON(appRoot + "biocode-fims/rest/validate/status")
         .done(function(data) {
             def.resolve(data);
         }).fail(function() {
@@ -1157,7 +1157,7 @@ function pollStatus() {
 // a new expedition
 function continueUpload(createExpedition) {
     var d = new $.Deferred();
-    var url = appRoot + "rest/validate/continue";
+    var url = appRoot + "biocode-fims/rest/validate/continue";
     if (createExpedition) {
         url += "?createExpedition=true";
     }
@@ -1200,7 +1200,7 @@ function validationFormToggle() {
         // Check NAAN
         $.when(parseSpreadsheet("~naan=[0-9]+~", "Instructions")).done(function(spreadsheetNaan) {
             if (spreadsheetNaan > 0) {
-                $.getJSON(appRoot + "rest/utils/getNAAN")
+                $.getJSON(appRoot + "biocode-fims/rest/utils/getNAAN")
                         .done(function(data) {
                     checkNAAN(spreadsheetNaan, data.naan);
                 });
@@ -1278,7 +1278,7 @@ function updateExpeditionPublicStatus(expeditionList) {
 // get the expeditions codes a user owny for a project
 function getExpeditionCodes() {
     var projectID = $("#projects").val();
-    $.getJSON(appRoot + "rest/projects/" + projectID + "/expeditions/")
+    $.getJSON(appRoot + "biocode-fims/rest/projects/" + projectID + "/expeditions/")
         .done(function(data) {
             var select = "<select name='expeditionCode' id='expeditionCode' style='max-width:199px'>" +
                 "<option value='0'>Create New Expedition</option>";
@@ -1407,7 +1407,7 @@ function submitForm(){
     var de = new $.Deferred();
     var promise = de.promise();
     var options = {
-        url: appRoot + "rest/validate/",
+        url: appRoot + "biocode-fims/rest/validate/",
         type: "POST",
         contentType: "multipart/form-data",
         beforeSerialize: function(form, options) {
@@ -1446,7 +1446,7 @@ function submitForm(){
 
 // Take the resolver results and populate a table
 function resolverResults() {
-    $.get(appRoot + "rest/" + $("#identifier").val()).done(function(data) {
+    $.get(appRoot + "id/" + $("#identifier").val()).done(function(data) {
         $("#results").html(data);
     }).fail(function(jqxhr) {
         var html;
@@ -1463,7 +1463,7 @@ function resolverResults() {
 
 // Populate a table of data showing resourceTypes
 function getResourceTypesTable(a) {
-    var url = appRoot + "rest/resourceTypes";
+    var url = appRoot + "biocode-fims/rest/resourceTypes";
     var jqxhr = $.getJSON(url, function() {})
         .done(function(data) {
             var html = "<table><tr><td><b>Name/URI</b></td><td><b>Description</b></td></tr>";
@@ -1497,7 +1497,7 @@ function populateGraphs(projectId) {
 	    graphsMessage('Choose an project to see loaded spreadsheets');
 	    return;
     }
-    theUrl = appRoot + "rest/projects/" + projectId + "/graphs";
+    theUrl = appRoot + "biocode-fims/rest/projects/" + projectId + "/graphs";
     var jqxhr = $.getJSON( theUrl, function(data) {
         // Check for empty object in response
         if (data.length == 0) {
@@ -1530,7 +1530,7 @@ function getGraphURIs() {
 // Get results as JSON
 function queryJSON(params) {
    // serialize the params object using a shallow serialization
-    var jqxhr = $.post(appRoot + "rest/projects/query/json/", $.param(params, true))
+    var jqxhr = $.post(appRoot + "biocode-fims/rest/projects/query/json/", $.param(params, true))
         .done(function(data) {
             $("#resultsContainer").show();
            //alert('debugging queries now, will fix soon!');
@@ -1549,13 +1549,13 @@ function queryJSON(params) {
 // Get results as Excel
 function queryExcel(params) {
     showMessage ("Downloading results as an Excel document<br>this will appear in your browsers download folder.");
-    download(appRoot + "rest/projects/query/excel/", params);
+    download(appRoot + "biocode-fims/rest/projects/query/excel/", params);
 }
 
 // Get results as Excel
 function queryKml(params) {
     showMessage ("Downloading results as an KML document<br>If Google Earth does not open you can point to it directly");
-    download(appRoot + "rest/projects/query/kml/", params);
+    download(appRoot + "biocode-fims/rest/projects/query/kml/", params);
 }
 
 // create a form and then submit that form in order to download files
