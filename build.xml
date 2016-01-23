@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="biscicol-fims" default="all">
 
-    <property name="jdk.home.1.6" value="/usr"/>
+    <property name="jdk.home.1.7" value="/usr"/>
 
     <!-- Compiler options -->
 
@@ -48,13 +48,13 @@
 
     <!-- JDK definitions -->
 
-    <property name="jdk.bin.1.6" value="${jdk.home.1.6}/bin"/>
-    <path id="jdk.classpath.1.6">
+    <property name="jdk.bin.1.7" value="${jdk.home.1.7}/bin"/>
+    <path id="jdk.classpath.1.7">
     </path>
 
-    <property name="expedition.jdk.home" value="${jdk.home.1.6}"/>
-    <property name="expedition.jdk.bin" value="${jdk.bin.1.6}"/>
-    <property name="expedition.jdk.classpath" value="jdk.classpath.1.6"/>
+    <property name="expedition.jdk.home" value="${jdk.home.1.7}"/>
+    <property name="expedition.jdk.bin" value="${jdk.bin.1.7}"/>
+    <property name="expedition.jdk.classpath" value="jdk.classpath.1.7"/>
 
 
     <!-- Expedition Libraries -->
