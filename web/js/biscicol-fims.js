@@ -881,7 +881,7 @@ function saveTemplateConfig() {
             });
 
             savedConfig = configName;
-            $.post(appRoot + "biocode-fims/rest/projects/" + $("#projects").val() + "/saveConfig", $.param(
+            $.post(appRoot + "biocode-fims/rest/projects/" + $("#projects").val() + "/saveTemplateConfig", $.param(
                                                             {"configName": configName,
                                                             "checkedOptions": checked,
                                                             "projectId": $("#projects").val()
@@ -922,7 +922,7 @@ function populateConfigs() {
         var el = $("#configs");
         el.empty();
         el.append($("<option></option>").attr("value", 0).text("Loading configs..."));
-        var jqxhr = $.getJSON(appRoot + "biocode-fims/rest/projects/" + projectId + "/getConfigs").done(function(data) {
+        var jqxhr = $.getJSON(appRoot + "biocode-fims/rest/projects/" + projectId + "/getTemplateConfigs").done(function(data) {
             var listItems = "";
 
             el.empty();
@@ -962,7 +962,7 @@ function updateCheckedBoxes() {
     if (configName == "Default") {
         populateColumns("#cat1");
     } else {
-        $.getJSON(appRoot + "biocode-fims/rest/projects/" + $("#projects").val() + "/getConfig/" + configName.replace(/\//g, "%2F")).done(function(data) {
+        $.getJSON(appRoot + "biocode-fims/rest/projects/" + $("#projects").val() + "/getTemplateConfig/" + configName.replace(/\//g, "%2F")).done(function(data) {
             if (data.error != null) {
                 showMessage(data.error);
                 return;
@@ -1008,7 +1008,7 @@ function removeConfig() {
             }
             var title = "Remove Template Generator Configuration";
 
-            $.getJSON(appRoot + "biocode-fims/rest/projects/" + $("#projects").val() + "/removeConfig/" + configName.replace("/\//g", "%2F")).done(function(data) {
+            $.getJSON(appRoot + "biocode-fims/rest/projects/" + $("#projects").val() + "/removeTemplateConfig/" + configName.replace("/\//g", "%2F")).done(function(data) {
                 if (data.error != null) {
                     showMessage(data.error);
                     return;
@@ -1030,6 +1030,31 @@ function removeConfig() {
 }
 
 /* ====== validation.jsp Functions ======= */
+
+// Function to display a list in a message
+function list(listName, columnName) {
+    var projectId = $("#projects").val();
+    $.getJSON(appRoot + "biocode-fims/rest/projects/" + projectId + "/getListFields/" + listName)
+    .done(function(data) {
+        if (data.length == 0) {
+            var msg = "No list has been defined for \"" + columnName + "\" but there is a rule saying it exists.  " +
+                                          "Please talk to your FIMS data manager to fix this.";
+            showBigMessage(msg);
+        } else {
+            var msg;
+            if (columnName != null && columnName.length > 0) {
+                msg += "<b>Acceptable values for " + columnName + "</b><br>\n";
+            } else {
+                msg += "<b>Acceptable values for " + listName + "</b><br>\n";
+            }
+
+            $.each(data, function(index, value) {
+                msg += "<li>" + value + "</li>\n";
+            });
+            showBigMessage(msg);
+        }
+    });
+}
 
 function parseSpreadsheet(regExpression, sheetName) {
     try {
@@ -1075,8 +1100,6 @@ function validForm(expeditionCode) {
             message = "Please select a project.";
             error = true;
         } else if ($("#upload").is(":checked")) {
-            // get the dataset code value
-            //var datasetcodeval = $("#expeditionCode").val();
             // if it doesn't pass the regexp test, then set error message and set error to true
             if (!dRE.test(expeditionCode)) {
                 message = "<b>Expedition Code</b> must contain only numbers, letters, or underscores and be 4 to 50 characters long";
@@ -1261,7 +1284,7 @@ function updateExpeditionPublicStatus(expeditionList) {
     $('#expeditionCode').change(function() {
         var code = $('#expeditionCode').val();
         var public;
-        $.each(expeditionList.expeditions, function(key, e) {
+        $.each(expeditionList, function(key, e) {
             if (e.expeditionCode == code) {
                 public = e.public;
                 return false;
@@ -1282,7 +1305,7 @@ function getExpeditionCodes() {
         .done(function(data) {
             var select = "<select name='expeditionCode' id='expeditionCode' style='max-width:199px'>" +
                 "<option value='0'>Create New Expedition</option>";
-            $.each(data.expeditions, function(key, e) {
+            $.each(data, function(key, e) {
                 select += "<option value=" + e.expeditionCode + ">" + e.expeditionCode + " (" + e.expeditionTitle + ")</option>";
             });
 
@@ -1585,4 +1608,56 @@ function download(url, data) {
         return form.appendTo('body').submit().remove();
     }
     throw new Error("url and data required");
+}
+
+// a select element with all of the filterable options. Used to add additional filter statements
+var filterSelect = null;
+
+// populate a select with the filter values of a given project
+function getFilterOptions(projectId) {
+    var jqxhr = $.getJSON(appRoot + "biocode-fims/rest/projects/" + projectId + "/filterOptions/")
+        .done(function(data) {
+            filterSelect = "<select id='uri' style='max-width:100px;'>";
+            $.each(data, function(k, v) {
+                filterSelect += "<option value=" + v.uri + ">" + v.column + "</option>";
+            });
+
+            filterSelect += "</select>";
+        });
+    return jqxhr;
+}
+
+// add additional filters to the query
+function addFilter() {
+    // change the method to post
+    $("form").attr("method", "POST");
+
+    var tr = "<tr>\n<td align='right'>AND</td>\n<td>\n";
+    tr += filterSelect;
+    tr += "<p style='display:inline;'>=</p>\n";
+    tr += "<input type='text' name='filter_value' style='width:285px;' />\n";
+    tr += "</td>\n";
+
+    // insert another tr after the last filter option, before the submit buttons
+    $("#uri").parent().parent().siblings(":last").before(tr);
+}
+
+// prepare a json object with the query POST params by combining the text and select inputs for each filter statement
+function getQueryPostParams() {
+    var params = {
+        graphs: getGraphURIs(),
+        project_id: getProjectID()
+    }
+
+    var filterKeys = $("select[id=uri]");
+    var filterValues = $("input[name=filter_value]");
+
+    // parse the filter keys and values and add them to the post params
+    $.each(filterKeys, function(index, e) {
+        if (filterValues[index].value != "") {
+            params[e.value] = filterValues[index].value;
+        }
+    });
+
+    return params;
 }

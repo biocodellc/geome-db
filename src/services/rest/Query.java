@@ -93,6 +93,38 @@ public class Query extends FimsService {
 
     /**
      * Return KML for a graph query using POST
+     * filter is just a single value to filter the entire dataset
+     *
+     * @param graphs indicate a comma-separated list of graphs, or all
+     * @return
+     */
+    @GET
+    @Path("/kml/")
+    @Produces("application/vnd.google-earth.kml+xml")
+    public Response queryKml(
+            @QueryParam("graphs") String graphs,
+            @QueryParam("project_id") Integer project_id,
+            @QueryParam("filter") String filter) {
+
+        // Construct a file
+        File file = GETQueryResult(graphs, project_id, filter, "kml");
+
+        // Return file to client
+        Response.ResponseBuilder response = Response.ok((Object) file);
+
+        response.header("Content-Disposition",
+                "attachment; filename=biocode-fims-output.kml");
+
+        // Return response
+        if (response == null) {
+            return Response.status(204).build();
+        } else {
+            return response.build();
+        }
+    }
+
+    /**
+     * Return KML for a graph query using POST
      * * <p/>
      * filter parameters are of the form:
      * name={URI} value={filter value}
@@ -125,6 +157,72 @@ public class Query extends FimsService {
         }
     }
 
+    /**
+     * Return KML for a graph query using POST
+     * filter is just a single value to filter the entire dataset
+     *
+     * @param graphs indicate a comma-separated list of graphs, or all
+     * @return
+     */
+    @GET
+    @Path("/cspace/")
+    @Produces(MediaType.APPLICATION_XML)
+    public Response queryCspace(
+            @QueryParam("graphs") String graphs,
+            @QueryParam("project_id") Integer project_id,
+            @QueryParam("filter") String filter) {
+
+        // Construct a file
+        File file = GETQueryResult(graphs, project_id, filter, "cspace");
+
+        // Return file to client
+        Response.ResponseBuilder response = Response.ok((Object) file);
+
+        // response.header("Content-Disposition",
+        //       "attachment; filename=biocode-fims-output.xml");
+
+        // Return response
+        if (response == null) {
+            return Response.status(204).build();
+        } else {
+            return response.build();
+        }
+
+    }
+
+    /**
+     * Return Tab delimited data for a graph query using POST
+     * * <p/>
+     * filter parameters are of the form:
+     * name={URI} value={filter value}
+     *
+     *
+     * @return
+     */
+    @POST
+    @Path("/tab/")
+    @Consumes("application/x-www-form-urlencoded")
+    public Response queryTab(
+            MultivaluedMap<String, String> form) {
+
+        // Build the query, etc..
+        FimsQueryBuilder q = POSTQueryResult(form);
+
+        // Run the query, passing in a format and returning the location of the output file
+        File file = new File(q.run("tab"));
+
+        // Return file to client
+        Response.ResponseBuilder response = Response.ok(file);
+        response.header("Content-Disposition",
+                "attachment; filename=biocode-fims-output.txt");
+
+        // Return response
+        if (response == null) {
+            return Response.status(204).build();
+        } else {
+            return response.build();
+        }
+    }
 
     /**
      * Return Tab delimited data for a graph query.  The GET query runs a simple FILTER query for any term
@@ -136,7 +234,7 @@ public class Query extends FimsService {
     @Path("/tab/")
     public Response queryTab(
             @QueryParam("graphs") String graphs,
-            @QueryParam("projectId") Integer projectId,
+            @QueryParam("project_id") Integer projectId,
             @QueryParam("filter") String filter) {
 
         File file = GETQueryResult(graphs, projectId, filter, "tab");
@@ -165,7 +263,7 @@ public class Query extends FimsService {
     @Produces("application/vnd.ms-excel")
     public Response queryExcel(
             @QueryParam("graphs") String graphs,
-            @QueryParam("projectId") Integer projectId,
+            @QueryParam("project_id") Integer projectId,
             @QueryParam("filter") String filter) {
 
         File file = GETQueryResult(graphs, projectId, filter, "excel");
@@ -239,10 +337,10 @@ public class Query extends FimsService {
             if (key.equalsIgnoreCase("graphs")) {
                 Object[] valueArray = value.toArray();
                 graphs = Arrays.copyOf(valueArray, valueArray.length, String[].class);
-            } else if (key.equalsIgnoreCase("projectId")) {
+            } else if (key.equalsIgnoreCase("project_id")) {
                 projectId = Integer.parseInt((String) value.get(0));
-                System.out.println("projectId_val=" + (String)value.get(0) );
-                System.out.println("projectId_int=" + projectId );
+                System.out.println("project_id_val=" + (String)value.get(0) );
+                System.out.println("project_id_int=" + projectId );
             } else if (key.equalsIgnoreCase("boolean")) {
                 /// AND|OR
                 //projectId = Integer.parseInt((String) value.get(0));

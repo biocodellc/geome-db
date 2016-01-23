@@ -17,6 +17,8 @@
     <script type="text/javascript" src="/js/jquery.form.js"></script>
     <script type="text/javascript" src="/js/BrowserDetect.js"></script>
 
+    <script type="text/javascript" src="/js/biscicol-fims.js"></script>
+
     <script src="/js/distal.js"></script>
     <script>
         jQuery.fn.distal = function (json) {

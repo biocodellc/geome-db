@@ -119,15 +119,11 @@ public class Validate extends FimsService {
 
             } else if (upload != null && upload.equals("on")) {
 
-                // verify that the user has logged in
-                if (session.getAttribute("user") == null) {
+                if (username == null) {
                     throw new UnauthorizedRequestException("You must be logged in to upload.");
                 }
 
-                Database db = new Database();
-                Integer userId = db.getUserId(username);
                 processController.setUserId(userId);
-                db.close();
 
                 // set public status to true in processController if user wants it on
                 if (publicStatus != null && publicStatus.equals("on")) {
