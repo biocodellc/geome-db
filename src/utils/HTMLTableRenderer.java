@@ -170,7 +170,7 @@ public class HTMLTableRenderer extends Renderer {
             outputSB.append(appRoot);
             outputSB.append("biocode-fims/rest/projects/query/excel?graphs=");
             outputSB.append(graph);
-            outputSB.append("&projectId=");
+            outputSB.append("&project_id=");
             outputSB.append(projectId);
             outputSB.append("'>.xlsx</a>");
 
@@ -181,7 +181,7 @@ public class HTMLTableRenderer extends Renderer {
             outputSB.append(appRoot);
             outputSB.append("biocode-fims/rest/projects/query/tab?graphs=");
             outputSB.append(graph);
-            outputSB.append("&projectId=");
+            outputSB.append("&project_id=");
             outputSB.append(projectId);
             outputSB.append("'>.txt</a>");
 
