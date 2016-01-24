@@ -226,7 +226,7 @@ public class Users extends FimsService {
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>New Password</td>\n");
-        sb.append("\t\t<td><input class=\"pwcheck\" type=\"password\" name=\"new_password\" data-indicator=\"pwindicator\">");
+        sb.append("\t\t<td><input class=\"pwcheck\" type=\"password\" name=\"newPassword\" data-indicator=\"pwindicator\">");
         sb.append("</td>\n\t</tr>");
 
         sb.append("\t<tr>\n");
@@ -237,7 +237,7 @@ public class Users extends FimsService {
         if (!isAdmin) {
             sb.append("\t<tr>\n");
             sb.append("\t\t<td>Old Password</td>\n");
-            sb.append("\t\t<td><input type=\"password\" name=\"old_password\">");
+            sb.append("\t\t<td><input type=\"password\" name=\"oldPassword\">");
             sb.append("</td>\n\t</tr>");
         }
 

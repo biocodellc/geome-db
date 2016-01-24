@@ -156,9 +156,12 @@ public class HTMLTableRenderer extends Renderer {
         }
     }
 
+    /**
+     *
+     */
     private void appendDataset() {
         if (displayDatasets()) {
-            String projectId = resolver.getProjectID(bcid.getBcidsId());
+            String projectId = resolver.getProjectID(bcid.getBcidId());
             String graph = bcid.getGraph();
 
             outputSB.append("<table>\n");
@@ -203,7 +206,7 @@ public class HTMLTableRenderer extends Renderer {
 
     private Boolean displayDatasets() {
         Boolean ignoreUser = Boolean.getBoolean(sm.retrieveValue("ignoreUser"));
-        Integer projectId = Integer.parseInt(resolver.getProjectID(bcid.getBcidsId()));
+        Integer projectId = Integer.parseInt(resolver.getProjectID(bcid.getBcidId()));
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
         ProjectMinter projectMinter = new ProjectMinter();
 

@@ -437,8 +437,8 @@ function editExpedition(projectId, expeditionCode, e) {
 function profileSubmit(divId) {
     if ($("input.pwcheck", divId).val().length > 0 && $(".label", "#pwindicator").text() == "weak") {
         $(".error", divId).html("password too weak");
-    } else if ($("input[name='new_password']").val().length > 0 &&
-                    ($("input[name='old_password']").length > 0 && $("input[name='old_password']").val().length == 0)) {
+    } else if ($("input[name='newPassword']").val().length > 0 &&
+                    ($("input[name='oldPassword']").length > 0 && $("input[name='oldPassword']").val().length == 0)) {
         $(".error", divId).html("Old Password field required to change your Password");
     } else {
         var postURL = appRoot + "biocode-fims/rest/users/profile/update/";
