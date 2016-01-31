@@ -1086,32 +1086,36 @@ function getProjectKeyValue() {
 
 // Check that the validation form has a project id and if uploading, has an expedition code
 function validForm(expeditionCode) {
-    if ($('#projects').val() == 0 || $("#upload").is(":checked")) {
-        var message;
-        var error = false;
-        var dRE = /^[a-zA-Z0-9_-]{4,50}$/
+    var message;
+    var error = false;
+    var dRE = /^[a-zA-Z0-9_-]{4,50}$/
 
-        if ($('#projects').val() == 0) {
-            message = "Please select a project.";
+
+    if ($("#dataset").val().length < 1 && $("#fasta").val().length < 1) {
+        message = "Please provide a dataset";
+        error = true;
+    } else if ($('#projects').val() == 0) {
+        message = "Please select a project.";
+        error = true;
+    } else if ($("#upload").is(":checked")) {
+        // if it doesn't pass the regexp test, then set error message and set error to true
+        if (!dRE.test(expeditionCode)) {
+            message = "<b>Expedition Code</b> must contain only numbers, letters, or underscores and be 4 to 50 characters long";
             error = true;
-        } else if ($("#upload").is(":checked")) {
-            // if it doesn't pass the regexp test, then set error message and set error to true
-            if (!dRE.test(expeditionCode)) {
-                message = "<b>Expedition Code</b> must contain only numbers, letters, or underscores and be 4 to 50 characters long";
-                error = true;
-            }
-        }
-        if (error) {
-            $('#resultsContainer').html(message);
-            var buttons = {
-                "OK": function(){
-                    $(this).dialog("close");
-                  }
-            }
-            dialog(message, "Validation Results", buttons);
-            return false;
         }
     }
+
+    if (error) {
+        $('#resultsContainer').html(message);
+        var buttons = {
+            "OK": function(){
+                $(this).dialog("close");
+              }
+        }
+        dialog(message, "Validation Results", buttons);
+        return false;
+    }
+
     return true;
 }
 
@@ -1249,15 +1253,10 @@ function validationFormToggle() {
 
     });
     $('#upload').change(function() {
-        if ($('.toggle-content#expeditionCode_toggle').is(':hidden') && $('#upload').is(":checked")) {
-            $('.toggle-content#expeditionCode_toggle').show(400);
+        if ($('.toggle-content#upload-toggle').is(':hidden') && $('#upload').is(":checked")) {
+            $('.toggle-content#upload-toggle').show(400);
         } else {
-            $('.toggle-content#expeditionCode_toggle').hide(400);
-        }
-        if ($('.toggle-content#expedition_public_toggle').is(':hidden') && $('#upload').is(":checked")) {
-            $('.toggle-content#expedition_public_toggle').show(400);
-        } else {
-            $('.toggle-content#expedition_public_toggle').hide(400);
+            $('.toggle-content#upload-toggle').hide(400);
         }
     });
     $("#projects").change(function() {
@@ -1372,9 +1371,7 @@ function uploadResults(data) {
         dialog(message, title, buttons);
         // reset the form to default state
         $('form').clearForm();
-        $('.toggle-content#projects_toggle').hide(400);
-        $('.toggle-content#expeditionCode_toggle').hide(400);
-        $('.toggle-content#expedition_public_toggle').hide(400);
+        $('.toggle-content#upload-toggle').hide(400);
 
     } else {
         // ask user if want to proceed

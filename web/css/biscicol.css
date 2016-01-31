@@ -164,6 +164,10 @@ table.subtable {
     border:none;
 }
 
+tbody.toggle-content {
+    display:none;
+}
+
 tr.toggle-content {
     display:none;
 }
