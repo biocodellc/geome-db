@@ -121,13 +121,7 @@ function populateProjects() {
         $("#projects").html(listItems);
         // Set to the first value in the list which should be "select one..."
         $("#projects").val($("#projects option:first").val());
-        $('.toggle-content#projects_toggle').show(400);
 
-        $("#projects").on("change", function() {
-            if ($('.toggle-content#config_toggle').is(':hidden')) {
-                $('.toggle-content#config_toggle').show(400);
-            }
-        });
     }).fail(function(jqXHR,textStatus) {
         if (textStatus == "timeout") {
 	        showMessage ("Timed out waiting for response! Try again later or reduce the number of graphs you are querying. If the problem persists, contact the System Administrator.");
@@ -135,6 +129,7 @@ function populateProjects() {
 	        showMessage ("Error completing request!");
         }
     });
+    return jqxhr;
 }
 
 function failError(jqxhr) {

@@ -65,5 +65,19 @@
 
 </div>
 </div>
+<script>
+    $(document).ready(function() {
+       populateProjects().done(function() {
+           $('.toggle-content#projects_toggle').show(400);
+
+           $('#projects').on('change', function() {
+               if ($('.toggle-content#config_toggle').is(':hidden')) {
+                   $('.toggle-content#config_toggle').show(400);
+               }
+           });
+       });
+    });
+
+</script>
 
 <%@ include file="footer.jsp" %>
