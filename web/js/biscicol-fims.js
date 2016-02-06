@@ -1470,7 +1470,16 @@ function submitForm(){
 // Take the resolver results and populate a table
 function resolverResults() {
     $.get(appRoot + "id/" + $("#identifier").val()).done(function(data) {
-        $("#results").html(data);
+        if (data.url) {
+            var host = new RegExp(location.host);
+            if (host.test(data.url)) {
+                $.get(data.url).done(function(data) {
+                    $("#results").html(data);
+                })
+            } else {
+                window.location.replace(data.url);
+            }
+        }
     }).fail(function(jqxhr) {
         var html;
         if (jqxhr.status == 400) {
