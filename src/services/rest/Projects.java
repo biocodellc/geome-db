@@ -644,4 +644,16 @@ public class Projects extends FimsService {
                 "attachment; filename=" + file.getName());
         return response.build();
     }
+
+    @GET
+    @Path("/{projectId}/uniqueKey")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUniqueKey(@PathParam("projectId") Integer projectId) {
+        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+
+        Mapping mapping = new Mapping();
+        mapping.addMappingRules(new Digester(), configFile);
+
+        return Response.ok("{\"uniqueKey\":\"" + mapping.getDefaultSheetUniqueKey() + "\"}").build();
+    }
 }
