@@ -10,7 +10,7 @@
             <tr>
                 <td align=right>&nbsp;&nbsp;Choose Project&nbsp;&nbsp;</td>
                 <td align=left>
-                <select width=20 id=projects onChange="populateColumns('#cat1');populateAbstract('#abstract');populateConfigs();">
+                <select width=20 id=projects>
                         <option value=0>Loading projects ...</option>
                 </select>
 
@@ -67,16 +67,34 @@
 </div>
 <script>
     $(document).ready(function() {
-       populateProjects().done(function() {
-           $('.toggle-content#projects_toggle').show(400);
+        var d = $.Deferred();
+        loadingDialog(d);
+        populateProjects().done(function() {
+            $('.toggle-content#projects_toggle').show(400);
 
-           $('#projects').on('change', function() {
-               if ($('.toggle-content#config_toggle').is(':hidden')) {
-                   $('.toggle-content#config_toggle').show(400);
-               }
-           });
+            $('#projects').on('change', function() {
+                var deferred = $.Deferred();
+                loadingDialog(deferred);
+                if ($('.toggle-content#config_toggle').is(':hidden')) {
+                    $('.toggle-content#config_toggle').show(400);
+                }
+
+                $.when(populateColumns('#cat1'), populateAbstract('#abstract'), populateConfigs()).then(function() {
+                    deferred.resolve();
+                });
+            });
+
+            /* if there is a projectId query param, set the template generator projectId */
+            var projectId = '<%=request.getParameter("projectId")%>';
+            if (projectId > 0) {
+                $("#projects").val(projectId);
+
+                /* trigger the "change" event */
+                $("#projects").trigger("change");
+            }
+            d.resolve();
        });
-    });
+   });
 
 </script>
 
