@@ -93,6 +93,11 @@
 
                     /* trigger the "change" event */
                     $("#projects").trigger("change");
+                } else {
+                    dialog("projectId " + projectId + " not found<br>", "Error", {"OK": function() {
+                        $("#dialogContainer").removeClass("error");
+                        $(this).dialog("close"); }
+                    });
                 }
             }
             d.resolve();
