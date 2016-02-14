@@ -87,10 +87,13 @@
             /* if there is a projectId query param, set the template generator projectId */
             var projectId = '<%=request.getParameter("projectId")%>';
             if (projectId > 0) {
-                $("#projects").val(projectId);
+                // verify that the projectId is a valid select option first
+                if ($("#projects option[value='" + projectId + "']").length !== 0) {
+                    $("#projects").val(projectId);
 
-                /* trigger the "change" event */
-                $("#projects").trigger("change");
+                    /* trigger the "change" event */
+                    $("#projects").trigger("change");
+                }
             }
             d.resolve();
        });
