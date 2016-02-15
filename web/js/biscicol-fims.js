@@ -1108,6 +1108,9 @@ function validForm(expeditionCode) {
             message = "<b>Expedition Code</b> must contain only numbers, letters, or underscores and be 4 to 50 characters long";
             error = true;
         }
+    } else if ($("#fasta").val().length > 1 && expeditionCode.length < 1) {
+        message = "An expedition code is required when you are validating/uploading a fasta file.";
+        error = true;
     }
 
     if (error) {
@@ -1262,18 +1265,30 @@ function validationFormToggle() {
         if ($('.toggle-content#projects_toggle').is(':hidden')) {
             $('.toggle-content#projects_toggle').show(400);
         }
+        if ($('.toggle-content#expeditionCode_toggle').is(':hidden')) {
+            $('.toggle-content#expeditionCode_toggle').show(400);
+        }
     });
 
     $('#upload').change(function() {
-        if ($('.toggle-content#upload-toggle').is(':hidden') && $('#upload').is(":checked")) {
-            $('.toggle-content#upload-toggle').show(400);
+        if ($('.toggle-content#expedition_public_toggle').is(':hidden') && $('#upload').is(":checked")) {
+            $('.toggle-content#expedition_public_toggle').show(400);
         } else {
-            $('.toggle-content#upload-toggle').hide(400);
+            $('.toggle-content#expedition_public_toggle').hide(400);
         }
+        if ($('.toggle-content#expeditionCode_toggle').is(':hidden') && $('#upload').is(":checked")) {
+            $('.toggle-content#expeditionCode_toggle').show(400);
+        } else {
+            $('.toggle-content#expeditionCode_toggle').hide(400);
+        }
+//        if ($('.toggle-content#upload-toggle').is(':hidden') && $('#upload').is(":checked")) {
+//            $('.toggle-content#upload-toggle').show(400);
+//        } else {
+//            $('.toggle-content#upload-toggle').hide(400);
+//        }
+
         if ($('.toggle-content#projects_toggle').is(':hidden') && $('#upload').is(":checked")) {
             $('.toggle-content#projects_toggle').show(400);
-        } else {
-            $('.toggle-content#projects_toggle').hide(400);
         }
     });
     $("#projects").change(function() {
@@ -1283,10 +1298,10 @@ function validationFormToggle() {
         }
 
         // only get expedition codes if a user is logged in
-        if ($('*:contains("Logout")').length > 0) {
+//        if ($('*:contains("Logout")').length > 0) {
             $("#expeditionCode").replaceWith("<p id='expeditionCode'>Loading ... </p>");
             getExpeditionCodes();
-        }
+//        }
     });
 }
 
@@ -1388,7 +1403,9 @@ function uploadResults(data) {
         dialog(message, title, buttons);
         // reset the form to default state
         $('form').clearForm();
-        $('.toggle-content#upload-toggle').hide(400);
+        $('.toggle-content#expedition_public_toggle').hide(400);
+        $('.toggle-content#expeditionCode_toggle').hide(400);
+        <!--$('.toggle-content#upload-toggle').hide(400);-->
 
     } else {
         // ask user if want to proceed

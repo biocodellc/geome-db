@@ -25,6 +25,11 @@
                     <td><input type="file" class="btn btn-default btn-xs" name="dataset" id="dataset" /></td>
                 </tr>
 
+                <tr class="toggle-content-upload" id="fasta_toggle">
+                    <td align="right">FASTA File (optional)&nbsp;&nbsp;</td>
+                    <td><input type="file" class="btn btn-default btn-xs" name="fasta" id="fasta" /></td>
+                </tr>
+
                 <tr class="toggle-content" id="projects_toggle">
                     <td align="right">Project&nbsp;&nbsp;</td>
                     <td>
@@ -46,22 +51,18 @@
                     </td>
                 </tr>
 
-                <tbody class="toggle-content" id="upload-toggle">
-                    <tr class="toggle-content-upload" id="fasta_toggle">
-                        <td align="right">FASTA File (optional)&nbsp;&nbsp;</td>
-                        <td><input type="file" class="btn btn-default btn-xs" name="fasta" id="fasta" /></td>
-                    </tr>
+                <!--<tbody class="toggle-content" id="upload-toggle">-->
 
-                    <tr class="toggle-content-upload" id="expeditionCode_toggle">
+                    <tr class="toggle-content-upload toggle-content" id="expeditionCode_toggle">
                         <td align="right">Dataset Code&nbsp;&nbsp;</td>
                         <td><input type="text" name="expeditionCode" id="expeditionCode" /></td>
                     </tr>
 
-                    <tr class="toggle-content-upload" id="expedition_public_toggle">
+                    <tr class="toggle-content-upload toggle-content" id="expedition_public_toggle">
                         <td align="right">Public&nbsp;&nbsp;</td>
                         <td><input type="checkbox" name="public_status" id="public_status" /></td>
                     </tr>
-                </tbody>
+                <!--</tbody>-->
 
                 <tr>
                     <td></td>
