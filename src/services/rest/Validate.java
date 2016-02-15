@@ -2,7 +2,6 @@ package services.rest;
 
 import biocode.fims.bcid.Bcid;
 import biocode.fims.bcid.BcidMinter;
-import biocode.fims.bcid.Database;
 import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.config.ConfigurationFileTester;
 import biocode.fims.fasta.FastaManager;
