@@ -1092,14 +1092,19 @@ function validForm(expeditionCode) {
 
 
     if ($("#dataset").val().length < 1 && $("#fasta").val().length < 1) {
-        message = "Please provide a dataset";
+        message = "Please provide a dataset or fasta file";
         error = true;
     } else if ($('#projects').val() == 0) {
         message = "Please select a project.";
         error = true;
     } else if ($("#upload").is(":checked")) {
+        // check if expeditionCode is a select and val = 0
+        if ($("#dataset").val().length < 1 && $("#fasta").val().length > 1 &&
+                $("#expeditionCode").is("select") && $("#expeditionCode").val() == 0) {
+            message = "You must select an existing expedition code if you are not uploading a new dataset.";
+            error = true;
         // if it doesn't pass the regexp test, then set error message and set error to true
-        if (!dRE.test(expeditionCode)) {
+        } else if (!dRE.test(expeditionCode)) {
             message = "<b>Expedition Code</b> must contain only numbers, letters, or underscores and be 4 to 50 characters long";
             error = true;
         }
@@ -1252,11 +1257,23 @@ function validationFormToggle() {
         });
 
     });
+
+    $("#fasta").change(function() {
+        if ($('.toggle-content#projects_toggle').is(':hidden')) {
+            $('.toggle-content#projects_toggle').show(400);
+        }
+    });
+
     $('#upload').change(function() {
         if ($('.toggle-content#upload-toggle').is(':hidden') && $('#upload').is(":checked")) {
             $('.toggle-content#upload-toggle').show(400);
         } else {
             $('.toggle-content#upload-toggle').hide(400);
+        }
+        if ($('.toggle-content#projects_toggle').is(':hidden') && $('#upload').is(":checked")) {
+            $('.toggle-content#projects_toggle').show(400);
+        } else {
+            $('.toggle-content#projects_toggle').hide(400);
         }
     });
     $("#projects").change(function() {
@@ -1403,17 +1420,23 @@ function writeResults(message) {
 // If the user wants to create a new expedition, get the expedition code
 function createExpedition() {
     var d = new $.Deferred();
-    var message = "<input type='text' id='new_expedition' />";
-    var buttons = {
-        "Create": function() {
-            d.resolve($("#new_expedition").val());
-        },
-        "Cancel": function() {
-            d.reject();
-            $(this).dialog("close");
+    if ($("#dataset").val().length < 1 && $("#fasta").val().length > 1 &&
+            $("#expeditionCode").is("select") && $("#expeditionCode").val() == 0) {
+            dialog("You must select an existing expedition code if you are not uploading a new dataset.", "Select an Expedition",
+                {"OK":function() {d.reject();$(this).dialog("close");}});
+    } else {
+        var message = "<input type='text' id='new_expedition' />";
+        var buttons = {
+            "Create": function() {
+                d.resolve($("#new_expedition").val());
+            },
+            "Cancel": function() {
+                d.reject();
+                $(this).dialog("close");
+            }
         }
+        dialog(message, "Expedition Code", buttons);
     }
-    dialog(message, "Expedition Code", buttons);
     return d.promise();
 }
 
