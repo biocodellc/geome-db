@@ -6,8 +6,8 @@
 
         A Field Information Management System (FIMS) enables data collection at the source (in the field) by
         generating spreadsheet templates, validating data, and assigning persistent identifiers to collected samples.
-        The following diagram shows how the system works.  The most typical functions are <b>Generating Templates</b> and <b>Validating Data</b>,
-              both of which can be found under the Tools menu.
+        The following diagram shows how the system works.  The most typical functions are the <b>Generate Template</b>
+        and <b>Validate and Load Data</b> options, both of which can be found under the Tools menu.
 
         <p><!--<img id='workflowImage' src='docs/Workflow.jpeg'>-->
         <img id='workflowImage' src='docs/Workflow_simple.jpeg'>

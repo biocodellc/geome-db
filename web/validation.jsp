@@ -5,7 +5,7 @@
 
     <div class="sectioncontent">
 
-        <h2>Validation</h2>
+        <h2>Validate and Load Data</h2>
 
         <c:if test="${param.error != null}">
         <script>

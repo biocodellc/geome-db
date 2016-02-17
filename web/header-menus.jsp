@@ -19,7 +19,7 @@
                         <a href="#" data-toggle="dropdown" class="dropdown-toggle">Tools<b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li><a href='/templates.jsp' class='enabled'>Generate Template</a></li>
-                            <li><a href='/validation.jsp' class='enabled'>Validate/Load Data</a></li>
+                            <li><a href='/validation.jsp' class='enabled'>Validate and Load Data</a></li>
                             <li><a href='/query.jsp' class='enabled'>Query</a></li>
                             <li><a href='/secure/expeditions.jsp' class='enabled'>Expedition Manager</a></li>
                             <li><a href='/lookup.jsp' class='enabled'>ID Lookup</a></li>
