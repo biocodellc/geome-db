@@ -313,9 +313,9 @@ public class Validate extends FimsService {
             String status2 = "\t" + "Data Elements Root: " + processController.getExpeditionCode();
             processController.appendStatus(status2);
 
-            // copy over the fasta sequences if this is not the first dataset uploaded
-            // TODO do we want to copy the sequences if a new fasta file is uploaded?
-            if (previousGraph != null) {
+            // copy over the fasta sequences if this is not the first dataset uploaded, but only if there is no
+            // new fasta file to upload
+            if (previousGraph != null && fastaManager.getFastaFilename() == null) {
                 fastaManager.copySequences(previousGraph, currentGraph);
             }
 
