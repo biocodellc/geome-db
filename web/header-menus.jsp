@@ -18,34 +18,50 @@
                     <li class="dropdown">
                         <a href="#" data-toggle="dropdown" class="dropdown-toggle">Tools<b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a href='/templates.jsp' class='enabled'>Template</a></li>
-                            <li><a href='/validation.jsp' class='enabled'>Validation</a></li>
+                            <li><a href='/templates.jsp' class='enabled'>Generate Template</a></li>
+                            <li><a href='/validation.jsp' class='enabled'>Validate/Load Data</a></li>
                             <li><a href='/query.jsp' class='enabled'>Query</a></li>
+                            <li><a href='/secure/expeditions.jsp' class='enabled'>Expedition Manager</a></li>
                             <li><a href='/lookup.jsp' class='enabled'>ID Lookup</a></li>
+                            <li>--------</li>
                             <c:if test="${username == null}">
                                 <li><a href='#' class='disabled'>BCID Creator</a></li>
                             </c:if>
                             <c:if test="${username != null}">
                                 <li><a href='/secure/bcidCreator.jsp' class='enabled'>BCID Creator</a></li>
                             </c:if>
+                            <c:if test="${projectAdmin == true}">
+                                <li><a href='/secure/projects.jsp' class='enabled'>Project Manager</a></li>
+                            </c:if>
+                            <c:if test="${projectAdmin == false}">
+                                <li><a href='#' class='disabled'>Project Manager</a></li>
+                            </c:if>
                         </ul>
                     </li>
 
+<!--
                     <c:if test="${username != null}">
                         <li class="dropdown">
                             <a href="#" data-toggle="dropdown" class="dropdown-toggle">Management<b class="caret"></b></a>
                             <ul class="dropdown-menu">
-                                <li><a href='/secure/expeditions.jsp' class='enabled'>Expedition</a></li>
+                                <li><a href='/lookup.jsp' class='enabled'>ID Lookup</a></li>
+                                <c:if test="${username == null}">
+                                    <li><a href='#' class='disabled'>BCID Creator</a></li>
+                                </c:if>
+                                <c:if test="${username != null}">
+                                    <li><a href='/secure/bcidCreator.jsp' class='enabled'>BCID Creator</a></li>
+                                </c:if>
                                 <c:if test="${projectAdmin == true}">
                                     <li><a href='/secure/projects.jsp' class='enabled'>Project</a></li>
                                 </c:if>
                                 <c:if test="${projectAdmin == false}">
                                     <li><a href='#' class='disabled'>Project</a></li>
                                 </c:if>
-                                <li><a href='/secure/profile.jsp' class='enabled'>User Profile</a></li>
+                                <!--<li><a href='/secure/profile.jsp' class='enabled'>User Profile</a></li>-->
                             </ul>
                         </li>
                     </c:if>
+-->
 
                     <c:if test="${username == null}">
                             <li><a id="login" href="/login.jsp">Login</a></li>
