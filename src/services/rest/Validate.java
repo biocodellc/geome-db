@@ -146,6 +146,7 @@ public class Validate extends FimsService {
             if (fastaManager != null) {
                 fastaManager.validate(uploadPath());
             }
+            processController.printMessages();
 
             // if there were validation errors, we can't upload
             if (processController.getHasErrors()) {
