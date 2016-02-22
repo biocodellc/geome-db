@@ -1,20 +1,25 @@
 <div id="container">
     <nav id="myNavbar" class="navbar navbar-default" role="navigation">
+
         <!-- Brand and toggle get grouped for better mobile display -->
         <div>
             <div class="navbar-header">
+
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/index.jsp">Biocode Field Information Management System</a>
+                <div>
+                <a class="navbar-brand" href="/index.jsp" style="float:left;"><img src='docs/fishHeader.gif' height=50><br></a>
+                <a class="navbar-brand" href="/index.jsp" style="float:left;line-height: 50px;color: #080808;">Biocode Field Information Management System</a>
+                </div>
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav navbar-right">
+                <ul class="nav navbar-nav navbar-right" style="margin-top: -15px;">
                     <li class="dropdown">
                         <a href="#" data-toggle="dropdown" class="dropdown-toggle">Tools<b class="caret"></b></a>
                         <ul class="dropdown-menu">
@@ -45,7 +50,7 @@
                             <li><a href="/secure/profile.jsp">${username}</a></li>
                             <li><a id="logout" href="/biocode-fims/rest/authenticationService/logout/">Logout</a></li>
                     </c:if>
-                    <li><a href="https://github.com/biocodellc/biscicol-fims/wiki/WebApp">Help</a></li>
+                    <li><a href="http://fims.readthedocs.org/en/latest/">Help</a></li>
                 </ul>
             </div><!-- /.navbar-collapse -->
         </div>
