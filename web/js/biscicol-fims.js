@@ -182,6 +182,14 @@ $('#alerts').append(
             '&times;</button>' + message + '</div>');
 }
 
+// A big message
+function showBigMessage(message) {
+$('#alerts').append(
+        '<div class="alert" style="height:400px">' +
+            '<button type="button" class="close" data-dismiss="alert">' +
+            '&times;</button>' + message + '</div>');
+}
+
 // Get the projectID
 function getProjectID() {
     var e = document.getElementById('projects');
@@ -1025,6 +1033,8 @@ function removeConfig() {
 }
 
 /* ====== validation.jsp Functions ======= */
+var datasetId;
+var fastaId;
 
 // Function to display a list in a message
 function list(listName, columnName) {
@@ -1060,9 +1070,9 @@ function parseSpreadsheet(regExpression, sheetName) {
     var deferred = new $.Deferred();
     // older browsers don't have a FileReader
     if (f != null) {
-        var inputFile= $('#dataset')[0].files[0];
+        var inputFile= $('#' + datasetId)[0].files[0];
 
-        var splitFileName = $('#dataset').val().split('.');
+        var splitFileName = $('#' + datasetId).val().split('.');
         if ($.inArray(splitFileName[splitFileName.length - 1], XLSXReader.exts) > -1) {
             $.when(XLSXReader.utils.findCell(inputFile, regExpression, sheetName)).done(function(match) {
                 if (match) {
@@ -1091,7 +1101,7 @@ function validForm(expeditionCode) {
     var dRE = /^[a-zA-Z0-9_-]{4,50}$/
 
 
-    if ($("#dataset").val().length < 1 && $("#fasta").val().length < 1) {
+    if (!$("#" + datasetId).val() && !$("#" + fastaId).val()) {
         message = "Please provide a dataset or fasta file";
         error = true;
     } else if ($('#projects').val() == 0) {
@@ -1099,7 +1109,7 @@ function validForm(expeditionCode) {
         error = true;
     } else if ($("#upload").is(":checked")) {
         // check if expeditionCode is a select and val = 0
-        if ($("#dataset").val().length < 1 && $("#fasta").val().length > 1 &&
+        if (!$("#" + datasetId).val() && $("#" + fastaId).val() &&
                 $("#expeditionCode").is("select") && $("#expeditionCode").val() == 0) {
             message = "You must select an existing expedition code if you are not uploading a new dataset.";
             error = true;
@@ -1108,8 +1118,9 @@ function validForm(expeditionCode) {
             message = "<b>Expedition Code</b> must contain only numbers, letters, or underscores and be 4 to 50 characters long";
             error = true;
         }
-    } else if ($("#fasta").val().length > 1 && expeditionCode.length < 1) {
-        message = "An expedition code is required when you are validating/uploading a fasta file.";
+    } else if ($("#" + fastaId).val().length > 1 && $("#" + datasetId).val().length < 1 && !$("#upload").is(":checked")) {
+        // only a fasta file is present, no dataset, and upload isn't selected
+        message = "You can only upload fasta files";
         error = true;
     }
 
@@ -1134,6 +1145,9 @@ function validatorSubmit() {
         createExpedition().done(function (e) {
 
             if (validForm(e)) {
+                $("#" + datasetId).attr("name","dataset");
+                $("#" + fastaId).attr("name","fasta");
+
                 // if the form is valid, update the dataset code value
                 $("#expeditionCode").replaceWith("<input name='expeditionCode' id='expeditionCode' type='text' value=" + e + " />");
 
@@ -1146,6 +1160,11 @@ function validatorSubmit() {
             }
         })
     } else if (validForm($("#expeditionCode").val())) {
+
+        // change the input names to the appropriate file type
+        $("#" + datasetId).attr("name","dataset");
+        $("#" + fastaId).attr("name","fasta");
+
         submitForm().done(function(data) {
             validationResults(data);
         }).fail(function(jqxhr) {
@@ -1223,51 +1242,78 @@ function checkNAAN(spreadsheetNaan, naan) {
 
 // function to toggle the projectId and expeditionCode inputs of the validation form
 function validationFormToggle() {
-    $('#dataset').change(function() {
+    $("input[name=file]").change(function() {
+        var splitFileName = $(this).val().split('.');
+        var ext = splitFileName[splitFileName.length - 1];
+        var datasetExts = ["xls", "xlsx", "txt"];
+
         // Clear the resultsContainer
         $("#resultsContainer").empty();
 
-        // Check NAAN
-        $.when(parseSpreadsheet("~naan=[0-9]+~", "Instructions")).done(function(spreadsheetNaan) {
-            if (spreadsheetNaan > 0) {
-                $.getJSON(appRoot + "biocode-fims/rest/utils/getNAAN")
-                        .done(function(data) {
-                    checkNAAN(spreadsheetNaan, data.naan);
-                });
-            }
-        });
+        if ($.inArray(ext, datasetExts) >= 0) {
 
-        $.when(parseSpreadsheet("~project_id=[0-9]+~", "Instructions")).done(function(projectId) {
-            if (projectId > 0) {
-                $('#projects').val(projectId);
-                $('#projects').prop('disabled', true);
-                $('#projects').trigger("change");
-                if ($('.toggle-content#projects_toggle').is(':hidden')) {
-                    $('.toggle-content#projects_toggle').show(400);
-                }
+            // always need to set dataset and fasta id's
+            datasetId = this.id;
+            if (this.id == "file1") {
+                fastaId = "file2";
             } else {
-                var p = $("#projects");
-                // add a refresh map link incase the new dataset has the same project as the previous dataset. In that
-                // case, the user won't change projects and needs to manually refresh the map
-                if (p.val() != 0) {
-                    p.parent().append("<a id='refresh_map' href='#' onclick=\"generateMap('map', " + p.val() + ")\">Refresh Map</a>");
-                }
-                p.prop('disabled', false);
-                if ($('.toggle-content#projects_toggle').is(':hidden')) {
-                    $('.toggle-content#projects_toggle').show(400);
-                }
+                fastaId = "file1";
             }
-        });
 
-    });
+            // Check NAAN
+            $.when(parseSpreadsheet("~naan=[0-9]+~", "Instructions")).done(function(spreadsheetNaan) {
+                if (spreadsheetNaan > 0) {
+                    $.getJSON(appRoot + "biocode-fims/rest/utils/getNAAN")
+                            .done(function(data) {
+                        checkNAAN(spreadsheetNaan, data.naan);
+                    });
+                }
+            });
 
-    $("#fasta").change(function() {
-        if ($('.toggle-content#projects_toggle').is(':hidden')) {
-            $('.toggle-content#projects_toggle').show(400);
+            $.when(parseSpreadsheet("~project_id=[0-9]+~", "Instructions")).done(function(projectId) {
+                if (projectId > 0) {
+                    $('#projects').val(projectId);
+                    $('#projects').prop('disabled', true);
+                    $('#projects').trigger("change");
+                    if ($('.toggle-content#projects_toggle').is(':hidden')) {
+                        $('.toggle-content#projects_toggle').show(400);
+                    }
+                } else {
+                    var p = $("#projects");
+                    // add a refresh map link incase the new dataset has the same project as the previous dataset. In that
+                    // case, the user won't change projects and needs to manually refresh the map
+                    if (p.val() != 0) {
+                        p.parent().append("<a id='refresh_map' href='#' onclick=\"generateMap('map', " + p.val() + ")\">Refresh Map</a>");
+                    }
+                    p.prop('disabled', false);
+                    if (!$("#" + datasetId).val()) {
+                        $(".toggle-content#projects_toggle").hide(400);
+                    } else if ($('.toggle-content#projects_toggle').is(':hidden')) {
+                        $('.toggle-content#projects_toggle').show(400);
+                    }
+                }
+            });
+        } else if (ext.toLowerCase() == "fasta") {
+            // always need to set dataset and fasta id's
+            fastaId = this.id;
+            if (this.id == "file1") {
+                datasetId = "file2";
+            } else {
+                datasetId = "file1";
+            }
+
+            $("#projects").prop('disabled', false);
+            if ($('.toggle-content#projects_toggle').is(':hidden')) {
+                $('.toggle-content#projects_toggle').show(400);
+            }
+
+//            if ($('.toggle-content#expeditionCode_toggle').is(':hidden')) {
+//                $('.toggle-content#expeditionCode_toggle').show(400);
+//            } else {
+//                $('.toggle-content#expeditionCode_toggle').hide(400);
+//            }
         }
-        if ($('.toggle-content#expeditionCode_toggle').is(':hidden')) {
-            $('.toggle-content#expeditionCode_toggle').show(400);
-        }
+
     });
 
     $('#upload').change(function() {
@@ -1291,17 +1337,29 @@ function validationFormToggle() {
             $('.toggle-content#projects_toggle').show(400);
         }
     });
+
     $("#projects").change(function() {
         // generate the map if the dataset isn't empty
-        if ($("#dataset").val() != "") {
+        if ($("#" + datasetId).val()) {
             generateMap('map', this.value);
         }
 
         // only get expedition codes if a user is logged in
-//        if ($('*:contains("Logout")').length > 0) {
+        if ($('*:contains("Logout")').length > 0) {
             $("#expeditionCode").replaceWith("<p id='expeditionCode'>Loading ... </p>");
             getExpeditionCodes();
-//        }
+        }
+    });
+
+    $("#file_button").on("click", function() {
+        if ($('.toggle-content#file_toggle').is(':hidden')) {
+            $('.toggle-content#file_toggle').show(400);
+            $('#file_button').html("-");
+        } else {
+            $('.toggle-content#file_toggle').hide(400);
+            $('#file_button').html("+");
+            $('#file2').val(null);
+        }
     });
 }
 
@@ -1324,7 +1382,7 @@ function updateExpeditionPublicStatus(expeditionList) {
     });
 }
 
-// get the expeditions codes a user owny for a project
+// get the expeditions codes a user owns for a project
 function getExpeditionCodes() {
     var projectID = $("#projects").val();
     $.getJSON(appRoot + "biocode-fims/rest/projects/" + projectID + "/expeditions/")
@@ -1339,45 +1397,50 @@ function getExpeditionCodes() {
             $("#expeditionCode").replaceWith(select);
             updateExpeditionPublicStatus(data);
         }).fail(function(jqxhr) {
+            var msg;
+            var title = "Error!";
+            if (jqxhr.status = 401) {
+                msg = "Please login to load your expeditions.";
+                title = "Warning!";
+            } else {
+                msg = JSON.stringify($.parseJSON(jqxhr.responseText).usrMessage);
+                $("#dialogContainer").addClass("error");
+            }
+
             $("#expeditionCode").replaceWith('<input type="text" name="expeditionCode" id="expeditionCode" />');
-            $("#dialogContainer").addClass("error");
             var buttons = {
                 "Ok": function() {
                 $("#dialogContainer").removeClass("error");
                 $(this).dialog("close");
                 }
             }
-            dialog("Error fetching expeditions!<br><br>" + JSON.stringify($.parseJSON(jqxhr.responseText).usrMessage), "Error!", buttons)
+            dialog("Error fetching expeditions!<br><br>" + msg, title, buttons)
         });
 }
 
 // function to handle the results from the rest service /biocode-fims/rest/validate
 function validationResults(data) {
+    $("#resultsContainer").html("");
     var title = "Validation Results";
     if (data.done != null) {
-        var buttons = {
-            "Ok": function() {
-                $(this).dialog("close");
-            }
-        }
         $("#dialogContainer").dialog("close");
-        writeResults(data.done);
-//        dialog(data.done, title, buttons);
+        writeResults(parseResults(data.done));
     } else {
-        if (data.continue_message.message == null) {
+        if (data.continue.message == "continue") {
             continueUpload(false);
         } else {
             // ask user if want to proceed
+            var message = parseResults(data.continue);
             var buttons = {
                 "Continue": function() {
                       continueUpload(false);
                 },
                 "Cancel": function() {
-                    writeResults(data.continue_message.message);
                     $(this).dialog("close");
                 }
             }
-            dialog(data.continue_message.message, title, buttons);
+            writeResults(message);
+            dialog(message, title, buttons);
         }
     }
 }
@@ -1388,7 +1451,7 @@ function uploadResults(data) {
     if (data.done != null || data.error != null) {
         var message;
         if (data.done != null) {
-            message = data.done;
+            message = data.done.message;
             writeResults(message);
         } else {
             $("#dialogContainer").addClass("error");
@@ -1403,9 +1466,10 @@ function uploadResults(data) {
         dialog(message, title, buttons);
         // reset the form to default state
         $('form').clearForm();
+        $('.toggle-content#projects_toggle').hide(400);
         $('.toggle-content#expedition_public_toggle').hide(400);
         $('.toggle-content#expeditionCode_toggle').hide(400);
-        <!--$('.toggle-content#upload-toggle').hide(400);-->
+//        <!--$('.toggle-content#upload-toggle').hide(400);-->
 
     } else {
         // ask user if want to proceed
@@ -1417,27 +1481,75 @@ function uploadResults(data) {
                 $(this).dialog("close");
             }
         }
-        dialog(data.continue_message, title, buttons);
+        dialog(data.continue.message, title, buttons);
     }
+}
+
+// loop through the messages
+function loopMessages(level, groupMessage, messageArray) {
+    var message = "<div id=\"expand\">";
+    message += "<dl>";
+    message += "<dt><div id='groupMessage' class='" + level + "'>" + level + ": " + groupMessage + "</div><dt>";
+    $.each(messageArray, function(key, val) {
+        message += "<dd>" + val + "</dd>";
+    })
+    message += "</dl></div>";
+    return message;
+}
+
+// parse the JSONArray of validation messages
+function parseResults(messages) {
+    var message = "";
+
+    // loop through the messages for each sheet
+    $.each(messages, function(key, val) {
+        $.each(val, function(sheetName, sheetMessages) {
+            if (sheetMessages.errors.length > 0) {
+                message += "<br>\t<b>Validation results on \"" + sheetName + "\" worksheet.</b>";
+                message += "<br><b>1 or more errors found.  Must fix to continue. Click each message for details</b><br>";
+            } else if (sheetMessages.warnings.length > 0) {
+                message += "<br>\t<b>Validation results on \"" + sheetName + "\" worksheet.</b>";
+                message += "<br><b>1 or more warnings found. Click each message for details</b><br>";
+            } else {
+                return false;
+            }
+
+            if (sheetMessages.errors.length > 0) {
+                $.each(sheetMessages.errors, function(key, val) {
+                    $.each(val, function(groupMessage, messageArray) {
+                        message += loopMessages("Error", groupMessage, messageArray);
+                    });
+                });
+            }
+            if (sheetMessages.warnings.length > 0) {
+                $.each(sheetMessages.warnings, function(key, val) {
+                    $.each(val, function(groupMessage, messageArray) {
+                        message += loopMessages("Warning", groupMessage, messageArray);
+                    });
+                });
+            }
+        });
+    });
+    return message;
 }
 
 // write results to the resultsContainer
 function writeResults(message) {
     $("#resultsContainer").show();
     // Add some nice coloring
-    message= message.replace(/Warning:/g,"<span style='color:orange;'>Warning:</span>");
-    message= message.replace(/Error:/g,"<span style='color:red;'>Error:</span>");
+    message = message.replace(/Warning:/g,"<span style='color:orange;'>Warning:</span>");
+    message = message.replace(/Error:/g,"<span style='color:red;'>Error:</span>");
     // set the project key for any projectId expressions... these come from the validator to call REST services w/ extra data
     message= message.replace(/projectId=/g,getProjectKeyValue());
 
     //$("#resultsContainer").html("<table><tr><td>" + message + "</td></tr></table>");
-    $("#resultsContainer").html(message);
+    $("#resultsContainer").html($("#resultsContainer").html() + message);
 }
 
 // If the user wants to create a new expedition, get the expedition code
 function createExpedition() {
     var d = new $.Deferred();
-    if ($("#dataset").val().length < 1 && $("#fasta").val().length > 1 &&
+    if ($("#" + datasetId).val().length < 1 && $("#" + fastaId).val().length > 1 &&
             $("#expeditionCode").is("select") && $("#expeditionCode").val() == 0) {
             dialog("You must select an existing expedition code if you are not uploading a new dataset.", "Select an Expedition",
                 {"OK":function() {d.reject();$(this).dialog("close");}});

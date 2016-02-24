@@ -33,8 +33,8 @@ public class Validate extends FimsService {
      * @param projectId
      * @param expeditionCode
      * @param upload
-     * @param is
-     * @param fileData
+     * @param datasetIs
+     * @param datasetFileData
      *
      * @return
      */
@@ -47,8 +47,8 @@ public class Validate extends FimsService {
                            @FormDataParam("public_status") String publicStatus,
                            @FormDataParam("fasta") InputStream fastaIs,
                            @FormDataParam("fasta") FormDataContentDisposition fastaFileData,
-                           @FormDataParam("dataset") InputStream is,
-                           @FormDataParam("dataset") FormDataContentDisposition fileData) {
+                           @FormDataParam("dataset") InputStream datasetIs,
+                           @FormDataParam("dataset") FormDataContentDisposition datasetFileData) {
         StringBuilder retVal = new StringBuilder();
         Boolean removeController = true;
         Boolean deleteInputFile = true;
@@ -67,12 +67,12 @@ public class Validate extends FimsService {
         // update the status
         processController.appendStatus("Initializing...<br>");
         // save the dataset and/or fasta files
-        if (fileData.getFileName() != null) {
+        if (datasetFileData.getFileName() != null) {
             processController.appendStatus("inputFilename = " + processController.stringToHTMLJSON(
-                    fileData.getFileName()) + "<br>");
+                    datasetFileData.getFileName()) + "<br>");
 
             // Save the uploaded dataset file
-            String splitArray[] = fileData.getFileName().split("\\.");
+            String splitArray[] = datasetFileData.getFileName().split("\\.");
             String ext;
             if (splitArray.length == 0) {
                 // if no extension is found, then guess
@@ -80,7 +80,7 @@ public class Validate extends FimsService {
             } else {
                 ext = splitArray[splitArray.length - 1];
             }
-            inputFile = processController.saveTempFile(is, ext);
+            inputFile = processController.saveTempFile(datasetIs, ext);
             // if inputFile null, then there was an error saving the file
             if (inputFile == null) {
                 throw new FimsRuntimeException("Server error saving dataset file.", 500);
@@ -146,13 +146,12 @@ public class Validate extends FimsService {
             if (fastaManager != null) {
                 fastaManager.validate(uploadPath());
             }
-            processController.printMessages();
 
             // if there were validation errors, we can't upload
             if (processController.getHasErrors()) {
-                retVal.append("{\"done\": \"");
-                retVal.append(processController.getStatusSB().toString());
-                retVal.append("\"}");
+                retVal.append("{\"done\": ");
+                retVal.append(processController.getMessages().toJSONString());
+                retVal.append("}");
 
             } else if (upload != null && upload.equals("on")) {
 
@@ -169,13 +168,13 @@ public class Validate extends FimsService {
 
                 // if there were validation warnings and user would like to upload, we need to ask the user to continue
                 if (processController.getHasWarnings()) {
-                    retVal.append("{\"continue_message\": {\"message\": \"");
-                    retVal.append(processController.getStatusSB().toString());
-                    retVal.append("\"}}");
+                    retVal.append("{\"continue\": ");
+                    retVal.append(processController.getMessages().toJSONString());
+                    retVal.append("}");
 
                     // there were no validation warnings and the user would like to upload, so continue
                 } else {
-                    retVal.append("{\"continue_message\": {}}");
+                    retVal.append("{\"continue\": {\"message\": \"continue\"}}");
                 }
 
                 // don't delete the inputFile because we'll need it for uploading
@@ -185,13 +184,9 @@ public class Validate extends FimsService {
                 removeController = false;
             } else {
                 // User doesn't want to upload. Return the validation results
-                if (!processController.getHasWarnings()) {
-                    processController.appendStatus("<br>" + processController.getWorksheetName() +
-                            " worksheet successfully validated.");
-                }
-                retVal.append("{\"done\": \"");
-                retVal.append(processController.getStatusSB().toString());
-                retVal.append("\"}");
+                retVal.append("{\"done\": ");
+                retVal.append(processController.getMessages().toJSONString());
+                retVal.append("}");
             }
         }
 
@@ -222,8 +217,9 @@ public class Validate extends FimsService {
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
     public String upload(@QueryParam("createExpedition") @DefaultValue("false") Boolean createExpedition) {
         FastaManager fastaManager;
-        String previousGraph = null;
-        String currentGraph = null;
+        String previousGraph;
+        String currentGraph;
+        String successMessage = null;
         ProcessController processController = (ProcessController) session.getAttribute("processController");
 
         // if no processController is found, we can't do anything
@@ -269,10 +265,10 @@ public class Validate extends FimsService {
 
             if (processController.isExpeditionCreateRequired()) {
                 // ask the user if they want to create this expedition
-                return "{\"continue_message\": \"The expedition code \\\"" + JSONObject.escape(processController.getExpeditionCode()) +
+                return "{\"continue\": {\"message\": \"The expedition code \\\"" + JSONObject.escape(processController.getExpeditionCode()) +
                         "\\\" does not exist.  " +
                         "Do you wish to create it now?<br><br>" +
-                        "If you choose to continue, your data will be associated with this new expedition code.\"}";
+                        "If you choose to continue, your data will be associated with this new expedition code.\"}}";
             }
 
             // fetch the current graph before uploading the new graph. This is needed to copy over the fasta sequences
@@ -304,15 +300,13 @@ public class Validate extends FimsService {
                     processController.getExpeditionCode() + " Dataset", uploader.getEndpoint(), currentGraph, null,
                     processController.getFinalCopy(), false));
             bcidMinter.close();
-            String status1 = "\n\nDataset Identifier: http://n2t.net/" + identifier + " (wait 15 minutes for resolution to become active)\n";
+            successMessage = "Dataset Identifier: http://n2t.net/" + identifier + " (wait 15 minutes for resolution to become active)";
 
-            processController.appendStatus(status1);
             // Associate the expeditionCode with this identifier
             ExpeditionMinter expedition = new ExpeditionMinter();
             expedition.attachReferenceToExpedition(processController.getExpeditionCode(), identifier, processController.getProjectId());
             expedition.close();
-            String status2 = "\t" + "Data Elements Root: " + processController.getExpeditionCode();
-            processController.appendStatus(status2);
+            successMessage += "<br>\t" + "Data Elements Root: " + processController.getExpeditionCode();
 
             // copy over the fasta sequences if this is not the first dataset uploaded, but only if there is no
             // new fasta file to upload
@@ -345,12 +339,14 @@ public class Validate extends FimsService {
             // delete the temporary file now that it has been uploaded
             new File(fastaManager.getFastaFilename()).delete();
         }
+
+        successMessage += "<br><font color=#188B00>Successfully Uploaded!</font><br><br>";
+        processController.appendStatus(successMessage);
+
         // remove the processController from the session
         session.removeAttribute("processController");
 
-        processController.appendStatus("<br><font color=#188B00>Successfully Uploaded!</font>");
-
-        return "{\"done\": \"" + processController.getStatusSB().toString() + "\"}";
+        return "{\"done\": {\"message\": \"" + JSONObject.escape(successMessage) + "\"}}";
     }
 
     /**
