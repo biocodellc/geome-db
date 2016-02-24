@@ -33,8 +33,8 @@ public class Validate extends FimsService {
      * @param projectId
      * @param expeditionCode
      * @param upload
-     * @param is
-     * @param fileData
+     * @param datasetIs
+     * @param datasetFileData
      *
      * @return
      */
@@ -47,8 +47,8 @@ public class Validate extends FimsService {
                            @FormDataParam("public_status") String publicStatus,
                            @FormDataParam("fasta") InputStream fastaIs,
                            @FormDataParam("fasta") FormDataContentDisposition fastaFileData,
-                           @FormDataParam("dataset") InputStream is,
-                           @FormDataParam("dataset") FormDataContentDisposition fileData) {
+                           @FormDataParam("dataset") InputStream datasetIs,
+                           @FormDataParam("dataset") FormDataContentDisposition datasetFileData) {
         StringBuilder retVal = new StringBuilder();
         Boolean removeController = true;
         Boolean deleteInputFile = true;
@@ -67,12 +67,12 @@ public class Validate extends FimsService {
         // update the status
         processController.appendStatus("Initializing...<br>");
         // save the dataset and/or fasta files
-        if (fileData.getFileName() != null) {
+        if (datasetFileData.getFileName() != null) {
             processController.appendStatus("inputFilename = " + processController.stringToHTMLJSON(
-                    fileData.getFileName()) + "<br>");
+                    datasetFileData.getFileName()) + "<br>");
 
             // Save the uploaded dataset file
-            String splitArray[] = fileData.getFileName().split("\\.");
+            String splitArray[] = datasetFileData.getFileName().split("\\.");
             String ext;
             if (splitArray.length == 0) {
                 // if no extension is found, then guess
@@ -80,7 +80,7 @@ public class Validate extends FimsService {
             } else {
                 ext = splitArray[splitArray.length - 1];
             }
-            inputFile = processController.saveTempFile(is, ext);
+            inputFile = processController.saveTempFile(datasetIs, ext);
             // if inputFile null, then there was an error saving the file
             if (inputFile == null) {
                 throw new FimsRuntimeException("Server error saving dataset file.", 500);

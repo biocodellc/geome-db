@@ -10,7 +10,7 @@
     <session-config>
         <cookie-config>
             <http-only>true</http-only>
-            <!--<domain>.biscicol.org</domain>-->
+            <domain>.biscicol.org</domain>
         </cookie-config>
     </session-config>
 
