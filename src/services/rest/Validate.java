@@ -282,7 +282,7 @@ public class Validate extends FimsService {
             String outputPrefix = processController.getExpeditionCode() + "_output";
             Triplifier triplifier = new Triplifier(outputPrefix, uploadPath(), processController);
 
-        triplifier.run(processController.getValidation().getSqliteFile());
+            triplifier.run(processController.getValidation().getSqliteFile());
 
             // upload the dataset
             Uploader uploader = new Uploader(processController.getMapping().getMetadata().getTarget(),
