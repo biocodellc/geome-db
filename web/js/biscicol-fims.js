@@ -30,7 +30,7 @@ function listProjects(username, url, expedition) {
         $.each(data, function(index, element) {
             key=element.projectId;
             val=element.projectTitle;
-            var project = val.replace(new RegExp('[#. ]', 'g'), '_') + '_' + key;
+            var project = val.replace(new RegExp('[#. ()]', 'g'), '_') + '_' + key;
 
             html += expandTemplate.replace('{text}', element.projectTitle).replace('-{section}', '');
             html += '<div id="{project}" class="toggle-content">';
@@ -62,7 +62,7 @@ function listProjects(username, url, expedition) {
         $.each(data, function(index, element) {
             key=element.projectId;
             val=element.projectTitle;
-            var project = val.replace(new RegExp('[#. ]', 'g'), '_') + '_' + key;
+            var project = val.replace(new RegExp('[#. ()]', 'g'), '_') + '_' + key;
 
             if (!expedition) {
                 $('div#' + project +'-metadata').data('projectId', key);
@@ -322,7 +322,7 @@ function listExpeditions(divId) {
                                 + '\t <img src="' + appRoot + 'images/right-arrow.png" id="arrow" class="img-arrow">{text}'
                                 + '</a>\n';
             $.each(data, function(index, e) {
-                var expedition = e.expeditionTitle.replace(new RegExp('[#. ]', 'g'), '_') + '_' + e.expeditionId;
+                var expedition = e.expeditionTitle.replace(new RegExp('[#. ()]', 'g'), '_') + '_' + e.expeditionId;
 
                 html += expandTemplate.replace('{text}', e.expeditionTitle).replace('-{section}', '');
                 html += '<div id="{expedition}" class="toggle-content">';
@@ -343,7 +343,7 @@ function listExpeditions(divId) {
             }
             $(divId).html(html);
             $.each(data, function(index, e) {
-                var expedition = e.expeditionTitle.replace(new RegExp('[#. ]', 'g'), '_') + '_' + e.expeditionId;
+                var expedition = e.expeditionTitle.replace(new RegExp('[#. ()]', 'g'), '_') + '_' + e.expeditionId;
 
                 $('div#' + expedition +'-configuration').data('expeditionId', e.expeditionId);
                 $('div#' + expedition +'-resources').data('expeditionId', e.expeditionId);
@@ -1307,11 +1307,6 @@ function validationFormToggle() {
                 $('.toggle-content#projects_toggle').show(400);
             }
 
-//            if ($('.toggle-content#expeditionCode_toggle').is(':hidden')) {
-//                $('.toggle-content#expeditionCode_toggle').show(400);
-//            } else {
-//                $('.toggle-content#expeditionCode_toggle').hide(400);
-//            }
         }
 
     });
@@ -1327,11 +1322,6 @@ function validationFormToggle() {
         } else {
             $('.toggle-content#expeditionCode_toggle').hide(400);
         }
-//        if ($('.toggle-content#upload-toggle').is(':hidden') && $('#upload').is(":checked")) {
-//            $('.toggle-content#upload-toggle').show(400);
-//        } else {
-//            $('.toggle-content#upload-toggle').hide(400);
-//        }
 
         if ($('.toggle-content#projects_toggle').is(':hidden') && $('#upload').is(":checked")) {
             $('.toggle-content#projects_toggle').show(400);
