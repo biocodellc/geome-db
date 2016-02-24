@@ -12,7 +12,7 @@
                     <span class="icon-bar"></span>
                 </button>
                 <div>
-                <a class="navbar-brand" href="/index.jsp" style="float:left;"><img src='docs/fishHeader.gif' height=50><br></a>
+                <a class="navbar-brand" href="/index.jsp" style="float:left;"><img src='/docs/fishHeader.gif' height=50><br></a>
                 <a class="navbar-brand" href="/index.jsp" style="float:left;line-height: 50px;color: #080808;">Biocode Field Information Management System</a>
                 </div>
             </div>
