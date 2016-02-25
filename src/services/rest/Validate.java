@@ -284,7 +284,7 @@ public class Validate extends FimsService {
             Uploader uploader = new Uploader(processController.getMapping().getMetadata().getTarget(),
                     new File(triplifier.getTripleOutputFile()));
 
-            uploader.safeExecute();
+            uploader.execute();
             currentGraph = uploader.getGraphID();
 
             // Detect if this is user=demo or not.  If this is "demo" then do not request EZIDs.
