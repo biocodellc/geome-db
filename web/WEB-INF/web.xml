@@ -91,13 +91,10 @@
         <filter-name>RedirectFilter</filter-name>
         <filter-class>services.RedirectFilter</filter-class>
     </filter>
+
     <filter-mapping>
         <filter-name>RedirectFilter</filter-name>
         <url-pattern>/biocode-fims/*</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-    <filter-name>RedirectFilter</filter-name>
-        <url-pattern>/biocode-fims*</url-pattern>
     </filter-mapping>
 
     <error-page>
