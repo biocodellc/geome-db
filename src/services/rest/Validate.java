@@ -250,6 +250,7 @@ public class Validate extends FimsService {
                 processController
         );
 
+        String outputPrefix = processController.getExpeditionCode() + "_output";
         // if there is an inputFilename, then there is a dataset to upload
         if (processController.getInputFilename() != null) {
 
@@ -275,7 +276,6 @@ public class Validate extends FimsService {
             previousGraph = fastaManager.fetchGraph();
 
             // run the triplifier
-            String outputPrefix = processController.getExpeditionCode() + "_output";
             Triplifier triplifier = new Triplifier(outputPrefix, uploadPath(), processController);
 
             triplifier.run(processController.getValidation().getSqliteFile());
@@ -334,7 +334,7 @@ public class Validate extends FimsService {
                 throw new BadRequestException("No existing dataset was detected. Your fasta file must be " + "" +
                         "associated with an existing dataset.");
             }
-            fastaManager.upload(currentGraph);
+            fastaManager.upload(currentGraph, uploadPath(), outputPrefix);
 
             // delete the temporary file now that it has been uploaded
             new File(fastaManager.getFastaFilename()).delete();
