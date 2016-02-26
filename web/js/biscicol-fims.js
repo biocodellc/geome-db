@@ -1301,12 +1301,13 @@ function validationFormToggle() {
             } else {
                 datasetId = "file1";
             }
+        }
 
+        if (!$("#" + datasetId).val()) {
             $("#projects").prop('disabled', false);
             if ($('.toggle-content#projects_toggle').is(':hidden')) {
                 $('.toggle-content#projects_toggle').show(400);
             }
-
         }
 
     });
