@@ -29,7 +29,7 @@
 }).call(this);
 
 // function to parse the sample coordinates from the spreadsheet
-function getSampleCoordinates(configData, datasetId) {
+function getSampleCoordinates(configData) {
     try {
         var reader = new FileReader();
     } catch(err) {
