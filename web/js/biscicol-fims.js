@@ -1282,7 +1282,7 @@ function validationFormToggle() {
                     var p = $("#projects");
                     // add a refresh map link incase the new dataset has the same project as the previous dataset. In that
                     // case, the user won't change projects and needs to manually refresh the map
-                    if (p.val() != 0) {
+                    if (p.val() != 0 && $("#refresh_map").length == 0) {
                         p.parent().append("<a id='refresh_map' href='#' onclick=\"generateMap('map', " + p.val() + ")\">Refresh Map</a>");
                     }
                     p.prop('disabled', false);
