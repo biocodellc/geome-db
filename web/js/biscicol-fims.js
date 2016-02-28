@@ -1603,27 +1603,8 @@ function submitForm(){
 /* ====== lookup.jsp Functions ======= */
 
 // Take the resolver results and populate a table
-function resolverResults() {
-    $.get(appRoot + "id/" + $("#identifier").val()).done(function(data) {
-        if (data.url) {
-            var host = new RegExp(location.host);
-            if (host.test(data.url)) {
-                $.get(data.url).done(function(data) {
-                    $("#results").html(data);
-                })
-            } else {
-                window.location.replace(data.url);
-            }
-        }
-    }).fail(function(jqxhr) {
-        var html;
-        if (jqxhr.status == 400) {
-            html = "Invalid identifier.";
-        } else {
-            failError(jqxhr);
-        }
-        $("#results").html(html);
-    });
+function submitResolver() {
+    $("form").attr("action", appRoot + "id/" + $("#identifier").val()).submit();
 }
 
 /* ====== resourceTypes.jsp Functions ======= */

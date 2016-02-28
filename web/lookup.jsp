@@ -5,23 +5,21 @@
 
         <h1>Lookup</h1>
 
-        <form>
+        <form method="GET">
             <table border=0>
             <tr>
                 <td>Identifier</td>
                 <td>
                     <input
-                        type=text
-                        name="identifier"
                         id="identifier"
-                        placeholder="ark:/21547/R2MBIO56"
+                        value="ark:/21547/R2"
                         size="40"
-                        onkeypress="if(event.keyCode==13) {resolverResults(); return false;}" />
+                        onkeypress="if(event.keyCode==13) {submitResolver(); return false;}" />
                 </td>
                 <td>
                     <input
                         type="button"
-                        onclick="resolverResults();"
+                        onclick="submitResolver();"
                         name="Submit"
                         value="Submit" />
                 </td>
@@ -38,7 +36,7 @@
     var a = '<%=request.getParameter("id")%>';
     if (a.length > 12) {
         $("#identifier").val(a);
-        resolverResults();
+        submitResolver();
     }
 </script>
 <%@ include file="footer.jsp" %>

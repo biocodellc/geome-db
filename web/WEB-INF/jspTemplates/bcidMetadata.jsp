@@ -5,23 +5,21 @@
 
         <h1>Lookup</h1>
 
-        <form>
+        <form method="GET">
             <table border=0>
                 <tr>
                     <td>Identifier</td>
                     <td>
                         <input
-                            type=text
-                            name="identifier"
                             id="identifier"
                             value="${it.identifier.value}"
                             size="40"
-                            onkeypress="if(event.keyCode==13) {resolverResults(); return false;}" />
+                            onkeypress="if(event.keyCode==13) {submitResolver(); return false;}" />
                     </td>
                     <td>
                         <input
                             type="button"
-                            onclick="resolverResults();"
+                            onclick="submitResolver();"
                             name="Submit"
                             value="Submit" />
                     </td>
@@ -32,7 +30,7 @@
     </div>
 
     <div class="sectioncontent row" id="results">
-        <h1>${it.identifier.value} is a <a href="${it.resource.value}"><!--${it.rdf.shortValue}--> TEST</a></h1>
+        <h1>${it.identifier.value} is a <a href="${it.get('rdf:type').value}">${it.get("rdf:type").shortValue}</a></h1>
         <table>
             <tr>
                 <th>Description</th>
@@ -40,50 +38,49 @@
                 <th>Definition</th>
             </tr>
 
-            <c:forEach var="item" items="${it}">
-            <h3>item:<h3> <p>${item}</p>
-                <c:if test="${key != 'identifier'}">
+            <c:forEach var="entry" items="${it}">
+                <c:if test="${entry.key != 'identifier' && entry.key != 'download' && entry.key != 'datasets' && not empty entry.value.value }">
                     <tr>
-                        <td>${it.key.value}</td>
-                        <td><a href="${it.key.fullKey}">${it.key.key}</a></td>
-                        <td>${it.key.description}</td>
+                        <c:if test="${ entry.value.isResource}">
+                            <td><a href="${entry.value.value}">${entry.value.value}</a></td>
+                        </c:if>
+                        <c:if test="${ !entry.value.isResource}">
+                            <td>${entry.value.value}</td>
+                        </c:if>
+                        <td><a href="${entry.value.fullKey}">${entry.key}</a></td>
+                        <td>${entry.value.description}</td>
                     </tr>
                 </c:if>
             </c:forEach>
         </table>
 
-        <!-- if it.download != null
-        <c:if test="false">
+        <c:if test="${not empty it['download']}">
             <table>
                 <tr>
                     <th>Download:</th>
-                    <th><a href="${it.download.excel}">.xlsx</a></th>
-                    <th><a href="${it.download.tab}">.txt</a></th>
+                    <th><a href="${it.download.appRoot}biocode-fims/rest/projects/query/excel?graphs=${it.download.graph}&project_id=${it.download.projectId}">.xlsx</a></th>
+                    <th><a href="${it.download.appRoot}biocode-fims/rest/projects/query/tab?graphs=${it.download.graph}&project_id=${it.download.projectId}">.txt</a></th>
                     <th><a href="${it.download.n3}">.n3</a></th>
                 </tr>
             </table>
         </c:if>
-        -->
 
-        <!-- if it.datasets != null
-        <c:if test="false">
+        <c:if test="${not empty it['datasets']}">
             <table>
                 <tr>
                     <th>Date</th>
                     <th>Identifier</th>
                 </tr>
 
-                <!-- loop through each dataset
-                <c:forEach var="item" items="${it.datasets}">
+                <!-- loop through each dataset -->
+                <c:forEach var="entry" items="${it.datasets.datasets}">
                     <tr>
-                        <td>${item.ts}</td>
-                        <td>this rootPath + ${item.identifier}</td>
+                        <td>${entry.ts}</td>
+                        <td><a href="${it.datasets.appRoot}lookup.jsp?id=${entry.identifier}">${entry.identifier}</a></td>
                     </tr>
                 </c:forEach>
-                -->
             </table>
         </c:if>
-        -->
     </div>
 </div>
 
