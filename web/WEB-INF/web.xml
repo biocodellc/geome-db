@@ -45,11 +45,15 @@
         </init-param>
         <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>services.id;biocode.fims.rest.services.id</param-value>
+            <param-value>biocode.fims.rest.services.id</param-value>
         </init-param>
         <init-param>
             <param-name>jersey.config.server.provider.classnames</param-name>
-            <param-value>biocode.fims.rest.FimsExceptionMapper</param-value>
+            <param-value>biocode.fims.rest.FimsExceptionMapper;org.glassfish.jersey.server.mvc.jsp.JspMvcFeature</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jersey.config.server.mvc.templateBasePath.jsp</param-name>
+            <param-value>/WEB-INF/jspTemplates</param-value>
         </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>

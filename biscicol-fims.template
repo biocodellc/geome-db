@@ -59,4 +59,4 @@ rights = http://creativecommons.org/licenses/by/3.0/
 # The bcid resolver service
 resolverTargetPrefix = http://www.biscicol.org/id/
 # The bcid metadata service
-resolverMetadataPrefix = http://www.biscicol.org/id/metadata/
+resolverMetadataPrefix = http://www.biscicol.org/id/
