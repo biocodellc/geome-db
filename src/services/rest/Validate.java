@@ -296,9 +296,15 @@ public class Validate extends FimsService {
 
             // Mint the data group
             BcidMinter bcidMinter = new BcidMinter(ezidRequest);
-            String identifier = bcidMinter.createEntityBcid(new Bcid(processController.getUserId(), "http://purl.org/dc/dcmitype/Dataset",
-                    processController.getExpeditionCode() + " Dataset", uploader.getEndpoint(), currentGraph, null,
-                    processController.getFinalCopy(), false));
+            String identifier = bcidMinter.createEntityBcid(new Bcid(
+                    processController.getUserId(),
+                    "http://purl.org/dc/dcmitype/Dataset",
+                    processController.getExpeditionCode() + " Dataset",
+                    uploader.getEndpoint(),
+                    currentGraph,
+                    null,
+                    processController.getFinalCopy(),
+                    false));
             bcidMinter.close();
             successMessage = "Dataset Identifier: http://n2t.net/" + identifier + " (wait 15 minutes for resolution to become active)";
 
