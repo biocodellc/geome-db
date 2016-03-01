@@ -58,9 +58,16 @@
             <table>
                 <tr>
                     <th>Download:</th>
+
+                    <c:if test="${empty it.download['message']}">
                     <th><a href="${it.download.appRoot}biocode-fims/rest/projects/query/excel?graphs=${it.download.graph}&project_id=${it.download.projectId}">.xlsx</a></th>
                     <th><a href="${it.download.appRoot}biocode-fims/rest/projects/query/tab?graphs=${it.download.graph}&project_id=${it.download.projectId}">.txt</a></th>
                     <th><a href="${it.download.n3}">.n3</a></th>
+                    </c:if>
+
+                    <c:if test="${not empty it.download['message']}">
+                    <th>${it.download.message}</th>
+                    </c:if>
                 </tr>
             </table>
         </c:if>
