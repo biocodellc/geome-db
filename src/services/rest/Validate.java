@@ -92,28 +92,30 @@ public class Validate extends FimsService {
                 uploadPath(),
                 processController
         );
-        if (fastaFileData.getFileName() != null) {
-            processController.appendStatus("fastaFilename = " + processController.stringToHTMLJSON(
-                    fastaFileData.getFileName()) + "<br>");
+        if (fastaFileData != null) {
+            if (fastaFileData.getFileName() != null) {
+                processController.appendStatus("fastaFilename = " + processController.stringToHTMLJSON(
+                        fastaFileData.getFileName()) + "<br>");
 
-            // Save the uploaded fasta file
-            String splitArray[] = fastaFileData.getFileName().split("\\.");
-            String fastaExt;
-            if (splitArray.length == 0) {
-                // if no extension is found, then guess
-                fastaExt = "fasta";
-            } else {
-                fastaExt = splitArray[splitArray.length - 1];
-            }
-            fastaFile = processController.saveTempFile(fastaIs, fastaExt);
-            // if inputFile null, then there was an error saving the file
-            if (fastaFile == null) {
-                throw new FimsRuntimeException("Server error saving fasta file.", 500);
-            }
+                // Save the uploaded fasta file
+                String splitArray[] = fastaFileData.getFileName().split("\\.");
+                String fastaExt;
+                if (splitArray.length == 0) {
+                    // if no extension is found, then guess
+                    fastaExt = "fasta";
+                } else {
+                    fastaExt = splitArray[splitArray.length - 1];
+                }
+                fastaFile = processController.saveTempFile(fastaIs, fastaExt);
+                // if inputFile null, then there was an error saving the file
+                if (fastaFile == null) {
+                    throw new FimsRuntimeException("Server error saving fasta file.", 500);
+                }
 
-            fastaManager = new FusekiFastaManager(
-                    processController.getMapping().getMetadata().getQueryTarget(), processController, fastaFile);
-            processController.setFastaManager(fastaManager);
+                fastaManager = new FusekiFastaManager(
+                        processController.getMapping().getMetadata().getQueryTarget(), processController, fastaFile);
+                processController.setFastaManager(fastaManager);
+            }
         }
 
 
