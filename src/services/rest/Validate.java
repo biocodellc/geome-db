@@ -307,13 +307,11 @@ public class Validate extends FimsService {
                     null,
                     processController.getFinalCopy(),
                     false));
-            bcidMinter.close();
             successMessage = "Dataset Identifier: http://n2t.net/" + identifier + " (wait 15 minutes for resolution to become active)";
 
             // Associate the expeditionCode with this identifier
             ExpeditionMinter expedition = new ExpeditionMinter();
             expedition.attachReferenceToExpedition(processController.getExpeditionCode(), identifier, processController.getProjectId());
-            expedition.close();
             successMessage += "<br>\t" + "Data Elements Root: " + processController.getExpeditionCode();
 
             // copy over the fasta sequences if this is not the first dataset uploaded, but only if there is no

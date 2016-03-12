@@ -35,7 +35,6 @@ public class Users extends FimsService {
         }
         Authenticator a = new Authenticator();
         JSONObject resetToken = a.generateResetToken(username);
-        a.close();
 
         String resetTokenURL = appRoot + "resetPass.jsp?resetToken=" +
                 resetToken.get("resetToken");
@@ -66,7 +65,6 @@ public class Users extends FimsService {
     public Response listAdminProfileEditorAsTable(@PathParam("user") String username) {
         UserMinter u = new UserMinter();
         JSONObject profile = u.getUserProfile(username);
-        u.close();
         return Response.ok(getProfileEditor(profile, true)).build();
     }
 
@@ -77,7 +75,6 @@ public class Users extends FimsService {
     public Response listProfileEditorAsTable() {
         UserMinter u = new UserMinter();
         JSONObject profile = u.getUserProfile(username);
-        u.close();
         return Response.ok(getProfileEditor(profile, false)).build();
     }
 
@@ -152,7 +149,6 @@ public class Users extends FimsService {
     public Response listProfileAsTable() {
         UserMinter u = new UserMinter();
         JSONObject profile = u.getUserProfile(username);
-        u.close();
         StringBuilder sb = new StringBuilder();
 
         sb.append("<table id=\"profile\">\n");

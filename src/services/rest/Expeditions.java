@@ -28,7 +28,6 @@ public class Expeditions extends FimsService {
         ExpeditionMinter e = new ExpeditionMinter();
 
         ArrayList<JSONObject> resources = e.getResources(expeditionId);
-        e.close();
 
         StringBuilder sb = new StringBuilder();
         sb.append("<table>\n");
@@ -120,7 +119,6 @@ public class Expeditions extends FimsService {
         }
 
         JSONObject metadata = e.getMetadata(expeditionId);
-        e.close();
 
         StringBuilder sb = new StringBuilder();
         sb.append("<table>\n");
