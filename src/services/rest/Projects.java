@@ -406,7 +406,6 @@ public class Projects extends FimsService {
     public Response listMetadataAsTable(@PathParam("projectId") int projectId) {
         ProjectMinter project = new ProjectMinter();
         JSONObject metadata = project.getMetadata(projectId, username);
-        project.close();
         StringBuilder sb = new StringBuilder();
 
         sb.append("<table>\n");
@@ -450,7 +449,6 @@ public class Projects extends FimsService {
         StringBuilder sb = new StringBuilder();
         ProjectMinter project = new ProjectMinter();
         JSONObject metadata = project.getMetadata(projectId, username);
-        project.close();
 
         sb.append("<form id=\"submitForm\" method=\"POST\">\n");
         sb.append("<table>\n");
@@ -505,12 +503,10 @@ public class Projects extends FimsService {
         }
 
         JSONObject response = p.getProjectUsers(projectId);
-        p.close();
         JSONArray projectUsers = (JSONArray) response.get("users");
 
         UserMinter userMinter = new UserMinter();
         JSONArray users = userMinter.getUsers();
-        userMinter.close();
 
         StringBuilder sb = new StringBuilder();
 
@@ -568,14 +564,11 @@ public class Projects extends FimsService {
     public Response listExpeditionsAsTable(@PathParam("projectId") int projectId) {
         ProjectMinter projectMinter = new ProjectMinter();
         if (!projectMinter.isProjectAdmin(username, projectId)) {
-            projectMinter.close();
             throw new ForbiddenRequestException("You must be this project's admin in order to view its expeditions.");
         }
-        projectMinter.close();
 
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
         JSONArray expeditions = expeditionMinter.getExpeditions(projectId, username);
-        expeditionMinter.close();
 
         StringBuilder sb = new StringBuilder();
         sb.append("<form method=\"POST\">\n");
