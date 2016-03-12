@@ -3,7 +3,7 @@
     <div class="sectioncontent" id="pass_reset">
         <h2>Password Reset</h2>
 
-        <form method="POST">
+        <form>
             <table>
                 <tr>
                     <td align="right">Username</td>
@@ -15,7 +15,7 @@
                 </tr>
                 <tr>
                     <td></td>
-                    <td><input type="button" value="Submit" onclick="resetPassSubmit();"></td>
+                    <td><input type="button" value="Submit" onclick="resetSubmit();"></td>
                 </tr>
             </table>
         </form>

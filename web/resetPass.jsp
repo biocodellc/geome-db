@@ -1,10 +1,10 @@
 <%@ include file="header-home.jsp" %>
 
 <div class="section">
-    <div class="sectioncontent" id="pass_reset">
+    <div class="sectioncontent">
         <h2>Password Reset</h2>
 
-        <form method="POST" action="/biocode-fims/rest/users/resetPassword" autocomplete="off">
+        <form method="POST" id="resetForm" autocomplete="off">
             <table>
                 <tr>
                     <td align="right">New Password</td>
@@ -23,7 +23,7 @@
                 </c:if>
                 <tr>
                     <td><input type="hidden" name="resetToken" value="${param.resetToken}" /></td>
-                    <td><input type="submit" value="Submit"></td>
+                    <td><input type="button" value="Submit" onclick="resetPassSubmit();"></td>
                 </tr>
             </table>
         </form>

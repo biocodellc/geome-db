@@ -216,9 +216,32 @@ function login() {
 
 /* ====== reset.jsp Functions ======= */
 
+function resetSubmit() {
+    var jqxhr = $.get(appRoot + "biocode-fims/rest/users/" + $("#username").val() + "/sendResetToken")
+        .done(function(data) {
+            if (data.success) {
+                var buttons = {
+                    "Ok": function() {
+                        window.location.replace(appRoot);
+                        $(this).dialog("close");
+                    }
+                }
+                dialog(data.success, "Password Reset Sent", buttons);
+                return;
+            } else {
+                failError(null);
+            }
+        }).fail(function(jqxhr) {
+            failError(jqxhr);
+        });
+        loadingDialog(jqxhr);
+}
+
+/* ====== resetPass.jsp Functions ======= */
+
 // function to submit the reset password form
 function resetPassSubmit() {
-    var jqxhr = $.get(appRoot + "biocode-fims/rest/users/" + $("#username").val() + "/sendResetToken/")
+    var jqxhr = $.post(appRoot + "biocode-fims/rest/users/resetPassword/", $("#resetForm").serialize())
         .done(function(data) {
             if (data.success) {
                 var buttons = {
