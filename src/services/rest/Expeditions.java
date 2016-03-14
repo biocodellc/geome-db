@@ -1,6 +1,5 @@
 package services.rest;
 
-import biocode.fims.bcid.Database;
 import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
@@ -69,7 +68,6 @@ public class Expeditions extends FimsService {
     @Produces(MediaType.TEXT_HTML)
     public Response listDatasetsAsTable(@PathParam("expeditionId") int expeditionId) {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
-        Integer userId = new Database().getUserId(username);
 
         if (!ignoreUser && !expeditionMinter.userOwnsExpedition(userId, expeditionId)) {
             throw new ForbiddenRequestException("You must own this expedition in order to view its datasets.");
@@ -111,7 +109,6 @@ public class Expeditions extends FimsService {
     @Path("{expeditionId}/metadataAsTable")
     @Produces(MediaType.TEXT_HTML)
     public Response listMetadataAsTable(@PathParam("expeditionId") int expeditionId) {
-        Integer userId = new Database().getUserId(username);
         ExpeditionMinter e = new ExpeditionMinter();
 
         if (!ignoreUser && !e.userOwnsExpedition(userId, expeditionId)) {
