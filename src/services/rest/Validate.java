@@ -280,7 +280,9 @@ public class Validate extends FimsService {
             // run the triplifier
             Triplifier triplifier = new Triplifier(outputPrefix, uploadPath(), processController);
 
-            triplifier.run(processController.getValidation().getSqliteFile());
+            boolean runDeepRoots = Boolean.valueOf(sm.retrieveValue("deepRoots"));
+            
+            triplifier.run(processController.getValidation().getSqliteFile(), runDeepRoots);
 
             // upload the dataset
             Uploader uploader = new Uploader(processController.getMapping().getMetadata().getTarget(),
