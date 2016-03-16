@@ -1,0 +1,6 @@
+jdk.home.1.7=/Library/Java/JavaVirtualMachines/jdk1.7.0_80.jdk/Contents/Home
+module.biocode-fims-commons.basedir=/Users/rjewing/IdeaProjects/biocode-fims-commons
+module.biocode-fims-fuseki.basedir=/Users/rjewing/IdeaProjects/biocode-fims-fuseki
+deploy.path=/usr/local/opt/jetty/libexec/webapps
+# the server root path you want to deploy to
+deploy.root.path=root

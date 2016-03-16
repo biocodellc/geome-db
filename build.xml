@@ -1,185 +1,451 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="biscicol-fims" default="all">
+  
+  
+  <property file="build.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="700m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/*.rbc/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/RCS/**"/>
+    <exclude name="**/SCCS/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/rcs/**"/>
+    <exclude name="**/vssver.scc/**"/>
+    <exclude name="**/vssver2.scc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.war"/>
+    <include name="*.swc"/>
+    <include name="*.apk"/>
+    <include name="*.zip"/>
+    <include name="*.egg"/>
+    <include name="*.ane"/>
+    <include name="*.jar"/>
+    <include name="*.ear"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+    <exclude name="**/?*.aj"/>
+  </patternset>
+  
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.1.7" value="${jdk.home.1.7}/bin"/>
+  <path id="jdk.classpath.1.7">
+    <fileset dir="${jdk.home.1.7}">
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/sunec.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+      <include name="jre/lib/ext/sunpkcs11.jar"/>
+      <include name="jre/lib/ext/zipfs.jar"/>
+      <include name="jre/lib/htmlconverter.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/jfr.jar"/>
+      <include name="jre/lib/jfxrt.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/rt.jar"/>
+      <include name="lib/ant-javafx.jar"/>
+      <include name="lib/dt.jar"/>
+      <include name="lib/javafx-doclet.jar"/>
+      <include name="lib/javafx-mx.jar"/>
+      <include name="lib/jconsole.jar"/>
+      <include name="lib/sa-jdi.jar"/>
+      <include name="lib/tools.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.1.7}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.7}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.7"/>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.biscicol-fims-commons-lib.classpath">
+    <fileset dir="${module.biocode-fims-commons.basedir}/lib">
+      <patternset refid="library.patterns"/>
+    </fileset>
+  </path>
+  
+  <path id="library.biscicol-fims-fuseki-lib.classpath">
+    <fileset dir="${module.biocode-fims-fuseki.basedir}/lib">
+        <patternset refid="library.patterns"/>
+    </fileset>
+  </path>
+  
+  <path id="library.biscicol-fims-lib.classpath">
+    <fileset dir="${basedir}/lib">
+      <patternset refid="library.patterns"/>
+    </fileset>
+  </path>
+  
+  
+  <!-- Global Libraries -->
+  
+  <!-- Modules -->
+  
+  
+  <!-- Module biocode-fims-commons -->
+  
+  <dirname property="module.biocode-fims-commons.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.biocode-fims-commons" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.biocode-fims-commons" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.biocode-fims-commons" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.biocode-fims-commons" value="-encoding UTF-8 -source 1.7 -target 1.7 ${compiler.args}"/>
+  
+  <property name="biocode-fims-commons.output.dir" value="${module.biocode-fims-commons.basedir}/out/production/biocode-fims-commons"/>
+  <property name="biocode-fims-commons.testoutput.dir" value="${module.biocode-fims-commons.basedir}/out/test/biocode-fims-commons"/>
+  
+  <path id="biocode-fims-commons.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="biocode-fims-commons.module.production.classpath">
+    <path refid="${module.jdk.classpath.biocode-fims-commons}"/>
+    <path refid="library.biscicol-fims-commons-lib.classpath"/>
+  </path>
+  
+  <path id="biocode-fims-commons.runtime.production.module.classpath">
+    <pathelement location="${biocode-fims-commons.output.dir}"/>
+    <path refid="library.biscicol-fims-commons-lib.classpath"/>
+  </path>
+  
+  <path id="biocode-fims-commons.module.classpath">
+    <path refid="${module.jdk.classpath.biocode-fims-commons}"/>
+    <pathelement location="${biocode-fims-commons.output.dir}"/>
+    <path refid="library.biscicol-fims-commons-lib.classpath"/>
+  </path>
+  
+  <path id="biocode-fims-commons.runtime.module.classpath">
+    <pathelement location="${biocode-fims-commons.testoutput.dir}"/>
+    <pathelement location="${biocode-fims-commons.output.dir}"/>
+    <path refid="library.biscicol-fims-commons-lib.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.biocode-fims-commons">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.biocode-fims-commons">
+    <patternset refid="excluded.from.module.biocode-fims-commons"/>
+  </patternset>
+  
+  <path id="biocode-fims-commons.module.sourcepath">
+    <dirset dir="${module.biocode-fims-commons.basedir}/../biocode-fims-commons">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.biocode-fims-commons" depends="compile.module.biocode-fims-commons.production,compile.module.biocode-fims-commons.tests" description="Compile module biocode-fims-commons"/>
+  
+  <target name="compile.module.biocode-fims-commons.production" description="Compile module biocode-fims-commons; production classes">
+    <mkdir dir="${biocode-fims-commons.output.dir}"/>
+    <javac destdir="${biocode-fims-commons.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.biocode-fims-commons}/javac">
+      <compilerarg line="${compiler.args.biocode-fims-commons}"/>
+      <bootclasspath refid="biocode-fims-commons.module.bootclasspath"/>
+      <classpath refid="biocode-fims-commons.module.production.classpath"/>
+      <src refid="biocode-fims-commons.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.biocode-fims-commons"/>
+    </javac>
+    
+    <copy todir="${biocode-fims-commons.output.dir}">
+      <fileset dir="${module.biocode-fims-commons.basedir}/../biocode-fims-commons/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.biocode-fims-commons.tests" depends="compile.module.biocode-fims-commons.production" description="compile module biocode-fims-commons; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.biocode-fims-commons" description="cleanup module">
+    <delete dir="${biocode-fims-commons.output.dir}"/>
+    <delete dir="${biocode-fims-commons.testoutput.dir}"/>
+  </target>
+  
+  
+  <!-- Module biocode-fims-fuseki -->
+  
+  <dirname property="module.biocode-fims-fuseki.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.biocode-fims-fuseki" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.biocode-fims-fuseki" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.biocode-fims-fuseki" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.biocode-fims-fuseki" value="-encoding UTF-8 -source 1.7 -target 1.7 ${compiler.args}"/>
+  
+  <property name="biocode-fims-fuseki.output.dir" value="${module.biocode-fims-fuseki.basedir}/out/production/biocode-fims-fuseki"/>
+  <property name="biocode-fims-fuseki.testoutput.dir" value="${module.biocode-fims-fuseki.basedir}/out/test/biocode-fims-fuseki"/>
+  
+  <path id="biocode-fims-fuseki.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="biocode-fims-fuseki.module.production.classpath">
+    <path refid="${module.jdk.classpath.biocode-fims-fuseki}"/>
+    <path refid="library.biscicol-fims-fuseki-lib.classpath"/>
+    <pathelement location="${biocode-fims-commons.output.dir}"/>
+    <path refid="library.biscicol-fims-commons-lib.classpath"/>
+  </path>
+  
+  <path id="biocode-fims-fuseki.runtime.production.module.classpath">
+    <pathelement location="${biocode-fims-fuseki.output.dir}"/>
+    <path refid="library.biscicol-fims-fuseki-lib.classpath"/>
+    <path refid="biocode-fims-commons.runtime.production.module.classpath"/>
+  </path>
+  
+  <path id="biocode-fims-fuseki.module.classpath">
+    <path refid="${module.jdk.classpath.biocode-fims-fuseki}"/>
+    <pathelement location="${biocode-fims-fuseki.output.dir}"/>
+    <path refid="library.biscicol-fims-fuseki-lib.classpath"/>
+    <pathelement location="${biocode-fims-commons.testoutput.dir}"/>
+    <pathelement location="${biocode-fims-commons.output.dir}"/>
+    <path refid="library.biscicol-fims-commons-lib.classpath"/>
+  </path>
+  
+  <path id="biocode-fims-fuseki.runtime.module.classpath">
+    <pathelement location="${biocode-fims-fuseki.testoutput.dir}"/>
+    <pathelement location="${biocode-fims-fuseki.output.dir}"/>
+    <path refid="library.biscicol-fims-fuseki-lib.classpath"/>
+    <path refid="biocode-fims-commons.runtime.module.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.biocode-fims-fuseki">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.biocode-fims-fuseki">
+    <patternset refid="excluded.from.module.biocode-fims-fuseki"/>
+  </patternset>
+  
+  <path id="biocode-fims-fuseki.module.sourcepath">
+    <dirset dir="${module.biocode-fims-fuseki.basedir}/../biocode-fims-fuseki">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.biocode-fims-fuseki" depends="compile.module.biocode-fims-fuseki.production,compile.module.biocode-fims-fuseki.tests" description="Compile module biocode-fims-fuseki"/>
+  
+  <target name="compile.module.biocode-fims-fuseki.production" depends="compile.module.biocode-fims-commons" description="Compile module biocode-fims-fuseki; production classes">
+    <mkdir dir="${biocode-fims-fuseki.output.dir}"/>
+    <javac destdir="${biocode-fims-fuseki.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.biocode-fims-fuseki}/javac">
+      <compilerarg line="${compiler.args.biocode-fims-fuseki}"/>
+      <bootclasspath refid="biocode-fims-fuseki.module.bootclasspath"/>
+      <classpath refid="biocode-fims-fuseki.module.production.classpath"/>
+      <src refid="biocode-fims-fuseki.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.biocode-fims-fuseki"/>
+    </javac>
+    
+    <copy todir="${biocode-fims-fuseki.output.dir}">
+      <fileset dir="${module.biocode-fims-fuseki.basedir}/../biocode-fims-fuseki/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.biocode-fims-fuseki.tests" depends="compile.module.biocode-fims-fuseki.production" description="compile module biocode-fims-fuseki; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.biocode-fims-fuseki" description="cleanup module">
+    <delete dir="${biocode-fims-fuseki.output.dir}"/>
+    <delete dir="${biocode-fims-fuseki.testoutput.dir}"/>
+  </target>
+  
+  
+  <!-- Module biscicol-fims -->
+  
+  <dirname property="module.biscicol-fims.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.biscicol-fims" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.biscicol-fims" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.biscicol-fims" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.biscicol-fims" value="-encoding UTF-8 -source 1.7 -target 1.7 ${compiler.args}"/>
+  
+  <property name="biscicol-fims.output.dir" value="${module.biscicol-fims.basedir}/out/production/biscicol-fims"/>
+  <property name="biscicol-fims.testoutput.dir" value="${module.biscicol-fims.basedir}/out/test/biscicol-fims"/>
+  
+  <path id="biscicol-fims.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="biscicol-fims.module.production.classpath">
+    <path refid="${module.jdk.classpath.biscicol-fims}"/>
+    <pathelement location="${biocode-fims-commons.output.dir}"/>
+    <path refid="library.biscicol-fims-commons-lib.classpath"/>
+    <path refid="library.biscicol-fims-lib.classpath"/>
+    <pathelement location="${biocode-fims-fuseki.output.dir}"/>
+    <path refid="library.biscicol-fims-fuseki-lib.classpath"/>
+  </path>
+  
+  <path id="biscicol-fims.runtime.production.module.classpath">
+    <pathelement location="${biscicol-fims.output.dir}"/>
+    <path refid="biocode-fims-commons.runtime.production.module.classpath"/>
+    <path refid="library.biscicol-fims-lib.classpath"/>
+    <path refid="biocode-fims-fuseki.runtime.production.module.classpath"/>
+  </path>
+  
+  <path id="biscicol-fims.module.classpath">
+    <path refid="${module.jdk.classpath.biscicol-fims}"/>
+    <pathelement location="${biscicol-fims.output.dir}"/>
+    <pathelement location="${biocode-fims-commons.testoutput.dir}"/>
+    <pathelement location="${biocode-fims-commons.output.dir}"/>
+    <path refid="library.biscicol-fims-commons-lib.classpath"/>
+    <path refid="library.biscicol-fims-lib.classpath"/>
+    <pathelement location="${biocode-fims-fuseki.testoutput.dir}"/>
+    <pathelement location="${biocode-fims-fuseki.output.dir}"/>
+    <path refid="library.biscicol-fims-fuseki-lib.classpath"/>
+  </path>
+  
+  <path id="biscicol-fims.runtime.module.classpath">
+    <pathelement location="${biscicol-fims.testoutput.dir}"/>
+    <pathelement location="${biscicol-fims.output.dir}"/>
+    <path refid="biocode-fims-commons.runtime.module.classpath"/>
+    <path refid="library.biscicol-fims-lib.classpath"/>
+    <path refid="biocode-fims-fuseki.runtime.module.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.biscicol-fims">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.biscicol-fims">
+    <patternset refid="excluded.from.module.biscicol-fims"/>
+  </patternset>
+  
+  <path id="biscicol-fims.module.sourcepath">
+    <dirset dir="${module.biscicol-fims.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.biscicol-fims" depends="compile.module.biscicol-fims.production,compile.module.biscicol-fims.tests" description="Compile module biscicol-fims"/>
+  
+  <target name="compile.module.biscicol-fims.production" depends="compile.module.biocode-fims-commons,compile.module.biocode-fims-fuseki" description="Compile module biscicol-fims; production classes">
+    <mkdir dir="${biscicol-fims.output.dir}"/>
+    <javac destdir="${biscicol-fims.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.biscicol-fims}/javac">
+      <compilerarg line="${compiler.args.biscicol-fims}"/>
+      <bootclasspath refid="biscicol-fims.module.bootclasspath"/>
+      <classpath refid="biscicol-fims.module.production.classpath"/>
+      <src refid="biscicol-fims.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.biscicol-fims"/>
+    </javac>
+    
+    <copy todir="${biscicol-fims.output.dir}">
+      <fileset dir="${module.biscicol-fims.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.biscicol-fims.tests" depends="compile.module.biscicol-fims.production" description="compile module biscicol-fims; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.biscicol-fims" description="cleanup module">
+    <delete dir="${biscicol-fims.output.dir}"/>
+    <delete dir="${biscicol-fims.testoutput.dir}"/>
+  </target>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.biocode-fims-commons, clean.module.biocode-fims-fuseki, clean.module.biscicol-fims" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, compile.module.biocode-fims-commons, compile.module.biocode-fims-fuseki, compile.module.biscicol-fims" description="build all modules"/>
+  
+  <target name="all" depends="build.modules" description="build all"/>
 
-    <property name="jdk.home.1.7" value="/usr"/>
+  <target name="deploy" depends="build.modules" description="build all modules and deploy application">
+    <copy todir="${deploy.path}/${deploy.root.path}"
+          preservelastmodified="true">
+      <fileset dir="${module.biscicol-fims.basedir}/web">
+        <include name="**/*.*"/>
+      </fileset>
+    </copy>
+    <copy todir="${deploy.path}/${deploy.root.path}/WEB-INF/classes"
+          preservelastmodified="true">
+      <fileset dir="${biscicol-fims.output.dir}">
+        <include name="**/*.*"/>
+      </fileset>
+      <fileset dir="${biocode-fims-commons.output.dir}">
+        <include name="**/*.*"/>
+      </fileset>
+      <fileset dir="${biocode-fims-fuseki.output.dir}">
+        <include name="**/*.*"/>
+      </fileset>
+      <file file="biscicol-fims.props" />
+    </copy>
+    <copy todir="${deploy.path}/${deploy.root.path}/WEB-INF/lib"
+          preservelastmodified="true">
+      <path refid="biscicol-fims.module.production.classpath" />
+      <path refid="biocode-fims-commons.module.production.classpath" />
+      <path refid="biocode-fims-fuseki.module.production.classpath" />
+    </copy>
+  </target>
 
-    <!-- Compiler options -->
+  <target name="war" depends="build.modules" description="build war">
+    <war destfile="dist/${deploy.root.path}.war" webxml="web/WEB-INF/web.xml">
+      <fileset dir="web"/>
+      <lib dir="lib" />
+      <lib dir="${module.biocode-fims-commons.basedir}/lib" excludes="servlet-api.jar"/>
+      <classes dir="${biscicol-fims.output.dir}"/>
+      <classes dir="${biocode-fims-commons.output.dir}"/>
+      <classes dir="${biocode-fims-fuseki.output.dir}"/>
+      <classes dir="" includes="arms-fims.props"/>
+    </war>
+  </target>
 
-    <property name="compiler.debug" value="true"/>
-    <property name="compiler.generate.no.warnings" value="off"/>
-    <property name="compiler.args" value=""/>
-    <property name="compiler.max.memory" value="128m"/>
-    <patternset id="ignored.files">
-        <exclude name="**/CVS/**"/>
-        <exclude name="**/SCCS/**"/>
-        <exclude name="**/RCS/**"/>
-        <exclude name="**/rcs/**"/>
-        <exclude name="**/.DS_Store/**"/>
-        <exclude name="**/.svn/**"/>
-        <exclude name="**/.pyc/**"/>
-        <exclude name="**/.pyo/**"/>
-        <exclude name="**/*.pyc/**"/>
-        <exclude name="**/*.pyo/**"/>
-        <exclude name="**/.git/**"/>
-        <exclude name="**/*.hprof/**"/>
-        <exclude name="**/_svn/**"/>
-        <exclude name="**/.hg/**"/>
-    </patternset>
-    <patternset id="library.patterns">
-        <include name="*.zip"/>
+  <target name="deployWar" depends="war" description="deploy application as war">
+    <copy todir="${deploy.path}" preservelastmodified="true">
+      <fileset dir="dist">
         <include name="*.war"/>
-        <include name="*.egg"/>
-        <include name="*.ear"/>
-        <include name="*.swc"/>
-        <include name="*.jar"/>
-    </patternset>
-    <patternset id="compiler.resources">
-        <include name="**/?*.properties"/>
-        <include name="**/?*.xml"/>
-        <include name="**/?*.gif"/>
-        <include name="**/?*.png"/>
-        <include name="**/?*.jpeg"/>
-        <include name="**/?*.jpg"/>
-        <include name="**/?*.html"/>
-        <include name="**/?*.dtd"/>
-        <include name="**/?*.tld"/>
-        <include name="**/?*.ftl"/>
-    </patternset>
-
-    <!-- JDK definitions -->
-
-    <property name="jdk.bin.1.7" value="${jdk.home.1.7}/bin"/>
-    <path id="jdk.classpath.1.7">
-    </path>
-
-    <property name="expedition.jdk.home" value="${jdk.home.1.7}"/>
-    <property name="expedition.jdk.bin" value="${jdk.bin.1.7}"/>
-    <property name="expedition.jdk.classpath" value="jdk.classpath.1.7"/>
-
-
-    <!-- Expedition Libraries -->
-
-    <!-- BJS: instead of listing each JAR, switched this to use the "fileset" mechanism -->
-    <path id="library.lib.classpath">
-        <fileset dir="${basedir}/lib">
-            <include name="**/*.jar"/>
-        </fileset>
-    </path>
-
-    <!-- Modules -->
-    <dirname property="module.biscicol-fims.basedir" file="${ant.file}"/>
-
-
-    <property name="module.jdk.home.biscicol-fims" value="${expedition.jdk.home}"/>
-    <property name="module.jdk.bin.biscicol-fims" value="${expedition.jdk.bin}"/>
-    <property name="module.jdk.classpath.biscicol-fims" value="${expedition.jdk.classpath}"/>
-
-    <property name="compiler.args.biscicol-fims" value="${compiler.args}"/>
-
-    <property name="biscicol-fims.output.dir" value="${module.biscicol-fims.basedir}/out/production/biscicol-fims"/>
-    <property name="biscicol-fims.testoutput.dir" value="${module.biscicol-fims.basedir}/out/test/biscicol-fims"/>
-
-    <path id="biscicol-fims.module.bootclasspath">
-        <!-- Paths to be included in compilation bootclasspath -->
-    </path>
-
-    <path id="biscicol-fims.module.production.classpath">
-        <path refid="${module.jdk.classpath.biscicol-fims}"/>
-        <path refid="library.lib.classpath"/>
-    </path>
-
-    <!-- added by BJS -->
-    <path id="biscicol-fims.module.buildtests.classpath">
-        <path refid="${module.jdk.classpath.biscicol-fims}"/>
-        <pathelement location="${biscicol-fims.output.dir}"/>
-        <path refid="library.lib.classpath"/>
-    </path>
-
-    <!-- added by BJS -->
-    <path id="biscicol-fims.module.runtests.classpath">
-        <path refid="${module.jdk.classpath.biscicol-fims}"/>
-        <pathelement location="${biscicol-fims.output.dir}"/>
-        <pathelement location="${biscicol-fims.testoutput.dir}"/>
-        <path refid="library.lib.classpath"/>
-    </path>
-
-    <path id="biscicol-fims.runtime.production.module.classpath">
-        <pathelement location="${biscicol-fims.output.dir}"/>
-        <path refid="library.lib.classpath"/>
-    </path>
-
-    <path id="biscicol-fims.module.classpath">
-        <path refid="${module.jdk.classpath.biscicol-fims}"/>
-        <pathelement location="${biscicol-fims.output.dir}"/>
-        <path refid="library.lib.classpath"/>
-    </path>
-
-    <path id="biscicol-fims.runtime.module.classpath">
-        <pathelement location="${biscicol-fims.output.dir}"/>
-        <pathelement location="${biscicol-fims.testoutput.dir}"/>
-        <path refid="library.lib.classpath"/>
-    </path>
-
-
-    <patternset id="excluded.from.module.biscicol-fims">
-        <patternset refid="ignored.files"/>
-    </patternset>
-
-    <patternset id="excluded.from.compilation.biscicol-fims">
-        <patternset refid="excluded.from.module.biscicol-fims"/>
-    </patternset>
-
-    <path id="biscicol-fims.module.sourcepath">
-        <dirset dir="/">
-            <include name="src"/>
-        </dirset>
-    </path>
-
-    <target name="all" depends="build.modules" description="build all"/>
-
-    <target name="build.modules" depends="clean, war" description="build all modules"/>
-
-    <target name="clean" description="cleanup module">
-        <delete dir="${biscicol-fims.output.dir}"/>
-        <delete dir="${biscicol-fims.testoutput.dir}"/>
-    </target>
-
-    <target name="war" depends="compile.module.biscicol-fims">
-        <war destfile="dist/biscicol-fims.war" webxml="web/WEB-INF/web.xml">
-            <fileset dir="web"/>
-            <lib dir="lib" excludes="servlet-api.jar"/>
-            <classes dir="${biscicol-fims.output.dir}"/>
-            <classes dir="" includes="biscicol-fims.props"/>
-        </war>
-    </target>
-
-    <target name="compile.module.biscicol-fims" description="Compile module biscicol-fims">
-        <mkdir dir="${biscicol-fims.output.dir}"/>
-        <javac destdir="${biscicol-fims.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}"
-               srcdir="src" memorymaximumsize="${compiler.max.memory}" fork="true"
-               executable="${module.jdk.bin.biscicol-fims}/javac">
-            <compilerarg line="${compiler.args.biscicol-fims}"/>
-            <bootclasspath refid="biscicol-fims.module.bootclasspath"/>
-            <classpath refid="biscicol-fims.module.production.classpath"/>
-            <patternset refid="excluded.from.compilation.biscicol-fims"/>
-        </javac>
-
-        <copy todir="${biscicol-fims.output.dir}">
-            <fileset dir="${module.biscicol-fims.basedir}/src">
-                <patternset refid="compiler.resources"/>
-                <type type="file"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <target name="test" depends="compile.module.biscicol-fims">
-        <junit>
-            <classpath refid="biscicol-fims.module.runtests.classpath"/>
-            <formatter type="brief" usefile="false"/>
-            <batchtest>
-                <fileset dir="${biscicol-fims.testoutput.dir}" includes="**/*Test.class"/>
-            </batchtest>
-        </junit>
-    </target>
-
+      </fileset>
+    </copy>
+  </target>
 </project>
