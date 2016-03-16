@@ -169,7 +169,7 @@
   </patternset>
   
   <path id="biocode-fims-commons.module.sourcepath">
-    <dirset dir="${module.biocode-fims-commons.basedir}/../biocode-fims-commons">
+    <dirset dir="${module.biocode-fims-commons.basedir}">
       <include name="src"/>
     </dirset>
   </path>
@@ -188,7 +188,7 @@
     </javac>
     
     <copy todir="${biocode-fims-commons.output.dir}">
-      <fileset dir="${module.biocode-fims-commons.basedir}/../biocode-fims-commons/src">
+      <fileset dir="${module.biocode-fims-commons.basedir}/src">
         <patternset refid="compiler.resources"/>
         <type type="file"/>
       </fileset>
@@ -260,7 +260,7 @@
   </patternset>
   
   <path id="biocode-fims-fuseki.module.sourcepath">
-    <dirset dir="${module.biocode-fims-fuseki.basedir}/../biocode-fims-fuseki">
+    <dirset dir="${module.biocode-fims-fuseki.basedir}">
       <include name="src"/>
     </dirset>
   </path>
@@ -279,7 +279,7 @@
     </javac>
     
     <copy todir="${biocode-fims-fuseki.output.dir}">
-      <fileset dir="${module.biocode-fims-fuseki.basedir}/../biocode-fims-fuseki/src">
+      <fileset dir="${module.biocode-fims-fuseki.basedir}/src">
         <patternset refid="compiler.resources"/>
         <type type="file"/>
       </fileset>
