@@ -437,14 +437,14 @@
       <classes dir="${biscicol-fims.output.dir}"/>
       <classes dir="${biocode-fims-commons.output.dir}"/>
       <classes dir="${biocode-fims-fuseki.output.dir}"/>
-      <classes dir="" includes="arms-fims.props"/>
+      <classes dir="" includes="biscicol-fims.props"/>
     </war>
   </target>
 
   <target name="deployWar" depends="war" description="deploy application as war">
     <copy todir="${deploy.path}" preservelastmodified="true">
       <fileset dir="dist">
-        <include name="*.war"/>
+        <include name="${deploy.root.path}.war"/>
       </fileset>
     </copy>
   </target>
