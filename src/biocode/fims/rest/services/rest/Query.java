@@ -1,4 +1,4 @@
-package services.rest;
+package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;

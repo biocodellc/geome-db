@@ -1,4 +1,4 @@
-package services.rest;
+package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.Bcid;
 import biocode.fims.bcid.BcidMinter;
@@ -60,7 +60,7 @@ public class Validate extends FimsService {
         ProcessController processController = new ProcessController(projectId, expeditionCode);
 
         // place the processController in the session here so that we can track the status of the validation process
-        // by calling rest/validate/status
+        // by calling biocode.fims.rest/validate/status
         session.setAttribute("processController", processController);
 
 

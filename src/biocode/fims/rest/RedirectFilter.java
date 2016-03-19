@@ -1,4 +1,4 @@
-package services;
+package biocode.fims.rest;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;

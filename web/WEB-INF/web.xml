@@ -6,11 +6,21 @@
         <param-name>propsFilename</param-name>
         <param-value>biscicol-fims.props</param-value>
     </context-param>
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:applicationContext.xml</param-value>
+    </context-param>
+
+    <listener>
+        <listener-class>
+            org.springframework.web.context.ContextLoaderListener
+        </listener-class>
+    </listener>
 
     <session-config>
         <cookie-config>
             <http-only>true</http-only>
-            <domain>.biscicol.org</domain>
+            <!--<domain>.biscicol.org</domain>-->
         </cookie-config>
     </session-config>
 
@@ -19,15 +29,7 @@
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
             <param-name>javax.ws.rs.Application</param-name>
-            <param-value>biocode.fims.rest.FimsApplication</param-value>
-        </init-param>
-		<init-param>
-			<param-name>jersey.config.server.provider.packages</param-name>
-			<param-value>services.rest;biocode.fims.rest.services.rest</param-value>
-		</init-param>
-        <init-param>
-            <param-name>jersey.config.server.provider.classnames</param-name>
-            <param-value>biocode.fims.rest.FimsExceptionMapper;org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
+            <param-value>biocode.fims.rest.BiscicolApplication</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
@@ -41,15 +43,7 @@
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
             <param-name>javax.ws.rs.Application</param-name>
-            <param-value>biocode.fims.rest.FimsApplication</param-value>
-        </init-param>
-        <init-param>
-            <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>biocode.fims.rest.services.id</param-value>
-        </init-param>
-        <init-param>
-            <param-name>jersey.config.server.provider.classnames</param-name>
-            <param-value>biocode.fims.rest.FimsExceptionMapper;org.glassfish.jersey.server.mvc.jsp.JspMvcFeature</param-value>
+            <param-value>biocode.fims.rest.BiscicolResolverApplication</param-value>
         </init-param>
         <init-param>
             <param-name>jersey.config.server.mvc.templateBasePath.jsp</param-name>
@@ -93,7 +87,7 @@
 
     <filter>
         <filter-name>RedirectFilter</filter-name>
-        <filter-class>services.RedirectFilter</filter-class>
+        <filter-class>biocode.fims.rest.RedirectFilter</filter-class>
     </filter>
 
     <filter-mapping>

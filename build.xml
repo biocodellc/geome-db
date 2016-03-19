@@ -434,10 +434,12 @@
       <fileset dir="web"/>
       <lib dir="lib" />
       <lib dir="${module.biocode-fims-commons.basedir}/lib" excludes="servlet-api.jar"/>
+      <lib dir="${module.biocode-fims-fuseki.basedir}/lib" excludes="servlet-api.jar"/>
       <classes dir="${biscicol-fims.output.dir}"/>
       <classes dir="${biocode-fims-commons.output.dir}"/>
       <classes dir="${biocode-fims-fuseki.output.dir}"/>
       <classes dir="" includes="biscicol-fims.props"/>
+      <classes dir="" includes="applicationContext.xml"/>
     </war>
   </target>
 

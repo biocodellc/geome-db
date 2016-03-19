@@ -1,4 +1,4 @@
-package services.rest;
+package biocode.fims.rest.services.rest;
 
 import biocode.fims.auth.Authenticator;
 import biocode.fims.bcid.UserMinter;

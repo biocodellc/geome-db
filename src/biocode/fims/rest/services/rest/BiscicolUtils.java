@@ -1,4 +1,4 @@
-package services.rest;
+package biocode.fims.rest.services.rest;
 
 import biocode.fims.rest.FimsService;
 
@@ -12,7 +12,7 @@ import javax.ws.rs.core.Response;
  * Biscicol-Fims utility services
  */
 @Path("utils/")
-public class Utils extends FimsService {
+public class BiscicolUtils extends FimsService {
 
     @GET
     @Path("/getMapboxToken")
