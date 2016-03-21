@@ -1,0 +1,31 @@
+plugins {
+    id "org.akhikhl.gretty" version "1.2.4"
+}
+
+apply plugin: "java"
+apply plugin: "war"
+
+targetCompatibility = 1.7
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.glassfish.jersey.media:jersey-media-multipart:2.22.2'
+    compile 'org.glassfish.jersey.ext:jersey-mvc:2.22.2'
+    compile project(":biocode-fims-commons")
+    compile project(":biocode-fims-fuseki")
+
+    testCompile "junit:junit-dep:4.10"
+}
+
+webAppDirName = "src/main/web"
+
+gretty {
+    port = 8080
+    contextPath = "/"
+    servletContainer = "jetty9"
+    debugPort = 5005
+}
