@@ -29,3 +29,5 @@ gretty {
     servletContainer = "jetty9"
     debugPort = 5005
 }
+
+libsDirName = "../dist"

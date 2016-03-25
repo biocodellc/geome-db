@@ -2,7 +2,7 @@
 *.iml
 *.props
 *.properties
-dist/lib/*
+dist/*
 build/*
 classes/*
 javadocs/*
