@@ -32,4 +32,11 @@ gretty {
     debugPort = 5005
 }
 
+war {
+    from('./') {
+        include 'biscicol-fims.props'
+	into ('./WEB-INF/classes/')
+    }
+}
+
 libsDirName = "../dist"
