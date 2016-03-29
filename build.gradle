@@ -54,7 +54,9 @@ remotes {
     biscicol {
         host = 'biscicol.org'
         user = biscicolUser
-        file("${System.getProperty('user.home')}/.ssh/id_rsa")
+        password = biscicolPassword
+        // TODO: adding this line means stasks will fail, even though it is specified, for now, password specified above.
+        //file("${System.getProperty('user.home')}/.ssh/id_rsa")
     }
 }
 
@@ -145,7 +147,7 @@ task deployFims {
     doLast {
         ssh.run {
             session(remotes.biscicol) {
-                put from: war.archivePath.path, into remoteWarDirectory
+                put from: war.archivePath.path, into: remoteWarDirectory
             }
         }
     }
@@ -161,7 +163,7 @@ task deployFimsDev {
     doLast {
         ssh.run {
             session(remotes.biscicol) {
-                put from: war.archivePath.path, into remoteWarDevDirectory
+                put from: war.archivePath.path, into: remoteWarDevDirectory
             }
         }
     }
