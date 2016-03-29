@@ -1,10 +1,25 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.ajoberstar:gradle-git:1.4.2"
+        classpath "com.github.marceloemanoel:gradle-environments-plugin:0.1"
+    }
+}
+
 plugins {
     id "org.akhikhl.gretty" version "1.2.4"
+    id 'org.hidetake.ssh' version '1.6.0'
 }
+
+import org.ajoberstar.grgit.*
+import groovy.io.FileType
 
 apply plugin: "java"
 apply plugin: "war"
 apply plugin: "idea"
+apply plugin: "environments"
 
 targetCompatibility = 1.7
 sourceCompatibility = 1.7
@@ -12,7 +27,6 @@ sourceCompatibility = 1.7
 repositories {
     mavenCentral()
 }
-
 
 dependencies {
     compile 'org.glassfish.jersey.media:jersey-media-multipart:2.22.2'
@@ -24,12 +38,131 @@ dependencies {
 }
 
 webAppDirName = "src/main/web"
+libsDirName = "../dist"
+
+project.ext.environment = "development"
 
 gretty {
     port = grettyPort.toInteger()
-    contextPath = "/"
+    contextPath = grettyPath
     servletContainer = "jetty9"
     debugPort = 5005
 }
 
-libsDirName = "../dist"
+// jetty ssh plugin
+remotes {
+    biscicol {
+        host = 'biscicol.org'
+        user = biscicolUser
+        file("${System.getProperty('user.home')}/.ssh/id_rsa")
+    }
+}
+
+allprojects {
+    task verifyMasterBranch << {
+        ext.repo = Grgit.open(project.file('.'))
+        if (ext.repo.branch.current.name != "master")
+            throw new GradleScriptException(project.name + ' is not on the master branch', null)
+    }
+}
+
+task setProductionEnv << {
+    project.ext.environment = "production"
+}
+task setStagingEnv << {
+    project.ext.environment = "staging"
+}
+
+// if setProductionEnv or setStagingEnv is run, make sure this is done before processResources
+setProductionEnv.mustRunAfter compileJava
+setStagingEnv.mustRunAfter compileJava
+
+/*
+Delete any resource files in src/main/resources if the file exists in a sub directory
+of src/main/environment
+ */
+task cleanResourceDirectory << {
+    def allResourceFiles = []
+
+    def environmentDir = new File("src/main/environment")
+    environmentDir.eachFileRecurse (FileType.FILES) { file ->
+        allResourceFiles << file.name
+    }
+
+    allResourceFiles.each{
+        def resourceFile = new File("src/main/resources/${it}")
+        if (resourceFile.exists()) {
+            resourceFile.delete()
+        }
+    }
+}
+
+task copyEnvironmentResources {
+    dependsOn cleanResourceDirectory
+    doLast {
+        project.copy {
+            from "src/main/environment/${project.environment}"
+            into "src/main/resources"
+            include "**/*"
+        }
+    }
+}
+
+processResources.dependsOn copyEnvironmentResources
+
+task restartFims {
+    group = 'biscicol.org'
+    description = 'Restart biscicol.org production jetty instance'
+    doLast {
+        ssh.run {
+            session(remotes.biscicol) {
+                executeSudo biscicolJettyPath + ' restart'
+            }
+        }
+    }
+}
+
+task restartFimsDev  {
+    group = 'biscicol.org'
+    description = 'Restart biscicol.org dev jetty instance'
+    doLast {
+        ssh.run {
+            session(remotes.biscicol) {
+                executeSudo biscicolJettyDevPath + ' restart'
+            }
+        }
+    }
+}
+
+task deployFims {
+    group = 'biscicol.org'
+    description = 'verify that all subprojects are on the master branch. Then build and copy war to biscicol.org production jetty webApp directory'
+
+    dependsOn verifyMasterBranch
+    dependsOn setProductionEnv
+    dependsOn war
+
+    doLast {
+        ssh.run {
+            session(remotes.biscicol) {
+                put from: war.archivePath.path, into remoteWarDirectory
+            }
+        }
+    }
+}
+
+task deployFimsDev {
+    group = 'biscicol.org'
+    description = 'build and copy war to biscicol.org development jetty webApp directory'
+
+    dependsOn setStagingEnv
+    dependsOn war
+
+    doLast {
+        ssh.run {
+            session(remotes.biscicol) {
+                put from: war.archivePath.path, into remoteWarDevDirectory
+            }
+        }
+    }
+}
