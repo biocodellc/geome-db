@@ -40,7 +40,11 @@ dependencies {
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
 
-project.ext.environment = "development"
+project.ext.environment = "local"
+
+clean {
+    delete libsDir
+}
 
 gretty {
     port = grettyPort.toInteger()
@@ -71,13 +75,13 @@ allprojects {
 task setProductionEnv << {
     project.ext.environment = "production"
 }
-task setStagingEnv << {
-    project.ext.environment = "staging"
+task setDevelopmentEnv << {
+    project.ext.environment = "development"
 }
 
-// if setProductionEnv or setStagingEnv is run, make sure this is done before processResources
+// if setProductionEnv or setDevelopmentEnv is run, make sure this is done before processResources
 setProductionEnv.mustRunAfter compileJava
-setStagingEnv.mustRunAfter compileJava
+setDevelopmentEnv.mustRunAfter compileJava
 
 /*
 Delete any resource files in src/main/resources if the file exists in a sub directory
@@ -106,11 +110,18 @@ task copyEnvironmentResources {
             from "src/main/environment/${project.environment}"
             into "src/main/resources"
             include "**/*"
+            exclude "web.xml"
         }
     }
 }
 
 processResources.dependsOn copyEnvironmentResources
+
+task setWebXmlLocation << {
+    war.webXml = file("src/main/environment/${project.environment}/web.xml")
+}
+
+war.dependsOn setWebXmlLocation
 
 task restartFims {
     group = 'biscicol.org'
@@ -147,7 +158,7 @@ task deployFims {
     doLast {
         ssh.run {
             session(remotes.biscicol) {
-                put from: war.archivePath.path, into: remoteWarDirectory
+                put from: war.archivePath.path, into: remoteWarDirectory + "/root.war"
             }
         }
     }
@@ -157,14 +168,23 @@ task deployFimsDev {
     group = 'biscicol.org'
     description = 'build and copy war to biscicol.org development jetty webApp directory'
 
-    dependsOn setStagingEnv
+    dependsOn setDevelopmentEnv
     dependsOn war
 
     doLast {
         ssh.run {
             session(remotes.biscicol) {
-                put from: war.archivePath.path, into: remoteWarDevDirectory
+                put from: war.archivePath.path, into: remoteWarDevDirectory + "/root.war"
             }
         }
+    }
+}
+
+task deployFimsLocal(dependsOn: war) << {
+    project.copy {
+        from war.destinationDir
+        into localWarDirectory
+        include war.archiveName
+        rename war.archiveName, "root.war"
     }
 }
