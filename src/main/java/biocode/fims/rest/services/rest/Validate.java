@@ -221,7 +221,7 @@ public class Validate extends FimsService {
         FastaManager fastaManager;
         String previousGraph;
         String currentGraph;
-        String successMessage = null;
+        String successMessage = "";
         ProcessController processController = (ProcessController) session.getAttribute("processController");
 
         // if no processController is found, we can't do anything
@@ -325,10 +325,11 @@ public class Validate extends FimsService {
             // delete the temporary file now that it has been uploaded
             new File(processController.getInputFilename()).delete();
         } else {
+            successMessage += "<br>\t" + "FASTA data added to dataset belonging to Expedition Code: " + processController.getExpeditionCode();
             currentGraph = fastaManager.fetchGraph();
         }
 
-        // if fataFilename isn't null, then we have a fasta file to upload
+        // if fastaFilename isn't null, then we have a fasta file to upload
         if (fastaManager.getFastaFilename() != null) {
             if (!processController.isExpeditionAssignedToUserAndExists()) {
                 p.runExpeditionCheck();
@@ -346,6 +347,7 @@ public class Validate extends FimsService {
 
             // delete the temporary file now that it has been uploaded
             new File(fastaManager.getFastaFilename()).delete();
+            successMessage += "<br>\t" + "FASTA data added";
         }
 
         successMessage += "<br><font color=#188B00>Successfully Uploaded!</font><br><br>";

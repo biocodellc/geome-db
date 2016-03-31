@@ -27,7 +27,7 @@
                 </tr>
 
                 <tr class="toggle-content" id="file_toggle">
-                    <td align="right">FIMS Data (optional)&nbsp;&nbsp;</td>
+                    <td align="right">FASTA Data (optional)&nbsp;&nbsp;</td>
                     <td colspan=2><input type="file" class="btn btn-default btn-xs" name="file" id="file2" /></td>
                 </tr>
 
