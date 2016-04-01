@@ -40,7 +40,7 @@ dependencies {
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
 
-project.ext.environment = "local"
+project.ext.environment = defaultEnvironment
 
 clean {
     delete libsDir
@@ -83,39 +83,44 @@ task setDevelopmentEnv << {
 setProductionEnv.mustRunAfter compileJava
 setDevelopmentEnv.mustRunAfter compileJava
 
+task copyEnvironmentResources << {
+    project.copy {
+        from "src/main/environment/${project.environment}"
+        into "src/main/resources"
+        include "**/*"
+        exclude "web.xml"
+    }
+}
+
 /*
 Delete any resource files in src/main/resources if the file exists in a sub directory
-of src/main/environment
- */
-task cleanResourceDirectory << {
-    def allResourceFiles = []
+of src/main/environment, excluding the current environment setting directory
+*/
+task cleanResourceDirectory {
+    dependsOn copyEnvironmentResources
 
-    def environmentDir = new File("src/main/environment")
-    environmentDir.eachFileRecurse (FileType.FILES) { file ->
-        allResourceFiles << file.name
-    }
-
-    allResourceFiles.each{
-        def resourceFile = new File("src/main/resources/${it}")
-        if (resourceFile.exists()) {
-            resourceFile.delete()
-        }
-    }
-}
-
-task copyEnvironmentResources {
-    dependsOn cleanResourceDirectory
     doLast {
-        project.copy {
-            from "src/main/environment/${project.environment}"
-            into "src/main/resources"
-            include "**/*"
-            exclude "web.xml"
+        def allResourceFilesToRemove = []
+
+        def environmentDir = new File("src/main/environment")
+        environmentDir.eachFileRecurse(FileType.FILES) { file ->
+            // don't delete the file if they already exist in the resources directory from the correct environment
+            if (!file.parent.equals(environmentDir.path + "/${project.environment}")) {
+                allResourceFilesToRemove << file.name
+            }
+        }
+
+        allResourceFilesToRemove.each {
+            def resourceFile = new File("src/main/resources/${it}")
+            if (resourceFile.exists()) {
+                resourceFile.delete()
+            }
         }
     }
 }
 
-processResources.dependsOn copyEnvironmentResources
+
+processResources.dependsOn cleanResourceDirectory
 
 task setWebXmlLocation << {
     war.webXml = file("src/main/environment/${project.environment}/web.xml")
