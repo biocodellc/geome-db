@@ -1,0 +1,193 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.ajoberstar:gradle-git:1.4.2"
+        classpath "com.github.marceloemanoel:gradle-environments-plugin:0.1"
+    }
+}
+
+plugins {
+    id "org.akhikhl.gretty" version "1.2.4"
+    id 'org.hidetake.ssh' version '1.6.0'
+}
+
+import org.ajoberstar.grgit.*
+import groovy.io.FileType
+
+apply plugin: "java"
+apply plugin: "war"
+apply plugin: "idea"
+apply plugin: "environments"
+
+targetCompatibility = 1.7
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.glassfish.jersey.media:jersey-media-multipart:2.22.2'
+    compile 'org.glassfish.jersey.ext:jersey-mvc:2.22.2'
+    compile project(":biocode-fims-commons")
+
+    testCompile "junit:junit-dep:4.10"
+}
+
+webAppDirName = "src/main/web"
+libsDirName = "../dist"
+
+project.ext.environment = defaultEnvironment
+
+clean {
+    delete libsDir
+}
+
+gretty {
+    port = grettyPort.toInteger()
+    contextPath = grettyPath
+    servletContainer = "jetty9"
+    debugPort = 5005
+}
+
+// jetty ssh plugin
+remotes {
+    biscicol {
+        host = 'biscicol.org'
+        user = biscicolUser
+        password = biscicolPassword
+        // TODO: adding this line means stasks will fail, even though it is specified, for now, password specified above.
+        //file("${System.getProperty('user.home')}/.ssh/id_rsa")
+    }
+}
+
+allprojects {
+    task verifyMasterBranch << {
+        ext.repo = Grgit.open(project.file('.'))
+        if (ext.repo.branch.current.name != "master")
+            throw new GradleScriptException(project.name + ' is not on the master branch', null)
+    }
+}
+
+task setProductionEnv << {
+    project.ext.environment = "production"
+}
+task setDevelopmentEnv << {
+    project.ext.environment = "development"
+}
+
+// if setProductionEnv or setDevelopmentEnv is run, make sure this is done before processResources
+setProductionEnv.mustRunAfter compileJava
+setDevelopmentEnv.mustRunAfter compileJava
+
+task copyEnvironmentResources << {
+    project.copy {
+        from "src/main/environment/${project.environment}"
+        into "src/main/resources"
+        include "**/*"
+        exclude "web.xml"
+    }
+}
+
+/*
+Delete any resource files in src/main/resources if the file exists in a sub directory
+of src/main/environment, excluding the current environment setting directory
+*/
+task cleanResourceDirectory {
+    dependsOn copyEnvironmentResources
+
+    doLast {
+        def allResourceFilesToRemove = []
+
+        def environmentDir = new File("src/main/environment")
+        environmentDir.eachFileRecurse(FileType.FILES) { file ->
+            // don't delete the file if they already exist in the resources directory from the correct environment
+            if (!file.parent.equals(environmentDir.path + "/${project.environment}")) {
+                allResourceFilesToRemove << file.name
+            }
+        }
+
+        allResourceFilesToRemove.each {
+            def resourceFile = new File("src/main/resources/${it}")
+            if (resourceFile.exists()) {
+                resourceFile.delete()
+            }
+        }
+    }
+}
+
+
+processResources.dependsOn cleanResourceDirectory
+
+task setWebXmlLocation << {
+    war.webXml = file("src/main/environment/${project.environment}/web.xml")
+}
+
+war.dependsOn setWebXmlLocation
+
+task restartFims {
+    group = 'biscicol.org'
+    description = 'Restart biscicol.org production jetty instance'
+    doLast {
+        ssh.run {
+            session(remotes.biscicol) {
+                executeSudo biscicolJettyPath + ' restart'
+            }
+        }
+    }
+}
+
+task restartFimsDev  {
+    group = 'biscicol.org'
+    description = 'Restart biscicol.org dev jetty instance'
+    doLast {
+        ssh.run {
+            session(remotes.biscicol) {
+                executeSudo biscicolJettyDevPath + ' restart'
+            }
+        }
+    }
+}
+
+task deployFims {
+    group = 'biscicol.org'
+    description = 'verify that all subprojects are on the master branch. Then build and copy war to biscicol.org production jetty webApp directory'
+
+    dependsOn verifyMasterBranch
+    dependsOn setProductionEnv
+    dependsOn war
+
+    doLast {
+        ssh.run {
+            session(remotes.biscicol) {
+                put from: war.archivePath.path, into: remoteWarDirectory
+            }
+        }
+    }
+}
+
+task deployFimsDev {
+    group = 'biscicol.org'
+    description = 'build and copy war to biscicol.org development jetty webApp directory'
+
+    dependsOn setDevelopmentEnv
+    dependsOn war
+
+    doLast {
+        ssh.run {
+            session(remotes.biscicol) {
+                put from: war.archivePath.path, into: remoteWarDevDirectory
+            }
+        }
+    }
+}
+
+task deployFimsLocal(dependsOn: war) << {
+    project.copy {
+        from war.destinationDir
+        into localWarDirectory
+        include war.archiveName
+    }
+}
