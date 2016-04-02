@@ -13,12 +13,6 @@
         </listener-class>
     </listener>
 
-    <session-config>
-        <cookie-config>
-            <http-only>true</http-only>
-        </cookie-config>
-    </session-config>
-
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
