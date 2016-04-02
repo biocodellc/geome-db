@@ -1,15 +1,17 @@
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath "org.ajoberstar:gradle-git:1.4.2"
         classpath "com.github.marceloemanoel:gradle-environments-plugin:0.1"
+        classpath "org.akhikhl.gretty:gretty:1.2.4"
+        classpath "org.hidetake:gradle-ssh-plugin:2.0.0"
     }
 }
 
 plugins {
-    id "org.akhikhl.gretty" version "1.2.4"
     id 'org.hidetake.ssh' version '1.6.0'
 }
 
@@ -20,6 +22,8 @@ apply plugin: "java"
 apply plugin: "war"
 apply plugin: "idea"
 apply plugin: "environments"
+apply plugin: "org.akhikhl.gretty"
+apply plugin: "org.hidetake.ssh"
 
 targetCompatibility = 1.7
 sourceCompatibility = 1.7
@@ -27,6 +31,7 @@ sourceCompatibility = 1.7
 repositories {
     mavenCentral()
 }
+
 
 dependencies {
     compile 'org.glassfish.jersey.media:jersey-media-multipart:2.22.2'
@@ -45,11 +50,20 @@ clean {
     delete libsDir
 }
 
+farm {
+    singleSignOn = true
+    realm = "dipnet"
+//    webapp '../biscicol-fims/dist/biscicol-fims.war', contextPath: '/', inplace: false
+    webapp ":biscicol-fims"
+    webapp project
+}
+
 gretty {
     port = grettyPort.toInteger()
     contextPath = grettyPath
     servletContainer = "jetty9"
     debugPort = 5005
+    inplace = false
 }
 
 // jetty ssh plugin
@@ -64,7 +78,7 @@ remotes {
 }
 
 allprojects {
-    task verifyMasterBranch << {
+    task verifyMasterBranch(overwrite: true) << {
         ext.repo = Grgit.open(project.file('.'))
         if (ext.repo.branch.current.name != "master")
             throw new GradleScriptException(project.name + ' is not on the master branch', null)
@@ -82,12 +96,17 @@ task setDevelopmentEnv << {
 setProductionEnv.mustRunAfter compileJava
 setDevelopmentEnv.mustRunAfter compileJava
 
-task copyEnvironmentResources << {
-    project.copy {
-        from "src/main/environment/${project.environment}"
-        into "src/main/resources"
-        include "**/*"
-        exclude "web.xml"
+task copyEnvironmentResources {
+    inputs.dir "src/main/environment/${project.environment}"
+    outputs.dir "src/main/resources"
+    doLast {
+        project.copy {
+            from "src/main/environment/${project.environment}"
+            into "src/main/resources"
+            include "**/*"
+            exclude "web.xml"
+            exclude ".gitkeep"
+        }
     }
 }
 
