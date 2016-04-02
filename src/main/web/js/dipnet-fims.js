@@ -1,5 +1,5 @@
 /* ====== General Utility Functions ======= */
-var appRoot = "/";
+var appRoot = "/dipnet/";
 var biocodeFimsRestRoot = "/biocode-fims/rest/";
 
 // function for displaying a loading dialog while waiting for a response from the server
@@ -201,11 +201,7 @@ function getProjectID() {
 
 // function to login user
 function login() {
-    var url = biocodeFimsRestRoot + "authenticationService/login";
-    var return_to = getQueryParam("return_to");
-    if (return_to != null) {
-        url += "?return_to=" + return_to;
-    }
+    var url = biocodeFimsRestRoot + "authenticationService/login?return_to=" + appRoot + "index.jsp";
     var jqxhr = $.post(url, $('form').serialize())
         .done(function(data) {
             window.location.replace(data.url);
