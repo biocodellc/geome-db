@@ -84,36 +84,17 @@ task setDevelopmentEnv << {
 setProductionEnv.mustRunAfter compileJava
 setDevelopmentEnv.mustRunAfter compileJava
 
-task copyEnvironmentResources {
-    inputs.dir "src/main/environment/${project.environment}"
-    outputs.dir "src/main/resources"
-    doLast {
-        project.copy {
-            from "src/main/environment/${project.environment}"
-            into "src/main/resources"
-            include "**/*"
-            exclude "web.xml"
-            exclude ".gitkeep"
-        }
-    }
-}
-
 /*
 Delete any resource files in src/main/resources if the file exists in a sub directory
 of src/main/environment, excluding the current environment setting directory
 */
 task cleanResourceDirectory {
-    dependsOn copyEnvironmentResources
-
     doLast {
         def allResourceFilesToRemove = []
 
         def environmentDir = new File("src/main/environment")
         environmentDir.eachFileRecurse(FileType.FILES) { file ->
-            // don't delete the file if they already exist in the resources directory from the correct environment
-            if (!file.parent.equals(environmentDir.path + "/${project.environment}")) {
-                allResourceFilesToRemove << file.name
-            }
+            allResourceFilesToRemove << file.name
         }
 
         allResourceFilesToRemove.each {
@@ -125,8 +106,19 @@ task cleanResourceDirectory {
     }
 }
 
-
-processResources.dependsOn cleanResourceDirectory
+task copyEnvironmentResources {
+    dependsOn cleanResourceDirectory
+    doLast {
+        project.copy {
+            from "src/main/environment/${project.environment}"
+            into "src/main/resources"
+            include "**/*"
+            exclude "web.xml"
+            exclude ".gitkeep"
+        }
+    }
+}
+processResources.dependsOn copyEnvironmentResources
 
 task setWebXmlLocation << {
     war.webXml = file("src/main/environment/${project.environment}/web.xml")
