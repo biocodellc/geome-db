@@ -1,7 +1,70 @@
-<!DOCTYPE HTML>
-<html>
-
+<!doctype html>
+<html ng-controller="dipnetCtrl">
 <head>
-    <meta http-equiv="refresh" content="0; url=index.jsp" />
+    <base href="/dipnet/">
+    <title>Biocode Field Information Management System</title>
+
+    <link rel="stylesheet" type="text/css" href="css/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/alerts.css"/>
+    <link rel="stylesheet" type="text/css" href="css/biscicol.css"/>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.min.js"></script>
+    <script type="text/javascript" src="js/angular-ui-router.min.js"></script>
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="js/jquery.form.js"></script>
+    <script type="text/javascript" src="js/BrowserDetect.js"></script>
+    <script type="text/javascript" src="js/lodash.js"></script>
+    <script type="text/javascript" src="js/xlsx.js"></script>
+    <script type="text/javascript" src="js/papaparse.min.js"></script>
+    <script type="text/javascript" src="js/pwstrength.js"></script>
+    <script type="text/javascript" src="js/distal.js"></script>
+
+    <script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.css' rel='stylesheet' />
+
+    <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css' rel='stylesheet' />
+    <link href='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css' rel='stylesheet' />
+
+    <script type="text/javascript" src="js/biocode-fims-xlsx-reader.js"></script>
+    <script type="text/javascript" src="js/biocode-fims-mapping.js"></script>
+    <script type="text/javascript" src="js/dipnet-fims.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script src="app/app.module.js"></script>
+    <script src="app/app.routes.js"></script>
+    <script src="app/components/auth/auth.js"></script>
+    <script src="app/components/auth/authFactory.js"></script>
+    <script src="app/components/auth/loginController.js"></script>
+    <script src="app/components/auth/authInterceptorFactory.js"></script>
+    <script src="app/components/query/queryController.js"></script>
+    <script src="app/components/templates/templateController.js"></script>
+    <script src="app/components/expeditions/expeditionController.js"></script>
+    <script src="app/components/validation/validationController.js"></script>
+    <script src="app/components/projects/projects.js"></script>
+    <script src="app/components/projects/projectController.js"></script>
+    <script src="app/components/projects/projectFactory.js"></script>
+    <script src="app/components/users/users.js"></script>
+    <script src="app/components/users/userController.js"></script>
+    <script src="app/components/users/userFactory.js"></script>
+    <script src="app/components/creator/creatorController.js"></script>
+
+    <link rel="short icon" href="docs/fimsicon.png" />
 </head>
+<body>
+<div id="container">
+
+    <header ng-include="'app/partials/header.html'"></header>
+    <div ng-show="error" class="alert alert-error">{{ error }}</div>
+
+    <div ui-view></div>
+
+    <div id="dialogContainer"></div>
+    <div class="clearfooter"></div>
+</div> <!—-End Container—>
+
+<div ng-include="'app/partials/footer-script.html'"></div>
+
+</body>
 </html>

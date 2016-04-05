@@ -1,6 +1,18 @@
 /* ====== General Utility Functions ======= */
 var appRoot = "/dipnet/";
 var biocodeFimsRestRoot = "/biocode-fims/rest/";
+$.ajaxSetup({
+    beforeSend: function(jqxhr, config) {
+        var accessToken = window.sessionStorage.accessToken;
+        if (accessToken && config.url.indexOf("access_token") == -1) {
+            if (config.url.indexOf('?') > -1) {
+                config.url += "&access_token=" + accessToken;
+            } else {
+                config.url += "?access_token=" + accessToken;
+            }
+        }
+    }
+});
 
 // function for displaying a loading dialog while waiting for a response from the server
 function loadingDialog(promise) {
@@ -112,7 +124,7 @@ function populateDivFromService(url,elementID,failMessage)  {
 }
 
 function populateProjects() {
-    theUrl = "biocode-fims/rest/projects/list";
+    theUrl = biocodeFimsRestRoot + "projects/list";
     var jqxhr = $.getJSON( theUrl, function(data) {
         var listItems = "";
         listItems+= "<option value='0'>Select a project ...</option>";
@@ -765,27 +777,6 @@ function projectToggle(id) {
 }
 
 /* ====== templates.jsp Functions ======= */
-// Processing functions
-$(function () {
-    $('input').click(populate_bottom);
-
-    $('#default_bold').click(function() {
-        $('.check_boxes').prop('checked',true);
-        populate_bottom();
-    });
-    $('#excel_button').click(function() {
-        var li_list = new Array();
-        $(".check_boxes").each(function() {
-            li_list.push($(this).text() );
-        });
-        if(li_list.length > 0){
-            download_file();
-        }
-        else{
-            showMessage('You must select at least 1 field in order to export a spreadsheet.');
-        }
-    });
-})
 
 function populate_bottom(){
     var selected = new Array();
@@ -866,7 +857,7 @@ function populateAbstract(targetDivId) {
     var e = document.getElementById('projects');
     var projectId = e.options[e.selectedIndex].value;
 
-    theUrl = "biocode-fims/rest/projects/" + projectId + "/abstract/";
+    theUrl = biocodeFimsRestRoot + "projects/" + projectId + "/abstract/";
 
     var jqxhr = $.ajax( {
         url: theUrl,
@@ -904,7 +895,7 @@ function saveTemplateConfig() {
             });
 
             savedConfig = configName;
-            $.post(biocodeFimsRestRoot + "rest/projects/" + $("#projects").val() + "/saveTemplateConfig", $.param(
+            $.post(biocodeFimsRestRoot + "projects/" + $("#projects").val() + "/saveTemplateConfig", $.param(
                                                             {"configName": configName,
                                                             "checkedOptions": checked,
                                                             "projectId": $("#projects").val()

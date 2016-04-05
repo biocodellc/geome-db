@@ -1,4 +1,3 @@
-<%@ include file="header-home.jsp" %>
 <div class="section">
     <div class="sectioncontent" id="pass_reset">
         <h2>Password Reset</h2>
@@ -22,5 +21,3 @@
 
     </div>
 </div>
-
-<%@ include file="footer.jsp" %>

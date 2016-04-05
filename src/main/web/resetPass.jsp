@@ -1,5 +1,3 @@
-<%@ include file="header-home.jsp" %>
-
 <div class="section">
     <div class="sectioncontent">
         <h2>Password Reset</h2>
@@ -14,15 +12,15 @@
                     <td></td>
                     <td><div id="pwindicator"><div class="label"></div></div></td>
                 </tr>
-                <c:if test="${param['error'] != null}">
-                <tr></tr>
+                <tbody ng-show="vm.error">
+                    <tr></tr>
+                    <tr>
+                        <td></td>
+                        <td class="error" align="center">{{ vm.error }}</td>
+                    </tr>
+                </tbody>
                 <tr>
-                    <td></td>
-                    <td class="error" align="center">${param.error}</td>
-                </tr>
-                </c:if>
-                <tr>
-                    <td><input type="hidden" name="resetToken" value="${param.resetToken}" /></td>
+                    <td><input type="hidden" name="resetToken" value="{{ vm.resetToken }}" /></td>
                     <td><input type="button" value="Submit" onclick="resetPassSubmit();"></td>
                 </tr>
             </table>
@@ -30,5 +28,3 @@
 
     </div>
 </div>
-
-<%@ include file="footer.jsp" %>

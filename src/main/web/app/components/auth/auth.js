@@ -1,0 +1,1 @@
+angular.module('fims.auth', ['fims.users']);
