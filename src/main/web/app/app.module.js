@@ -30,17 +30,19 @@ angular.element(document).ready(function() {
 });
 
 
-app.controller('dipnetCtrl', ['$rootScope', '$state', 'UserFactory', function($rootScope, $state, UserFactory) {
+app.controller('dipnetCtrl', ['$rootScope', '$scope', '$state', '$location', 'UserFactory',
+    function($rootScope, $scope, $state, $location, UserFactory) {
+        $scope.error = $location.search()['error'];
+        
+        $rootScope.$on('$stateChangeStart', function (event, next) {
+            if (next.loginRequired && !UserFactory.isLoggedIn()) {
+                event.preventDefault();
+                /* Save the user's location to take him back to the same page after he has logged-in */
+                $rootScope.savedState = next.name;
 
-    $rootScope.$on('$stateChangeStart', function (event, next) {
-        if (next.loginRequired && !UserFactory.isLoggedIn()) {
-            event.preventDefault();
-            /* Save the user's location to take him back to the same page after he has logged-in */
-            $rootScope.savedState = next.name;
-
-            $state.go('login');
-        }
-    });
+                $state.go('login');
+            }
+        });
 }]);
 
 app.controller('ResetPassCtrl', ['$location', function ($location) {

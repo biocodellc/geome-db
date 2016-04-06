@@ -148,7 +148,7 @@ div.sectioncontent {
 }
 
 div.sectioncontent-results {
-    style="overflow:auto;"
+    style: "overflow:auto;"
 }
 
 .sectioncontent table {
@@ -366,4 +366,8 @@ td {
 th {
     padding: 2px 8px;
     text-align: center;
+}
+
+.ng-cloak {
+    display: none !important;
 }
