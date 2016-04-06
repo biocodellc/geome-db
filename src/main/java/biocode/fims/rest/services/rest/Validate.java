@@ -344,6 +344,7 @@ public class Validate extends FimsService {
                         "associated with an existing dataset.");
             }
             fastaManager.upload(currentGraph, uploadPath(), outputPrefix);
+            new BcidMinter().updateBcidTimestamp(currentGraph);
 
             // delete the temporary file now that it has been uploaded
             new File(fastaManager.getFastaFilename()).delete();
