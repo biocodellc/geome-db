@@ -15,17 +15,17 @@ angular.module('fims.auth')
             return config;
         },
         response: function (response) {
-            if (response.status === 401) {
+            if (response.status === 401 || (response.status === 400 && response.data.usrMessage == 'invalid_grant' )) {
                 var AuthFactory = $injector.get('AuthFactory');
                 var $state = $injector.get('$state');
 
                 if (AuthFactory.isAuthenticated()) {
                     if (AuthFactory.refreshAccessToken()) {
-                        // try to resend request
+                        // TODO try to resend request
                     }
+                } else {
+                    response = $state.go('login');
                 }
-
-                $state.go('login');
             }
             return response || $q.when(response);
         }

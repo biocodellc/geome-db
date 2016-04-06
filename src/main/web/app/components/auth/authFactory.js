@@ -53,7 +53,7 @@ angular.module('fims.auth')
 
     function refreshAccessToken() {
         var refreshToken = $window.sessionStorage.refreshToken;
-        if (!triedToRefresh && !angular.isUndefined(refreshToken)) {
+        if (!this.triedToRefresh && !angular.isUndefined(refreshToken)) {
             var config = {
                 method: 'POST',
                 url: '/biocode-fims/rest/authenticationService/oauth/refresh',
@@ -70,10 +70,10 @@ angular.module('fims.auth')
             $http(config)
                 .success(function(data, status, headers, config) {
                     setOAuthTokens(data.access_token, data.refresh_token);
-                    triedToRefresh = false;
+                    this.triedToRefresh = false;
                 })
                 .error(function (data, status, headers, config) {
-                    triedToRefresh = true;
+                    this.triedToRefresh = true;
                     return false;
                 });
         }

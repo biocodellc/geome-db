@@ -1,8 +1,10 @@
 /* ====== General Utility Functions ======= */
 var appRoot = "/dipnet/";
 var biocodeFimsRestRoot = "/biocode-fims/rest/";
+
 $.ajaxSetup({
     beforeSend: function(jqxhr, config) {
+        jqxhr.config = config;
         var accessToken = window.sessionStorage.accessToken;
         if (accessToken && config.url.indexOf("access_token") == -1) {
             if (config.url.indexOf('?') > -1) {
@@ -12,6 +14,74 @@ $.ajaxSetup({
             }
         }
     }
+});
+
+$.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
+    // you could pass this option in on a "retry" so that it doesn't
+    // get all recursive on you.
+    if (opts.refreshRequest) {
+        return;
+    }
+
+    if (typeof(originalOpts) != "object") {
+        originalOpts = opts;
+    }
+
+    // our own deferred object to handle done/fail callbacks
+    var dfd = $.Deferred();
+
+    // if the request works, return normally
+    jqXHR.done(dfd.resolve);
+
+    // if the request fails, do something else
+    // yet still resolve
+    jqXHR.fail(function() {
+        var args = Array.prototype.slice.call(arguments);
+        var client_id = 'G4ESqFt9AmTDH-X3fqAF';
+        var client_secret = 'T-arg-ageBsjqT8SS5vurnqe6XQqsz4UBSNkUAYgCHqAXHtwUbrKQjAHDsK5uUTD9mNC62yBpyN';
+        var refreshToken = window.sessionStorage.refreshToken;
+        if ((jqXHR.status === 401 || (jqXHR.status === 400 && jqXHR.responseJSON.usrMessage == "invalid_grant"))
+                && refreshToken) {
+            $.ajax({
+                url: biocodeFimsRestRoot + 'authenticationService/oauth/refresh',
+                method: 'POST',
+                refreshRequest: true,
+                data: $.param({
+                    client_id: client_id,
+                    client_secret: client_secret,
+                    refresh_token: refreshToken
+                }),
+                error: function() {
+                    delete window.sessionStorage.accessToken;
+                    delete window.sessionStorage.refreshToken;
+
+                    // reject with the original 401 data
+                    dfd.rejectWith(jqXHR, args);
+
+                    if (!window.location.pathname == "/dipnet/")
+                        window.location = "/dipnet/login";
+                },
+                success: function(data) {
+                    window.sessionStorage.accessToken = data.access_token;
+                    window.sessionStorage.refreshToken = data.refresh_token;
+
+                    // retry with a copied originalOpts with refreshRequest.
+                    var newOpts = $.extend({}, originalOpts, {
+                        refreshRequest: true,
+                        url: originalOpts.url.replace(/access_token=.{20}/, "access_token=" + data.access_token)
+                    });
+                    // pass this one on to our deferred pass or fail.
+                    $.ajax(newOpts).then(dfd.resolve, dfd.reject);
+                }
+            });
+
+        } else {
+            dfd.rejectWith(jqXHR, args);
+        }
+    });
+
+    // NOW override the jqXHR's promise functions with our deferred
+    return dfd.promise(jqXHR);
 });
 
 // function for displaying a loading dialog while waiting for a response from the server
@@ -115,10 +185,10 @@ function populateDivFromService(url,elementID,failMessage)  {
         elementID = '#' + elementID
     }
     return jqxhr = $.ajax(url, function() {})
-        .done(function(data) {
+        .done(function(data, a,b,c) {
            $(elementID).html(data);
         })
-        .fail(function() {
+        .fail(function(a,b,c,d) {
             $(elementID).html(failMessage);
         });
 }
@@ -816,7 +886,7 @@ function populateDefinitions(column) {
         type: "GET",
         url: theUrl,
         dataType: "html",
-        success: function(data) {
+        done: function(data) {
             $("#definition").html(data);
         }
     });
@@ -1591,10 +1661,7 @@ function submitForm(){
                 loopStatus(promise)
             }
         },
-        error: function(jqxhr) {
-            de.reject(jqxhr);
-        },
-        success: function(data) {
+        done: function(data) {
             de.resolve(data);
         },
         fail: function(jqxhr) {
