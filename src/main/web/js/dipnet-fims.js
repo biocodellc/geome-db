@@ -37,8 +37,6 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
     // yet still resolve
     jqXHR.fail(function() {
         var args = Array.prototype.slice.call(arguments);
-        var client_id = 'G4ESqFt9AmTDH-X3fqAF';
-        var client_secret = 'T-arg-ageBsjqT8SS5vurnqe6XQqsz4UBSNkUAYgCHqAXHtwUbrKQjAHDsK5uUTD9mNC62yBpyN';
         var refreshToken = window.sessionStorage.refreshToken;
         if ((jqXHR.status === 401 || (jqXHR.status === 400 && jqXHR.responseJSON.usrMessage == "invalid_grant"))
                 && refreshToken) {
@@ -48,7 +46,6 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
                 refreshRequest: true,
                 data: $.param({
                     client_id: client_id,
-                    client_secret: client_secret,
                     refresh_token: refreshToken
                 }),
                 error: function() {
@@ -260,7 +257,7 @@ function dialog(msg, title, buttons) {
 // A short message
 function showMessage(message) {
 $('#alerts').append(
-        '<div class="alert">' +
+        '<div class="fims-alert">' +
             '<button type="button" class="close" data-dismiss="alert">' +
             '&times;</button>' + message + '</div>');
 }
@@ -268,7 +265,7 @@ $('#alerts').append(
 // A big message
 function showBigMessage(message) {
 $('#alerts').append(
-        '<div class="alert" style="height:400px">' +
+        '<div class="fims-alert" style="height:400px">' +
             '<button type="button" class="close" data-dismiss="alert">' +
             '&times;</button>' + message + '</div>');
 }

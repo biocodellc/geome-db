@@ -1,8 +1,6 @@
 angular.module('fims.auth')
     
 .factory('AuthFactory', ['$http', '$rootScope', '$window', function ($http, $rootScope, $window) {
-    var client_id = 'G4ESqFt9AmTDH-X3fqAF';
-    var client_secret = 'T-arg-ageBsjqT8SS5vurnqe6XQqsz4UBSNkUAYgCHqAXHtwUbrKQjAHDsK5uUTD9mNC62yBpyN';
     var triedToRefresh = false;
 
     var authFactory = {
@@ -24,7 +22,6 @@ angular.module('fims.auth')
             url: '/biocode-fims/rest/authenticationService/oauth/accessToken',
             data: $.param({
                 client_id: client_id,
-                client_secret: client_secret,
                 redirect_uri: 'localhost:8080/dipnet/oauth',
                 grant_type: 'password',
                 username: username,
@@ -53,7 +50,7 @@ angular.module('fims.auth')
 
     function refreshAccessToken() {
         var refreshToken = $window.sessionStorage.refreshToken;
-        if (!this.triedToRefresh && !angular.isUndefined(refreshToken)) {
+        if (!triedToRefresh && !angular.isUndefined(refreshToken)) {
             var config = {
                 method: 'POST',
                 url: '/biocode-fims/rest/authenticationService/oauth/refresh',
@@ -70,10 +67,10 @@ angular.module('fims.auth')
             $http(config)
                 .success(function(data, status, headers, config) {
                     setOAuthTokens(data.access_token, data.refresh_token);
-                    this.triedToRefresh = false;
+                    triedToRefresh = false;
                 })
                 .error(function (data, status, headers, config) {
-                    this.triedToRefresh = true;
+                    triedToRefresh = true;
                     return false;
                 });
         }
