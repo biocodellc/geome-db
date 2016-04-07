@@ -14,17 +14,17 @@ angular.module('dipnetApp')
     return directive;
 }])
 
-.controller('ProjectSelectCtrl', ['ProjectFactory', 'UserFactory', function(ProjectFactory, UserFactory) {
-    var vm = this;
-    vm.projects;
-    vm.isLoggedIn = UserFactory.isLoggedIn;
-    vm.includePublic = !UserFactory.isLoggedIn();
-    vm.getProjects = getProjects;
+.controller('ProjectSelectCtrl', ['$scope', '$location', 'ProjectFactory', 'UserFactory',
+    function($scope, $location, ProjectFactory, UserFactory) {
+        var vm = this;
+        vm.projects;
+        vm.isLoggedIn = UserFactory.isLoggedIn;
+        vm.includePublic = !UserFactory.isLoggedIn();
+        vm.getProjects = getProjects;
 
-    function getProjects() {
-        vm.projects = ProjectFactory.getProjects(vm.includePublic);
-    }
+        function getProjects() {
+            vm.projects = ProjectFactory.getProjects(vm.includePublic);
+        }
 
-    getProjects();
-
+        getProjects();
 }])

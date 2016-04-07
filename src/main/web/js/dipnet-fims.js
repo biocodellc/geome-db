@@ -887,9 +887,9 @@ function populateDefinitions(column) {
         type: "GET",
         url: theUrl,
         dataType: "html",
-        done: function(data) {
-            $("#definition").html(data);
-        }
+    })
+    .done(function(data) {
+        $("#definition").html(data);
     });
     loadingDialog(jqxhr);
 }
