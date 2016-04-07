@@ -23,6 +23,10 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
         return;
     }
 
+    if (opts.url.indexOf('/validate') > -1) {
+        return;
+    }
+
     if (typeof(originalOpts) != "object") {
         originalOpts = opts;
     }
@@ -182,10 +186,10 @@ function populateDivFromService(url,elementID,failMessage)  {
         elementID = '#' + elementID
     }
     return jqxhr = $.ajax(url, function() {})
-        .done(function(data, a,b,c) {
+        .done(function(data) {
            $(elementID).html(data);
         })
-        .fail(function(a,b,c,d) {
+        .fail(function() {
             $(elementID).html(failMessage);
         });
 }
@@ -1243,6 +1247,7 @@ function validatorSubmit() {
         $("#" + datasetId).attr("name","dataset");
         $("#" + fastaId).attr("name","fasta");
 
+        // submitForm();
         submitForm().done(function(data) {
             validationResults(data);
         }).fail(function(jqxhr) {
@@ -1658,7 +1663,10 @@ function submitForm(){
                 loopStatus(promise)
             }
         },
-        done: function(data) {
+        error: function(jqxhr) {
+            de.reject(jqxhr);
+        },
+        success: function(data) {
             de.resolve(data);
         },
         fail: function(jqxhr) {

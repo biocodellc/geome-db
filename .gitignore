@@ -13,3 +13,4 @@ src/main/java/biocode/fims/rest/test.java
 out/
 triples/
 **/clientId.js
+src/main/web/WEB-INF/web.xml

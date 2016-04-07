@@ -10,11 +10,10 @@
                 <tr>
                     <td align="right">&nbsp;&nbsp;FIMS Data&nbsp;&nbsp;</td>
                     <td><input type="file" class="btn btn-default btn-xs" name="file" id="file1" /></td>
-                    <td><button class="btn btn-default btn-sm" type="button" id="file_button">+</button></td>
                 </tr>
 
-                <tr class="toggle-content" id="file_toggle">
-                    <td align="right">FIMS Data (optional)&nbsp;&nbsp;</td>
+                <tr>
+                    <td align="right">FASTA Data (optional)&nbsp;&nbsp;</td>
                     <td colspan=2><input type="file" class="btn btn-default btn-xs" name="file" id="file2" /></td>
                 </tr>
 

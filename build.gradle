@@ -129,11 +129,19 @@ task copyEnvironmentResources {
 }
 processResources.dependsOn copyEnvironmentResources
 
-task setWebXmlLocation << {
-    war.webXml = file("src/main/environment/${project.environment}/web.xml")
+task copyWebXml {
+    inputs.dir "src/main/environment/${project.environment}/web.xml"
+    outputs.dir "src/main/web/WEB-INF"
+    doLast {
+        project.copy {
+            from "src/main/environment/${project.environment}"
+            into "src/main/web/WEB-INF"
+            include "web.xml"
+        }
+    }
 }
 
-war.dependsOn setWebXmlLocation
+processResources.dependsOn copyWebXml
 
 task restartFims {
     group = 'biscicol.org'
