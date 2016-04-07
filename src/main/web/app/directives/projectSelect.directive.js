@@ -14,17 +14,27 @@ angular.module('dipnetApp')
     return directive;
 }])
 
-.controller('ProjectSelectCtrl', ['$scope', '$location', 'ProjectFactory', 'UserFactory',
-    function($scope, $location, ProjectFactory, UserFactory) {
+    // .directive('')
+
+.controller('ProjectSelectCtrl', ['$scope', '$location', '$timeout', 'ProjectFactory', 'UserFactory',
+    function($scope, $location, $timeout, ProjectFactory, UserFactory) {
         var vm = this;
         vm.projects;
+        // vm.projectId;
         vm.isLoggedIn = UserFactory.isLoggedIn;
         vm.includePublic = !UserFactory.isLoggedIn();
         vm.getProjects = getProjects;
+        // vm.setProjectId = setProjectId;
 
         function getProjects() {
             vm.projects = ProjectFactory.getProjects(vm.includePublic);
         }
 
+        // function setProjectId() {
+        //     $timeout(function() {
+        //         vm.projectId = ($location.search()['projectId']) ? $location.search()['projectId'] : 0;
+        //         $('#projects').trigger('change');
+        //     })
+        // }
         getProjects();
 }])

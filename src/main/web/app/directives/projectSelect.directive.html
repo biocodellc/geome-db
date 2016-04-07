@@ -1,6 +1,7 @@
 <td align=right>&nbsp;&nbsp;Choose Project&nbsp;&nbsp;</td>
 <td>
-    <select width=20 id=projects style="display:inline-block;width:400px;text-align:left;">
+    <!--<select width=20 id=projects ng-init="vm.setProjectId()" ng-model="vm.projectId" style="display:inline-block;width:400px;text-align:left;">-->
+    <select width=20 id=projects name="projectId" style="display:inline-block;width:400px;text-align:left;">
         <option value="0">Select a project</option>
         <option ng-repeat="project in vm.projects"
                 value="{{ project.projectId }}">
