@@ -5,18 +5,8 @@
 
     <form method="POST">
         <table border=0 class="table" style="width:800px;">
-            <tr>
-                <td align=right>&nbsp;&nbsp;Choose Project&nbsp;&nbsp;</td>
-                <td>
-                    <select width=20 id=projects style="display:inline-block;width:400px;text-align:left;">
-                        <option value="0">Select a project</option>
-                        <option ng-repeat="project in vm.projects"
-                                value="{{ project.projectId }}">
-                            {{ project.projectTitle }}
-                        </option>
-                    </select>
-                </td>
-            </tr>
+
+            <tr project-select></tr>
 
             <tr>
                 <td align=right>&nbsp;&nbsp;Choose Dataset(s)&nbsp;&nbsp;&nbsp;</td>

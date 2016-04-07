@@ -1,10 +1,9 @@
-angular.module('fims.query', ['fims.projects'])
+angular.module('fims.query', [])
 
-.controller('QueryCtrl', ['ProjectFactory', function (ProjectFactory) {
+.controller('QueryCtrl', ['$rootScope', function ($rootScope) {
     var vm = this;
-    vm.projects = ProjectFactory.getProjects();
 
-    angular.element(document).ready(function () {
+    $rootScope.$on('projectSelectLoadedEvent', function(event){
         graphsMessage('Choose a project to see loaded spreadsheets');
 
         $("#projects").change(function() {

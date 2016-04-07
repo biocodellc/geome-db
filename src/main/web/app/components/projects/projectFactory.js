@@ -7,9 +7,9 @@ angular.module('fims.projects')
 
     return projectFactory;
 
-    function getProjects() {
+    function getProjects(includePublic) {
         var projects = [];
-        $http.get('/biocode-fims/rest/projects/list')
+        $http.get('/biocode-fims/rest/projects/list?includePublic=' + includePublic)
             .success(function(data, status, headers, config) {
                 angular.extend(projects, data);
             });
