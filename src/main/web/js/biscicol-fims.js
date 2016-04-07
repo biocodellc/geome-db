@@ -1069,7 +1069,7 @@ function list(listName, columnName) {
                                           "Please talk to your FIMS data manager to fix this.";
             showBigMessage(msg);
         } else {
-            var msg;
+            var msg = '';
             if (columnName != null && columnName.length > 0) {
                 msg += "<b>Acceptable values for " + columnName + "</b><br>\n";
             } else {
