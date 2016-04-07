@@ -14,3 +14,4 @@ biscicol-fims.ipr
 biscicol-fims.iws
 out/
 triples/
+src/main/web/WEB-INF/web.xml
