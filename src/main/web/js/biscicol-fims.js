@@ -2,6 +2,89 @@
 var appRoot = "/";
 var biocodeFimsRestRoot = "/biocode-fims/rest/";
 
+$.ajaxSetup({
+    beforeSend: function(jqxhr, config) {
+        jqxhr.config = config;
+        var accessToken = window.sessionStorage.accessToken;
+        if (accessToken && config.url.indexOf("access_token") == -1) {
+            if (config.url.indexOf('?') > -1) {
+                config.url += "&access_token=" + accessToken;
+            } else {
+                config.url += "?access_token=" + accessToken;
+            }
+        }
+    }
+});
+
+$.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
+    // you could pass this option in on a "retry" so that it doesn't
+    // get all recursive on you.
+    if (opts.refreshRequest) {
+        return;
+    }
+
+    if (opts.url.indexOf('/validate') > -1) {
+        return;
+    }
+
+    if (typeof(originalOpts) != "object") {
+        originalOpts = opts;
+    }
+
+    // our own deferred object to handle done/fail callbacks
+    var dfd = $.Deferred();
+
+    // if the request works, return normally
+    jqXHR.done(dfd.resolve);
+
+    // if the request fails, do something else
+    // yet still resolve
+    jqXHR.fail(function() {
+        var args = Array.prototype.slice.call(arguments);
+        var refreshToken = window.sessionStorage.refreshToken;
+        if ((jqXHR.status === 401 || (jqXHR.status === 400 && jqXHR.responseJSON.usrMessage == "invalid_grant"))
+                && refreshToken) {
+            $.ajax({
+                url: biocodeFimsRestRoot + 'authenticationService/oauth/refresh',
+                method: 'POST',
+                refreshRequest: true,
+                data: $.param({
+                    client_id: client_id,
+                    refresh_token: refreshToken
+                }),
+                error: function() {
+                    delete window.sessionStorage.accessToken;
+                    delete window.sessionStorage.refreshToken;
+
+                    // reject with the original 401 data
+                    dfd.rejectWith(jqXHR, args);
+
+                    if (!window.location.pathname == "/dipnet/")
+                        window.location = "/dipnet/login";
+                },
+                success: function(data) {
+                    window.sessionStorage.accessToken = data.access_token;
+                    window.sessionStorage.refreshToken = data.refresh_token;
+
+                    // retry with a copied originalOpts with refreshRequest.
+                    var newOpts = $.extend({}, originalOpts, {
+                        refreshRequest: true,
+                        url: originalOpts.url.replace(/access_token=.{20}/, "access_token=" + data.access_token)
+                    });
+                    // pass this one on to our deferred pass or fail.
+                    $.ajax(newOpts).then(dfd.resolve, dfd.reject);
+                }
+            });
+
+        } else {
+            dfd.rejectWith(jqXHR, args);
+        }
+    });
+
+    // NOW override the jqXHR's promise functions with our deferred
+    return dfd.promise(jqXHR);
+});
+
 // function for displaying a loading dialog while waiting for a response from the server
 function loadingDialog(promise) {
     var dialogContainer = $("#dialogContainer");
@@ -112,7 +195,7 @@ function populateDivFromService(url,elementID,failMessage)  {
 }
 
 function populateProjects() {
-    theUrl = "biocode-fims/rest/projects/list?includePublic=true";
+    theUrl = biocodeFimsRestRoot + "projects/list?includePublic=true";
     var jqxhr = $.getJSON( theUrl, function(data) {
         var listItems = "";
         listItems+= "<option value='0'>Select a project ...</option>";
@@ -177,18 +260,18 @@ function dialog(msg, title, buttons) {
 
 // A short message
 function showMessage(message) {
-    $('#alerts').append(
-        '<div class="alert">' +
-        '<button type="button" class="close" data-dismiss="alert">' +
-        '&times;</button>' + message + '</div>');
+$('#alerts').append(
+        '<div class="fims-alert">' +
+            '<button type="button" class="close" data-dismiss="alert">' +
+            '&times;</button>' + message + '</div>');
 }
 
 // A big message
 function showBigMessage(message) {
-    $('#alerts').append(
-        '<div class="alert" style="height:400px">' +
-        '<button type="button" class="close" data-dismiss="alert">' +
-        '&times;</button>' + message + '</div>');
+$('#alerts').append(
+        '<div class="fims-alert" style="height:400px">' +
+            '<button type="button" class="close" data-dismiss="alert">' +
+            '&times;</button>' + message + '</div>');
 }
 
 // Get the projectID
@@ -769,27 +852,6 @@ function projectToggle(id) {
 }
 
 /* ====== templates.jsp Functions ======= */
-// Processing functions
-$(function () {
-    $('input').click(populate_bottom);
-
-    $('#default_bold').click(function() {
-        $('.check_boxes').prop('checked',true);
-        populate_bottom();
-    });
-    $('#excel_button').click(function() {
-        var li_list = new Array();
-        $(".check_boxes").each(function() {
-            li_list.push($(this).text() );
-        });
-        if(li_list.length > 0){
-            download_file();
-        }
-        else{
-            showMessage('You must select at least 1 field in order to export a spreadsheet.');
-        }
-    });
-})
 
 function populate_bottom(){
     var selected = new Array();
@@ -829,9 +891,9 @@ function populateDefinitions(column) {
         type: "GET",
         url: theUrl,
         dataType: "html",
-        success: function(data) {
-            $("#definition").html(data);
-        }
+    })
+    .done(function(data) {
+        $("#definition").html(data);
     });
     loadingDialog(jqxhr);
 }
@@ -870,7 +932,7 @@ function populateAbstract(targetDivId) {
     var e = document.getElementById('projects');
     var projectId = e.options[e.selectedIndex].value;
 
-    theUrl = "biocode-fims/rest/projects/" + projectId + "/abstract/";
+    theUrl = biocodeFimsRestRoot + "projects/" + projectId + "/abstract/";
 
     var jqxhr = $.ajax( {
         url: theUrl,
@@ -1074,19 +1136,15 @@ function list(listName, columnName) {
             if (columnName != null && columnName.length > 0) {
                 msg += "<b>Acceptable values for " + columnName + "</b><br>\n";
             } else {
-                var msg;
-                if (columnName != null && columnName.length > 0) {
-                    msg += "<b>Acceptable values for " + columnName + "</b><br>\n";
-                } else {
                     msg += "<b>Acceptable values for " + listName + "</b><br>\n";
-                }
-
-                $.each(data, function(index, value) {
-                    msg += "<li>" + value + "</li>\n";
-                });
-                showBigMessage(msg);
             }
-        });
+
+            $.each(data, function(index, value) {
+                msg += "<li>" + value + "</li>\n";
+            });
+            showBigMessage(msg);
+        }
+    });
 }
 
 function parseSpreadsheet(regExpression, sheetName) {
@@ -1225,8 +1283,8 @@ function pollStatus() {
         .done(function(data) {
             def.resolve(data);
         }).fail(function() {
-        def.reject();
-    });
+            def.reject();
+        });
     return def.promise();
 }
 
@@ -1243,9 +1301,9 @@ function continueUpload(createExpedition) {
             d.resolve();
             uploadResults(data);
         }).fail(function(jqxhr) {
-        d.reject();
-        failError(jqxhr);
-    });
+            d.reject();
+            failError(jqxhr);
+        });
     loopStatus(d.promise());
 }
 
@@ -1416,25 +1474,25 @@ function getExpeditionCodes() {
             $("#expeditionCode").replaceWith(select);
             updateExpeditionPublicStatus(data);
         }).fail(function(jqxhr) {
-        var msg;
-        var title = "Error!";
-        if (jqxhr.status = 401) {
-            msg = "Please login to load your expeditions.";
-            title = "Warning!";
-        } else {
-            msg = JSON.stringify($.parseJSON(jqxhr.responseText).usrMessage);
-            $("#dialogContainer").addClass("error");
-        }
-
-        $("#expeditionCode").replaceWith('<input type="text" name="expeditionCode" id="expeditionCode" />');
-        var buttons = {
-            "Ok": function() {
-                $("#dialogContainer").removeClass("error");
-                $(this).dialog("close");
+            var msg;
+            var title = "Error!";
+            if (jqxhr.status = 401) {
+                msg = "Please login to load your expeditions.";
+                title = "Warning!";
+            } else {
+                msg = JSON.stringify($.parseJSON(jqxhr.responseText).usrMessage);
+                $("#dialogContainer").addClass("error");
             }
-        }
-        dialog("Error fetching expeditions!<br><br>" + msg, title, buttons)
-    });
+
+            $("#expeditionCode").replaceWith('<input type="text" name="expeditionCode" id="expeditionCode" />');
+            var buttons = {
+                "Ok": function() {
+                    $("#dialogContainer").removeClass("error");
+                    $(this).dialog("close");
+                }
+            }
+            dialog("Error fetching expeditions!<br><br>" + msg, title, buttons)
+        });
 }
 
 // function to handle the results from the rest service /biocode-fims/rest/validate
@@ -1628,7 +1686,7 @@ function submitForm(){
     $('form').ajaxSubmit(options);
     return promise;
 }
-/* ====== lookup.jsp Functions ======= */
+/* ====== lookup.html Functions ======= */
 
 // Take the resolver results and populate a table
 function submitResolver() {
