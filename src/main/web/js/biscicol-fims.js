@@ -59,8 +59,8 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
                     // reject with the original 401 data
                     dfd.rejectWith(jqXHR, args);
 
-                    if (!window.location.pathname == "/dipnet/")
-                        window.location = "/dipnet/login";
+                    if (!window.location.pathname == appRoot)
+                        window.location = appRoot + "login";
                 },
                 success: function(data) {
                     window.sessionStorage.accessToken = data.access_token;
