@@ -7,7 +7,8 @@ var app = angular.module('dipnetApp', [
     'fims.validation',
     'fims.projects',
     'fims.users',
-    'fims.creator'
+    'fims.creator',
+    'utils.autofocus'
 ]);
 
 var currentUser;

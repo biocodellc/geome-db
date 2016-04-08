@@ -18,15 +18,6 @@ angular.module('dipnetApp')
             templateUrl: "app/components/validation/validation.jsp",
             controller: "ValidationCtrl as vm"
         })
-        .state('resetPass', {
-            url: "/resetPass",
-            templateUrl: "resetPass.jsp.jsp",
-            controller: "ResetPassCtrl as vm"
-        })
-        .state('reset', {
-            url: "/reset",
-            templateUrl: "reset.jsp",
-        })
         .state('template', {
             url: "/template",
             templateUrl: "app/components/templates/templates.jsp",

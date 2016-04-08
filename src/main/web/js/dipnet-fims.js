@@ -1128,11 +1128,11 @@ function list(listName, columnName) {
                                           "Please talk to your FIMS data manager to fix this.";
             showBigMessage(msg);
         } else {
-            var msg;
+            var msg = '';
             if (columnName != null && columnName.length > 0) {
                 msg += "<b>Acceptable values for " + columnName + "</b><br>\n";
             } else {
-                msg += "<b>Acceptable values for " + listName + "</b><br>\n";
+                    msg += "<b>Acceptable values for " + listName + "</b><br>\n";
             }
 
             $.each(data, function(index, value) {
@@ -1247,7 +1247,6 @@ function validatorSubmit() {
         $("#" + datasetId).attr("name","dataset");
         $("#" + fastaId).attr("name","fasta");
 
-        // submitForm();
         submitForm().done(function(data) {
             validationResults(data);
         }).fail(function(jqxhr) {
@@ -1309,8 +1308,8 @@ function checkNAAN(spreadsheetNaan, naan) {
     if (spreadsheetNaan != naan) {
         var buttons = {
             "Ok": function() {
-            $("#dialogContainer").removeClass("error");
-            $(this).dialog("close");
+                $("#dialogContainer").removeClass("error");
+                $(this).dialog("close");
             }
         }
         var message = "Spreadsheet appears to have been created using a different FIMS/BCID system.<br>";
@@ -1347,9 +1346,9 @@ function validationFormToggle() {
             $.when(parseSpreadsheet("~naan=[0-9]+~", "Instructions")).done(function(spreadsheetNaan) {
                 if (spreadsheetNaan > 0) {
                     $.getJSON(biocodeFimsRestRoot + "utils/getNAAN")
-                            .done(function(data) {
-                        checkNAAN(spreadsheetNaan, data.naan);
-                    });
+                        .done(function(data) {
+                            checkNAAN(spreadsheetNaan, data.naan);
+                        });
                 }
             });
 
@@ -1484,8 +1483,8 @@ function getExpeditionCodes() {
             $("#expeditionCode").replaceWith('<input type="text" name="expeditionCode" id="expeditionCode" />');
             var buttons = {
                 "Ok": function() {
-                $("#dialogContainer").removeClass("error");
-                $(this).dialog("close");
+                    $("#dialogContainer").removeClass("error");
+                    $(this).dialog("close");
                 }
             }
             dialog("Error fetching expeditions!<br><br>" + msg, title, buttons)
@@ -1675,7 +1674,7 @@ function submitForm(){
         uploadProgress: function(event, position, total, percentComplete) {
             // For browsers that do support the upload progress listener
             if (percentComplete == 100) {
-            loopStatus(promise)
+                loopStatus(promise)
             }
         }
     }
