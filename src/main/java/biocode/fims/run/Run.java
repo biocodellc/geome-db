@@ -6,7 +6,9 @@ import biocode.fims.bcid.BcidDatabase;
 import biocode.fims.bcid.BcidMinter;
 import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.fasta.FastaManager;
 import biocode.fims.fuseki.Uploader;
+import biocode.fims.fuseki.fasta.FusekiFastaManager;
 import biocode.fims.fuseki.query.FimsQueryBuilder;
 import biocode.fims.fuseki.triplify.Triplifier;
 import biocode.fims.settings.FimsPrinter;
@@ -14,6 +16,7 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
 import org.apache.commons.cli.*;
 
+import javax.ws.rs.BadRequestException;
 import java.io.File;
 
 /**
@@ -43,7 +46,8 @@ public class Run {
      * @param expeditionCheck -- only set to FALSE for testing and debugging usually, or local triplify usage.
      */
     public void runAllLocally(Boolean triplifier, Boolean upload, Boolean expeditionCheck, Boolean forceAll) {
-
+        String previousGraph;
+        String currentGraph;
         // Validation Step
         process.runValidation();
 
@@ -68,6 +72,15 @@ public class Run {
                 return;
             processController.setClearedOfWarnings(true);
             processController.setValidated(true);
+        }
+
+        //
+        FastaManager fastaManager = processController.getFastaManager();
+        // if fastaManager is null, then we are not uploading a dataset. In that case, we need to copy over the sequences
+        // from the old graph to the new graph
+        if (fastaManager == null) {
+            fastaManager = new FusekiFastaManager(processController.getMapping().getMetadata().getQueryTarget(),
+                    processController, null);
         }
 
         // We only need to check on assigning Expedition if the user wants to triplify or upload data
@@ -98,12 +111,16 @@ public class Run {
                 if (triplifier) {
                     runTriplifier();
                 } else if (upload) {
+                    // fetch the current graph before uploading the new graph. This is needed to copy over the fasta sequences
+                    previousGraph = fastaManager.fetchGraph();
+
                     String tripleFile = runTriplifier();
                     // upload the dataset
                     Uploader uploader = new Uploader(processController.getMapping().getMetadata().getTarget(),
                             new File(tripleFile));
 
                     uploader.execute();
+                    currentGraph = uploader.getGraphID();
 
                     // Detect if this is user=demo or not.  If this is "demo" then do not request EZIDs.
                     // User account Demo can still create Data Groups, but they just don't get registered and will be purged periodically
@@ -130,9 +147,40 @@ public class Run {
                     expedition.attachReferenceToExpedition(processController.getExpeditionCode(), identifier, processController.getProjectId());
                     FimsPrinter.out.println("\t" + "Data Elements Root: " + processController.getExpeditionCode());
 
+                    // copy over the fasta sequences if this is not the first dataset uploaded, but only if there is no
+                    // new fasta file to upload
+                    if (previousGraph != null && fastaManager.getFastaFilename() == null) {
+                        fastaManager.copySequences(previousGraph, currentGraph);
+                    }
+
+                    // if fastaFilename isn't null, then we have a fasta file to upload
+                    if (fastaManager.getFastaFilename() != null) {
+                        if (!processController.isExpeditionAssignedToUserAndExists()) {
+                            process.runExpeditionCheck();
+                            if (processController.isExpeditionCreateRequired()) {
+                                throw new BadRequestException("You can only upload fasta files to existing expeditions unless you" +
+                                        " are simultaneously uploading a new dataset.");
+                            }
+                        }
+
+                        if (currentGraph == null) {
+                            throw new BadRequestException("No existing dataset was detected. Your fasta file must be " + "" +
+                                    "associated with an existing dataset.");
+                        }
+                        fastaManager.upload(
+                                currentGraph,
+                                System.getProperty("user.dir") + File.separator + "tripleOutput",
+                                processController.getExpeditionCode() + "_output");
+                        new BcidMinter().updateBcidTimestamp(currentGraph);
+
+                        // delete the temporary file now that it has been uploaded
+                        new File(fastaManager.getFastaFilename()).delete();
+                        FimsPrinter.out.println("<br>\t" + "FASTA data added");
+                    }
+
                 }
-            // If we don't Run the expedition check then we DO NOT assign any ARK roots or special expedition information
-            // In other, words, this is typically used for local debug & test modes
+                // If we don't Run the expedition check then we DO NOT assign any ARK roots or special expedition information
+                // In other, words, this is typically used for local debug & test modes
             } else {
                 process.outputPrefix = "test";
                 runTriplifier();
@@ -142,6 +190,7 @@ public class Run {
 
     private String runTriplifier() {
         FimsPrinter.out.println("\nTriplifying...");
+
         // Run the triplifier
         Triplifier t = new Triplifier(process.outputPrefix, process.outputFolder, processController);
 
@@ -200,7 +249,7 @@ public class Run {
         options.addOption("e", "dataset_code", true, "Dataset code.  You will need to obtain a data code before " +
                 "loading data");
         options.addOption("o", "output_directory", true, "Output Directory");
-        options.addOption("i", "input_file", true, "Input Spreadsheet");
+        options.addOption("i", "input_file", true, "Input Spreadsheet or FASTA file");
         options.addOption("p", "project_id", true, "Project Identifier.  A numeric integer corresponding to your project");
         options.addOption("configFile", true, "Use a local config file instead of getting from server");
 
