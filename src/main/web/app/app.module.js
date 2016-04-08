@@ -8,7 +8,8 @@ var app = angular.module('biscicolApp', [
     'fims.projects',
     'fims.users',
     'fims.lookup',
-    'fims.creator'
+    'fims.creator',
+    'utils.autofocus'
 ]);
 
 var currentUser;
