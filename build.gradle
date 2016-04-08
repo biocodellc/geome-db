@@ -1,16 +1,14 @@
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath "org.ajoberstar:gradle-git:1.4.2"
         classpath "com.github.marceloemanoel:gradle-environments-plugin:0.1"
+        classpath "org.akhikhl.gretty:gretty:1.2.4"
+        classpath "org.hidetake:gradle-ssh-plugin:2.0.0"
     }
-}
-
-plugins {
-    id "org.akhikhl.gretty" version "1.2.4"
-    id 'org.hidetake.ssh' version '1.6.0'
 }
 
 import org.ajoberstar.grgit.*
@@ -20,6 +18,8 @@ apply plugin: "java"
 apply plugin: "war"
 apply plugin: "idea"
 apply plugin: "environments"
+apply plugin: "org.akhikhl.gretty"
+apply plugin: "org.hidetake.ssh"
 
 targetCompatibility = 1.7
 sourceCompatibility = 1.7
@@ -40,7 +40,7 @@ dependencies {
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
 
-project.ext.environment = "local"
+project.ext.environment = defaultEnvironment
 
 clean {
     delete libsDir
@@ -51,6 +51,7 @@ gretty {
     contextPath = grettyPath
     servletContainer = "jetty9"
     debugPort = 5005
+    inplace = false
 }
 
 // jetty ssh plugin
@@ -85,20 +86,22 @@ setDevelopmentEnv.mustRunAfter compileJava
 
 /*
 Delete any resource files in src/main/resources if the file exists in a sub directory
-of src/main/environment
- */
-task cleanResourceDirectory << {
-    def allResourceFiles = []
+of src/main/environment, excluding the current environment setting directory
+*/
+task cleanResourceDirectory {
+    doLast {
+        def allResourceFilesToRemove = []
 
-    def environmentDir = new File("src/main/environment")
-    environmentDir.eachFileRecurse (FileType.FILES) { file ->
-        allResourceFiles << file.name
-    }
+        def environmentDir = new File("src/main/environment")
+        environmentDir.eachFileRecurse(FileType.FILES) { file ->
+            allResourceFilesToRemove << file.name
+        }
 
-    allResourceFiles.each{
-        def resourceFile = new File("src/main/resources/${it}")
-        if (resourceFile.exists()) {
-            resourceFile.delete()
+        allResourceFilesToRemove.each {
+            def resourceFile = new File("src/main/resources/${it}")
+            if (resourceFile.exists()) {
+                resourceFile.delete()
+            }
         }
     }
 }
@@ -111,17 +114,25 @@ task copyEnvironmentResources {
             into "src/main/resources"
             include "**/*"
             exclude "web.xml"
+            exclude ".gitkeep"
+        }
+    }
+}
+processResources.dependsOn copyEnvironmentResources
+
+task copyWebXml {
+    inputs.dir "src/main/environment/${project.environment}/web.xml"
+    outputs.dir "src/main/web/WEB-INF"
+    doLast {
+        project.copy {
+            from "src/main/environment/${project.environment}"
+            into "src/main/web/WEB-INF"
+            include "web.xml"
         }
     }
 }
 
-processResources.dependsOn copyEnvironmentResources
-
-task setWebXmlLocation << {
-    war.webXml = file("src/main/environment/${project.environment}/web.xml")
-}
-
-war.dependsOn setWebXmlLocation
+processResources.dependsOn copyWebXml
 
 task restartFims {
     group = 'biscicol.org'

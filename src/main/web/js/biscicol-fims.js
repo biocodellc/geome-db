@@ -112,7 +112,7 @@ function populateDivFromService(url,elementID,failMessage)  {
 }
 
 function populateProjects() {
-    theUrl = "biocode-fims/rest/projects/list";
+    theUrl = "biocode-fims/rest/projects/list?includePublic=true";
     var jqxhr = $.getJSON( theUrl, function(data) {
         var listItems = "";
         listItems+= "<option value='0'>Select a project ...</option>";
@@ -1064,11 +1064,15 @@ var fastaId;
 function list(listName, columnName) {
     var projectId = $("#projects").val();
     $.getJSON(biocodeFimsRestRoot + "projects/" + projectId + "/getListFields/" + listName)
-        .done(function(data) {
-            if (data.length == 0) {
-                var msg = "No list has been defined for \"" + columnName + "\" but there is a rule saying it exists.  " +
-                    "Please talk to your FIMS data manager to fix this.";
-                showBigMessage(msg);
+    .done(function(data) {
+        if (data.length == 0) {
+            var msg = "No list has been defined for \"" + columnName + "\" but there is a rule saying it exists.  " +
+                                          "Please talk to your FIMS data manager to fix this.";
+            showBigMessage(msg);
+        } else {
+            var msg = '';
+            if (columnName != null && columnName.length > 0) {
+                msg += "<b>Acceptable values for " + columnName + "</b><br>\n";
             } else {
                 var msg;
                 if (columnName != null && columnName.length > 0) {

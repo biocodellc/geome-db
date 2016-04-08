@@ -6,7 +6,7 @@ dist/*
 build/*
 classes/*
 javadocs/*
-javadocs/
+tripleOutput/*
 .gradle
 jetty-env.xml
 src/main/java/biocode/fims/rest/test.java
@@ -14,3 +14,4 @@ biscicol-fims.ipr
 biscicol-fims.iws
 out/
 triples/
+src/main/web/WEB-INF/web.xml
