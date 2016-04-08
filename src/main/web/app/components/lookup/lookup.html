@@ -1,0 +1,31 @@
+<div id="resolver" class="section">
+    <div class="sectioncontent row">
+
+        <h1>Lookup</h1>
+
+        <form method="GET">
+            <table border=0>
+            <tr>
+                <td>Identifier</td>
+                <td>
+                    <input
+                        id="identifier"
+                        ng-model="vm.identifier"
+                        size="40"
+                        onkeypress="if(event.keyCode==13) {submitResolver(); return false;}" />
+                </td>
+                <td>
+                    <input
+                        type="button"
+                        onclick="submitResolver();"
+                        name="Submit"
+                        value="Submit" />
+                </td>
+            </tr>
+            </table>
+        </form>
+
+    </div>
+
+    <div ui-view></div>
+</div>

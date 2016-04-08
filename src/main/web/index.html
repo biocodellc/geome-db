@@ -1,7 +1,84 @@
-<!DOCTYPE HTML>
-<html>
-
+<!doctype html>
+<html ng-controller="biscicolCtrl">
 <head>
-    <meta http-equiv="refresh" content="0; url=index.jsp" />
+    <base href="/">
+    <title>Biocode Field Information Management System</title>
+
+    <link rel="stylesheet" type="text/css" href="css/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/alerts.css"/>
+    <link rel="stylesheet" type="text/css" href="css/biscicol.css"/>
+
+    <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.css' rel='stylesheet' />
+    <link href='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css' rel='stylesheet' />
+    <link href='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css' rel='stylesheet' />
+
+
+
+    <link rel="short icon" href="docs/fimsicon.png" />
 </head>
+<body ng-cloak>
+<div id="container">
+
+    <header ng-include="'app/partials/header-nav.html'"></header>
+    <div ng-show="error" class="alert alert-error">{{ error }}</div>
+
+    <div ui-view></div>
+
+    <div id="dialogContainer"></div>
+    <div class="clearfooter"></div>
+</div> <!—-End Container—>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.min.js"></script>
+<script type="text/javascript" src="js/angular-ui-router.min.js"></script>
+
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/jquery.form.js"></script>
+
+<script type="text/javascript" src="js/BrowserDetect.js"></script>
+<script type="text/javascript" src="js/lodash.js"></script>
+<script type="text/javascript" src="js/xlsx.js"></script>
+<script type="text/javascript" src="js/papaparse.min.js"></script>
+<script type="text/javascript" src="js/pwstrength.js"></script>
+<script type="text/javascript" src="js/distal.js"></script>
+
+<script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.js'></script>
+<script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
+
+<script type="text/javascript" src="js/biocode-fims-xlsx-reader.js"></script>
+<script type="text/javascript" src="js/biocode-fims-mapping.js"></script>
+<script type="text/javascript" src="js/biscicol-fims.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="app/app.module.js"></script>
+<script type="text/javascript" src="app/app.routes.js"></script>
+
+<script type="text/javascript" src="app/components/auth/auth.js"></script>
+<script type="text/javascript" src="app/components/auth/clientId.js"></script>
+<script type="text/javascript" src="app/components/auth/authFactory.js"></script>
+<script type="text/javascript" src="app/components/auth/loginController.js"></script>
+<script type="text/javascript" src="app/components/auth/authInterceptorFactory.js"></script>
+<script type="text/javascript" src="app/components/query/queryController.js"></script>
+<script type="text/javascript" src="app/components/templates/templateController.js"></script>
+<script type="text/javascript" src="app/components/expeditions/expeditionController.js"></script>
+<script type="text/javascript" src="app/components/validation/validationController.js"></script>
+<script type="text/javascript" src="app/components/projects/projects.js"></script>
+<script type="text/javascript" src="app/components/projects/projectController.js"></script>
+<script type="text/javascript" src="app/components/projects/projectFactory.js"></script>
+<script type="text/javascript" src="app/components/users/users.js"></script>
+<script type="text/javascript" src="app/components/users/userController.js"></script>
+<script type="text/javascript" src="app/components/users/resetPassController.js"></script>
+<script type="text/javascript" src="app/components/users/userFactory.js"></script>
+<script type="text/javascript" src="app/components/creator/creator.js"></script>
+<script type="text/javascript" src="app/components/creator/creatorController.js"></script>
+<script type="text/javascript" src="app/components/creator/resourceTypesController.js"></script>
+<script type="text/javascript" src="app/components/lookup/lookup.js"></script>
+<script type="text/javascript" src="app/components/lookup/lookupFactory.js"></script>
+<script type="text/javascript" src="app/components/lookup/lookupController.js"></script>
+<script type="text/javascript" src="app/components/lookup/lookupMetadataController.js"></script>
+
+<script type="text/javascript" src="app/directives/projectSelect.directive.js"></script>
+
+</body>
 </html>
