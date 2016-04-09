@@ -970,7 +970,7 @@ function saveTemplateConfig() {
             });
 
             savedConfig = configName;
-            $.post(biocodeFimsRestRoot + "rest/projects/" + $("#projects").val() + "/saveTemplateConfig", $.param(
+            $.post(biocodeFimsRestRoot + "projects/" + $("#projects").val() + "/saveTemplateConfig", $.param(
                 {"configName": configName,
                     "checkedOptions": checked,
                     "projectId": $("#projects").val()
