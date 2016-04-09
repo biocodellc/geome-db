@@ -8,4 +8,13 @@
 
     <context:component-scan base-package="biocode.fims.*" />
 
+    <bean id="propsFileResource" class="org.springframework.core.io.ClassPathResource">
+        <constructor-arg value="/biscicol-fims.props" />
+    </bean>
+
+    <bean id="settingsManagerInstance"  class="biocode.fims.settings.SettingsManager" factory-method="getInstance">
+        <constructor-arg ref="propsFileResource">
+        </constructor-arg>
+    </bean>
+
 </beans>

@@ -15,6 +15,10 @@ import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
 import org.apache.commons.cli.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.ws.rs.BadRequestException;
 import java.io.File;
@@ -25,13 +29,13 @@ import java.io.File;
  */
 public class Run {
 
-    private SettingsManager settingsManager;
+    private SettingsManager settingsManager = SettingsManager.getInstance();
+
     private Process process;
     private ProcessController processController;
     private String username;
 
     public Run(Process process, ProcessController processController, String username) {
-        settingsManager = SettingsManager.getInstance("src/main/environments/local/biscicol-fims.props");
         this.process = process;
         this.processController = processController;
         this.username = username;
@@ -205,8 +209,8 @@ public class Run {
      *
      * @param args
      */
-    public static void main(String args[]) {
-        SettingsManager.getInstance("biscicol-fims.props");
+    public static void main(String args[])  throws Exception{
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
         String username = "";
         String password = "";
