@@ -14,6 +14,7 @@ buildscript {
 import org.ajoberstar.grgit.*
 import groovy.io.FileType
 
+apply plugin: "application"
 apply plugin: "java"
 apply plugin: "war"
 apply plugin: "idea"
@@ -78,6 +79,9 @@ task setProductionEnv << {
 }
 task setDevelopmentEnv << {
     project.ext.environment = "development"
+}
+task setLocalEnv << {
+    project.ext.environment = "local"
 }
 
 // if setProductionEnv or setDevelopmentEnv is run, make sure this is done before processResources
@@ -191,11 +195,20 @@ task deployFimsDev {
     }
 }
 
-task deployFimsLocal(dependsOn: war) << {
+task deployFimsLocal  {
+    description = 'local fims deployment'
+
+    dependsOn setLocalEnv
+    dependsOn war
+
+   doLast {
     project.copy {
         from war.destinationDir
         into localWarDirectory
         include war.archiveName
         rename war.archiveName, "root.war"
     }
+    }
 }
+
+mainClassName = "biocode.fims.run.Run"
