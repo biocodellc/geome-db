@@ -15,10 +15,8 @@ import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
 import org.apache.commons.cli.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.io.ClassPathResource;
 
 import javax.ws.rs.BadRequestException;
 import java.io.File;
@@ -50,19 +48,40 @@ public class Run {
      * @param expeditionCheck -- only set to FALSE for testing and debugging usually, or local triplify usage.
      */
     public void runAllLocally(Boolean triplifier, Boolean upload, Boolean expeditionCheck, Boolean forceAll) {
-        String previousGraph;
         String currentGraph;
+        boolean isFastaUpload = false;
+        String fastaFileName = null;
+
+        // determine if this is a fasta file or not
+        if (processController.getInputFilename().endsWith(".fasta")) {
+            isFastaUpload = true;
+            fastaFileName = processController.getInputFilename();
+            // need to set processController.getInputFilename to null
+            processController.setInputFilename(null);
+        }
+
+        if (isFastaUpload && triplifier && !upload) {
+            FimsPrinter.out.println("We don't currently support only triplifying of Fasta files");
+            return;
+        }
+
+        FastaManager fastaManager = new FusekiFastaManager(processController.getMapping().getMetadata().getQueryTarget(),
+                    processController, fastaFileName);
+
         // Validation Step
-        process.runValidation();
+        if (isFastaUpload)
+            fastaManager.validate(process.outputFolder);
+        else
+            process.runValidation();
 
         // If there is errors, tell the user and stop the operation
         if (processController.getHasErrors()) {
             FimsPrinter.out.println(processController.printMessages());
             return;
         }
-        // Run the validation step
-        if (!processController.isValidated() && processController.getHasWarnings()) {
-            Boolean continueOperation = false;
+
+        if (processController.getHasWarnings()) {
+            Boolean continueOperation;
             if (forceAll) {
                 continueOperation = true;
             } else {
@@ -72,20 +91,13 @@ public class Run {
                 //Boolean continueOperation = FimsInputter.in.continueOperation(message);
                 continueOperation = new StandardInputter().continueOperation(processController.printMessages());
             }
-            if (!continueOperation)
+            if (!continueOperation) {
                 return;
+            }
             processController.setClearedOfWarnings(true);
-            processController.setValidated(true);
         }
 
         //
-        FastaManager fastaManager = processController.getFastaManager();
-        // if fastaManager is null, then we are not uploading a dataset. In that case, we need to copy over the sequences
-        // from the old graph to the new graph
-        if (fastaManager == null) {
-            fastaManager = new FusekiFastaManager(processController.getMapping().getMetadata().getQueryTarget(),
-                    processController, null);
-        }
 
         // We only need to check on assigning Expedition if the user wants to triplify or upload data
         if (triplifier || upload) {
@@ -96,6 +108,11 @@ public class Run {
                     process.runExpeditionCheck();
                 // if an expedition creation is required, get feedback from user
                 if (processController.isExpeditionCreateRequired()) {
+                    if (isFastaUpload) {
+                        throw new BadRequestException("You can only upload fasta files to existing expeditions unless you" +
+                                " are simultaneously uploading a new dataset.");
+                    }
+
                     if (forceAll) {
                         process.runExpeditionCreate();
                     } else {
@@ -115,57 +132,50 @@ public class Run {
                 if (triplifier) {
                     runTriplifier();
                 } else if (upload) {
-                    // fetch the current graph before uploading the new graph. This is needed to copy over the fasta sequences
-                    previousGraph = fastaManager.fetchGraph();
-
-                    String tripleFile = runTriplifier();
                     // upload the dataset
-                    Uploader uploader = new Uploader(processController.getMapping().getMetadata().getTarget(),
-                            new File(tripleFile));
+                    if (!isFastaUpload) {
+                        String tripleFile = runTriplifier();
 
-                    uploader.execute();
-                    currentGraph = uploader.getGraphID();
+                        // fetch the current graph before uploading the new graph. This is needed to copy over the fasta sequences
+                        String previousGraph = fastaManager.fetchGraph();
+                        Uploader uploader = new Uploader(processController.getMapping().getMetadata().getTarget(),
+                                new File(tripleFile));
 
-                    // Detect if this is user=demo or not.  If this is "demo" then do not request EZIDs.
-                    // User account Demo can still create Data Groups, but they just don't get registered and will be purged periodically
-                    boolean ezidRequest = true;
-                    if (username.equals("demo") || settingsManager.retrieveValue("ezidRequests").equalsIgnoreCase("false")) {
-                        ezidRequest = false;
-                    }
+                        uploader.execute();
+                        currentGraph = uploader.getGraphID();
 
-                    // Mint the data group
-                    BcidMinter bcidMinter = new BcidMinter(ezidRequest);
-                    String identifier = bcidMinter.createEntityBcid(new Bcid(
-                            BcidDatabase.getUserId(username),
-                            "http://purl.org/dc/dcmitype/Dataset",
-                            processController.getExpeditionCode() + " Dataset",
-                            uploader.getEndpoint(),
-                            uploader.getGraphID(),
-                            null,
-                            processController.getFinalCopy(),
-                            false));
-                    FimsPrinter.out.println("Dataset Identifier: http://n2t.net/" + identifier + " (wait 15 minutes for resolution to become active)");
-
-                    // Associate the expeditionCode with this identifier
-                    ExpeditionMinter expedition = new ExpeditionMinter();
-                    expedition.attachReferenceToExpedition(processController.getExpeditionCode(), identifier, processController.getProjectId());
-                    FimsPrinter.out.println("\t" + "Data Elements Root: " + processController.getExpeditionCode());
-
-                    // copy over the fasta sequences if this is not the first dataset uploaded, but only if there is no
-                    // new fasta file to upload
-                    if (previousGraph != null && fastaManager.getFastaFilename() == null) {
-                        fastaManager.copySequences(previousGraph, currentGraph);
-                    }
-
-                    // if fastaFilename isn't null, then we have a fasta file to upload
-                    if (fastaManager.getFastaFilename() != null) {
-                        if (!processController.isExpeditionAssignedToUserAndExists()) {
-                            process.runExpeditionCheck();
-                            if (processController.isExpeditionCreateRequired()) {
-                                throw new BadRequestException("You can only upload fasta files to existing expeditions unless you" +
-                                        " are simultaneously uploading a new dataset.");
-                            }
+                        // Detect if this is user=demo or not.  If this is "demo" then do not request EZIDs.
+                        // User account Demo can still create Data Groups, but they just don't get registered and will be purged periodically
+                        boolean ezidRequest = true;
+                        if (username.equals("demo") || settingsManager.retrieveValue("ezidRequests").equalsIgnoreCase("false")) {
+                            ezidRequest = false;
                         }
+
+                        // Mint the data group
+                        BcidMinter bcidMinter = new BcidMinter(ezidRequest);
+                        String identifier = bcidMinter.createEntityBcid(new Bcid(
+                                BcidDatabase.getUserId(username),
+                                "http://purl.org/dc/dcmitype/Dataset",
+                                processController.getExpeditionCode() + " Dataset",
+                                uploader.getEndpoint(),
+                                uploader.getGraphID(),
+                                null,
+                                processController.getFinalCopy(),
+                                false));
+                        FimsPrinter.out.println("Dataset Identifier: http://n2t.net/" + identifier + " (wait 15 minutes for resolution to become active)");
+
+                        // Associate the expeditionCode with this identifier
+                        ExpeditionMinter expedition = new ExpeditionMinter();
+                        expedition.attachReferenceToExpedition(processController.getExpeditionCode(), identifier, processController.getProjectId());
+                        FimsPrinter.out.println("\t" + "Data Elements Root: " + processController.getExpeditionCode());
+
+                        // copy over the fasta sequences if this is not the first dataset uploaded, but only if there is no
+                        // new fasta file to upload
+                        if (previousGraph != null && fastaManager.getFastaFilename() == null) {
+                            fastaManager.copySequences(previousGraph, currentGraph);
+                        }
+                    } else {
+                        currentGraph = fastaManager.fetchGraph();
 
                         if (currentGraph == null) {
                             throw new BadRequestException("No existing dataset was detected. Your fasta file must be " + "" +
@@ -177,8 +187,6 @@ public class Run {
                                 processController.getExpeditionCode() + "_output");
                         new BcidMinter().updateBcidTimestamp(currentGraph);
 
-                        // delete the temporary file now that it has been uploaded
-                        new File(fastaManager.getFastaFilename()).delete();
                         FimsPrinter.out.println("<br>\t" + "FASTA data added");
                     }
 
