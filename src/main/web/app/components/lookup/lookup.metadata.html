@@ -1,0 +1,47 @@
+<div class="col-sm-12 alert alert-error" role="alert" ng-show="vm.error"><strong>Error! </strong>{{ vm.error }}</div>
+
+<div class="sectioncontent row" id="results" ng-show="!vm.error">
+    <h1>{{ vm.identifier }} is a <a href="{{ vm.metadata['rdf:type'].value }}">{{ vm.metadata['rdf:type'].shortValue }}</a></h1>
+    <table>
+        <tr>
+            <th>Description</th>
+            <th>Value</th>
+            <th>Definition</th>
+        </tr>
+
+        <tr ng-repeat="(key, value) in vm.filteredMetadata()">
+            <td ng-show="value.isResource"><a href="{{ value.value }}">{{ value.value }}</a></td>
+            <td ng-show="!value.isResource">{{ value.value }}</td>
+            <td><a href="{{ value.fullKey }}">{{ key }}</a></td>
+            <td>{{ value.description }}</td>
+        </tr>
+
+    </table>
+
+    <table ng-show="vm.metadata.download">
+        <tr>
+            <th>Download:</th>
+
+            <span ng-show="!vm.metadata.download.message">
+                <th><a href="{{ vm.metadata.download.appRoot }}biocode-fims/rest/projects/query/excel?graphs={{ vm.metadata.download.graph }}&project_id={{ vm.metadata.download.projectId }}">.xlsx</a></th>
+                <th><a href="{{ vm.metadata.download.appRoot }}biocode-fims/rest/projects/query/tab?graphs={{ vm.metadata.download.graph }}&project_id={{ vm.metadata.download.projectId }}">.txt</a></th>
+                <th><a href="{{ vm.metadata.download.n3 }}">.n3</a></th>
+            </span>
+
+            <th ng-show="vm.metadata.download.message">{{ vm.metadata.download.message }}</th>
+        </tr>
+    </table>
+
+        <table ng-show="vm.metadata.datasets">
+            <tr>
+                <th>Date</th>
+                <th>Identifier</th>
+            </tr>
+
+            <!-- loop through each dataset -->
+            <tr ng-repeat="dataset in vm.metadata.datasets">
+                <td>{{ dataset.ts }}</td>
+                <td><a href="{{ vm.metadata.datasets.appRoot }}lookup?id={{ dataset.identifier }}">{{ dataset.identifier }}</a></td>
+            </tr>
+        </table>
+</div>

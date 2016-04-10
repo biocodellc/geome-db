@@ -1,0 +1,26 @@
+<div id="resolver" class="section">
+    <div class="sectioncontent row">
+
+        <h1>Lookup</h1>
+
+        <form ng-submit="vm.submit()">
+            <table border=0>
+            <tr>
+                <td>Identifier</td>
+                <td>
+                    <input
+                        id="identifier"
+                        ng-model="vm.identifier"
+                        size="40" />
+                </td>
+                <td>
+                    <input type="submit" class="btn btn-primary pull-right" value="Submit" />
+                </td>
+            </tr>
+            </table>
+        </form>
+
+    </div>
+
+    <div ui-view></div>
+</div>

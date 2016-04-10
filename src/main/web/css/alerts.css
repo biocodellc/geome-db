@@ -6,7 +6,7 @@
   margin-right: auto;
 }
 
-.alert {
+.fims-alert {
   position: relative;
   z-index: 999999;
   width: 400px;

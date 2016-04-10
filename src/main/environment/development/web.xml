@@ -41,10 +41,6 @@
             <param-name>javax.ws.rs.Application</param-name>
             <param-value>biocode.fims.rest.BiscicolResolverApplication</param-value>
         </init-param>
-        <init-param>
-            <param-name>jersey.config.server.mvc.templateBasePath.jsp</param-name>
-            <param-value>/WEB-INF/jspTemplates</param-value>
-        </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>
     <servlet-mapping>
@@ -54,7 +50,6 @@
 
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
-        <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 
     <filter>
@@ -73,15 +68,6 @@
     </filter-mapping>
 
     <filter>
-        <filter-name>SecureFilter</filter-name>
-        <filter-class>biocode.fims.rest.filters.SecureFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>SecureFilter</filter-name>
-        <url-pattern>/secure/*</url-pattern>
-    </filter-mapping>
-
-    <filter>
         <filter-name>RedirectFilter</filter-name>
         <filter-class>biocode.fims.rest.RedirectFilter</filter-class>
     </filter>
@@ -92,7 +78,7 @@
     </filter-mapping>
 
     <error-page>
-        <location>/error.jsp</location>
+        <location>/index.html</location>
     </error-page>
 
 </web-app>

@@ -249,6 +249,7 @@ public class Run {
         Boolean triplify = false;
         Boolean upload = false;
         Boolean local = false;
+        Boolean force = false;
 
 
         // Define our commandline options
@@ -289,6 +290,7 @@ public class Run {
 //         Set the input format
         if (cl.hasOption("y")) {
             FimsInputter.in = new ForceInputter();
+            force = true;
         } else {
             FimsInputter.in = new StandardInputter();
         }
@@ -422,7 +424,7 @@ public class Run {
 
                     Process p = new Process(output_directory, processController, new File(cl.getOptionValue("configFile")));
                     Run run = new Run(p, processController, username);
-                    run.runAllLocally(true, false, false, false);
+                    run.runAllLocally(true, false, false, force);
                     /*p.runValidation();
                     triplifier t = new triplifier("test", output_directory);
                     p.mapping.Run(t, pc);
@@ -472,7 +474,7 @@ public class Run {
 
                     // Run the processor
                     Run run = new Run(p, processController, username);
-                    run.runAllLocally(triplify, upload, true, false);
+                    run.runAllLocally(triplify, upload, true, force);
                 }
             }
         } catch (Exception e) {

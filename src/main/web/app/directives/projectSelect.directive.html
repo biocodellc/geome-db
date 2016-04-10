@@ -1,0 +1,17 @@
+<td align=right>&nbsp;&nbsp;Choose Project&nbsp;&nbsp;</td>
+<td>
+    <select id=projects name="projectId" ng-model="vm.projectId" style="width:300px">
+        <option value="0">Select a project</option>
+        <option ng-repeat="project in vm.projects"
+                value="{{ project.projectId }}"
+                repeat-done="vm.setProject()">
+            {{ project.projectTitle }}
+        </option>
+    </select>
+    <span ng-show="vm.isAuthenticated">
+        <input type="checkbox" ng-change="vm.updateProjects()" ng-model="vm.includePublic" id="includePublic"/>
+        <span style="font-size:11px;">
+            (include public projects)
+        </span>
+    </span>
+</td>
