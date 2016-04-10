@@ -1364,7 +1364,7 @@ function validationFormToggle() {
             });
 
             $.when(parseSpreadsheet("~project_id=[0-9]+~", "Instructions")).done(function(projectId) {
-                if (projectId > 0) {
+                if ($("#projects option[value='" + projectId + "']").length !== 0) {
                     $('#projects').val(projectId);
                     $('#projects').prop('disabled', true);
                     $('#projects').trigger("change");
