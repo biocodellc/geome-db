@@ -16,7 +16,6 @@ angular.module('fims.users')
                         getProfileEditor();
                     });
                 });
-            loadingDialog(jqxhr);
         } else {
             getProfileEditor();
         }

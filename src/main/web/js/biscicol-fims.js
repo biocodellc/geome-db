@@ -43,7 +43,7 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
         var args = Array.prototype.slice.call(arguments);
         var refreshToken = window.sessionStorage.refreshToken;
         if ((jqXHR.status === 401 || (jqXHR.status === 400 && jqXHR.responseJSON.usrMessage == "invalid_grant"))
-                && refreshToken) {
+                && !isTokenExpired() && refreshToken) {
             $.ajax({
                 url: biocodeFimsRestRoot + 'authenticationService/oauth/refresh',
                 method: 'POST',
@@ -55,6 +55,7 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
                 error: function() {
                     delete window.sessionStorage.accessToken;
                     delete window.sessionStorage.refreshToken;
+                    delete window.sessionStorage.oAuthTimestamp;
 
                     // reject with the original 401 data
                     dfd.rejectWith(jqXHR, args);
@@ -65,6 +66,7 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
                 success: function(data) {
                     window.sessionStorage.accessToken = data.access_token;
                     window.sessionStorage.refreshToken = data.refresh_token;
+                    window.sessionStorage.oAuthTimestamp = new Date().getTime();
 
                     // retry with a copied originalOpts with refreshRequest.
                     var newOpts = $.extend({}, originalOpts, {
@@ -84,6 +86,16 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
     // NOW override the jqXHR's promise functions with our deferred
     return dfd.promise(jqXHR);
 });
+
+function isTokenExpired() {
+    var oAuthTimestamp = window.sessionStorage.oAuthTimestamp;
+    var now = new Date().getTime();
+
+    if (now - oAuthTimestamp > 1000 * 60 * 60 * 4)
+        return true;
+
+    return false;
+}
 
 // function for displaying a loading dialog while waiting for a response from the server
 function loadingDialog(promise) {
@@ -295,7 +307,6 @@ function login() {
         }).fail(function(jqxhr) {
             $(".error").html($.parseJSON(jqxhr.responseText).usrMessage);
         });
-    loadingDialog(jqxhr);
 }
 
 /* ====== reset.jsp Functions ======= */
@@ -318,7 +329,6 @@ function resetSubmit() {
         }).fail(function(jqxhr) {
             failError(jqxhr);
         });
-    loadingDialog(jqxhr);
 }
 
 /* ====== resetPass.jsp Functions ======= */
@@ -342,7 +352,6 @@ function resetPassSubmit() {
         }).fail(function(jqxhr) {
             failError(jqxhr);
         });
-    loadingDialog(jqxhr);
 }
 
 /* ====== bcidCreator.jsp Functions ======= */
@@ -382,7 +391,6 @@ function bcidCreatorSubmit() {
         }).fail(function(jqxhr) {
             failError(jqxhr);
         });
-    loadingDialog(posting);
 }
 
 /* ====== expeditions.jsp Functions ======= */
@@ -398,7 +406,6 @@ function populateExpeditionPage(username) {
     }).fail(function(jqxhr) {
         $("#sectioncontent").html(jqxhr.responseText);
     });
-    loadingDialog(jqxhr);
 }
 
 // function to load the expeditions.jsp subsections
@@ -465,7 +472,6 @@ function listExpeditions(divId) {
         }).fail(function(jqxhr) {
             $(divId).html(jqxhr.responseText);
         });
-    loadingDialog(jqxhr);
 }
 
 // function to populate the expedition resources, datasets, or configuration subsection of expeditions.jsp
@@ -477,19 +483,16 @@ function populateExpeditionSubsections(divId) {
             biocodeFimsRestRoot + 'expeditions/' + expeditionId + '/resourcesAsTable/',
             divId,
             'Unable to load this expedition\'s resources from server.');
-        loadingDialog(jqxhr);
     } else if (divId.indexOf("datasets") != -1) {
         var jqxhr = populateDivFromService(
             biocodeFimsRestRoot + 'expeditions/' + expeditionId + '/datasetsAsTable/',
             divId,
             'Unable to load this expedition\'s datasets from server.');
-        loadingDialog(jqxhr);
     } else {
         var jqxhr = populateDivFromService(
             biocodeFimsRestRoot + 'expeditions/' + expeditionId + '/metadataAsTable/',
             divId,
             'Unable to load this expedition\'s configuration from server.');
-        loadingDialog(jqxhr);
     }
 }
 
@@ -574,14 +577,12 @@ function profileSubmit(divId) {
                                 getProfileEditor();
                             });
                         });
-                    loadingDialog(jqxhr2);
                 }
             }
         }).fail(function(jqxhr) {
             var json = $.parseJSON(jqxhr.responseText);
             $(".error", divId).html(json.usrMessage);
         });
-        loadingDialog(jqxhr);
     }
 }
 
@@ -603,13 +604,11 @@ function getProfileEditor(username) {
                         getProfileEditor();
                     });
                 });
-            loadingDialog(jqxhr2);
         });
         $("#profile_submit").click(function() {
             profileSubmit('div#listUserProfile');
         });
     });
-    loadingDialog(jqxhr);
 }
 
 /* ====== projects.jsp Functions ======= */
@@ -631,10 +630,8 @@ function populateMetadata(id, projectID) {
                     projectMetadataSubmit(projectID, id);
                 });
             });
-            loadingDialog(jqxhr2);
         });
     });
-    loadingDialog(jqxhr);
     return jqxhr;
 }
 
@@ -687,13 +684,11 @@ function populateUsers(id, projectID) {
                         populateProjectSubsections(divId);
                     })
                 });
-                loadingDialog(jqxhr2);
 
 
             });
         });
     });
-    loadingDialog(jqxhr);
     return jqxhr;
 }
 
@@ -719,7 +714,6 @@ function populateProjectSubsections(id) {
                 expeditionsPublicSubmit(id);
             });
         });
-        loadingDialog(jqxhr);
     }
     return jqxhr;
 }
@@ -742,7 +736,6 @@ function expeditionsPublicSubmit(divId) {
     }).fail(function(jqxhr) {
         $(divId).html(jqxhr.responseText);
     });
-    loadingDialog(jqxhr);
 }
 
 // function to add an existing user to a project or retrieve the create user form.
@@ -763,7 +756,6 @@ function projectUserSubmit(id) {
                 populateProjectSubsections(divId);
             });
         });
-        loadingDialog(jqxhr);
     } else {
         var jqxhr = $.post(biocodeFimsRestRoot + "projects/" + projectId + "/admin/addUser", $('form', divId).serialize()
         ).done(function(data) {
@@ -772,7 +764,6 @@ function projectUserSubmit(id) {
             var jqxhr2 = populateProjectSubsections(divId);
             $(".error", divId).html($.parseJSON(jqxhr.responseText).usrMessage);
         });
-        loadingDialog(jqxhr);
     }
 }
 
@@ -787,7 +778,6 @@ function createUserSubmit(projectId, divId) {
         }).fail(function(jqxhr) {
             $(".error", divId).html($.parseJSON(jqxhr.responseText).usrMessage);
         });
-        loadingDialog(jqxhr);
     }
 }
 
@@ -806,7 +796,6 @@ function projectRemoveUser(e) {
                 $(".error", divId).html($.parseJSON(jqxhr.responseText).usrMessage);
             });
     });
-    loadingDialog(jqxhr);
 }
 
 // function to submit the project metadata editor form
@@ -817,7 +806,6 @@ function projectMetadataSubmit(projectId, divId) {
     }).fail(function(jqxhr) {
         $(".error", divId).html($.parseJSON(jqxhr.responseText).usrMessage);
     });
-    loadingDialog(jqxhr);
 }
 
 // function to populate the bcid projects.jsp page
@@ -852,6 +840,29 @@ function projectToggle(id) {
 }
 
 /* ====== templates.jsp Functions ======= */
+function hideTemplateInfo() {
+    if (!$('#abstract').is(':hidden')) {
+        $('#abstract').hide(400);
+    }
+    if (!$('#definition').is(':hidden')) {
+        $('#definition').hide(400);
+    }
+    if (!$('#cat1').is(':hidden')) {
+        $('#cat1').hide(400);
+    }
+}
+
+function showTemplateInfo() {
+    if ($('#abstract').is(':hidden')) {
+        $('#abstract').show(400);
+    }
+    if ($('#definition').is(':hidden')) {
+        $('#definition').show(400);
+    }
+    if ($('#cat1').is(':hidden')) {
+        $('#cat1').show(400);
+    }
+}
 
 function populate_bottom(){
     var selected = new Array();
@@ -895,7 +906,6 @@ function populateDefinitions(column) {
     .done(function(data) {
         $("#definition").html(data);
     });
-    loadingDialog(jqxhr);
 }
 
 function populateColumns(targetDivId) {
@@ -918,7 +928,6 @@ function populateColumns(targetDivId) {
                 showMessage ("Error completing request!" );
             }
         });
-        loadingDialog(jqxhr);
 
         $(".def_link").click(function () {
             populateDefinitions($(this).attr('name'));
@@ -947,7 +956,6 @@ function populateAbstract(targetDivId) {
             showMessage ("Error completing request!" );
         }
     });
-    loadingDialog(jqxhr);
 }
 
 var savedConfig;
@@ -1042,7 +1050,6 @@ function populateConfigs() {
                 showMessage ("Error fetching template configurations!");
             }
         });
-        loadingDialog(jqxhr);
     }
 }
 
@@ -1399,20 +1406,10 @@ function validationFormToggle() {
     });
 
     $('#upload').change(function() {
-        if ($('.toggle-content#expedition_public_toggle').is(':hidden') && $('#upload').is(":checked")) {
-            $('.toggle-content#expedition_public_toggle').show(400);
-        } else {
-            $('.toggle-content#expedition_public_toggle').hide(400);
-        }
-        if ($('.toggle-content#expeditionCode_toggle').is(':hidden') && $('#upload').is(":checked")) {
-            $('.toggle-content#expeditionCode_toggle').show(400);
-        } else {
-            $('.toggle-content#expeditionCode_toggle').hide(400);
-        }
-
-        if ($('.toggle-content#projects_toggle').is(':hidden') && $('#upload').is(":checked")) {
-            $('.toggle-content#projects_toggle').show(400);
-        }
+        if ($('#upload').is(":checked"))
+            showUpload();
+        else
+            hideUpload();
     });
 
     $("#projects").change(function() {
@@ -1438,6 +1435,25 @@ function validationFormToggle() {
             $('#file2').val(null);
         }
     });
+}
+
+function showUpload() {
+    if ($('.toggle-content#expedition_public_toggle').is(':hidden'))
+        $('.toggle-content#expedition_public_toggle').show(400);
+
+    if ($('.toggle-content#expeditionCode_toggle').is(':hidden'))
+        $('.toggle-content#expeditionCode_toggle').show(400);
+
+    if ($('.toggle-content#projects_toggle').is(':hidden'))
+        $('.toggle-content#projects_toggle').show(400);
+}
+
+function hideUpload() {
+    if (!$('.toggle-content#expedition_public_toggle').is(':hidden'))
+        $('.toggle-content#expedition_public_toggle').hide(400);
+
+    if (!$('.toggle-content#expeditionCode_toggle').is(':hidden'))
+        $('.toggle-content#expeditionCode_toggle').hide(400);
 }
 
 // update the checkbox to reflect the expedition's public status
@@ -1686,13 +1702,6 @@ function submitForm(){
     $('form').ajaxSubmit(options);
     return promise;
 }
-/* ====== lookup.html Functions ======= */
-
-// Take the resolver results and populate a table
-function submitResolver() {
-    $("form").attr("action", appRoot + "id/" + $("#identifier").val()).submit();
-}
-
 /* ====== resourceTypes.jsp Functions ======= */
 
 // Populate a table of data showing resourceTypes

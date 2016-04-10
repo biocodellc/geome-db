@@ -23,7 +23,7 @@ angular.module('biscicolApp')
                 controller: "ValidationCtrl as vm"
             })
             .state('lookup', {
-                url: "/lookup",
+                url: "/lookup?id",
                 templateUrl: "app/components/lookup/lookup.html",
                 controller: "LookupCtrl as vm"
             })
@@ -42,7 +42,7 @@ angular.module('biscicolApp')
                 templateUrl: "app/components/users/reset.jsp",
             })
             .state('template', {
-                url: "/template",
+                url: "/template?projectId",
                 templateUrl: "app/components/templates/templates.jsp",
                 controller: "TemplateCtrl as vm"
             })
@@ -54,7 +54,8 @@ angular.module('biscicolApp')
             .state('creator', {
                 url: "/bcidCreator",
                 templateUrl: "app/components/creator/bcidCreator.jsp",
-                controller: "CreatorCtrl as vm"
+                controller: "CreatorCtrl as vm",
+                loginRequired: true
             })
             .state('profile', {
                 url: "/secure/profile",
@@ -90,12 +91,19 @@ angular.module('biscicolApp')
             .when('/index.jsp', 'home')
             .when('/login.jsp', 'login')
             .when('/validation.jsp', 'validate')
-            .when('/lookup.jsp', 'lookup')
-            .when('/query.jsp', 'query')
+            .when('/lookup.jsp', ['$state', '$location', function ($state, $location) {
+                // forward query params
+                $state.go('lookup', $location.search());
+            }])
+            .when('/query.jsp', ['$state', '$location', function ($state, $location) {
+                $state.go('query', $location.search());
+            }])
             .when('/reset.jsp', 'reset')
             .when('/resetPass.jsp', 'resetPass')
             .when('/resourceTypes.jsp', 'resourceTypes')
-            .when('/templates.jsp', 'template')
+            .when('/templates.jsp', ['$state', '$location', function ($state, $location) {
+                $state.go('template', $location.search());
+            }])
             .when('/secure/bcidCreator.jsp', 'creator')
             .when('/secure/expeditions.jsp', 'expeditionManager')
             .when('/secure/profile.jsp', 'profile')

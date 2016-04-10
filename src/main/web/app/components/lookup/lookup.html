@@ -3,7 +3,7 @@
 
         <h1>Lookup</h1>
 
-        <form method="GET">
+        <form ng-submit="vm.submit()">
             <table border=0>
             <tr>
                 <td>Identifier</td>
@@ -11,15 +11,10 @@
                     <input
                         id="identifier"
                         ng-model="vm.identifier"
-                        size="40"
-                        onkeypress="if(event.keyCode==13) {submitResolver(); return false;}" />
+                        size="40" />
                 </td>
                 <td>
-                    <input
-                        type="button"
-                        onclick="submitResolver();"
-                        name="Submit"
-                        value="Submit" />
+                    <input type="submit" class="btn btn-primary pull-right" value="Submit" />
                 </td>
             </tr>
             </table>

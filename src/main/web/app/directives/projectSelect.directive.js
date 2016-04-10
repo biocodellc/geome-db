@@ -14,27 +14,48 @@ angular.module('biscicolApp')
     return directive;
 }])
 
-    // .directive('')
-
-.controller('ProjectSelectCtrl', ['$scope', '$location', '$timeout', 'ProjectFactory', 'UserFactory',
-    function($scope, $location, $timeout, ProjectFactory, UserFactory) {
+.controller('ProjectSelectCtrl', ['$scope', '$location', '$timeout', 'ProjectFactory', 'AuthFactory',
+    function($scope, $location, $timeout, ProjectFactory, AuthFactory) {
         var vm = this;
-        vm.projects;
-        // vm.projectId;
-        vm.isLoggedIn = UserFactory.isLoggedIn;
-        vm.includePublic = !UserFactory.isLoggedIn();
-        vm.getProjects = getProjects;
-        // vm.setProjectId = setProjectId;
+        vm.isAuthenticated = AuthFactory.isAuthenticated;
+        vm.includePublic = !AuthFactory.isAuthenticated;
+        vm.projectId;
+        vm.projects = getProjects();
+        vm.updateProjects = updateProjects;
+        vm.setProject = setProject;
 
         function getProjects() {
-            vm.projects = ProjectFactory.getProjects(vm.includePublic);
+            var projects = [];
+            ProjectFactory.getProjects(vm.includePublic)
+                .then(getProjectsComplete);
+                // .catch(getProjectsFailure);
+            return projects;
+
+            function getProjectsComplete(response) {
+                angular.extend(projects, response.data);
+            }
         }
 
-        // function setProjectId() {
-        //     $timeout(function() {
-        //         vm.projectId = ($location.search()['projectId']) ? $location.search()['projectId'] : 0;
-        //         $('#projects').trigger('change');
-        //     })
-        // }
-        getProjects();
+        function updateProjects() {
+            vm.projects = getProjects();
+        }
+
+        function setProject() {
+            if (vm.projects.length > 0) {
+                if (!vm.projectId)
+                    vm.projectId = ($location.search()['projectId']) ? $location.search()['projectId'] : "0";
+
+                if (vm.projects.length == 1) {
+                    vm.projectId = vm.projects[0].projectId;
+                }
+            }
+        }
+
+        $scope.$watch('vm.projectId', function(value) {
+            if (value > 0) {
+                // hack for existing jquery code
+                $('#projects').val(value).trigger('change');
+            }
+        });
 }])
+

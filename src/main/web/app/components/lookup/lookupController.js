@@ -1,16 +1,17 @@
 angular.module('fims.lookup')
 
-.controller('LookupCtrl', ['$scope', '$location', 'LookupFactory',
-    function ($scope, $location, LookupFactory) {
+.controller('LookupCtrl', ['$scope', '$location', '$stateParams', 'LookupFactory',
+    function ($scope, $location, $stateParams, LookupFactory) {
         var vm = this;
         vm.identifier = LookupFactory.identifier;
+        vm.submit = LookupFactory.submitForm;
 
         (function () {
             /* parse input parameter -- ARKS must be minimum length of 12 characters*/
-            var id = $location.search()['id'];
+            var id = $stateParams.id;
             if (angular.isDefined(id) && id.length > 12) {
                 LookupFactory.identifier = id;
-                submitResolver();
+                LookupFactory.submitForm();
             }
         }).call(this);
 

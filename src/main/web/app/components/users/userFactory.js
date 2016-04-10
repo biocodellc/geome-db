@@ -1,12 +1,10 @@
 angular.module('fims.users')
 
-.factory('UserFactory', ['$http', 'AuthFactory', function($http, AuthFactory) {
-    var user;
-
+.factory('UserFactory', ['$rootScope', '$http', 'AuthFactory', function($rootScope, $http, AuthFactory) {
+    
     var userFactory = {
-        getUser: getUser,
-        isLoggedIn: isLoggedIn,
-        isAdmin: isAdmin,
+        user: {},
+        isAdmin: false,
         removeUser: removeUser,
         setUser: setUser,
         fetchUser: fetchUser,
@@ -14,33 +12,21 @@ angular.module('fims.users')
 
     return userFactory;
 
-    function isLoggedIn() {
-        return AuthFactory.isAuthenticated();
-    }
-
-    function isAdmin() {
-        return angular.isDefined(user) && user.projectAdmin == true;
-    }
-
-    function getUser() {
-        return user;
-    }
-
     function removeUser() {
-        user = undefined;
+        userFactory.user = {};
     }
 
     function setUser(newUser) {
-        user = newUser;
+        angular.extend(userFactory.user, newUser);
+        userFactory.isAdmin = (newUser.projectAdmin == true);
     }
 
     function fetchUser() {
-        if (isLoggedIn()) {
+        if (AuthFactory.isAuthenticated) {
             $http.get('/biocode-fims/rest/users/profile')
                 .success(function (data, status, headers, config) {
                     setUser(data);
                 })
         }
     }
-
 }]);

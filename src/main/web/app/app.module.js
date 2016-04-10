@@ -12,14 +12,14 @@ var app = angular.module('biscicolApp', [
     'utils.autofocus'
 ]);
 
-var currentUser;
+var currentUser = {};
 app.run(['UserFactory', function(UserFactory) {
     UserFactory.setUser(currentUser);
 }]);
 
 angular.element(document).ready(function() {
     var accessToken = window.sessionStorage.accessToken;
-    if (accessToken) {
+    if (!isTokenExpired() && accessToken) {
         $.get('/biocode-fims/rest/users/profile?access_token=' + accessToken, function (data) {
             currentUser = data;
             angular.bootstrap(document, ['biscicolApp']);
@@ -32,12 +32,12 @@ angular.element(document).ready(function() {
 });
 
 
-app.controller('biscicolCtrl', ['$rootScope', '$scope', '$state', '$location', 'UserFactory',
-    function($rootScope, $scope, $state, $location, UserFactory) {
+app.controller('biscicolCtrl', ['$rootScope', '$scope', '$state', '$location', 'AuthFactory',
+    function($rootScope, $scope, $state, $location, AuthFactory) {
         $scope.error = $location.search()['error'];
         
         $rootScope.$on('$stateChangeStart', function (event, next) {
-            if (next.loginRequired && !UserFactory.isLoggedIn()) {
+            if (next.loginRequired && !AuthFactory.isAuthenticated) {
                 event.preventDefault();
                 /* Save the user's location to take him back to the same page after he has logged-in */
                 $rootScope.savedState = next.name;
@@ -49,15 +49,36 @@ app.controller('biscicolCtrl', ['$rootScope', '$scope', '$state', '$location', '
 
 
 
-app.controller('NavCtrl', ['$scope', 'AuthFactory', 'UserFactory', function ($scope, AuthFactory, UserFactory) {
-    var vm = this;
-    vm.isLoggedIn = UserFactory.isLoggedIn;
-    vm.isAdmin = UserFactory.isAdmin;
-    vm.getUser = UserFactory.getUser;
-    vm.logout = logout;
+app.controller('NavCtrl', ['$rootScope', '$scope', '$location', '$state', 'AuthFactory', 'UserFactory',
+    function ($rootScope, $scope, $location, $state, AuthFactory, UserFactory) {
+        var vm = this;
+        vm.isAuthenticated = AuthFactory.isAuthenticated;
+        vm.isAdmin = UserFactory.isAdmin;
+        vm.user = UserFactory.user;
+        vm.logout = logout;
+        vm.login = login;
 
-    function logout() {
-        AuthFactory.logout();
-        UserFactory.removeUser();
-    }
-}]);
+        function login() {
+            $rootScope.savedState = $state.current.name;
+        }
+        function logout() {
+            AuthFactory.logout();
+            UserFactory.removeUser();
+        }
+
+        $scope.$watch(
+            function(){ return AuthFactory.isAuthenticated},
+
+            function(newVal) {
+                vm.isAuthenticated = newVal;
+            }
+        )
+
+        $scope.$watch(
+            function(){ return UserFactory.isAdmin},
+
+            function(newVal) {
+                vm.isAdmin = newVal;
+            }
+        )
+    }]);

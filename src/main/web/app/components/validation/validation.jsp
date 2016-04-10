@@ -7,7 +7,7 @@
 
         <div class="col-sm-12">
             <form method="POST">
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <table class="table">
                         <tr>
                             <td align="right">&nbsp;&nbsp;FIMS Data&nbsp;&nbsp;</td>
@@ -24,25 +24,23 @@
                         <tr>
                             <td align="right">Upload&nbsp;&nbsp;</td>
                             <td style="font-size:11px;" colspan=2>
-                                <span ng-show="!vm.isLoggedIn()">
-                                    <input ng-show="!vm.isLoggedIn()" type="checkbox" disabled="disabled" /> (login to upload)
+                                <span ng-show="!vm.isAuthenticated">
+                                    <input ng-show="!vm.isAuthenticated" type="checkbox" disabled="disabled" /> (login to upload)
                                 </span>
-                                <input ng-show="vm.isLoggedIn()" type="checkbox" id="upload" name="upload" />
+                                <input ng-show="vm.isAuthenticated" type="checkbox" id="upload" name="upload" />
                             </td>
                         </tr>
 
-                        <!--<tbody class="toggle-content" id="upload-toggle">-->
 
-                            <tr class="toggle-content-upload toggle-content" id="expeditionCode_toggle">
-                                <td align="right">Dataset Code&nbsp;&nbsp;</td>
-                                <td colspan=2><input type="select" name="expeditionCode" id="expeditionCode" /></td>
-                            </tr>
+                        <tr class="toggle-content-upload toggle-content" id="expeditionCode_toggle">
+                            <td align="right">Dataset Code&nbsp;&nbsp;</td>
+                            <td colspan=2><input type="select" name="expeditionCode" id="expeditionCode" /></td>
+                        </tr>
 
-                            <tr class="toggle-content-upload toggle-content" id="expedition_public_toggle">
-                                <td align="right">Public&nbsp;&nbsp;</td>
-                                <td><input type="checkbox" name="public_status" id="public_status" /></td>
-                            </tr>
-                        <!--</tbody>-->
+                        <tr class="toggle-content-upload toggle-content" id="expedition_public_toggle">
+                            <td align="right">Public&nbsp;&nbsp;</td>
+                            <td><input type="checkbox" name="public_status" id="public_status" /></td>
+                        </tr>
 
                         <tr>
                             <td></td>

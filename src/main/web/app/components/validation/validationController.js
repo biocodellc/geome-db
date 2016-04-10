@@ -1,9 +1,9 @@
 angular.module('fims.validation', ['fims.users'])
 
-.controller('ValidationCtrl', ['$rootScope', '$scope', '$location', 'UserFactory',
-    function ($rootScope, $scope, $location, UserFactory) {
+.controller('ValidationCtrl', ['$rootScope', '$scope', '$location', 'AuthFactory',
+    function ($rootScope, $scope, $location, AuthFactory) {
         var vm = this;
-        vm.isLoggedIn = UserFactory.isLoggedIn;
+        vm.isAuthenticated = AuthFactory.isAuthenticated;
 
         $rootScope.$on('projectSelectLoadedEvent', function(event){
             fimsBrowserCheck($('#warning'));
@@ -34,4 +34,5 @@ angular.module('fims.validation', ['fims.users'])
                 });
             }
         });
+     
     }]);
