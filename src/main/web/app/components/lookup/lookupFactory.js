@@ -6,7 +6,8 @@ angular.module('fims.lookup')
     var lookupFactory = {
         identifier: identifier,
         fetchMetadata: fetchMetadata,
-        submitForm: submitForm
+        submitForm: submitForm,
+        updateFactory: updateFactory
     };
 
     return lookupFactory;
@@ -16,8 +17,11 @@ angular.module('fims.lookup')
     }
     
     function submitForm() {
-        // $http.get(appRoot + 'id/' + lookupFactory.identifier);
         $window.location.href = 'id/' + lookupFactory.identifier;
+    }
+    
+    function updateFactory(identifier) {
+        lookupFactory.identifier = identifier;
     }
 
 }]);

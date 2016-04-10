@@ -5,7 +5,12 @@ angular.module('fims.lookup')
         var vm = this;
         vm.identifier = LookupFactory.identifier;
         vm.submit = LookupFactory.submitForm;
+        vm.updateFactory = updateFactory;
 
+        function updateFactory() {
+            LookupFactory.updateFactory(vm.identifier);
+        }
+        
         (function () {
             /* parse input parameter -- ARKS must be minimum length of 12 characters*/
             var id = $stateParams.id;

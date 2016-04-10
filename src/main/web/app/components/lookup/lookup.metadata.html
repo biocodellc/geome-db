@@ -22,11 +22,9 @@
         <tr>
             <th>Download:</th>
 
-            <span ng-show="!vm.metadata.download.message">
-                <th><a href="{{ vm.metadata.download.appRoot }}biocode-fims/rest/projects/query/excel?graphs={{ vm.metadata.download.graph }}&project_id={{ vm.metadata.download.projectId }}">.xlsx</a></th>
-                <th><a href="{{ vm.metadata.download.appRoot }}biocode-fims/rest/projects/query/tab?graphs={{ vm.metadata.download.graph }}&project_id={{ vm.metadata.download.projectId }}">.txt</a></th>
-                <th><a href="{{ vm.metadata.download.n3 }}">.n3</a></th>
-            </span>
+            <th ng-show="!vm.metadata.download.message"><a href="{{ vm.metadata.download.appRoot }}biocode-fims/rest/projects/query/excel?graphs={{ vm.metadata.download.graph }}&project_id={{ vm.metadata.download.projectId }}">.xlsx</a></th>
+            <th ng-show="!vm.metadata.download.message"><a href="{{ vm.metadata.download.appRoot }}biocode-fims/rest/projects/query/tab?graphs={{ vm.metadata.download.graph }}&project_id={{ vm.metadata.download.projectId }}">.txt</a></th>
+            <th ng-show="!vm.metadata.download.message"><a href="{{ vm.metadata.download.n3 }}">.n3</a></th>
 
             <th ng-show="vm.metadata.download.message">{{ vm.metadata.download.message }}</th>
         </tr>

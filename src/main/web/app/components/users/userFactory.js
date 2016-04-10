@@ -13,7 +13,7 @@ angular.module('fims.users')
     return userFactory;
 
     function removeUser() {
-        userFactory.user = {};
+        angular.extend(userFactory.user, {});
     }
 
     function setUser(newUser) {
