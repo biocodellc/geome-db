@@ -48,7 +48,7 @@
 
                 <tr>
                     <td colspan=2>
-                    <input type="hidden" name="username" value="{{ vm.getUser().username }}" >
+                    <input type="hidden" name="username" value="{{ vm.user.username }}" >
                     <input type="button" value="Submit" onclick="bcidCreatorSubmit();"/>
                     </td>
                  </tr>

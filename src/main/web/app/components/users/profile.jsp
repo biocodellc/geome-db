@@ -1,7 +1,7 @@
 <div id="user" class="section">
 
     <div class="sectioncontent">
-        <h2>User Profile ({{ vm.getUser().username }})</h2>
+        <h2>User Profile ({{ vm.user.username }})</h2>
 
         <br>
 

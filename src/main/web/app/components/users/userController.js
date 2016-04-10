@@ -2,7 +2,7 @@ angular.module('fims.users')
 
 .controller('UserCtrl', ['$location', 'UserFactory', function ($location, UserFactory) {
     var vm = this;
-    vm.getUser = UserFactory.getUser;
+    vm.user = UserFactory.user;
 
     angular.element(document).ready(function () {
         // Populate User Profile
