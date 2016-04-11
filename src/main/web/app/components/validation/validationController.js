@@ -17,7 +17,7 @@ angular.module('fims.validation', ['fims.users'])
                 }
             });
 
-            $("input[type=button]").click(function() {
+            $("#validationSubmit").click(function() {
                 validatorSubmit();
             });
 

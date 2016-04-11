@@ -44,7 +44,7 @@
 
                         <tr>
                             <td></td>
-                            <td><input type="button" value="Submit" class="btn btn-default btn-xs"></td>
+                            <td><input type="button" id="validationSubmit" value="Submit" class="btn btn-default btn-xs"></td>
                         </tr>
                     </table>
                 </div>
