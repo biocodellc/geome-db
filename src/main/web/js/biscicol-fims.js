@@ -1419,7 +1419,7 @@ function validationFormToggle() {
         }
 
         // only get expedition codes if a user is logged in
-        if ($('*:contains("Logout")').length > 0) {
+        if (angular.element(document.body).injector().get('AuthFactory').isAuthenticated) {
             $("#expeditionCode").replaceWith("<p id='expeditionCode'>Loading ... </p>");
             getExpeditionCodes();
         }
