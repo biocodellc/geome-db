@@ -60,6 +60,7 @@ app.controller('NavCtrl', ['$rootScope', '$scope', '$location', '$state', 'AuthF
 
         function login() {
             $rootScope.savedState = $state.current.name;
+            $rootScope.savedStateParams = $state.params;
         }
         function logout() {
             AuthFactory.logout();

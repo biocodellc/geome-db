@@ -15,10 +15,11 @@ angular.module('fims.auth')
                     UserFactory.fetchUser();
                     if ($rootScope.savedState) {
                         if ($rootScope.savedState != "login")
-                            $state.go($rootScope.savedState);
+                            $state.go($rootScope.savedState, $rootScope.savedStateParams);
                         else
                             $state.go("home");
                         delete $rootScope.savedState;
+                        delete $rootScope.savedStateParams;
                     } else {
                         $state.go('home');
                     }
