@@ -18,7 +18,13 @@ app.run(['UserFactory', function(UserFactory) {
 }]);
 
 angular.element(document).ready(function() {
-    var accessToken = window.sessionStorage.accessToken;
+    if (!angular.isDefined(window.sessionStorage.biscicol)) {
+        // initialize the biscicol sessionStorage object to not get undefined errors later when
+        // JSON.parse($window.sessionStorage.biscicol) is called
+        window.sessionStorage.biscicol = JSON.stringify({});
+    }
+    var biscicolSessionStorage = JSON.parse(window.sessionStorage.biscicol);
+    var accessToken = biscicolSessionStorage.accessToken;
     if (!isTokenExpired() && accessToken) {
         $.get('/biocode-fims/rest/users/profile?access_token=' + accessToken, function (data) {
             currentUser = data;

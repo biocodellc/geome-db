@@ -5,7 +5,8 @@ var biocodeFimsRestRoot = "/biocode-fims/rest/";
 $.ajaxSetup({
     beforeSend: function(jqxhr, config) {
         jqxhr.config = config;
-        var accessToken = window.sessionStorage.accessToken;
+        var biscicolSessionStorage = JSON.parse(window.sessionStorage.biscicol);
+        var accessToken = biscicolSessionStorage.accessToken;
         if (accessToken && config.url.indexOf("access_token") == -1) {
             if (config.url.indexOf('?') > -1) {
                 config.url += "&access_token=" + accessToken;
@@ -41,7 +42,8 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
     // yet still resolve
     jqXHR.fail(function() {
         var args = Array.prototype.slice.call(arguments);
-        var refreshToken = window.sessionStorage.refreshToken;
+        var biscicolSessionStorage = JSON.parse(window.sessionStorage.biscicol);
+        var refreshToken = biscicolSessionStorage.refreshToken;
         if ((jqXHR.status === 401 || (jqXHR.status === 400 && jqXHR.responseJSON.usrMessage == "invalid_grant"))
                 && !isTokenExpired() && refreshToken) {
             $.ajax({
@@ -53,9 +55,7 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
                     refresh_token: refreshToken
                 }),
                 error: function() {
-                    delete window.sessionStorage.accessToken;
-                    delete window.sessionStorage.refreshToken;
-                    delete window.sessionStorage.oAuthTimestamp;
+                    window.sessionStorage.biscicol = JSON.stringify({});
 
                     // reject with the original 401 data
                     dfd.rejectWith(jqXHR, args);
@@ -64,9 +64,13 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
                         window.location = appRoot + "login";
                 },
                 success: function(data) {
-                    window.sessionStorage.accessToken = data.access_token;
-                    window.sessionStorage.refreshToken = data.refresh_token;
-                    window.sessionStorage.oAuthTimestamp = new Date().getTime();
+                    var biscicolSessionStorage = {
+                        accessToken: data.access_token,
+                        refreshToken: data.refresh_token,
+                        oAuthTimestamp: new Date().getTime()
+                    };
+
+                    window.sessionStorage.biscicol = JSON.stringify(biscicolSessionStorage);
 
                     // retry with a copied originalOpts with refreshRequest.
                     var newOpts = $.extend({}, originalOpts, {
@@ -88,7 +92,8 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
 });
 
 function isTokenExpired() {
-    var oAuthTimestamp = window.sessionStorage.oAuthTimestamp;
+    var biscicolSessionStorage = JSON.parse(window.sessionStorage.biscicol);
+    var oAuthTimestamp = biscicolSessionStorage.oAuthTimestamp;
     var now = new Date().getTime();
 
     if (now - oAuthTimestamp > 1000 * 60 * 60 * 4)

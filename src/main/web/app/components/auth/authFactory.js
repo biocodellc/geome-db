@@ -20,7 +20,8 @@ angular.module('fims.auth')
         }
 
         function isTokenExpired() {
-            var oAuthTimestamp = $window.sessionStorage.oAuthTimestamp;
+            var biscicolSessionStorage = JSON.parse($window.sessionStorage.biscicol);
+            var oAuthTimestamp = biscicolSessionStorage.oAuthTimestamp;
             var now = new Date().getTime();
 
             if (now - oAuthTimestamp > oAuth.USER_LOGIN_EXPIRATION) {
@@ -32,7 +33,8 @@ angular.module('fims.auth')
         }
         
         function getAccessToken() {
-            return $window.sessionStorage.accessToken;
+            var biscicolSessionStorage = JSON.parse($window.sessionStorage.biscicol);
+            return biscicolSessionStorage.accessToken;
         }
 
         function login(username, password) {
@@ -64,14 +66,13 @@ angular.module('fims.auth')
         }
 
         function logout() {
-            delete $window.sessionStorage.accessToken;
-            delete $window.sessionStorage.refreshToken;
-            delete $window.sessionStorage.oAuthTimestamp;
+            $window.sessionStorage.biscicol = JSON.stringify({});
             authFactory.isAuthenticated = false;
         }
 
         function refreshAccessToken() {
-            var refreshToken = $window.sessionStorage.refreshToken;
+            var biscicolSessionStorage = JSON.parse($window.sessionStorage.biscicol);
+            var refreshToken = biscicolSessionStorage.refreshToken;
             if (!triedToRefresh && !angular.isUndefined(refreshToken)) {
                 var config = {
                     method: 'POST',
@@ -102,8 +103,12 @@ angular.module('fims.auth')
         }
 
         function setOAuthTokens(accessToken, refreshToken) {
-            $window.sessionStorage.accessToken = accessToken;
-            $window.sessionStorage.refreshToken = refreshToken;
-            $window.sessionStorage.oAuthTimestamp = new Date().getTime().toString();
+            var biscicolSessionStorage = {
+                accessToken: accessToken,
+                refreshToken: refreshToken,
+                oAuthTimestamp: new Date().getTime()
+            };
+            
+            $window.sessionStorage.biscicol = JSON.stringify(biscicolSessionStorage);
         }
     }]);
