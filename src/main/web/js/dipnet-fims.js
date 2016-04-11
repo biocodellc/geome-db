@@ -5,7 +5,8 @@ var biocodeFimsRestRoot = "/biocode-fims/rest/";
 $.ajaxSetup({
     beforeSend: function(jqxhr, config) {
         jqxhr.config = config;
-        var accessToken = window.sessionStorage.accessToken;
+        var dipnetSessionStorage = JSON.parse(window.sessionStorage.dipnet);
+        var accessToken = dipnetSessionStorage.accessToken;
         if (accessToken && config.url.indexOf("access_token") == -1) {
             if (config.url.indexOf('?') > -1) {
                 config.url += "&access_token=" + accessToken;
@@ -41,7 +42,8 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
     // yet still resolve
     jqXHR.fail(function() {
         var args = Array.prototype.slice.call(arguments);
-        var refreshToken = window.sessionStorage.refreshToken;
+        var dipnetSessionStorage = JSON.parse(window.sessionStorage.dipnet);
+        var refreshToken = dipnetSessionStorage.refreshToken;
         if ((jqXHR.status === 401 || (jqXHR.status === 400 && jqXHR.responseJSON.usrMessage == "invalid_grant"))
                 && !isTokenExpired() && refreshToken) {
             $.ajax({
@@ -53,20 +55,22 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
                     refresh_token: refreshToken
                 }),
                 error: function() {
-                    delete window.sessionStorage.accessToken;
-                    delete window.sessionStorage.refreshToken;
-                    delete window.sessionStorage.oAuthTimestamp;
+                    window.sessionStorage.dipnet = JSON.stringify({});
 
                     // reject with the original 401 data
                     dfd.rejectWith(jqXHR, args);
 
-                    if (!window.location.pathname == "/dipnet/")
-                        window.location = "/dipnet/login";
+                    if (!window.location.pathname == appRoot)
+                        window.location = appRoot + "login";
                 },
                 success: function(data) {
-                    window.sessionStorage.accessToken = data.access_token;
-                    window.sessionStorage.refreshToken = data.refresh_token;
-                    window.sessionStorage.oAuthTimestamp = new Date().getTime();
+                    var dipnetSessionStorage = {
+                        accessToken: data.access_token,
+                        refreshToken: data.refresh_token,
+                        oAuthTimestamp: new Date().getTime()
+                    };
+
+                    window.sessionStorage.dipnet = JSON.stringify(dipnetSessionStorage);
 
                     // retry with a copied originalOpts with refreshRequest.
                     var newOpts = $.extend({}, originalOpts, {
@@ -88,7 +92,8 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
 });
 
 function isTokenExpired() {
-    var oAuthTimestamp = window.sessionStorage.oAuthTimestamp;
+    var dipnetSessionStorage = JSON.parse(window.sessionStorage.dipnet);
+    var oAuthTimestamp = dipnetSessionStorage.oAuthTimestamp;
     var now = new Date().getTime();
 
     if (now - oAuthTimestamp > 1000 * 60 * 60 * 4)

@@ -1,4 +1,4 @@
-angular.module('biscicolApp')
+angular.module('dipnetApp')
 
 .directive('projectSelect', ['$rootScope', function($rootScope) {
     var directive = {

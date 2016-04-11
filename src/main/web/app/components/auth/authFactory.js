@@ -20,7 +20,8 @@ angular.module('fims.auth')
         }
 
         function isTokenExpired() {
-            var oAuthTimestamp = $window.sessionStorage.oAuthTimestamp;
+            var dipnetSessionStorage = JSON.parse($window.sessionStorage.dipnet);
+            var oAuthTimestamp = dipnetSessionStorage.oAuthTimestamp;
             var now = new Date().getTime();
 
             if (now - oAuthTimestamp > oAuth.USER_LOGIN_EXPIRATION) {
@@ -32,7 +33,8 @@ angular.module('fims.auth')
         }
         
         function getAccessToken() {
-            return $window.sessionStorage.accessToken;
+            var dipnetSessionStorage = JSON.parse($window.sessionStorage.dipnet);
+            return dipnetSessionStorage.accessToken;
         }
 
         function login(username, password) {
@@ -41,7 +43,7 @@ angular.module('fims.auth')
                 url: '/biocode-fims/rest/authenticationService/oauth/accessToken',
                 data: $.param({
                     client_id: client_id,
-                    redirect_uri: 'localhost:8080/dipnet/oauth',
+                    redirect_uri: 'localhost:8080/oauth',
                     grant_type: 'password',
                     username: username,
                     password: password
@@ -64,14 +66,13 @@ angular.module('fims.auth')
         }
 
         function logout() {
-            delete $window.sessionStorage.accessToken;
-            delete $window.sessionStorage.refreshToken;
-            delete $window.sessionStorage.oAuthTimestamp;
+            $window.sessionStorage.dipnet = JSON.stringify({});
             authFactory.isAuthenticated = false;
         }
 
         function refreshAccessToken() {
-            var refreshToken = $window.sessionStorage.refreshToken;
+            var dipnetSessionStorage = JSON.parse($window.sessionStorage.dipnet);
+            var refreshToken = dipnetSessionStorage.refreshToken;
             if (!triedToRefresh && !angular.isUndefined(refreshToken)) {
                 var config = {
                     method: 'POST',
@@ -102,8 +103,12 @@ angular.module('fims.auth')
         }
 
         function setOAuthTokens(accessToken, refreshToken) {
-            $window.sessionStorage.accessToken = accessToken;
-            $window.sessionStorage.refreshToken = refreshToken;
-            $window.sessionStorage.oAuthTimestamp = new Date().getTime().toString();
+            var dipnetSessionStorage = {
+                accessToken: accessToken,
+                refreshToken: refreshToken,
+                oAuthTimestamp: new Date().getTime()
+            };
+            
+            $window.sessionStorage.dipnet = JSON.stringify(dipnetSessionStorage);
         }
     }]);

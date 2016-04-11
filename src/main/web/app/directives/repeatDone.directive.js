@@ -1,4 +1,4 @@
-angular.module('biscicolApp')
+angular.module('dipnetApp')
     
 .directive('repeatDone', function() {
     return function(scope, element, attrs) {
