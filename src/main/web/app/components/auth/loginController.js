@@ -14,8 +14,12 @@ angular.module('fims.auth')
                 .success(function(data, status, headers, config) {
                     UserFactory.fetchUser();
                     if ($rootScope.savedState) {
-                        $state.go($rootScope.savedState);
+                        if ($rootScope.savedState != "login")
+                            $state.go($rootScope.savedState, $rootScope.savedStateParams);
+                        else
+                            $state.go("home");
                         delete $rootScope.savedState;
+                        delete $rootScope.savedStateParams;
                     } else {
                         $state.go('home');
                     }

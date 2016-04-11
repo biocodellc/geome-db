@@ -23,7 +23,7 @@
                     <td><input id=title name=title type=textbox size="40"></td>
                 </tr>
                  <tr>
-                        <td align=right><a href='/resourceTypes.jsp'>ResourceType*</a></td>
+                        <td align=right><a ui-sref="resourceTypes">ResourceType*</a></td>
                         <td><select name=resourceTypesMinusDataset id=resourceTypesMinusDataset class=""></select></td>
                     </tr>
                 <tr>
@@ -48,7 +48,7 @@
 
                 <tr>
                     <td colspan=2>
-                    <input type="hidden" name="username" value="{{ vm.getUser().username }}" >
+                    <input type="hidden" name="username" value="{{ vm.user.username }}" >
                     <input type="button" value="Submit" onclick="bcidCreatorSubmit();"/>
                     </td>
                  </tr>

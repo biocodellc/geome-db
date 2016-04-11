@@ -26,17 +26,17 @@
                         <li><a ui-sref="validate" class='enabled'>Validate and Load Data</a></li>
                         <li><a ui-sref="query" class='enabled'>Query</a></li>
                         <li><a ui-sref="expeditionManager" class='enabled'>Expedition Manager</a></li>
-                        <li><a href="/lookup.jsp" class='enabled'>ID Lookup</a></li>
-                        <li ng-show="!vm.isLoggedIn()"><a href='#' class='disabled'>BCID Creator</a></li>
-                        <li ng-show="vm.isLoggedIn()"><a ui-sref="creator" class='enabled'>BCID Creator</a></li>
-                        <li ng-show="vm.isAdmin()"><a ui-sref='projects' class='enabled'>Project Manager</a></li>
-                        <li ng-show="!vm.isAdmin()"><a href='#' class='disabled'>Project Manager</a></li>
+                        <li><a ui-sref="lookup" class='enabled'>ID Lookup</a></li>
+                        <li ng-show="!vm.isAuthenticated"><a href='#' class='disabled'>BCID Creator</a></li>
+                        <li ng-show="vm.isAuthenticated"><a ui-sref="creator" class='enabled'>BCID Creator</a></li>
+                        <li ng-show="vm.isAdmin"><a ui-sref='projects' class='enabled'>Project Manager</a></li>
+                        <li ng-show="!vm.isAdmin"><a href='#' class='disabled'>Project Manager</a></li>
                     </ul>
                 </li>
 
-                <li ng-show="!vm.isLoggedIn()"><a id="login" ui-sref="login">Login</a></li>
-                <li ng-show="vm.isLoggedIn()"><a ui-sref="profile">{{ vm.getUser().username }}</a></li>
-                <li ng-show="vm.isLoggedIn()"><a ng-click="vm.logout()" ui-sref="home">Logout</a></li>
+                <li ng-show="!vm.isAuthenticated"><a id="login" ng-click="vm.login()" ui-sref="login">Login</a></li>
+                <li ng-show="vm.isAuthenticated"><a ui-sref="profile">{{ vm.user.username }}</a></li>
+                <li ng-show="vm.isAuthenticated"><a ng-click="vm.logout()" ui-sref="home">Logout</a></li>
                 <li><a href="http://fims.readthedocs.org/en/latest/">Help</a></li>
             </ul>
         </div><!-- /.navbar-collapse -->

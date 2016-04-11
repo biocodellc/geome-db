@@ -8,11 +8,6 @@ angular.module('fims.projects')
     return projectFactory;
 
     function getProjects(includePublic) {
-        var projects = [];
-        $http.get('/biocode-fims/rest/projects/list?includePublic=' + includePublic)
-            .success(function(data, status, headers, config) {
-                angular.extend(projects, data);
-            });
-        return projects;
+        return $http.get('/biocode-fims/rest/projects/list?includePublic=' + includePublic);
     }
 }]);

@@ -4,7 +4,8 @@ angular.module('fims.auth')
     return {
         request: function (config) {
             var $window = $injector.get("$window");
-            var accessToken = $window.sessionStorage.accessToken;
+            var AuthFactory = $injector.get('AuthFactory');
+            var accessToken = AuthFactory.getAccessToken();
             if (!angular.isUndefined(accessToken)) {
                 if (config.url.indexOf('?') > -1) {
                     config.url += "&access_token=" + accessToken;

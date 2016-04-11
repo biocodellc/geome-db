@@ -20,7 +20,7 @@
 <body ng-cloak>
 <div id="container">
 
-    <header ng-include="'app/partials/header.html'"></header>
+    <header ng-include="'app/partials/header-nav.html'"></header>
     <div ng-show="error" class="alert alert-error">{{ error }}</div>
 
     <div ui-view></div>
@@ -51,28 +51,37 @@
 <script type="text/javascript" src="js/dipnet-fims.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>
 
-<script src="app/app.module.js"></script>
-<script src="app/app.routes.js"></script>
+<script type="text/javascript" src="app/app.module.js"></script>
+<script type="text/javascript" src="app/app.routes.js"></script>
 
-<script src="app/components/auth/auth.js"></script>
-<script src="app/components/auth/clientId.js"></script>
-<script src="app/components/auth/authFactory.js"></script>
-<script src="app/components/auth/loginController.js"></script>
-<script src="app/components/auth/authInterceptorFactory.js"></script>
-<script src="app/components/query/queryController.js"></script>
-<script src="app/components/templates/templateController.js"></script>
-<script src="app/components/expeditions/expeditionController.js"></script>
-<script src="app/components/validation/validationController.js"></script>
-<script src="app/components/projects/projects.js"></script>
-<script src="app/components/projects/projectController.js"></script>
-<script src="app/components/projects/projectFactory.js"></script>
-<script src="app/components/users/users.js"></script>
-<script src="app/components/users/userController.js"></script>
-<script src="app/components/users/userFactory.js"></script>
-<script src="app/components/creator/creatorController.js"></script>
+<script type="text/javascript" src="app/components/auth/auth.js"></script>
+<script type="text/javascript" src="app/components/auth/auth.constants.js"></script>
+<script type="text/javascript" src="app/components/auth/clientId.js"></script>
+<script type="text/javascript" src="app/components/auth/authFactory.js"></script>
+<script type="text/javascript" src="app/components/auth/loginController.js"></script>
+<script type="text/javascript" src="app/components/auth/authInterceptorFactory.js"></script>
+<script type="text/javascript" src="app/components/query/queryController.js"></script>
+<script type="text/javascript" src="app/components/templates/templateController.js"></script>
+<script type="text/javascript" src="app/components/expeditions/expeditionController.js"></script>
+<script type="text/javascript" src="app/components/validation/validationController.js"></script>
+<script type="text/javascript" src="app/components/projects/projects.js"></script>
+<script type="text/javascript" src="app/components/projects/projectController.js"></script>
+<script type="text/javascript" src="app/components/projects/projectFactory.js"></script>
+<script type="text/javascript" src="app/components/users/users.js"></script>
+<script type="text/javascript" src="app/components/users/userController.js"></script>
+<!--<script type="text/javascript" src="app/components/users/resetPassController.js"></script>-->
+<script type="text/javascript" src="app/components/users/userFactory.js"></script>
+<script type="text/javascript" src="app/components/creator/creator.js"></script>
+<script type="text/javascript" src="app/components/creator/creatorController.js"></script>
+<script type="text/javascript" src="app/components/creator/resourceTypesController.js"></script>
+<script type="text/javascript" src="app/components/lookup/lookup.js"></script>
+<script type="text/javascript" src="app/components/lookup/lookupFactory.js"></script>
+<script type="text/javascript" src="app/components/lookup/lookupController.js"></script>
+<script type="text/javascript" src="app/components/lookup/lookupMetadataController.js"></script>
 
 <script type="text/javascript" src="app/directives/projectSelect.directive.js"></script>
 <script type="text/javascript" src="app/directives/autofocus.directive.js"></script>
+<script type="text/javascript" src="app/directives/repeatDone.directive.js"></script>
 
 </body>
 </html>

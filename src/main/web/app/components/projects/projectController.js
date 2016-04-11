@@ -4,7 +4,7 @@ angular.module('fims.projects')
     var vm = this;
 
     angular.element(document).ready(function () {
-        populateProjectPage(UserFactory.getUser().username);
+        populateProjectPage(UserFactory.user.username);
 
         fimsBrowserCheck($('#warning'));
         

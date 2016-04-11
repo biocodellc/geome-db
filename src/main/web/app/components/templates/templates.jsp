@@ -5,7 +5,7 @@
 
     <div class="col-sm-12">
         <form>
-            <div class="col-sm-6">
+            <div class="col-sm-8">
                 <table border=0 class="table">
                     <tr project-select></tr>
 
