@@ -292,23 +292,6 @@ function getProjectID() {
     return  e.options[e.selectedIndex].value;
 }
 
-/* ====== login.jsp Functions ======= */
-
-// function to login user
-function login() {
-    var url = biocodeFimsRestRoot + "authenticationService/login";
-    var return_to = getQueryParam("return_to");
-    if (return_to != null) {
-        url += "?return_to=" + return_to;
-    }
-    var jqxhr = $.post(url, $('form').serialize())
-        .done(function(data) {
-            window.location.replace(data.url);
-        }).fail(function(jqxhr) {
-            $(".error").html($.parseJSON(jqxhr.responseText).usrMessage);
-        });
-}
-
 /* ====== reset.jsp Functions ======= */
 
 function resetSubmit() {

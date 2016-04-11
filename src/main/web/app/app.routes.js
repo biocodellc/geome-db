@@ -10,7 +10,6 @@ angular.module('biscicolApp')
             .state('home', {
                 url: "/",
                 templateUrl: "app/components/home/home.html",
-                // controller: "HomeCtrl"
             })
             .state('login', {
                 url: "/login",

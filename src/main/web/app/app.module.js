@@ -47,8 +47,6 @@ app.controller('biscicolCtrl', ['$rootScope', '$scope', '$state', '$location', '
         });
 }]);
 
-
-
 app.controller('NavCtrl', ['$rootScope', '$scope', '$location', '$state', 'AuthFactory', 'UserFactory',
     function ($rootScope, $scope, $location, $state, AuthFactory, UserFactory) {
         var vm = this;
