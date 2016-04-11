@@ -1787,6 +1787,7 @@ function queryJSON(params) {
                 showMessage ("Error completing request!");
             }
         });
+    loadingDialog(jqxhr);
 }
 
 // Get results as Excel
