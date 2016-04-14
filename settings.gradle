@@ -1,5 +1,7 @@
 rootProject.name = 'dipnet-fims'
 
 include ":biocode-fims-commons"
+include ":biocode-fims-fuseki"
 
 project(":biocode-fims-commons").projectDir = file(biocodeFimsCommonsDir)
+project(":biocode-fims-fuseki").projectDir = file(biocodeFimsFusekiDir)
