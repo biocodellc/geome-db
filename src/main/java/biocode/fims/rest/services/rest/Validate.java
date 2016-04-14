@@ -307,8 +307,8 @@ public class Validate extends FimsService {
                     uploader.getEndpoint(),
                     currentGraph,
                     null,
-                    processController.getFinalCopy(),
-                    false));
+                    processController.getFinalCopy()
+                    ));
             successMessage = "Dataset Identifier: http://n2t.net/" + identifier + " (wait 15 minutes for resolution to become active)";
 
             // Associate the expeditionCode with this identifier

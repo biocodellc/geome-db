@@ -160,8 +160,8 @@ public class Run {
                                 uploader.getEndpoint(),
                                 uploader.getGraphID(),
                                 null,
-                                processController.getFinalCopy(),
-                                false));
+                                processController.getFinalCopy()
+                                ));
                         FimsPrinter.out.println("Dataset Identifier: http://n2t.net/" + identifier + " (wait 15 minutes for resolution to become active)");
 
                         // Associate the expeditionCode with this identifier

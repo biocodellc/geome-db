@@ -1,20 +1,58 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
 	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 	http://www.springframework.org/schema/context
-	http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
 
     <context:component-scan base-package="biocode.fims.*" />
+    <context:property-placeholder location="classpath:biscicol-fims.props" />
+
+    <!-- Enable Annotation based Declarative Transaction Management -->
+    <tx:annotation-driven proxy-target-class="true"
+                          transaction-manager="transactionManager" />
+
+    <!-- Creating TransactionManager Bean, since JDBC we are creating of type DataSourceTransactionManager -->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <bean id="dataSource"
+          class="com.mysql.jdbc.jdbc2.optional.MysqlDataSource" >
+
+        <property name="url" value="${bcidUrl}" />
+        <property name="user" value="${bcidUser}" />
+        <property name="password" value="${bcidPassword}" />
+    </bean>
+
+    <bean id="BcidDao" class="biocode.fims.dao.BcidDao">
+        <constructor-arg ref="dataSource" />
+    </bean>
+
+    <bean id="ExpeditionDao" class="biocode.fims.dao.ExpeditionDao">
+        <constructor-arg ref="dataSource" />
+    </bean>
+
+    <bean id="ProjectDao" class="biocode.fims.dao.ProjectDao">
+        <constructor-arg ref="dataSource" />
+    </bean>
 
     <bean id="propsFileResource" class="org.springframework.core.io.ClassPathResource">
         <constructor-arg value="/biscicol-fims.props" />
     </bean>
 
-    <bean id="settingsManagerInstance"  class="biocode.fims.settings.SettingsManager" factory-method="getInstance">
-        <constructor-arg ref="propsFileResource">
-        </constructor-arg>
+    <bean id="settingsManager"  class="biocode.fims.settings.SettingsManager" factory-method="getInstance">
+        <constructor-arg ref="propsFileResource" />
     </bean>
+
+    <!--<bean id="bcidRepository" class="biocode.fims.repository.BcidRepository">-->
+        <!--<constructor-arg ref="BcidDao" />-->
+        <!--<constructor-arg ref="settingsManager" />-->
+    <!--</bean>-->
+    <!--<bean id="settingsManager" class="biocode.fims.settings.SettingsManager"-->
 
 </beans>
