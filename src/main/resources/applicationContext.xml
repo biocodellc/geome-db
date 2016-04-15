@@ -29,15 +29,15 @@
         <property name="password" value="${bcidPassword}" />
     </bean>
 
-    <bean id="BcidDao" class="biocode.fims.dao.BcidDao">
+    <bean id="bcidDao" class="biocode.fims.dao.BcidDao">
         <constructor-arg ref="dataSource" />
     </bean>
 
-    <bean id="ExpeditionDao" class="biocode.fims.dao.ExpeditionDao">
+    <bean id="expeditionDao" class="biocode.fims.dao.ExpeditionDao">
         <constructor-arg ref="dataSource" />
     </bean>
 
-    <bean id="ProjectDao" class="biocode.fims.dao.ProjectDao">
+    <bean id="projectDao" class="biocode.fims.dao.ProjectDao">
         <constructor-arg ref="dataSource" />
     </bean>
 
@@ -48,11 +48,5 @@
     <bean id="settingsManager"  class="biocode.fims.settings.SettingsManager" factory-method="getInstance">
         <constructor-arg ref="propsFileResource" />
     </bean>
-
-    <!--<bean id="bcidRepository" class="biocode.fims.repository.BcidRepository">-->
-        <!--<constructor-arg ref="BcidDao" />-->
-        <!--<constructor-arg ref="settingsManager" />-->
-    <!--</bean>-->
-    <!--<bean id="settingsManager" class="biocode.fims.settings.SettingsManager"-->
 
 </beans>
