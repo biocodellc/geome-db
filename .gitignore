@@ -1,3 +1,4 @@
+src/main/web/app/components/auth/clientId.js
 .idea/*
 *.iml
 *.props
