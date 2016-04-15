@@ -1,1 +1,1 @@
-This is a working [Biocode FIMS](https://github.com/biocodellc/biocode-fims-commons/) instance at http://biscicol.org/ .
+This is the working [DIPnet FIMS](https://github.com/biocodellc/biocode-fims-commons/) instance, located at http://biscicol.org/dipnet-fims .
