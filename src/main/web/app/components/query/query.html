@@ -6,14 +6,13 @@
     <form method="POST">
         <table border=0 class="table" style="width:800px;">
 
-            <tr project-select></tr>
-
             <tr>
                 <td align=right>&nbsp;&nbsp;Choose Dataset(s)&nbsp;&nbsp;&nbsp;</td>
                 <td><select id=graphs multiple style="display:inline-block;width:400px;text-align:left;"></select></td>
+                <td><input type="hidden" value="{{ vm.projectId }}" id="project"></td>
             </tr>
 
-            <tr class=toggle-content id=filter-toggle>
+            <tr>
                 <td align=right>Filter</td>
                 <td>
                     <select id="uri" style="max-width:100px;"><option value="0">Loading ...</option></select>

@@ -1,12 +1,16 @@
 angular.module('fims.validation', ['fims.users'])
 
-.controller('ValidationCtrl', ['$rootScope', '$scope', '$location', 'AuthFactory',
-    function ($rootScope, $scope, $location, AuthFactory) {
+.controller('ValidationCtrl', ['$rootScope', '$scope', '$location', 'AuthFactory', 'PROJECT_ID',
+    function ($rootScope, $scope, $location, AuthFactory, PROJECT_ID) {
         var vm = this;
+        vm.projectId = PROJECT_ID;
         vm.isAuthenticated = AuthFactory.isAuthenticated;
 
-        $rootScope.$on('projectSelectLoadedEvent', function(event){
+        angular.element(document).ready(function() {
             fimsBrowserCheck($('#warning'));
+            
+            getExpeditionCodes();
+            
             validationFormToggle();
 
             // call validatorSubmit if the enter key was pressed in an input

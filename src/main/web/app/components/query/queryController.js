@@ -1,44 +1,39 @@
 angular.module('fims.query', [])
 
-.controller('QueryCtrl', ['$rootScope', function ($rootScope) {
-    var vm = this;
+.controller('QueryCtrl', ['$rootScope', 'PROJECT_ID',
+    function ($rootScope, PROJECT_ID) {
+        var vm = this;
+        vm.projectId = PROJECT_ID;
 
-    $rootScope.$on('projectSelectLoadedEvent', function(event){
-        graphsMessage('Choose a project to see loaded spreadsheets');
+        angular.element(document).ready(function() {
+            graphsMessage('Choose a project to see loaded spreadsheets');
 
-        $("#projects").change(function() {
-            if ($(this).val() == 0) {
-                $(".toggle-content#filter-toggle").hide(400);
-            } else {
-                $(".toggle-content#filter-toggle").show(400);
-            }
-            populateGraphs(this.options[this.selectedIndex].value);
-            getFilterOptions(this.value).done(function() {
+            populateGraphs(vm.projectId);
+            getFilterOptions(vm.projectId).done(function() {
                 $("#uri").replaceWith(filterSelect);
+            });
+
+            $("#add_filter").click(function() {
+                addFilter();
+            });
+
+            $("input[id=submit]").click(function(e) {
+                e.preventDefault();
+
+                var params = getQueryPostParams();
+                switch (this.value)
+                {
+                    case "table":
+                        queryJSON(params);
+                        break;
+                    case "excel":
+                        queryExcel(params);
+                        break;
+                    case "kml":
+                        queryKml(params);
+                        break;
+                }
             });
         });
 
-        $("#add_filter").click(function() {
-            addFilter();
-        });
-
-        $("input[id=submit]").click(function(e) {
-            e.preventDefault();
-
-            var params = getQueryPostParams();
-            switch (this.value)
-            {
-                case "table":
-                    queryJSON(params);
-                    break;
-                case "excel":
-                    queryExcel(params);
-                    break;
-                case "kml":
-                    queryKml(params);
-                    break;
-            }
-        });
-    });
-
-}]);
+    }]);

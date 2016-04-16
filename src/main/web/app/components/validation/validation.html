@@ -19,8 +19,6 @@
                             <td colspan=2><input type="file" class="btn btn-default btn-xs" name="file" id="file2" /></td>
                         </tr>
 
-                        <tr class="toggle-content" id="projects_toggle" project-select></tr>
-
                         <tr>
                             <td align="right">Upload&nbsp;&nbsp;</td>
                             <td style="font-size:11px;" colspan=2>
@@ -44,6 +42,7 @@
 
                         <tr>
                             <td></td>
+                            <td><input type="hidden" value="{{ vm.projectId }}" name="projectId" id="project"></td>
                             <td><input type="button" id="validationSubmit" value="Submit" class="btn btn-default btn-xs"></td>
                         </tr>
                     </table>

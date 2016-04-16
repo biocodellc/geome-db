@@ -18,7 +18,7 @@ angular.module('dipnetApp')
             })
             .state('validate', {
                 url: "/validate",
-                templateUrl: "app/components/validation/validation.jsp",
+                templateUrl: "app/components/validation/validation.html",
                 controller: "ValidationCtrl as vm"
             })
             .state('lookup', {
@@ -33,12 +33,12 @@ angular.module('dipnetApp')
             })
             .state('template', {
                 url: "/template?projectId",
-                templateUrl: "app/components/templates/templates.jsp",
+                templateUrl: "app/components/templates/templates.html",
                 controller: "TemplateCtrl as vm"
             })
             .state('query', {
                 url: "/query",
-                templateUrl: "app/components/query/query.jsp",
+                templateUrl: "app/components/query/query.html",
                 controller: "QueryCtrl as vm",
             })
             .state('creator', {
