@@ -1,4 +1,0 @@
-###########  biocode-fims-commons settings  ##########
-
-# the login page to redirect to when a user needs to login
-loginPageUrl = http://www.biscicol.org/dipnet-fims/login.jsp
