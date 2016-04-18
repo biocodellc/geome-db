@@ -49,4 +49,22 @@
         <constructor-arg ref="propsFileResource" />
     </bean>
 
+    <bean id="resolver" class="biocode.fims.bcid.Resolver">
+        <constructor-arg ref="bcidRepository" />
+        <constructor-arg ref="settingsManager" />
+    </bean>
+
+    <bean id="expeditionService" class="biocode.fims.bcid.ExpeditionService">
+        <constructor-arg ref="expeditionRepository" />
+        <constructor-arg ref="bcidRepository" />
+    </bean>
+
+    <bean id="springApplicationContext" class="biocode.fims.utils.SpringApplicationContext"/>
+
+    <bean id="expeditionMinter" class="biocode.fims.bcid.ExpeditionMinter"></bean>
+
+    <bean id="Run" class="biocode.fims.run.Run">
+        <constructor-arg ref="settingsManager" />
+        <constructor-arg ref="expeditionMinter" />
+    </bean>
 </beans>
