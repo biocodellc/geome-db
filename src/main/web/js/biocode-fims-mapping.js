@@ -151,6 +151,7 @@ function displayMap(id, geoJSONData) {
 }
 
 function generateMap(id, projectId) {
+    var deferred = $.Deferred();
     this.projectId = projectId;
 
     if (map != undefined) {
@@ -168,14 +169,18 @@ function generateMap(id, projectId) {
                     getSampleCoordinates(data).done(function(geoJSONData) {
                         if (geoJSONData.features.length == 0) {
                             $('#' + id).html('We didn\'t find any lat/long coordinates for your collection samples.');
+                            deferred.reject();
                         } else {
                             displayMap(id, geoJSONData);
-                            }
+                            deferred.resolve();
+                        }
                         // remove the refresh map link if there is one
                         $("#refresh_map").remove();
                     });
                 });
         }).fail(function(jqXHR) {
             $('#' + id).html('Failed to load map.');
+            deferred.reject();
         });
+    return deferred;
 }

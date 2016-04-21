@@ -884,6 +884,7 @@ function populateColumns(targetDivId) {
         $(".def_link").click(function () {
             populateDefinitions($(this).attr('name'));
         });
+        return jqxhr;
     }
 }
 
@@ -1157,6 +1158,9 @@ function validForm(expeditionCode) {
         } else if (!dRE.test(expeditionCode)) {
             message = "<b>Expedition Code</b> must contain only numbers, letters, or underscores and be 4 to 50 characters long";
             error = true;
+        } else if (!$("#datapoint_verification_toggle").is(":hidden") && !$("#datapoint_verification_toggle").is(":checked")) {
+            message = "Please check that you have verified the data points on the map below before uploading";
+            error = true;
         }
     } else if ($("#" + fastaId).val().length > 1 && $("#" + datasetId).val().length < 1 && !$("#upload").is(":checked")) {
         // only a fasta file is present, no dataset, and upload isn't selected
@@ -1310,7 +1314,13 @@ function validationFormToggle() {
                 }
             });
 
-            generateMap('map', getProjectID());
+            generateMap('map', getProjectID()).done(function() {
+                if ($("#datapoint_verification_toggle").is(":hidden"))
+                    $("#datapoint_verification_toggle").show(400);
+            }).fail(function() {
+                if (!$("#datapoint_verification_toggle").is(":hidden"))
+                    $("#datapoint_verification_toggle").hide(400);
+            });
 
         } else if (ext.toLowerCase() == "fasta") {
             // always need to set dataset and fasta id's

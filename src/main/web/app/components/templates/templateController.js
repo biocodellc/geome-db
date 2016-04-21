@@ -9,7 +9,10 @@ angular.module('fims.templates', [])
 
             showTemplateInfo();
 
-            populateColumns('#cat1');
+            var jqxhr = populateColumns('#cat1');
+            if (jqxhr) {
+                loadingDialog(jqxhr);
+            }
             populateAbstract('#abstract');
             populateConfigs();
 
