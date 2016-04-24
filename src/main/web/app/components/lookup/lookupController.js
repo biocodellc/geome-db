@@ -1,10 +1,10 @@
 angular.module('fims.lookup')
 
-.controller('LookupCtrl', ['$scope', '$location', '$stateParams', 'LookupFactory',
-    function ($scope, $location, $stateParams, LookupFactory) {
+    .controller('LookupCtrl', ['$scope', '$state', '$stateParams', 'LookupFactory',
+        function ($scope, $state, $stateParams, LookupFactory) {
         var vm = this;
         vm.identifier = LookupFactory.identifier;
-        vm.submit = LookupFactory.submitForm;
+        vm.submit = submitForm();
         vm.updateFactory = updateFactory;
 
         function updateFactory() {
@@ -16,9 +16,24 @@ angular.module('fims.lookup')
             var id = $stateParams.id;
             if (angular.isDefined(id) && id.length > 12) {
                 LookupFactory.identifier = id;
-                LookupFactory.submitForm();
+                submitForm();
             }
         }).call(this);
+
+        function submitForm() {
+            LookupFactory.submitForm().then(
+                function(data, status, headers, config) {
+                },
+                function(response) {
+                    // hack until we fix jetty 404's
+                    if (response.status == 404) {
+                        $state.go('lookup.metadata', {'ark': LookupFactory.identifier});
+                    }
+                    vm.error = response.data.usrMessage;
+
+                }
+            );
+        }
 
         $scope.$watch(
             function(){ return LookupFactory.identifier},

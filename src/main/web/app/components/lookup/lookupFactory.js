@@ -17,7 +17,8 @@ angular.module('fims.lookup')
     }
     
     function submitForm() {
-        $window.location.href = '/id/' + lookupFactory.identifier;
+        // $window.location.href = '/id/' + lookupFactory.identifier;
+        return $http.get('/id/' + lookupFactory.identifier);
     }
     
     function updateFactory(identifier) {

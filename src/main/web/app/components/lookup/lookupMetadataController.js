@@ -21,8 +21,9 @@ angular.module('fims.lookup')
 
 
         function fetchMetadata() {
-            LookupFactory.identifier = $stateParams.ark;
-            if (!angular.isUndefined(LookupFactory.identifier)) {
+            vm.identifier = $stateParams.ark;
+            if (!angular.isUndefined(vm.identifier)) {
+                LookupFactory.identifier = vm.identifier;
                 var metadata = {};
                 LookupFactory.fetchMetadata().then(
                     function(data, status, headers, config) {
@@ -40,13 +41,5 @@ angular.module('fims.lookup')
                 $state.go('lookup');
             }
         }
-
-        $scope.$watch(
-            function(){ return LookupFactory.identifier},
-
-            function(newVal) {
-                vm.identifier = newVal;
-            }
-        )
 
     }])
