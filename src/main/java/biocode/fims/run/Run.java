@@ -6,6 +6,7 @@ import biocode.fims.bcid.BcidDatabase;
 import biocode.fims.bcid.BcidMinter;
 import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.entities.Expedition;
 import biocode.fims.fasta.FastaManager;
 import biocode.fims.fuseki.Uploader;
 import biocode.fims.fuseki.fasta.FusekiFastaManager;
@@ -14,7 +15,9 @@ import biocode.fims.fuseki.triplify.Triplifier;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
+import biocode.fims.utils.SpringApplicationContext;
 import org.apache.commons.cli.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -27,15 +30,28 @@ import java.io.File;
  */
 public class Run {
 
-    private SettingsManager settingsManager = SettingsManager.getInstance();
+    private SettingsManager settingsManager;
+    private ExpeditionMinter expeditionMinter;
 
     private Process process;
     private ProcessController processController;
     private String username;
 
-    public Run(Process process, ProcessController processController, String username) {
+    @Autowired
+    public Run(SettingsManager settingsManager, ExpeditionMinter expeditionMinter) {
+        this.settingsManager = settingsManager;
+        this.expeditionMinter = expeditionMinter;
+    }
+
+    public void setProcess(Process process) {
         this.process = process;
+    }
+
+    public void setProcessController(ProcessController processController) {
         this.processController = processController;
+    }
+
+    public void setUsername(String username) {
         this.username = username;
     }
 
@@ -160,13 +176,12 @@ public class Run {
                                 uploader.getEndpoint(),
                                 uploader.getGraphID(),
                                 null,
-                                processController.getFinalCopy(),
-                                false));
+                                processController.getFinalCopy()
+                                ));
                         FimsPrinter.out.println("Dataset Identifier: http://n2t.net/" + identifier + " (wait 15 minutes for resolution to become active)");
 
                         // Associate the expeditionCode with this identifier
-                        ExpeditionMinter expedition = new ExpeditionMinter();
-                        expedition.attachReferenceToExpedition(processController.getExpeditionCode(), identifier, processController.getProjectId());
+                        expeditionMinter.attachReferenceToExpedition(processController.getExpeditionCode(), identifier, processController.getProjectId());
                         FimsPrinter.out.println("\t" + "Data Elements Root: " + processController.getExpeditionCode());
 
                         // copy over the fasta sequences if this is not the first dataset uploaded, but only if there is no
@@ -219,6 +234,7 @@ public class Run {
      */
     public static void main(String args[])  throws Exception{
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
+        Run run = (Run) SpringApplicationContext.getBean(Run.class);
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
         String username = "";
         String password = "";
@@ -423,7 +439,10 @@ public class Run {
                     processController.setInputFilename(input_file);
 
                     Process p = new Process(output_directory, processController, new File(cl.getOptionValue("configFile")));
-                    Run run = new Run(p, processController, username);
+                    run.setProcess(p);
+                    run.setProcessController(processController);
+                    run.setUsername(username);
+
                     run.runAllLocally(true, false, false, force);
                     /*p.runValidation();
                     triplifier t = new triplifier("test", output_directory);
@@ -473,7 +492,10 @@ public class Run {
                     FimsPrinter.out.println("\tinputFilename = " + input_file);
 
                     // Run the processor
-                    Run run = new Run(p, processController, username);
+                    run.setProcess(p);
+                    run.setProcessController(processController);
+                    run.setUsername(username);
+
                     run.runAllLocally(triplify, upload, true, force);
                 }
             }

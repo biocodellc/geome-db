@@ -42,11 +42,6 @@
                 </tr>
 
                 <tr>
-                    <td align=xright>Follow Suffixes</td>
-                    <td><input type=checkbox id=suffixPassThrough name=suffixPassThrough checked=yes></td>
-                </tr>
-
-                <tr>
                     <td colspan=2>
                     <input type="hidden" name="username" value="{{ vm.user.username }}" >
                     <input type="button" value="Submit" onclick="bcidCreatorSubmit();"/>
