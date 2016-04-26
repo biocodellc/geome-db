@@ -1,0 +1,29 @@
+<div class="section">
+    <div class="sectioncontent">
+        <p><h3>Expedition Data</h3></p>
+
+        <div class="panel panel-default">
+
+                <table class="table table-hover table-condensed text-center">
+                    <thead>
+                              <th>Expedition Title</th>
+                              <th># of identifiers</th>
+                              <th># of sequences</th>
+                    </thead>
+
+                    <tbody>
+                              <tr ng-repeat="expedition in vm.content">
+                                  <td>{{ expedition.expeditionTitle }}</td>
+                                  <td>{{ expedition.latestDataset.identifierCount }}</td>
+                                  <td>{{ expedition.latestDataset.sequenceCount }}</td>
+                              </tr>
+                              </tbody>
+                </table>
+
+            <uib-pagination total-items="vm.totalItems" ng-model="vm.currentPage" ng-change="vm.pageChanged()" items-per-page="vm.itemsPerPage"></uib-pagination>
+
+        </div>
+    </div>
+</div>
+
+

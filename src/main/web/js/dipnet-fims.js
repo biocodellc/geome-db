@@ -357,224 +357,224 @@ function bcidCreatorSubmit() {
             failError(jqxhr);
         });
 }
-
-/* ====== expeditions.jsp Functions ======= */
-
-// function to populate the expeditions.jsp page
-function populateExpeditionPage(username) {
-    var jqxhr = listProjects(username, biocodeFimsRestRoot + 'projects/user/list', true
-    ).done(function() {
-        // attach toggle function to each project
-        $(".expand-content").click(function() {
-            loadExpeditions(this.id)
-        });
-    }).fail(function(jqxhr) {
-        $("#sectioncontent").html(jqxhr.responseText);
-    });
-}
-
-// function to load the expeditions.jsp subsections
-function loadExpeditions(id) {
-    if ($('.toggle-content#'+id).is(':hidden')) {
-        $('.img-arrow', '#'+id).attr("src", appRoot + "images/down-arrow.png");
-    } else {
-        $('.img-arrow', '#'+id).attr("src", appRoot + "images/right-arrow.png");
-    }
-    // check if we've loaded this section, if not, load from service
-    var divId = 'div#' + id
-    if ((id.indexOf("resources") != -1 || id.indexOf("datasets") != -1 || id.indexOf("configuration") != -1) &&
-        ($(divId).children().length == 0)) {
-        populateExpeditionSubsections(divId);
-    } else if ($(divId).children().length == 0) {
-        listExpeditions(divId);
-    }
-    $('.toggle-content#'+id).slideToggle('slow');
-}
-
-// retrieve the expeditions for a project and display them on the page
-function listExpeditions(divId) {
-    var projectId = $(divId).data('projectId');
-    var jqxhr = $.getJSON(biocodeFimsRestRoot + 'projects/' + projectId + '/expeditions/')
-        .done(function(data) {
-            var html = '';
-            var expandTemplate = '<br>\n<a class="expand-content" id="{expedition}-{section}" href="javascript:void(0);">\n'
-                + '\t <img src="' + appRoot + 'images/right-arrow.png" id="arrow" class="img-arrow">{text}'
-                + '</a>\n';
-            $.each(data, function(index, e) {
-                var expedition = e.expeditionTitle.replace(new RegExp('[#. ()]', 'g'), '_') + '_' + e.expeditionId;
-
-                html += expandTemplate.replace('{text}', e.expeditionTitle).replace('-{section}', '');
-                html += '<div id="{expedition}" class="toggle-content">';
-                html += expandTemplate.replace('{text}', 'Expedition Metadata').replace('{section}', 'configuration').replace('<br>\n', '');
-                html += '<div id="{expedition}-configuration" class="toggle-content">Loading Expedition Metadata...</div>';
-                html += expandTemplate.replace('{text}', 'Expedition Resources').replace('{section}', 'resources');
-                html += '<div id="{expedition}-resources" class="toggle-content">Loading Expedition Resources...</div>';
-                html +=  expandTemplate.replace('{text}', 'Datasets associated with this expedition').replace('{section}', 'datasets');
-                html += '<div id="{expedition}-datasets" class="toggle-content">Loading Datasets associated wih this expedition...</div>';
-                html += '</div>\n';
-
-                // add current project to element id
-                html = html.replace(new RegExp('{expedition}', 'g'), expedition);
-            });
-            html = html.replace('<br>\n', '');
-            if (html.indexOf("expand-content") == -1) {
-                html += 'You have no datasets in this project.';
-            }
-            $(divId).html(html);
-            $.each(data, function(index, e) {
-                var expedition = e.expeditionTitle.replace(new RegExp('[#. ()]', 'g'), '_') + '_' + e.expeditionId;
-
-                $('div#' + expedition +'-configuration').data('expeditionId', e.expeditionId);
-                $('div#' + expedition +'-resources').data('expeditionId', e.expeditionId);
-                $('div#' + expedition +'-datasets').data('expeditionId', e.expeditionId);
-            });
-
-            // remove previous click event and attach toggle function to each project
-            $(".expand-content").off("click");
-            $(".expand-content").click(function() {
-                loadExpeditions(this.id);
-            });
-        }).fail(function(jqxhr) {
-            $(divId).html(jqxhr.responseText);
-        });
-}
-
-// function to populate the expedition resources, datasets, or configuration subsection of expeditions.jsp
-function populateExpeditionSubsections(divId) {
-    // load config table from REST service
-    var expeditionId= $(divId).data('expeditionId');
-    if (divId.indexOf("resources") != -1) {
-        var jqxhr = populateDivFromService(
-            biocodeFimsRestRoot + 'expeditions/' + expeditionId + '/resourcesAsTable/',
-            divId,
-            'Unable to load this expedition\'s resources from server.');
-    } else if (divId.indexOf("datasets") != -1) {
-        var jqxhr = populateDivFromService(
-            biocodeFimsRestRoot + 'expeditions/' + expeditionId + '/datasetsAsTable/',
-            divId,
-            'Unable to load this expedition\'s datasets from server.');
-    } else {
-        var jqxhr = populateDivFromService(
-            biocodeFimsRestRoot + 'expeditions/' + expeditionId + '/metadataAsTable/',
-            divId,
-            'Unable to load this expedition\'s configuration from server.');
-    }
-}
-
-// function to edit an expedition
-function editExpedition(projectId, expeditionCode, e) {
-    var currentPublic;
-    var searchId = $(e).closest("div")[0].id.replace("-configuration", "");
-    var title = "Editing " + $("a#" + searchId)[0].textContent.trim();
-
-    if (e.parentElement.textContent.startsWith("yes")) {
-        currentPublic = true;
-    } else {
-        currentPublic = false;
-    }
-
-    var message = "<table><tr><td>Public:</td><td><input type='checkbox' name='public'";
-    if (currentPublic) {
-        message += " checked='checked'";
-    }
-    message += "></td></tr></table>";
-
-    var buttons = {
-        "Update": function() {
-            var public = $("[name='public']")[0].checked;
-
-            $.get(biocodeFimsRestRoot + "expeditions/updateStatus/" + projectId + "/" + expeditionCode + "/" + public
-            ).done(function() {
-                var b = {
-                    "Ok": function() {
-                        $(this).dialog("close");
-                        location.reload();
-                    }
-                }
-                dialog("Successfully updated the public status.", "Success!", b);
-            }).fail(function(jqXHR) {
-                $("#dialogContainer").addClass("error");
-                var b= {
-                    "Ok": function() {
-                        $("#dialogContainer").removeClass("error");
-                        $(this).dialog("close");
-                    }
-                }
-                dialog("Error updating expedition's public status!<br><br>" + JSON.stringify($.parseJSON(jqxhr.responseText).usrMessage), "Error!", buttons)
-            });
-        },
-        "Cancel": function() {
-            $(this).dialog("close");
-        }
-    }
-    dialog(message, title, buttons);
-}
-/* ====== profile.jsp Functions ======= */
-
-// function to submit the user's profile editor form
-function profileSubmit(divId) {
-    if ($("input.pwcheck", divId).val().length > 0 && $(".label", "#pwindicator").text() == "weak") {
-        $(".error", divId).html("password too weak");
-    } else if ($("input[name='newPassword']").val().length > 0 &&
-        ($("input[name='oldPassword']").length > 0 && $("input[name='oldPassword']").val().length == 0)) {
-        $(".error", divId).html("Old Password field required to change your Password");
-    } else {
-        var postURL = biocodeFimsRestRoot + "users/profile/update/";
-        var return_to = getQueryParam("return_to");
-        if (return_to != null) {
-            postURL += "?return_to=" + encodeURIComponent(return_to);
-        }
-        var jqxhr = $.post(postURL, $("form", divId).serialize(), 'json'
-        ).done (function(data) {
-            // if adminAccess == true, an admin updated the user's password, so no need to redirect
-            if (data.adminAccess == true) {
-                populateProjectSubsections(divId);
-            } else {
-                if (data.returnTo) {
-                    $(location).attr("href", data.returnTo);
-                } else {
-                    var jqxhr2 = populateDivFromService(
-                        biocodeFimsRestRoot + "users/profile/listAsTable",
-                        "listUserProfile",
-                        "Unable to load this user's profile from the Server")
-                        .done(function() {
-                            $("a", "#profile").click( function() {
-                                getProfileEditor();
-                            });
-                        });
-                }
-            }
-        }).fail(function(jqxhr) {
-            var json = $.parseJSON(jqxhr.responseText);
-            $(".error", divId).html(json.usrMessage);
-        });
-    }
-}
-
-// get profile editor
-function getProfileEditor(username) {
-    var jqxhr = populateDivFromService(
-        biocodeFimsRestRoot + "users/profile/listEditorAsTable",
-        "listUserProfile",
-        "Unable to load this user's profile editor from the Server"
-    ).done(function() {
-        $(".error").text(getQueryParam("error"));
-        $("#cancelButton").click(function() {
-            var jqxhr2 = populateDivFromService(
-                biocodeFimsRestRoot + "users/profile/listAsTable",
-                "listUserProfile",
-                "Unable to load this user's profile from the Server")
-                .done(function() {
-                    $("a", "#profile").click( function() {
-                        getProfileEditor();
-                    });
-                });
-        });
-        $("#profile_submit").click(function() {
-            profileSubmit('div#listUserProfile');
-        });
-    });
-}
+//
+// /* ====== expeditions.html Functions ======= */
+//
+// // function to populate the expeditions.html page
+// function populateExpeditionPage(username) {
+//     var jqxhr = listProjects(username, biocodeFimsRestRoot + 'projects/user/list', true
+//     ).done(function() {
+//         // attach toggle function to each project
+//         $(".expand-content").click(function() {
+//             loadExpeditions(this.id)
+//         });
+//     }).fail(function(jqxhr) {
+//         $("#sectioncontent").html(jqxhr.responseText);
+//     });
+// }
+//
+// // function to load the expeditions.html subsections
+// function loadExpeditions(id) {
+//     if ($('.toggle-content#'+id).is(':hidden')) {
+//         $('.img-arrow', '#'+id).attr("src", appRoot + "images/down-arrow.png");
+//     } else {
+//         $('.img-arrow', '#'+id).attr("src", appRoot + "images/right-arrow.png");
+//     }
+//     // check if we've loaded this section, if not, load from service
+//     var divId = 'div#' + id
+//     if ((id.indexOf("resources") != -1 || id.indexOf("datasets") != -1 || id.indexOf("configuration") != -1) &&
+//         ($(divId).children().length == 0)) {
+//         populateExpeditionSubsections(divId);
+//     } else if ($(divId).children().length == 0) {
+//         listExpeditions(divId);
+//     }
+//     $('.toggle-content#'+id).slideToggle('slow');
+// }
+//
+// // retrieve the expeditions for a project and display them on the page
+// function listExpeditions(divId) {
+//     var projectId = $(divId).data('projectId');
+//     var jqxhr = $.getJSON(biocodeFimsRestRoot + 'projects/' + projectId + '/expeditions/')
+//         .done(function(data) {
+//             var html = '';
+//             var expandTemplate = '<br>\n<a class="expand-content" id="{expedition}-{section}" href="javascript:void(0);">\n'
+//                 + '\t <img src="' + appRoot + 'images/right-arrow.png" id="arrow" class="img-arrow">{text}'
+//                 + '</a>\n';
+//             $.each(data, function(index, e) {
+//                 var expedition = e.expeditionTitle.replace(new RegExp('[#. ()]', 'g'), '_') + '_' + e.expeditionId;
+//
+//                 html += expandTemplate.replace('{text}', e.expeditionTitle).replace('-{section}', '');
+//                 html += '<div id="{expedition}" class="toggle-content">';
+//                 html += expandTemplate.replace('{text}', 'Expedition Metadata').replace('{section}', 'configuration').replace('<br>\n', '');
+//                 html += '<div id="{expedition}-configuration" class="toggle-content">Loading Expedition Metadata...</div>';
+//                 html += expandTemplate.replace('{text}', 'Expedition Resources').replace('{section}', 'resources');
+//                 html += '<div id="{expedition}-resources" class="toggle-content">Loading Expedition Resources...</div>';
+//                 html +=  expandTemplate.replace('{text}', 'Datasets associated with this expedition').replace('{section}', 'datasets');
+//                 html += '<div id="{expedition}-datasets" class="toggle-content">Loading Datasets associated wih this expedition...</div>';
+//                 html += '</div>\n';
+//
+//                 // add current project to element id
+//                 html = html.replace(new RegExp('{expedition}', 'g'), expedition);
+//             });
+//             html = html.replace('<br>\n', '');
+//             if (html.indexOf("expand-content") == -1) {
+//                 html += 'You have no datasets in this project.';
+//             }
+//             $(divId).html(html);
+//             $.each(data, function(index, e) {
+//                 var expedition = e.expeditionTitle.replace(new RegExp('[#. ()]', 'g'), '_') + '_' + e.expeditionId;
+//
+//                 $('div#' + expedition +'-configuration').data('expeditionId', e.expeditionId);
+//                 $('div#' + expedition +'-resources').data('expeditionId', e.expeditionId);
+//                 $('div#' + expedition +'-datasets').data('expeditionId', e.expeditionId);
+//             });
+//
+//             // remove previous click event and attach toggle function to each project
+//             $(".expand-content").off("click");
+//             $(".expand-content").click(function() {
+//                 loadExpeditions(this.id);
+//             });
+//         }).fail(function(jqxhr) {
+//             $(divId).html(jqxhr.responseText);
+//         });
+// }
+//
+// // function to populate the expedition resources, datasets, or configuration subsection of expeditions.html
+// function populateExpeditionSubsections(divId) {
+//     // load config table from REST service
+//     var expeditionId= $(divId).data('expeditionId');
+//     if (divId.indexOf("resources") != -1) {
+//         var jqxhr = populateDivFromService(
+//             biocodeFimsRestRoot + 'expeditions/' + expeditionId + '/resourcesAsTable/',
+//             divId,
+//             'Unable to load this expedition\'s resources from server.');
+//     } else if (divId.indexOf("datasets") != -1) {
+//         var jqxhr = populateDivFromService(
+//             biocodeFimsRestRoot + 'expeditions/' + expeditionId + '/datasetsAsTable/',
+//             divId,
+//             'Unable to load this expedition\'s datasets from server.');
+//     } else {
+//         var jqxhr = populateDivFromService(
+//             biocodeFimsRestRoot + 'expeditions/' + expeditionId + '/metadataAsTable/',
+//             divId,
+//             'Unable to load this expedition\'s configuration from server.');
+//     }
+// }
+//
+// // function to edit an expedition
+// function editExpedition(projectId, expeditionCode, e) {
+//     var currentPublic;
+//     var searchId = $(e).closest("div")[0].id.replace("-configuration", "");
+//     var title = "Editing " + $("a#" + searchId)[0].textContent.trim();
+//
+//     if (e.parentElement.textContent.startsWith("yes")) {
+//         currentPublic = true;
+//     } else {
+//         currentPublic = false;
+//     }
+//
+//     var message = "<table><tr><td>Public:</td><td><input type='checkbox' name='public'";
+//     if (currentPublic) {
+//         message += " checked='checked'";
+//     }
+//     message += "></td></tr></table>";
+//
+//     var buttons = {
+//         "Update": function() {
+//             var public = $("[name='public']")[0].checked;
+//
+//             $.get(biocodeFimsRestRoot + "expeditions/updateStatus/" + projectId + "/" + expeditionCode + "/" + public
+//             ).done(function() {
+//                 var b = {
+//                     "Ok": function() {
+//                         $(this).dialog("close");
+//                         location.reload();
+//                     }
+//                 }
+//                 dialog("Successfully updated the public status.", "Success!", b);
+//             }).fail(function(jqXHR) {
+//                 $("#dialogContainer").addClass("error");
+//                 var b= {
+//                     "Ok": function() {
+//                         $("#dialogContainer").removeClass("error");
+//                         $(this).dialog("close");
+//                     }
+//                 }
+//                 dialog("Error updating expedition's public status!<br><br>" + JSON.stringify($.parseJSON(jqxhr.responseText).usrMessage), "Error!", buttons)
+//             });
+//         },
+//         "Cancel": function() {
+//             $(this).dialog("close");
+//         }
+//     }
+//     dialog(message, title, buttons);
+// }
+// /* ====== profile.jsp Functions ======= */
+//
+// // function to submit the user's profile editor form
+// function profileSubmit(divId) {
+//     if ($("input.pwcheck", divId).val().length > 0 && $(".label", "#pwindicator").text() == "weak") {
+//         $(".error", divId).html("password too weak");
+//     } else if ($("input[name='newPassword']").val().length > 0 &&
+//         ($("input[name='oldPassword']").length > 0 && $("input[name='oldPassword']").val().length == 0)) {
+//         $(".error", divId).html("Old Password field required to change your Password");
+//     } else {
+//         var postURL = biocodeFimsRestRoot + "users/profile/update/";
+//         var return_to = getQueryParam("return_to");
+//         if (return_to != null) {
+//             postURL += "?return_to=" + encodeURIComponent(return_to);
+//         }
+//         var jqxhr = $.post(postURL, $("form", divId).serialize(), 'json'
+//         ).done (function(data) {
+//             // if adminAccess == true, an admin updated the user's password, so no need to redirect
+//             if (data.adminAccess == true) {
+//                 populateProjectSubsections(divId);
+//             } else {
+//                 if (data.returnTo) {
+//                     $(location).attr("href", data.returnTo);
+//                 } else {
+//                     var jqxhr2 = populateDivFromService(
+//                         biocodeFimsRestRoot + "users/profile/listAsTable",
+//                         "listUserProfile",
+//                         "Unable to load this user's profile from the Server")
+//                         .done(function() {
+//                             $("a", "#profile").click( function() {
+//                                 getProfileEditor();
+//                             });
+//                         });
+//                 }
+//             }
+//         }).fail(function(jqxhr) {
+//             var json = $.parseJSON(jqxhr.responseText);
+//             $(".error", divId).html(json.usrMessage);
+//         });
+//     }
+// }
+//
+// // get profile editor
+// function getProfileEditor(username) {
+//     var jqxhr = populateDivFromService(
+//         biocodeFimsRestRoot + "users/profile/listEditorAsTable",
+//         "listUserProfile",
+//         "Unable to load this user's profile editor from the Server"
+//     ).done(function() {
+//         $(".error").text(getQueryParam("error"));
+//         $("#cancelButton").click(function() {
+//             var jqxhr2 = populateDivFromService(
+//                 biocodeFimsRestRoot + "users/profile/listAsTable",
+//                 "listUserProfile",
+//                 "Unable to load this user's profile from the Server")
+//                 .done(function() {
+//                     $("a", "#profile").click( function() {
+//                         getProfileEditor();
+//                     });
+//                 });
+//         });
+//         $("#profile_submit").click(function() {
+//             profileSubmit('div#listUserProfile');
+//         });
+//     });
+// }
 
 /* ====== projects.jsp Functions ======= */
 

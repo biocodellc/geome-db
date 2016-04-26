@@ -61,7 +61,7 @@ angular.module('dipnetApp')
             })
             .state('expeditionManager', {
                 url: "/secure/expeditions",
-                templateUrl: "app/components/expeditions/expeditions.jsp",
+                templateUrl: "app/components/expeditions/expeditions.html",
                 controller: "ExpeditionCtrl as vm",
                 loginRequired: true
             })

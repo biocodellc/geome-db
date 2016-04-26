@@ -1,5 +1,6 @@
 var app = angular.module('dipnetApp', [
     'ui.router',
+    'ui.bootstrap',
     'fims.query',
     'fims.auth',
     'fims.templates',
