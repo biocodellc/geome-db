@@ -36,7 +36,7 @@ public class Users extends FimsService {
         Authenticator a = new Authenticator();
         JSONObject resetToken = a.generateResetToken(username);
 
-        String resetTokenURL = appRoot + "resetPass.jsp?resetToken=" +
+        String resetTokenURL = appRoot + "resetPass?resetToken=" +
                 resetToken.get("resetToken");
 
         String emailBody = "You requested a password reset for your Biocode-Fims account.\n\n" +

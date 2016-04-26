@@ -5,17 +5,27 @@ import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.bcid.UserMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
+import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.fuseki.query.*;
 import biocode.fims.rest.FimsService;
+import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
+import biocode.fims.service.ExpeditionService;
+import biocode.fims.utils.DatasetService;
 import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -33,6 +43,15 @@ import java.util.List;
 public class Projects extends FimsService {
 
     private static Logger logger = LoggerFactory.getLogger(Projects.class);
+
+    private final ExpeditionService expeditionService;
+    private final DatasetService datasetService;
+
+    @Autowired
+    Projects(ExpeditionService expeditionService, DatasetService datasetService) {
+        this.expeditionService = expeditionService;
+        this.datasetService = datasetService;
+    };
 
     @GET
     @Path("/{projectId}/getLatLongColumns")
@@ -648,5 +667,37 @@ public class Projects extends FimsService {
         mapping.addMappingRules(new Digester(), configFile);
 
         return Response.ok("{\"uniqueKey\":\"" + mapping.getDefaultSheetUniqueKey() + "\"}").build();
+    }
+
+    /**
+     * Return a JSON representation of the expedition's that a user is a member of. Each expedition
+     * includes information regarding the latest dataset and the number of identifiers and
+     * sequences in the dataset.
+     *
+     * @param projectId
+     *
+     * @return
+     */
+    @GET
+    @Authenticated
+    @Path("/{projectId}/expeditions/datasets/latest")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response listExpeditionsWithLatestDatasets(@PathParam("projectId") Integer projectId,
+                                                      @QueryParam("page") @DefaultValue("1") int page,
+                                                      @QueryParam("limit") @DefaultValue("100") int limit) {
+        Pageable pageRequest = new PageRequest(page - 1, limit, Sort.Direction.ASC, "expeditionCode");
+        Page<Expedition> expeditions = expeditionService.getExpeditions(projectId, userId, pageRequest);
+
+        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+
+        Mapping mapping = new Mapping();
+        mapping.addMappingRules(new Digester(), configFile);
+
+        String fusekiQueryTarget = mapping.getMetadata().getQueryTarget() + "/query";
+
+        Map<String, Object> pageMap = new SpringObjectMapper().convertValue(expeditions, Map.class);
+        pageMap.put("content", datasetService.listExpeditionDatasetsWithCounts(expeditions.getContent(), fusekiQueryTarget));
+
+        return Response.ok(pageMap).build();
     }
 }

@@ -98,7 +98,9 @@ angular.module('biscicolApp')
                 $state.go('query', $location.search());
             }])
             .when('/reset.jsp', 'reset')
-            .when('/resetPass.jsp', 'resetPass')
+            .when('/resetPass.jsp', ['$state', '$location', function ($state, $location) {
+                $state.go('template', $location.search());
+            }])
             .when('/resourceTypes.jsp', 'resourceTypes')
             .when('/templates.jsp', ['$state', '$location', function ($state, $location) {
                 $state.go('template', $location.search());

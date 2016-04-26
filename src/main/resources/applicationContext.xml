@@ -23,6 +23,11 @@
         <constructor-arg ref="settingsManager" />
     </bean>
 
+    <bean id="datasetService" class="biocode.fims.utils.DatasetService">
+        <constructor-arg ref="expeditionService" />
+        <constructor-arg ref="bcidService" />
+    </bean>
+
     <bean id="springApplicationContext" class="biocode.fims.utils.SpringApplicationContext"/>
 
     <bean id="expeditionMinter" class="biocode.fims.bcid.ExpeditionMinter"></bean>
