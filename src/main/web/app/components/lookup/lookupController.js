@@ -1,7 +1,7 @@
 angular.module('fims.lookup')
 
-.controller('LookupCtrl', ['$scope', '$state', '$stateParams', 'LookupFactory',
-    function ($scope, $state, $stateParams, LookupFactory) {
+.controller('LookupCtrl', ['$scope', '$state', '$stateParams', '$window', 'LookupFactory',
+    function ($scope, $state, $stateParams, $window, LookupFactory) {
         var vm = this;
         vm.identifier = LookupFactory.identifier;
         vm.submit = submitForm;
@@ -21,16 +21,20 @@ angular.module('fims.lookup')
         }).call(this);
         
         function submitForm() {
+            vm.error = undefined;
             LookupFactory.submitForm().then(
-                function(data, status, headers, config) {
+                function(response) {
+                    $window.location = response.data.url;
                 },
                 function(response) {
                     // hack until we fix jetty 404's
                     if (response.status == 404) {
                         $state.go('lookup.metadata', {'ark': LookupFactory.identifier});
+                    } else {
+                        vm.error = response.data.usrMessage;
+                        if (!vm.error)
+                            vm.error = "Server Error!";
                     }
-                    vm.error = response.data.usrMessage;
-
                 }
             );
         }

@@ -18,7 +18,9 @@ angular.module('fims.lookup')
     
     function submitForm() {
         // $window.location.href = 'id/' + lookupFactory.identifier;
-        return $http.get('/id/' + lookupFactory.identifier);
+        return $http.get('/id/' + lookupFactory.identifier, {
+            headers: {'Accept': 'application/json'}
+        });
     }
     
     function updateFactory(identifier) {
