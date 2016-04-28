@@ -688,6 +688,9 @@ public class Projects extends FimsService {
         Pageable pageRequest = new PageRequest(page - 1, limit, Sort.Direction.ASC, "expeditionCode");
         Page<Expedition> expeditions = expeditionService.getExpeditions(projectId, userId, pageRequest);
 
+        if (!expeditions.hasContent())
+            return Response.ok(expeditions).build();
+
         File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
         Mapping mapping = new Mapping();
