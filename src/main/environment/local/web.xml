@@ -47,9 +47,15 @@
         <url-pattern>id/*</url-pattern>
     </servlet-mapping>
 
-    <welcome-file-list>
-        <welcome-file>index.html</welcome-file>
-    </welcome-file-list>
+    <!-- FimsDefaultServlet must be listed after all other servlets -->
+    <servlet>
+        <servlet-name>FimsDefaultServlet</servlet-name>
+        <servlet-class>biocode.fims.rest.FimsDefaultServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FimsDefaultServlet</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
 
     <filter>
         <filter-name>ClickjackFilterDeny</filter-name>
@@ -75,9 +81,5 @@
         <filter-name>RedirectFilter</filter-name>
         <url-pattern>/biocode-fims/*</url-pattern>
     </filter-mapping>
-
-    <error-page>
-        <location>/index.html</location>
-    </error-page>
 
 </web-app>
