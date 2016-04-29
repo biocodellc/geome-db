@@ -32,6 +32,11 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    compile project(":biocode-fims-commons")
+
+}
+
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
 

@@ -2,22 +2,14 @@
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
+    <!-- FimsDefaultServlet must be listed after all other servlets -->
     <servlet>
-        <servlet-name>Default</servlet-name>
-        <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
+        <servlet-name>FimsDefaultServlet</servlet-name>
+        <servlet-class>biocode.fims.rest.FimsDefaultServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>Default</servlet-name>
+        <servlet-name>FimsDefaultServlet</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
-
-    <welcome-file-list>
-        <welcome-file>index.html</welcome-file>
-    </welcome-file-list>
-
-    <error-page>
-        <error-code>404</error-code>
-        <location>/index.html</location>
-    </error-page>
 
 </web-app>
