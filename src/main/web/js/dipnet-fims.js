@@ -1158,7 +1158,7 @@ function validForm(expeditionCode) {
         } else if (!dRE.test(expeditionCode)) {
             message = "<b>Expedition Code</b> must contain only numbers, letters, or underscores and be 4 to 50 characters long";
             error = true;
-        } else if (!$("#datapoint_verification_toggle").is(":hidden") && !$("#datapoint_verification_toggle").is(":checked")) {
+        } else if (!$("#coordinates_verified").is(":hidden") && !$("#coordinates_verified").is(":checked")) {
             message = "Please check that you have verified the data points on the map below before uploading";
             error = true;
         }

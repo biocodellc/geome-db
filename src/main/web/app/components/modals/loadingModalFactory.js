@@ -1,4 +1,4 @@
-angular.module('fims.modals', ['ui.bootstrap', 'angularSpinner'])
+angular.module('fims.modals')
 
 .factory('LoadingModalFactory', ['$uibModal',
     function($uibModal) {

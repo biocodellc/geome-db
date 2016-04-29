@@ -8,8 +8,9 @@ angular.module('fims.validation', ['fims.users'])
 
         angular.element(document).ready(function() {
             fimsBrowserCheck($('#warning'));
-            
-            getExpeditionCodes();
+
+            if (vm.isAuthenticated)
+                getExpeditionCodes();
             
             validationFormToggle();
 

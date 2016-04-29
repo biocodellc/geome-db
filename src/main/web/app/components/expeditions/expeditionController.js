@@ -1,7 +1,7 @@
 angular.module('fims.expeditions', ['fims.users', 'fims.modals'])
 
-.controller('ExpeditionCtrl', ['$http', 'UserFactory', '$scope', 'LoadingModalFactory',
-    function ($http, UserFactory, $scope, LoadingModalFactory) {
+.controller('ExpeditionCtrl', ['$http', 'UserFactory', '$scope', 'LoadingModalFactory', 'FailModalFactory',
+    function ($http, UserFactory, $scope, LoadingModalFactory, FailModalFactory) {
         var vm = this;
         vm.totalItems;
         vm.itemsPerPage = 100;
@@ -25,6 +25,8 @@ angular.module('fims.expeditions', ['fims.users', 'fims.modals'])
                     vm.totalItems = response.data.totalElements;
                     LoadingModalFactory.modalInstance.close();
                     vm.initialized = true;
+                }, function(response) {
+                    FailModalFactory.show(null, response.data.usrMessage)
                 });
         }
 
