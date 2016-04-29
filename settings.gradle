@@ -1,5 +1,1 @@
 rootProject.name = 'dipnet-fims'
-
-include ":biocode-fims-commons"
-
-project(":biocode-fims-commons").projectDir = file(biocodeFimsCommonsDir)
