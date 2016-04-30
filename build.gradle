@@ -95,10 +95,15 @@ task setProductionEnv << {
 task setDevelopmentEnv << {
     project.ext.environment = "development"
 }
+task setLocalEnv << {
+    project.ext.environment = "development"
+}
+
 
 // if setProductionEnv or setDevelopmentEnv is run, make sure this is done before processResources
 setProductionEnv.mustRunAfter compileJava
 setDevelopmentEnv.mustRunAfter compileJava
+setLocalEnv.mustRunAfter compileJava
 
 /*
 Delete any resource files in src/main/resources if the file exists in a sub directory
@@ -207,7 +212,12 @@ task deployFimsDev {
     }
 }
 
-task deployFimsLocal(dependsOn: war) << {
+task deployFimsLocal {
+    description = 'local fims deployment'
+
+    dependsOn setLocalEnv
+    dependsOn war
+
     project.copy {
         from war.destinationDir
         into localWarDirectory
