@@ -15,6 +15,8 @@ import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
+import biocode.fims.service.UserService;
+import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.DatasetService;
 import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
@@ -48,7 +50,9 @@ public class Projects extends FimsService {
     private final DatasetService datasetService;
 
     @Autowired
-    Projects(ExpeditionService expeditionService, DatasetService datasetService) {
+    Projects(ExpeditionService expeditionService, DatasetService datasetService,
+             UserService userService, SettingsManager settingsManager) {
+        super(userService, settingsManager);
         this.expeditionService = expeditionService;
         this.datasetService = datasetService;
     };

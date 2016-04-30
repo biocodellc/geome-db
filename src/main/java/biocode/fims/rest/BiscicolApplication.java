@@ -3,7 +3,7 @@ package biocode.fims.rest;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 /**
- * Created by rjewing on 3/18/16.
+ * * Jersey Application for Biscicol REST Services
  */
 public class BiscicolApplication extends FimsApplication {
 

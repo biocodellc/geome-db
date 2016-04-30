@@ -9,11 +9,14 @@ import biocode.fims.fuseki.query.FimsFilterCondition;
 import biocode.fims.fuseki.query.FimsQueryBuilder;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.Process;
+import biocode.fims.service.UserService;
+import biocode.fims.settings.SettingsManager;
 import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -32,6 +35,11 @@ import java.util.*;
 public class Query extends FimsService {
     private static Logger logger = LoggerFactory.getLogger(Query.class);
     private File configFile;
+
+    @Autowired
+    Query(UserService userService, SettingsManager settingsManager) {
+        super(userService, settingsManager);
+    }
 
     /**
      * Return JSON for a graph query as POST

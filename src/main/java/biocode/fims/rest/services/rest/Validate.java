@@ -13,9 +13,12 @@ import biocode.fims.fuseki.triplify.Triplifier;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
+import biocode.fims.service.UserService;
+import biocode.fims.settings.SettingsManager;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -26,6 +29,11 @@ import java.io.InputStream;
  */
 @Path("validate")
 public class Validate extends FimsService {
+
+    @Autowired
+    Validate(UserService userService, SettingsManager settingsManager) {
+        super(userService, settingsManager);
+    }
 
     /**
      * service to validate a dataset against a project's rules
@@ -280,7 +288,7 @@ public class Validate extends FimsService {
             // run the triplifier
             Triplifier triplifier = new Triplifier(outputPrefix, uploadPath(), processController);
 
-            boolean runDeepRoots = Boolean.valueOf(sm.retrieveValue("deepRoots"));
+            boolean runDeepRoots = Boolean.valueOf(settingsManager.retrieveValue("deepRoots"));
             
             triplifier.run(processController.getValidation().getSqliteFile(), runDeepRoots);
 
@@ -294,7 +302,7 @@ public class Validate extends FimsService {
             // Detect if this is user=demo or not.  If this is "demo" then do not request EZIDs.
             // User account Demo can still create Data Groups, but they just don't get registered and will be purged periodically
             boolean ezidRequest = true;
-            if (username.equals("demo") || sm.retrieveValue("ezidRequests").equalsIgnoreCase("false")) {
+            if (username.equals("demo") || settingsManager.retrieveValue("ezidRequests").equalsIgnoreCase("false")) {
                 ezidRequest = false;
             }
 

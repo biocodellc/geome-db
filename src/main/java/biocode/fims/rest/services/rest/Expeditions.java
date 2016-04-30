@@ -4,7 +4,10 @@ import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.service.UserService;
+import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -19,6 +22,12 @@ import java.util.ArrayList;
  */
 @Path("expeditions")
 public class Expeditions extends FimsService {
+
+    @Autowired
+    Expeditions(UserService userService, SettingsManager settingsManager) {
+        super(userService, settingsManager);
+    }
+
     @GET
     @Authenticated
     @Path("{expeditionId}/resourcesAsTable")

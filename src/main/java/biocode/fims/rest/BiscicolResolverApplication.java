@@ -1,7 +1,7 @@
 package biocode.fims.rest;
 
 /**
- * Created by rjewing on 3/18/16.
+ * Jersey Application for Biscicol Resolver Services
  */
 public class BiscicolResolverApplication extends FimsApplication {
 

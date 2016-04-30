@@ -6,8 +6,11 @@ import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.service.UserService;
+import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.SendEmail;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -21,6 +24,12 @@ import javax.ws.rs.core.Response;
  */
 @Path("users")
 public class Users extends FimsService {
+
+    @Autowired
+    Users(UserService userService, SettingsManager settingsManager) {
+        super(userService, settingsManager);
+    }
+
     /**
      * Rest service to initiate the reset password process
      * @param username
@@ -46,9 +55,9 @@ public class Users extends FimsService {
 
         // Send an Email that this completed
         SendEmail sendEmail = new SendEmail(
-                sm.retrieveValue("mailUser"),
-                sm.retrieveValue("mailPassword"),
-                sm.retrieveValue("mailFrom"),
+                settingsManager.retrieveValue("mailUser"),
+                settingsManager.retrieveValue("mailPassword"),
+                settingsManager.retrieveValue("mailFrom"),
                 resetToken.get("email").toString(),
                 "Reset Password Link",
                 emailBody);
