@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
     compile 'org.glassfish.jersey.media:jersey-media-multipart:2.22.2'
-    compile 'org.glassfish.jersey.ext:jersey-mvc:2.22.2'
+//    compile 'org.glassfish.jersey.ext:jersey-mvc:2.22.2'
     compile project(":biocode-fims-commons")
     compile project(":biocode-fims-fuseki")
 
@@ -87,6 +87,7 @@ task setLocalEnv << {
 // if setProductionEnv or setDevelopmentEnv is run, make sure this is done before processResources
 setProductionEnv.mustRunAfter compileJava
 setDevelopmentEnv.mustRunAfter compileJava
+setLocalEnv.mustRunAfter compileJava
 
 /*
 Delete any resource files in src/main/resources if the file exists in a sub directory
