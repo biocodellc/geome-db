@@ -5,8 +5,7 @@ import biocode.fims.bcid.BcidMinter;
 import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.config.ConfigurationFileTester;
 import biocode.fims.fasta.FastaManager;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.UnauthorizedRequestException;
+import biocode.fims.fimsExceptions.*;
 import biocode.fims.fuseki.Uploader;
 import biocode.fims.fuseki.fasta.FusekiFastaManager;
 import biocode.fims.fuseki.triplify.Triplifier;
@@ -21,6 +20,7 @@ import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.InputStream;
@@ -272,14 +272,17 @@ public class Validate extends FimsService {
 
             if (!processController.isExpeditionAssignedToUserAndExists()) {
                 p.runExpeditionCheck();
-            }
 
-            if (processController.isExpeditionCreateRequired()) {
-                // ask the user if they want to create this expedition
-                return "{\"continue\": {\"message\": \"The expedition code \\\"" + JSONObject.escape(processController.getExpeditionCode()) +
-                        "\\\" does not exist.  " +
-                        "Do you wish to create it now?<br><br>" +
-                        "If you choose to continue, your data will be associated with this new expedition code.\"}}";
+                if (processController.isExpeditionCreateRequired()) {
+                    // ask the user if they want to create this expedition
+                    return "{\"continue\": {\"message\": \"The expedition code \\\"" + JSONObject.escape(processController.getExpeditionCode()) +
+                            "\\\" does not exist.  " +
+                            "Do you wish to create it now?<br><br>" +
+                            "If you choose to continue, your data will be associated with this new expedition code.\"}}";
+                }
+                
+                if (!processController.isExpeditionAssignedToUserAndExists())
+                    throw new biocode.fims.fimsExceptions.BadRequestException("You do not own the expedition: " + processController.getExpeditionCode());
             }
 
             // fetch the current graph before uploading the new graph. This is needed to copy over the fasta sequences
@@ -345,6 +348,9 @@ public class Validate extends FimsService {
                     throw new BadRequestException("You can only upload fasta files to existing expeditions unless you" +
                             " are simultaneously uploading a new dataset.");
                 }
+                if (!processController.isExpeditionAssignedToUserAndExists())
+                    throw new biocode.fims.fimsExceptions.BadRequestException("You do not own the expedition: " + processController.getExpeditionCode());
+
             }
 
             if (currentGraph == null) {
