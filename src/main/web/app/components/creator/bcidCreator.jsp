@@ -28,7 +28,7 @@
                     </tr>
                 <tr>
                     <td align=right>Target URL</td>
-                    <td><input id=webaddress name=webaddress type=textbox size="40"></td>
+                    <td><input id=webaddress name=webAddress type=textbox size="40"></td>
                 </tr>
 
                 <tr>

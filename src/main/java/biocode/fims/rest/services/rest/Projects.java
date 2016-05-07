@@ -8,7 +8,6 @@ import biocode.fims.digester.*;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.fuseki.query.*;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.rest.filters.Admin;

@@ -8,7 +8,6 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fuseki.query.FimsFilterCondition;
 import biocode.fims.fuseki.query.FimsQueryBuilder;
 import biocode.fims.rest.FimsService;
-import biocode.fims.run.Process;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.digester3.Digester;
@@ -35,6 +34,7 @@ import java.util.*;
 public class Query extends FimsService {
     private static Logger logger = LoggerFactory.getLogger(Query.class);
     private File configFile;
+    private int projectId;
 
     @Autowired
     Query(UserService userService, SettingsManager settingsManager) {
@@ -60,7 +60,7 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.run("json"));
+        File file = new File(q.run("json", projectId));
 
         // Wrie the file to a String and return it
         String response = readFile(file.getAbsolutePath());
@@ -150,7 +150,7 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.run("kml"));
+        File file = new File(q.run("kml", projectId));
 
         // Return file to client
         Response.ResponseBuilder response = Response.ok((Object) file);
@@ -217,7 +217,7 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.run("tab"));
+        File file = new File(q.run("tab", projectId));
 
         // Return file to client
         Response.ResponseBuilder response = Response.ok(file);
@@ -309,7 +309,7 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.run("excel"));
+        File file = new File(q.run("excel", projectId));
 
         // Return file to client
         Response.ResponseBuilder response = Response.ok((Object) file);
@@ -332,7 +332,6 @@ public class Query extends FimsService {
     private FimsQueryBuilder POSTQueryResult(MultivaluedMap<String, String> form) {
         Iterator entries = form.entrySet().iterator();
         String[] graphs = null;
-        Integer projectId = null;
 
         HashMap<String, String> filterMap = new HashMap<String, String>();
         ArrayList<FimsFilterCondition> filterConditionArrayList = new ArrayList<FimsFilterCondition>();
@@ -361,7 +360,7 @@ public class Query extends FimsService {
         }
 
         // Make sure graphs and projectId are set
-        if (graphs != null && graphs.length < 1 && projectId != null) {
+        if (graphs != null && graphs.length < 1 && projectId != 0) {
             throw new FimsRuntimeException("ERROR: incomplete arguments", 400);
         }
 
@@ -370,10 +369,10 @@ public class Query extends FimsService {
         }
 
         // Create a process object here so we can look at uri/column values
-        Process process = getProcess(projectId);
+        Mapping mapping = getMapping(projectId);
 
         // Build the Query
-        FimsQueryBuilder q = new FimsQueryBuilder(process, graphs, uploadPath());
+        FimsQueryBuilder q = new FimsQueryBuilder(mapping, configFile, graphs, uploadPath());
 
         // Loop the filterMap entries and build the filterConditionArrayList
         Iterator it = filterMap.entrySet().iterator();
@@ -416,7 +415,7 @@ public class Query extends FimsService {
             graphsArray = graphs.split(",");
         }
 
-        Process process = getProcess(projectId);
+        Mapping mapping = getMapping(projectId);
 
         // Parse the GET filter
         FimsFilterCondition filterCondition = parseGETFilter(filter);
@@ -428,29 +427,28 @@ public class Query extends FimsService {
 
             // Run the query
             // Build the Query Object by passing this object and an array of graph objects, separated by commas
-            FimsQueryBuilder q = new FimsQueryBuilder(process, graphsArray, uploadPath());
+            FimsQueryBuilder q = new FimsQueryBuilder(mapping, configFile, graphsArray, uploadPath());
             // Add our filter conditions
             q.addFilter(arrayList);
             // Run the query, passing in a format and returning the location of the output file
-            return new File(q.run(format));
+            return new File(q.run(format, projectId));
         } else {
             // Run the query
             // Build the Query Object by passing this object and an array of graph objects, separated by commas
-            FimsQueryBuilder q = new FimsQueryBuilder(process, graphsArray, uploadPath());
+            FimsQueryBuilder q = new FimsQueryBuilder(mapping, configFile, graphsArray, uploadPath());
             // Run the query, passing in a format and returning the location of the output file
-            return new File(q.run(format));
+            return new File(q.run(format, projectId));
         }
     }
 
-    private Process getProcess(Integer projectId) {
+    private Mapping getMapping(Integer projectId) {
         configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
-        // Create a process object
-        Process p = new Process(
-                projectId,
-                configFile
-        );
-        return p;
+        // Parse the Mapping object (this object is used extensively in downstream functions!)
+        Mapping mapping = new Mapping();
+        mapping.addMappingRules(new Digester(), configFile);
+
+        return mapping;
     }
 
     private String[] getAllGraphs(Integer projectId) {
