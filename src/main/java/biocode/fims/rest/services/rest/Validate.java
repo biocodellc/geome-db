@@ -28,6 +28,7 @@ import org.springframework.data.jpa.repository.JpaContext;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
 import javax.ws.rs.*;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MediaType;
@@ -257,149 +258,144 @@ public class Validate extends FimsService {
 
         // we need to reattach the entities to the jpa session to avoid lazy-initialization exceptions
         EntityManager manager = managerFactory.createEntityManager();
-        Session hibernateSession = manager.unwrap(Session.class);
-        try {
-            hibernateSession.update(processController.getProject());
+        processController.setProject(manager.merge(processController.getProject()));
 
-            // if no processController is found, we can't do anything
-            if (processController == null) {
-                return "{\"error\": \"No process was detected.\"}";
+        // if no processController is found, we can't do anything
+        if (processController == null) {
+            return "{\"error\": \"No process was detected.\"}";
+        }
+
+        // check if user is logged in
+        if (processController.getUser() == null) {
+            return "{\"error\": \"You must be logged in to upload.\"}";
+        }
+
+        // if the process controller was stored in the session, then the user wants to continue, set warning cleared
+        processController.setClearedOfWarnings(true);
+        processController.setValidated(true);
+
+        fastaManager = processController.getFastaManager();
+        // if fastaManager is null, then we are not uploading a dataset. In that case, we need to copy over the sequences
+        // from the old graph to the new graph
+        if (fastaManager == null) {
+            fastaManager = new FusekiFastaManager(processController.getMapping().getMetadata().getQueryTarget(),
+                    processController, null);
+        }
+
+        // Create the process object --- this is done each time to orient the application
+        Process p = new Process(
+                uploadPath(),
+                processController,
+                expeditionService
+        );
+
+        String outputPrefix = processController.getExpeditionCode() + "_output";
+        // if there is an inputFilename, then there is a dataset to upload
+        if (processController.getInputFilename() != null) {
+
+            // create this expedition if the user wants to
+            if (createExpedition) {
+                processController.setExpeditionTitle(processController.getExpeditionCode() + " spreadsheet");
+                p.runExpeditionCreate(bcidService);
             }
 
-            // check if user is logged in
-            if (processController.getUser() == null) {
-                return "{\"error\": \"You must be logged in to upload.\"}";
+            if (!processController.isExpeditionAssignedToUserAndExists()) {
+                p.runExpeditionCheck();
+
+                if (processController.isExpeditionCreateRequired()) {
+                    // ask the user if they want to create this expedition
+                    return "{\"continue\": {\"message\": \"The expedition code \\\"" + JSONObject.escape(processController.getExpeditionCode()) +
+                            "\\\" does not exist.  " +
+                            "Do you wish to create it now?<br><br>" +
+                            "If you choose to continue, your data will be associated with this new expedition code.\"}}";
+                }
+
+                if (!processController.isExpeditionAssignedToUserAndExists())
+                    throw new biocode.fims.fimsExceptions.BadRequestException("You do not own the expedition: " + processController.getExpeditionCode());
             }
 
-            // if the process controller was stored in the session, then the user wants to continue, set warning cleared
-            processController.setClearedOfWarnings(true);
-            processController.setValidated(true);
+            // fetch the current graph before uploading the new graph. This is needed to copy over the fasta sequences
+            previousGraph = fastaManager.fetchGraph();
 
-            fastaManager = processController.getFastaManager();
-            // if fastaManager is null, then we are not uploading a dataset. In that case, we need to copy over the sequences
-            // from the old graph to the new graph
-            if (fastaManager == null) {
-                fastaManager = new FusekiFastaManager(processController.getMapping().getMetadata().getQueryTarget(),
-                        processController, null);
-            }
+            // run the triplifier
+            Triplifier triplifier = new Triplifier(outputPrefix, uploadPath(), processController);
 
-            // Create the process object --- this is done each time to orient the application
-            Process p = new Process(
-                    uploadPath(),
-                    processController,
-                    expeditionService
+            boolean runDeepRoots = Boolean.valueOf(settingsManager.retrieveValue("deepRoots"));
+
+            triplifier.run(processController.getValidation().getSqliteFile(), runDeepRoots);
+
+            // upload the dataset
+            Uploader uploader = new Uploader(processController.getMapping().getMetadata().getTarget(),
+                    new File(triplifier.getTripleOutputFile()));
+
+            uploader.execute();
+            currentGraph = uploader.getGraphID();
+
+            // Get the expedition this dataset is associated with
+            Expedition expedition = expeditionService.getExpedition(
+                    processController.getExpeditionCode(),
+                    processController.getProject().getProjectId()
             );
 
-            String outputPrefix = processController.getExpeditionCode() + "_output";
-            // if there is an inputFilename, then there is a dataset to upload
-            if (processController.getInputFilename() != null) {
+            Bcid bcid = new Bcid.BcidBuilder(user, ResourceTypes.DATASET_RESOURCE_TYPE)
+                    .ezidRequest(Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests")))
+                    .title(processController.getExpeditionCode() + " Dataset")
+                    .webAddress(URI.create(uploader.getEndpoint()))
+                    .graph(currentGraph)
+                    .finalCopy(processController.getFinalCopy())
+                    .expedition(expedition)
+                    .build();
 
-                // create this expedition if the user wants to
-                if (createExpedition) {
-                    processController.setExpeditionTitle(processController.getExpeditionCode() + " spreadsheet");
-                    p.runExpeditionCreate(bcidService);
-                }
+            bcidService.create(bcid);
 
-                if (!processController.isExpeditionAssignedToUserAndExists()) {
-                    p.runExpeditionCheck();
+            successMessage = "Dataset Identifier: http://n2t.net/" + bcid.getIdentifier() + " (wait 15 minutes for resolution to become active)";
+            successMessage += "<br>\t" + "Data Elements Root: " + processController.getExpeditionCode();
 
-                    if (processController.isExpeditionCreateRequired()) {
-                        // ask the user if they want to create this expedition
-                        return "{\"continue\": {\"message\": \"The expedition code \\\"" + JSONObject.escape(processController.getExpeditionCode()) +
-                                "\\\" does not exist.  " +
-                                "Do you wish to create it now?<br><br>" +
-                                "If you choose to continue, your data will be associated with this new expedition code.\"}}";
-                    }
-
-                    if (!processController.isExpeditionAssignedToUserAndExists())
-                        throw new biocode.fims.fimsExceptions.BadRequestException("You do not own the expedition: " + processController.getExpeditionCode());
-                }
-
-                // fetch the current graph before uploading the new graph. This is needed to copy over the fasta sequences
-                previousGraph = fastaManager.fetchGraph();
-
-                // run the triplifier
-                Triplifier triplifier = new Triplifier(outputPrefix, uploadPath(), processController);
-
-                boolean runDeepRoots = Boolean.valueOf(settingsManager.retrieveValue("deepRoots"));
-
-                triplifier.run(processController.getValidation().getSqliteFile(), runDeepRoots);
-
-                // upload the dataset
-                Uploader uploader = new Uploader(processController.getMapping().getMetadata().getTarget(),
-                        new File(triplifier.getTripleOutputFile()));
-
-                uploader.execute();
-                currentGraph = uploader.getGraphID();
-
-                // Get the expedition this dataset is associated with
-                Expedition expedition = expeditionService.getExpedition(
-                        processController.getExpeditionCode(),
-                        processController.getProject().getProjectId()
-                );
-
-                Bcid bcid = new Bcid.BcidBuilder(user, ResourceTypes.DATASET_RESOURCE_TYPE)
-                        .ezidRequest(Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests")))
-                        .title(processController.getExpeditionCode() + " Dataset")
-                        .webAddress(URI.create(uploader.getEndpoint()))
-                        .graph(currentGraph)
-                        .finalCopy(processController.getFinalCopy())
-                        .expedition(expedition)
-                        .build();
-
-                bcidService.create(bcid);
-
-                successMessage = "Dataset Identifier: http://n2t.net/" + bcid.getIdentifier() + " (wait 15 minutes for resolution to become active)";
-                successMessage += "<br>\t" + "Data Elements Root: " + processController.getExpeditionCode();
-
-                // copy over the fasta sequences if this is not the first dataset uploaded, but only if there is no
-                // new fasta file to upload
-                if (previousGraph != null && fastaManager.getFastaFilename() == null) {
-                    fastaManager.copySequences(previousGraph, currentGraph);
-                }
-
-                // delete the temporary file now that it has been uploaded
-                new File(processController.getInputFilename()).delete();
-            } else {
-                successMessage += "<br>\t" + "FASTA data added to dataset belonging to Expedition Code: " + processController.getExpeditionCode();
-                currentGraph = fastaManager.fetchGraph();
+            // copy over the fasta sequences if this is not the first dataset uploaded, but only if there is no
+            // new fasta file to upload
+            if (previousGraph != null && fastaManager.getFastaFilename() == null) {
+                fastaManager.copySequences(previousGraph, currentGraph);
             }
 
-            // if fastaFilename isn't null, then we have a fasta file to upload
-            if (fastaManager.getFastaFilename() != null) {
-                if (!processController.isExpeditionAssignedToUserAndExists()) {
-                    p.runExpeditionCheck();
-                    if (processController.isExpeditionCreateRequired()) {
-                        throw new BadRequestException("You can only upload fasta files to existing expeditions unless you" +
-                                " are simultaneously uploading a new dataset.");
-                    }
-                    if (!processController.isExpeditionAssignedToUserAndExists())
-                        throw new biocode.fims.fimsExceptions.BadRequestException("You do not own the expedition: " + processController.getExpeditionCode());
-
-                }
-
-                if (currentGraph == null) {
-                    throw new BadRequestException("No existing dataset was detected. Your fasta file must be " + "" +
-                            "associated with an existing dataset.");
-                }
-                fastaManager.upload(currentGraph, uploadPath(), outputPrefix);
-                new BcidMinter().updateBcidTimestamp(currentGraph);
-
-                // delete the temporary file now that it has been uploaded
-                new File(fastaManager.getFastaFilename()).delete();
-                successMessage += "<br>\t" + "FASTA data added";
-            }
-
-            successMessage += "<br><font color=#188B00>Successfully Uploaded!</font><br><br>";
-            processController.appendStatus(successMessage);
-
-            // remove the processController from the session
-            session.removeAttribute("processController");
-
-            return "{\"done\": {\"message\": \"" + JSONObject.escape(successMessage) + "\"}}";
-        } finally {
-            hibernateSession.close();
+            // delete the temporary file now that it has been uploaded
+            new File(processController.getInputFilename()).delete();
+        } else {
+            successMessage += "<br>\t" + "FASTA data added to dataset belonging to Expedition Code: " + processController.getExpeditionCode();
+            currentGraph = fastaManager.fetchGraph();
         }
+
+        // if fastaFilename isn't null, then we have a fasta file to upload
+        if (fastaManager.getFastaFilename() != null) {
+            if (!processController.isExpeditionAssignedToUserAndExists()) {
+                p.runExpeditionCheck();
+                if (processController.isExpeditionCreateRequired()) {
+                    throw new BadRequestException("You can only upload fasta files to existing expeditions unless you" +
+                            " are simultaneously uploading a new dataset.");
+                }
+                if (!processController.isExpeditionAssignedToUserAndExists())
+                    throw new biocode.fims.fimsExceptions.BadRequestException("You do not own the expedition: " + processController.getExpeditionCode());
+
+            }
+
+            if (currentGraph == null) {
+                throw new BadRequestException("No existing dataset was detected. Your fasta file must be " + "" +
+                        "associated with an existing dataset.");
+            }
+            fastaManager.upload(currentGraph, uploadPath(), outputPrefix);
+            new BcidMinter().updateBcidTimestamp(currentGraph);
+
+            // delete the temporary file now that it has been uploaded
+            new File(fastaManager.getFastaFilename()).delete();
+            successMessage += "<br>\t" + "FASTA data added";
+        }
+
+        successMessage += "<br><font color=#188B00>Successfully Uploaded!</font><br><br>";
+        processController.appendStatus(successMessage);
+
+        // remove the processController from the session
+        session.removeAttribute("processController");
+
+        return "{\"done\": {\"message\": \"" + JSONObject.escape(successMessage) + "\"}}";
     }
 
     /**
