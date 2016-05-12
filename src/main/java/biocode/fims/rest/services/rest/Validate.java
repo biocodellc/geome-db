@@ -95,148 +95,151 @@ public class Validate extends FimsService {
         session.setAttribute("processController", processController);
 
 
-        // update the status
-        processController.appendStatus("Initializing...<br>");
-        // save the dataset and/or fasta files
-        if (datasetFileData.getFileName() != null) {
-            processController.appendStatus("inputFilename = " + processController.stringToHTMLJSON(
-                    datasetFileData.getFileName()) + "<br>");
+        try {
+            // update the status
+            processController.appendStatus("Initializing...<br>");
+            // save the dataset and/or fasta files
+            if (datasetFileData.getFileName() != null) {
+                processController.appendStatus("inputFilename = " + processController.stringToHTMLJSON(
+                        datasetFileData.getFileName()) + "<br>");
 
-            // Save the uploaded dataset file
-            String splitArray[] = datasetFileData.getFileName().split("\\.");
-            String ext;
-            if (splitArray.length == 0) {
-                // if no extension is found, then guess
-                ext = "xls";
-            } else {
-                ext = splitArray[splitArray.length - 1];
-            }
-            inputFile = processController.saveTempFile(datasetIs, ext);
-            // if inputFile null, then there was an error saving the file
-            if (inputFile == null) {
-                throw new FimsRuntimeException("Server error saving dataset file.", 500);
-            }
-            processController.setInputFilename(inputFile);
-        }
-        // Create the process object --- this is done each time to orient the application
-        Process p = new Process(
-                uploadPath(),
-                processController,
-                expeditionService
-        );
-        if (fastaFileData != null) {
-            if (fastaFileData.getFileName() != null) {
-                processController.appendStatus("fastaFilename = " + processController.stringToHTMLJSON(
-                        fastaFileData.getFileName()) + "<br>");
-
-                // Save the uploaded fasta file
-                String splitArray[] = fastaFileData.getFileName().split("\\.");
-                String fastaExt;
+                // Save the uploaded dataset file
+                String splitArray[] = datasetFileData.getFileName().split("\\.");
+                String ext;
                 if (splitArray.length == 0) {
                     // if no extension is found, then guess
-                    fastaExt = "fasta";
+                    ext = "xls";
                 } else {
-                    fastaExt = splitArray[splitArray.length - 1];
+                    ext = splitArray[splitArray.length - 1];
                 }
-                fastaFile = processController.saveTempFile(fastaIs, fastaExt);
+                inputFile = processController.saveTempFile(datasetIs, ext);
                 // if inputFile null, then there was an error saving the file
-                if (fastaFile == null) {
-                    throw new FimsRuntimeException("Server error saving fasta file.", 500);
+                if (inputFile == null) {
+                    throw new FimsRuntimeException("Server error saving dataset file.", 500);
                 }
-
-                fastaManager = new FusekiFastaManager(
-                        processController.getMapping().getMetadata().getQueryTarget(), processController, fastaFile);
-                processController.setFastaManager(fastaManager);
+                processController.setInputFilename(inputFile);
             }
-        }
+            // Create the process object --- this is done each time to orient the application
+            Process p = new Process(
+                    uploadPath(),
+                    processController,
+                    expeditionService
+            );
+            if (fastaFileData != null) {
+                if (fastaFileData.getFileName() != null) {
+                    processController.appendStatus("fastaFilename = " + processController.stringToHTMLJSON(
+                            fastaFileData.getFileName()) + "<br>");
 
+                    // Save the uploaded fasta file
+                    String splitArray[] = fastaFileData.getFileName().split("\\.");
+                    String fastaExt;
+                    if (splitArray.length == 0) {
+                        // if no extension is found, then guess
+                        fastaExt = "fasta";
+                    } else {
+                        fastaExt = splitArray[splitArray.length - 1];
+                    }
+                    fastaFile = processController.saveTempFile(fastaIs, fastaExt);
+                    // if inputFile null, then there was an error saving the file
+                    if (fastaFile == null) {
+                        throw new FimsRuntimeException("Server error saving fasta file.", 500);
+                    }
 
-        // Test the configuration file to see that we're good to go...
-        ConfigurationFileTester cFT = new ConfigurationFileTester();
-        boolean configurationGood = true;
-
-        cFT.init(p.configFile);
-
-        if (!cFT.checkUniqueKeys()) {
-            String message = "<br>CONFIGURATION FILE ERROR...<br>Please talk to your project administrator to fix the following error:<br>\t\n";
-            message += cFT.getMessages();
-            processController.setHasErrors(true);
-            processController.setValidated(false);
-            processController.appendStatus(message + "<br>");
-            configurationGood = false;
-            retVal.append("{\"done\": \"");
-            retVal.append(processController.getStatusSB().toString());
-            retVal.append("\"}");
-        }
-
-
-        // Run the process only if the configuration is good.
-        if (configurationGood) {
-            processController.appendStatus("Validating...<br>");
-
-            if (processController.getInputFilename() != null) {
-                p.runValidation();
-            }
-            if (fastaManager != null) {
-                fastaManager.validate(uploadPath());
+                    fastaManager = new FusekiFastaManager(
+                            processController.getMapping().getMetadata().getQueryTarget(), processController, fastaFile);
+                    processController.setFastaManager(fastaManager);
+                }
             }
 
-            // if there were validation errors, we can't upload
-            if (processController.getHasErrors()) {
-                retVal.append("{\"done\": ");
-                retVal.append(processController.getMessages().toJSONString());
-                retVal.append("}");
 
-            } else if (upload != null && upload.equals("on")) {
+            // Test the configuration file to see that we're good to go...
+            ConfigurationFileTester cFT = new ConfigurationFileTester();
+            boolean configurationGood = true;
 
-                if (username == null) {
-                    throw new UnauthorizedRequestException("You must be logged in to upload.");
+            cFT.init(p.configFile);
+
+            if (!cFT.checkUniqueKeys()) {
+                String message = "<br>CONFIGURATION FILE ERROR...<br>Please talk to your project administrator to fix the following error:<br>\t\n";
+                message += cFT.getMessages();
+                processController.setHasErrors(true);
+                processController.setValidated(false);
+                processController.appendStatus(message + "<br>");
+                configurationGood = false;
+                retVal.append("{\"done\": \"");
+                retVal.append(processController.getStatusSB().toString());
+                retVal.append("\"}");
+            }
+
+
+            // Run the process only if the configuration is good.
+            if (configurationGood) {
+                processController.appendStatus("Validating...<br>");
+
+                if (processController.getInputFilename() != null) {
+                    p.runValidation();
+                }
+                if (fastaManager != null) {
+                    fastaManager.validate(uploadPath());
                 }
 
-                processController.setUser(user);
-
-                // set public status to true in processController if user wants it on
-                if (publicStatus != null && publicStatus.equals("on")) {
-                       processController.setPublicStatus(true);
-                }
-
-                // if there were validation warnings and user would like to upload, we need to ask the user to continue
-                if (processController.getHasWarnings()) {
-                    retVal.append("{\"continue\": ");
+                // if there were validation errors, we can't upload
+                if (processController.getHasErrors()) {
+                    retVal.append("{\"done\": ");
                     retVal.append(processController.getMessages().toJSONString());
                     retVal.append("}");
 
-                    // there were no validation warnings and the user would like to upload, so continue
+                } else if (upload != null && upload.equals("on")) {
+
+                    if (username == null) {
+                        throw new UnauthorizedRequestException("You must be logged in to upload.");
+                    }
+
+                    processController.setUser(user);
+
+                    // set public status to true in processController if user wants it on
+                    if (publicStatus != null && publicStatus.equals("on")) {
+                        processController.setPublicStatus(true);
+                    }
+
+                    // if there were validation warnings and user would like to upload, we need to ask the user to continue
+                    if (processController.getHasWarnings()) {
+                        retVal.append("{\"continue\": ");
+                        retVal.append(processController.getMessages().toJSONString());
+                        retVal.append("}");
+
+                        // there were no validation warnings and the user would like to upload, so continue
+                    } else {
+                        retVal.append("{\"continue\": {\"message\": \"continue\"}}");
+                    }
+
+                    // don't delete the inputFile because we'll need it for uploading
+                    deleteInputFile = false;
+
+                    // don't remove the controller as we will need it later for uploading this file
+                    removeController = false;
                 } else {
-                    retVal.append("{\"continue\": {\"message\": \"continue\"}}");
+                    // User doesn't want to upload. Return the validation results
+                    retVal.append("{\"done\": ");
+                    retVal.append(processController.getMessages().toJSONString());
+                    retVal.append("}");
                 }
+            }
+            return retVal.toString();
 
-                // don't delete the inputFile because we'll need it for uploading
-                deleteInputFile = false;
+        } finally {
 
-                // don't remove the controller as we will need it later for uploading this file
-                removeController = false;
-            } else {
-                // User doesn't want to upload. Return the validation results
-                retVal.append("{\"done\": ");
-                retVal.append(processController.getMessages().toJSONString());
-                retVal.append("}");
+            if (deleteInputFile) {
+                if (inputFile != null) {
+                    new File(inputFile).delete();
+                }
+                if (fastaFile != null) {
+                    new File(fastaFile).delete();
+                }
+            }
+            if (removeController) {
+                session.removeAttribute("processController");
             }
         }
-
-        if (deleteInputFile) {
-            if (inputFile != null) {
-                new File(inputFile).delete();
-            }
-            if (fastaFile != null) {
-                new File(fastaFile).delete();
-            }
-        }
-        if (removeController) {
-            session.removeAttribute("processController");
-        }
-
-        return retVal.toString();
     }
 
     /**
