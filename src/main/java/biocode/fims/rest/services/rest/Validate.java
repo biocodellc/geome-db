@@ -259,10 +259,6 @@ public class Validate extends FimsService {
         String successMessage = "";
         ProcessController processController = (ProcessController) session.getAttribute("processController");
 
-        // we need to reattach the entities to the jpa session to avoid lazy-initialization exceptions
-        EntityManager manager = managerFactory.createEntityManager();
-        processController.setProject(manager.merge(processController.getProject()));
-
         // if no processController is found, we can't do anything
         if (processController == null) {
             return "{\"error\": \"No process was detected.\"}";
@@ -272,6 +268,11 @@ public class Validate extends FimsService {
         if (processController.getUser() == null) {
             return "{\"error\": \"You must be logged in to upload.\"}";
         }
+
+        // we need to reattach the entities to the jpa session to avoid lazy-initialization exceptions
+        EntityManager manager = managerFactory.createEntityManager();
+        processController.setProject(manager.merge(processController.getProject()));
+
 
         // if the process controller was stored in the session, then the user wants to continue, set warning cleared
         processController.setClearedOfWarnings(true);
