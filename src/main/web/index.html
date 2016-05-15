@@ -21,6 +21,7 @@
 <div id="container">
 
     <header ng-include="'app/partials/header-nav.html'"></header>
+    <div class="alert-container"><div id="alerts"></div></div>
     <div ng-show="error" class="alert alert-error">{{ error }}</div>
 
     <div ui-view></div>
