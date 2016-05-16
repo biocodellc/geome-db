@@ -456,7 +456,7 @@ public class Query extends FimsService {
 
         ProjectMinter project= new ProjectMinter();
 
-        JSONArray graphs = project.getLatestGraphs(projectId, username);
+        JSONArray graphs = project.getLatestGraphs(projectId, user.getUsername());
         Iterator it = graphs.iterator();
 
         while (it.hasNext()) {

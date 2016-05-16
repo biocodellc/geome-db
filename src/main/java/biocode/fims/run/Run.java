@@ -4,8 +4,6 @@ import biocode.fims.auth.Authenticator;
 import biocode.fims.bcid.*;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
-import biocode.fims.entities.Expedition;
-import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.entities.Bcid;
 import biocode.fims.fasta.FastaManager;
@@ -15,7 +13,6 @@ import biocode.fims.fuseki.query.FimsQueryBuilder;
 import biocode.fims.fuseki.triplify.Triplifier;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
@@ -38,9 +35,7 @@ import java.net.URI;
 public class Run {
 
     private final SettingsManager settingsManager;
-    private ExpeditionMinter expeditionMinter;
     private final BcidService bcidService;
-    private final ExpeditionService expeditionService;
     private final UserService userService;
 
     private Process process;
@@ -48,13 +43,10 @@ public class Run {
     private String username;
 
     @Autowired
-    public Run(SettingsManager settingsManager, ExpeditionMinter expeditionMinter,
-               BcidService bcidService, ExpeditionService expeditionService,
+    public Run(SettingsManager settingsManager, BcidService bcidService,
                UserService userService) {
         this.settingsManager = settingsManager;
-        this.expeditionMinter = expeditionMinter;
         this.bcidService = bcidService;
-        this.expeditionService = expeditionService;
         this.userService = userService;
     }
 
@@ -177,21 +169,20 @@ public class Run {
 
                         User user = userService.getUser(username);
 
-                        Expedition expedition = expeditionService.getExpedition(
-                                processController.getExpeditionCode(),
-                                processController.getProject().getProjectId()
-                        );
-
-                        Bcid bcid = new Bcid.BcidBuilder(user, ResourceTypes.DATASET_RESOURCE_TYPE)
+                        Bcid bcid = new Bcid.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE)
                                 .ezidRequest(Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests")))
-                                .expedition(expedition)
                                 .title(processController.getExpeditionCode() + " Dataset")
                                 .webAddress(URI.create(uploader.getEndpoint()))
                                 .graph(currentGraph)
                                 .finalCopy(processController.getFinalCopy())
                                 .build();
 
-                        bcidService.create(bcid);
+                        bcidService.create(bcid, user.getUserId());
+                        bcidService.attachBcidToExpedition(
+                                bcid,
+                                processController.getExpeditionCode(),
+                                processController.getProjectId()
+                        );
 
                         FimsPrinter.out.println("Dataset Identifier: http://n2t.net/" + bcid.getIdentifier() + " (wait 15 minutes for resolution to become active)");
                         FimsPrinter.out.println("\t" + "Data Elements Root: " + processController.getExpeditionCode());
@@ -246,13 +237,12 @@ public class Run {
      */
     public static void main(String args[])  throws Exception{
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
-        ProjectService projectService = applicationContext.getBean(ProjectService.class);
         ExpeditionService expeditionService = applicationContext.getBean(ExpeditionService.class);
         Run run = (Run) SpringApplicationContext.getBean(Run.class);
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
         String username = "";
         String password = "";
-        Project project = null;
+        int projectId = 0;
         //System.out.print(defaultOutputDirectory);
 
         // Test configuration :
@@ -364,7 +354,7 @@ public class Run {
         // Sanitize project specification
         if (cl.hasOption("p")) {
             try {
-                project = projectService.getProject(Integer.parseInt(cl.getOptionValue("p")));
+                projectId = Integer.parseInt(cl.getOptionValue("p"));
             } catch (Exception e) {
                 FimsPrinter.out.println("Bad option for project_id");
                 helpf.printHelp("fims ", options, true);
@@ -373,7 +363,7 @@ public class Run {
         }
 
         // Check for project_id when uploading data
-        if (cl.hasOption("u") && project == null) {
+        if (cl.hasOption("u") && projectId == 0) {
             FimsPrinter.out.println("Must specify a valid project_id when uploading data");
             return;
         }
@@ -426,7 +416,7 @@ public class Run {
              */
             if (cl.hasOption("q")) {
 
-                File configFile = new ConfigurationFileFetcher(project.getProjectId(), output_directory, true).getOutputFile();
+                File configFile = new ConfigurationFileFetcher(projectId, output_directory, true).getOutputFile();
 
                 Mapping mapping = new Mapping();
                 mapping.addMappingRules(new Digester(), configFile);
@@ -436,13 +426,13 @@ public class Run {
                 // Build the Query Object by passing this object and an array of graph objects, separated by commas
                 FimsQueryBuilder q = new FimsQueryBuilder(mapping, configFile, cl.getOptionValue("q").split(","), output_directory);
                 // Run the query, passing in a format and returning the location of the output file
-                System.out.println(q.run(cl.getOptionValue("f"), project.getProjectId()));
+                System.out.println(q.run(cl.getOptionValue("f"), projectId));
             }
             /*
            Run the validator
             */
             else {
-                ProcessController processController = new ProcessController(project, dataset_code);
+                ProcessController processController = new ProcessController(projectId, dataset_code);
                 processController.setInputFilename(input_file);
                 // if we only want to triplify and not upload, then we operate in LOCAL mode
                 if (local && triplify) {

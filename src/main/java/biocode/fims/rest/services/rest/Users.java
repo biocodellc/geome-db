@@ -83,7 +83,7 @@ public class Users extends FimsService {
     @Produces(MediaType.TEXT_HTML)
     public Response listProfileEditorAsTable() {
         UserMinter u = new UserMinter();
-        JSONObject profile = u.getUserProfile(username);
+        JSONObject profile = u.getUserProfile(user.getUsername());
         return Response.ok(getProfileEditor(profile, false)).build();
     }
 
@@ -157,7 +157,7 @@ public class Users extends FimsService {
     @Produces(MediaType.TEXT_HTML)
     public Response listProfileAsTable() {
         UserMinter u = new UserMinter();
-        JSONObject profile = u.getUserProfile(username);
+        JSONObject profile = u.getUserProfile(user.getUsername());
         StringBuilder sb = new StringBuilder();
 
         sb.append("<table id=\"profile\">\n");

@@ -78,7 +78,7 @@ public class Expeditions extends FimsService {
     public Response listDatasetsAsTable(@PathParam("expeditionId") int expeditionId) {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
 
-        if (!ignoreUser && !expeditionMinter.userOwnsExpedition(userId, expeditionId)) {
+        if (!ignoreUser && !expeditionMinter.userOwnsExpedition(user.getUserId(), expeditionId)) {
             throw new ForbiddenRequestException("You must own this expedition in order to view its datasets.");
         }
 
@@ -120,7 +120,7 @@ public class Expeditions extends FimsService {
     public Response listMetadataAsTable(@PathParam("expeditionId") int expeditionId) {
         ExpeditionMinter e = new ExpeditionMinter();
 
-        if (!ignoreUser && !e.userOwnsExpedition(userId, expeditionId)) {
+        if (!ignoreUser && !e.userOwnsExpedition(user.getUserId(), expeditionId)) {
             throw new ForbiddenRequestException("You must own this expedition in order to view its datasets.");
         }
 

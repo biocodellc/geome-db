@@ -4,8 +4,6 @@ import biocode.fims.bcid.BcidMinter;
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.config.ConfigurationFileTester;
 import biocode.fims.entities.Bcid;
-import biocode.fims.entities.Expedition;
-import biocode.fims.entities.Project;
 import biocode.fims.fasta.FastaManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fuseki.Uploader;
@@ -16,19 +14,13 @@ import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.hibernate.Session;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.JpaContext;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceContext;
 import javax.ws.rs.*;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MediaType;
@@ -43,18 +35,13 @@ public class Validate extends FimsService {
 
     private final BcidService bcidService;
     private final ExpeditionService expeditionService;
-    private final ProjectService projectService;
-
-    private EntityManagerFactory managerFactory;
 
     @Autowired
-    Validate(BcidService bcidService, ExpeditionService expeditionService, ProjectService projectService,
-             EntityManagerFactory managerFactory, UserService userService, SettingsManager settingsManager) {
+    Validate(BcidService bcidService, ExpeditionService expeditionService,
+             UserService userService, SettingsManager settingsManager) {
         super(userService, settingsManager);
         this.bcidService = bcidService;
         this.expeditionService = expeditionService;
-        this.projectService = projectService;
-        this.managerFactory = managerFactory;
     }
 
     /**
@@ -86,9 +73,8 @@ public class Validate extends FimsService {
         String fastaFile = null;
         FastaManager fastaManager = null;
 
-        Project project = projectService.getProject(projectId);
         // create a new processController
-        ProcessController processController = new ProcessController(project, expeditionCode);
+        ProcessController processController = new ProcessController(projectId, expeditionCode);
 
         // place the processController in the session here so that we can track the status of the validation process
         // by calling biocode.fims.rest/validate/status
@@ -190,11 +176,11 @@ public class Validate extends FimsService {
 
                 } else if (upload != null && upload.equals("on")) {
 
-                    if (username == null) {
+                    if (user == null) {
                         throw new UnauthorizedRequestException("You must be logged in to upload.");
                     }
 
-                    processController.setUser(user);
+                    processController.setUserId(user.getUserId());
 
                     // set public status to true in processController if user wants it on
                     if (publicStatus != null && publicStatus.equals("on")) {
@@ -265,13 +251,9 @@ public class Validate extends FimsService {
         }
 
         // check if user is logged in
-        if (processController.getUser() == null) {
+        if (processController.getUserId() == 0) {
             return "{\"error\": \"You must be logged in to upload.\"}";
         }
-
-        // we need to reattach the entities to the jpa session to avoid lazy-initialization exceptions
-        EntityManager manager = managerFactory.createEntityManager();
-        processController.setProject(manager.merge(processController.getProject()));
 
 
         // if the process controller was stored in the session, then the user wants to continue, set warning cleared
@@ -335,22 +317,20 @@ public class Validate extends FimsService {
             uploader.execute();
             currentGraph = uploader.getGraphID();
 
-            // Get the expedition this dataset is associated with
-            Expedition expedition = expeditionService.getExpedition(
-                    processController.getExpeditionCode(),
-                    processController.getProject().getProjectId()
-            );
-
-            Bcid bcid = new Bcid.BcidBuilder(user, ResourceTypes.DATASET_RESOURCE_TYPE)
+            Bcid bcid = new Bcid.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE)
                     .ezidRequest(Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests")))
                     .title(processController.getExpeditionCode() + " Dataset")
                     .webAddress(URI.create(uploader.getEndpoint()))
                     .graph(currentGraph)
                     .finalCopy(processController.getFinalCopy())
-                    .expedition(expedition)
                     .build();
 
-            bcidService.create(bcid);
+            bcidService.create(bcid, user.getUserId());
+            bcidService.attachBcidToExpedition(
+                    bcid,
+                    processController.getExpeditionCode(),
+                    processController.getProjectId()
+            );
 
             successMessage = "Dataset Identifier: http://n2t.net/" + bcid.getIdentifier() + " (wait 15 minutes for resolution to become active)";
             successMessage += "<br>\t" + "Data Elements Root: " + processController.getExpeditionCode();

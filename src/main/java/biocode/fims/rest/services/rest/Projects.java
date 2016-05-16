@@ -427,7 +427,7 @@ public class Projects extends FimsService {
     @Path("/{projectId}/metadata")
     public Response listMetadataAsTable(@PathParam("projectId") int projectId) {
         ProjectMinter project = new ProjectMinter();
-        JSONObject metadata = project.getMetadata(projectId, username);
+        JSONObject metadata = project.getMetadata(projectId, user.getUsername());
         StringBuilder sb = new StringBuilder();
 
         sb.append("<table>\n");
@@ -470,7 +470,7 @@ public class Projects extends FimsService {
     public Response listMetadataEditorAsTable(@PathParam("projectId") int projectId) {
         StringBuilder sb = new StringBuilder();
         ProjectMinter project = new ProjectMinter();
-        JSONObject metadata = project.getMetadata(projectId, username);
+        JSONObject metadata = project.getMetadata(projectId, user.getUsername());
 
         sb.append("<form id=\"submitForm\" method=\"POST\">\n");
         sb.append("<table>\n");
@@ -519,7 +519,7 @@ public class Projects extends FimsService {
     public Response listUsersAsTable(@PathParam("projectId") int projectId) {
         ProjectMinter p = new ProjectMinter();
 
-        if (!p.isProjectAdmin(username, projectId)) {
+        if (!p.isProjectAdmin(user.getUsername(), projectId)) {
             // only display system users to project admins
             throw new ForbiddenRequestException("You are not an admin to this project");
         }
@@ -585,12 +585,12 @@ public class Projects extends FimsService {
     @Path("/{projectId}/admin/expeditions/")
     public Response listExpeditionsAsTable(@PathParam("projectId") int projectId) {
         ProjectMinter projectMinter = new ProjectMinter();
-        if (!projectMinter.isProjectAdmin(username, projectId)) {
+        if (!projectMinter.isProjectAdmin(user.getUsername(), projectId)) {
             throw new ForbiddenRequestException("You must be this project's admin in order to view its expeditions.");
         }
 
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
-        JSONArray expeditions = expeditionMinter.getExpeditions(projectId, username);
+        JSONArray expeditions = expeditionMinter.getExpeditions(projectId, user.getUsername());
 
         StringBuilder sb = new StringBuilder();
         sb.append("<form method=\"POST\">\n");
@@ -689,7 +689,7 @@ public class Projects extends FimsService {
                                                       @QueryParam("page") @DefaultValue("1") int page,
                                                       @QueryParam("limit") @DefaultValue("100") int limit) {
         Pageable pageRequest = new PageRequest(page - 1, limit, Sort.Direction.ASC, "expeditionCode");
-        Page<Expedition> expeditions = expeditionService.getExpeditions(projectId, userId, pageRequest);
+        Page<Expedition> expeditions = expeditionService.getExpeditions(projectId, user.getUserId(), pageRequest);
 
         if (!expeditions.hasContent())
             return Response.ok(expeditions).build();
