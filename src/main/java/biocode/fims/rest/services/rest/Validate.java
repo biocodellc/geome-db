@@ -4,6 +4,7 @@ import biocode.fims.bcid.BcidMinter;
 import biocode.fims.bcid.ResourceTypes;
 import biocode.fims.config.ConfigurationFileTester;
 import biocode.fims.entities.Bcid;
+import biocode.fims.entities.Expedition;
 import biocode.fims.fasta.FastaManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fuseki.Uploader;
@@ -326,10 +327,15 @@ public class Validate extends FimsService {
                     .build();
 
             bcidService.create(bcid, user.getUserId());
-            bcidService.attachBcidToExpedition(
-                    bcid,
+
+            Expedition expedition = expeditionService.getExpedition(
                     processController.getExpeditionCode(),
                     processController.getProjectId()
+            );
+
+            bcidService.attachBcidToExpedition(
+                    bcid,
+                    expedition.getExpeditionId()
             );
 
             successMessage = "Dataset Identifier: http://n2t.net/" + bcid.getIdentifier() + " (wait 15 minutes for resolution to become active)";

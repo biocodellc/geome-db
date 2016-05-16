@@ -4,6 +4,7 @@ import biocode.fims.auth.Authenticator;
 import biocode.fims.bcid.*;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
+import biocode.fims.entities.Expedition;
 import biocode.fims.entities.User;
 import biocode.fims.entities.Bcid;
 import biocode.fims.fasta.FastaManager;
@@ -37,6 +38,7 @@ public class Run {
     private final SettingsManager settingsManager;
     private final BcidService bcidService;
     private final UserService userService;
+    private final ExpeditionService expeditionService;
 
     private Process process;
     private ProcessController processController;
@@ -44,9 +46,10 @@ public class Run {
 
     @Autowired
     public Run(SettingsManager settingsManager, BcidService bcidService,
-               UserService userService) {
+               ExpeditionService expeditionService, UserService userService) {
         this.settingsManager = settingsManager;
         this.bcidService = bcidService;
+        this.expeditionService = expeditionService;
         this.userService = userService;
     }
 
@@ -178,10 +181,14 @@ public class Run {
                                 .build();
 
                         bcidService.create(bcid, user.getUserId());
-                        bcidService.attachBcidToExpedition(
-                                bcid,
+                        Expedition expedition = expeditionService.getExpedition(
                                 processController.getExpeditionCode(),
                                 processController.getProjectId()
+                        );
+
+                        bcidService.attachBcidToExpedition(
+                                bcid,
+                                expedition.getExpeditionId()
                         );
 
                         FimsPrinter.out.println("Dataset Identifier: http://n2t.net/" + bcid.getIdentifier() + " (wait 15 minutes for resolution to become active)");
