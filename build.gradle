@@ -190,7 +190,7 @@ task deployFims {
     doLast {
         ssh.run {
             session(remotes.biscicol) {
-                put from: war.archivePath.path, into: remoteWarDirectory
+                put from: war.archivePath.path, into: remoteWarDirectory + "dipnet.war"
             }
         }
     }
@@ -206,7 +206,7 @@ task deployFimsDev {
     doLast {
         ssh.run {
             session(remotes.biscicol) {
-                put from: war.archivePath.path, into: remoteWarDevDirectory
+                put from: war.archivePath.path, into: remoteWarDevDirectory + "dipnet.war"
             }
         }
     }
