@@ -1,6 +1,6 @@
 angular.module('fims.lookup')
 
-.factory('LookupFactory', ['$http', '$window', function ($http, $window) {
+.factory('LookupFactory', ['$http', 'ID_REST_ROOT', function ($http, ID_REST_ROOT) {
     var identifier = "ark:/21547/R2";
 
     var lookupFactory = {
@@ -13,12 +13,11 @@ angular.module('fims.lookup')
     return lookupFactory;
 
     function fetchMetadata() {
-        return $http.get('/id/metadata/' + lookupFactory.identifier);
+        return $http.get(ID_REST_ROOT + 'metadata/' + lookupFactory.identifier);
     }
     
     function submitForm() {
-        // $window.location.href = 'id/' + lookupFactory.identifier;
-        return $http.get('/id/' + lookupFactory.identifier, {
+        return $http.get(ID_REST_ROOT + lookupFactory.identifier, {
             headers: {'Accept': 'application/json'}
         });
     }

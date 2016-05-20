@@ -381,9 +381,9 @@ function bcidCreatorSubmit() {
         });
 }
 
-/* ====== expeditions.jsp Functions ======= */
+/* ====== expeditions.html Functions ======= */
 
-// function to populate the expeditions.jsp page
+// function to populate the expeditions.html page
 function populateExpeditionPage(username) {
     var jqxhr = listProjects(username, biocodeFimsRestRoot + 'projects/user/list', true
     ).done(function() {
@@ -396,7 +396,7 @@ function populateExpeditionPage(username) {
     });
 }
 
-// function to load the expeditions.jsp subsections
+// function to load the expeditions.html subsections
 function loadExpeditions(id) {
     if ($('.toggle-content#'+id).is(':hidden')) {
         $('.img-arrow', '#'+id).attr("src", appRoot + "images/down-arrow.png");
@@ -462,7 +462,7 @@ function listExpeditions(divId) {
         });
 }
 
-// function to populate the expedition resources, datasets, or configuration subsection of expeditions.jsp
+// function to populate the expedition resources, datasets, or configuration subsection of expeditions.html
 function populateExpeditionSubsections(divId) {
     // load config table from REST service
     var expeditionId= $(divId).data('expeditionId');
@@ -827,7 +827,7 @@ function projectToggle(id) {
     $(idElement).slideToggle('slow');
 }
 
-/* ====== templates.jsp Functions ======= */
+/* ====== templates.html Functions ======= */
 function hideTemplateInfo() {
     if (!$('#abstract').is(':hidden')) {
         $('#abstract').hide(400);
@@ -1113,7 +1113,7 @@ function removeConfig() {
     dialog(message, title, buttons);
 }
 
-/* ====== validation.jsp Functions ======= */
+/* ====== validation.html Functions ======= */
 var datasetId;
 var fastaId;
 
@@ -1711,7 +1711,7 @@ function getResourceTypesTable(a) {
         });
 }
 
-/* ====== query.jsp Functions ======= */
+/* ====== query.html Functions ======= */
 
 // handle displaying messages/results in the graphs(spreadsheets) select list
 function graphsMessage(message) {

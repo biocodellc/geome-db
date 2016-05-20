@@ -19,7 +19,7 @@ angular.module('fims.lookup')
                 submitForm();
             }
         }).call(this);
-        
+
         function submitForm() {
             vm.error = undefined;
             LookupFactory.submitForm().then(

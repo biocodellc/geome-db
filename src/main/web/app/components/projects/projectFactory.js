@@ -1,6 +1,6 @@
 angular.module('fims.projects')
 
-.factory('ProjectFactory', ['$http', function ($http) {
+.factory('ProjectFactory', ['$http', 'REST_ROOT', function ($http, REST_ROOT) {
     var projectFactory = {
         getProjects: getProjects
     }
@@ -8,6 +8,6 @@ angular.module('fims.projects')
     return projectFactory;
 
     function getProjects(includePublic) {
-        return $http.get('/biocode-fims/rest/projects/list?includePublic=' + includePublic);
+        return $http.get(REST_ROOT + 'projects/list?includePublic=' + includePublic);
     }
 }]);
