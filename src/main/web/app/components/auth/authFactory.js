@@ -1,7 +1,7 @@
 angular.module('fims.auth')
 
-.factory('AuthFactory', ['$http', '$rootScope', '$window', 'oAuth',
-    function ($http, $rootScope, $window, oAuth) {
+.factory('AuthFactory', ['$http', '$rootScope', '$window', 'oAuth', 'REST_ROOT', 'APP_ROOT',
+    function ($http, $rootScope, $window, oAuth, REST_ROOT, APP_ROOT) {
         var triedToRefresh = false;
 
         var authFactory = {
@@ -40,16 +40,13 @@ angular.module('fims.auth')
         function login(username, password) {
             var config = {
                 method: 'POST',
-                url: '/biocode-fims/rest/authenticationService/oauth/accessToken',
-                data: $.param({
+                url: REST_ROOT + 'authenticationService/oauth/accessToken',
+                data: {
                     client_id: client_id,
-                    redirect_uri: 'localhost:8080/oauth',
+                    redirect_uri: APP_ROOT + '/oauth',
                     grant_type: 'password',
                     username: username,
                     password: password
-                }),
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
                 }
             };
 
@@ -57,8 +54,7 @@ angular.module('fims.auth')
                 .success(function(data, status, headers, config) {
                     setOAuthTokens(data.access_token, data.refresh_token);
                     authFactory.isAuthenticated = true;
-
-                    $rootScope.$broadcast('authChanged');
+                    triedToRefresh = false;
                 })
                 .error(function (data, status, headers, config) {
                     authFactory.logout();
@@ -67,39 +63,35 @@ angular.module('fims.auth')
 
         function logout() {
             $window.sessionStorage.dipnet = JSON.stringify({});
-            authFactory.isAuthenticated = false;
+            if (authFactory)
+                authFactory.isAuthenticated = false;
         }
 
         function refreshAccessToken() {
             var dipnetSessionStorage = JSON.parse($window.sessionStorage.dipnet);
             var refreshToken = dipnetSessionStorage.refreshToken;
-            if (!triedToRefresh && !angular.isUndefined(refreshToken)) {
+            if (checkAuthenticated() && !triedToRefresh && !angular.isUndefined(refreshToken)) {
                 var config = {
                     method: 'POST',
-                    url: '/biocode-fims/rest/authenticationService/oauth/refresh',
-                    data: $.param({
+                    url: REST_ROOT + 'authenticationService/oauth/refresh',
+                    data: {
                         client_id: client_id,
-                        client_secret: client_secret,
                         refresh_token: refreshToken
-                    }),
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    }
+                    },
                 };
 
-                $http(config)
-                    .success(function(data, status, headers, config) {
-                        setOAuthTokens(data.access_token, data.refresh_token);
+                return $http(config)
+                    .then(function(response) {
+                        setOAuthTokens(response.data.access_token, response.data.refresh_token);
                         triedToRefresh = false;
-                    })
-                    .error(function (data, status, headers, config) {
+                    },
+                    function (response) {
                         triedToRefresh = true;
                         authFactory.isAuthenticated = false;
-                        return false;
                     });
             }
 
-            return false;
+            return $q.reject();
         }
 
         function setOAuthTokens(accessToken, refreshToken) {

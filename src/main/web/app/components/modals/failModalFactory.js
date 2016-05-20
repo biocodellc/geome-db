@@ -13,7 +13,7 @@ angular.module('fims.modals')
         function open(title, message) {
             failModalFactory.modalInstance = $uibModal.open({
                 templateUrl: 'app/components/modals/templates/failModal.tpl.html',
-                size: 'sm',
+                size: 'md',
                 controller: 'FailModalCtrl',
                 controllerAs: 'vm',
                 windowClass: 'app-modal-window',
@@ -34,12 +34,13 @@ angular.module('fims.modals')
 
     }])
 
-.controller('FailModalCtrl', ['$scope', '$uibModalInstance',
+.controller('FailModalCtrl', ['$scope', '$uibModalInstance', 'message', 'title',
     function($scope, $uibModalInstance, message, title) {
-        $scope.message = message;
-        $scope.title = title;
+        var vm = this;
+        vm.message = message;
+        vm.title = title;
 
-        $scope.ok = ok;
+        vm.ok = ok;
 
         function ok() {
             $uibModalInstance.dismiss('cancel');

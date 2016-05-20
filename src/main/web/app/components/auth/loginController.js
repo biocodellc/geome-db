@@ -25,7 +25,7 @@ angular.module('fims.auth')
                     }
                 })
                 .error(function(data, status, headers, config) {
-                    if (angular.isDefined(data.usrMessage))
+                    if (data.usrMessage)
                         $scope.error = data.usrMessage;
                     else
                         $scope.error = "Server Error! Status code: " + status;

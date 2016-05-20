@@ -28,7 +28,7 @@
                     </tr>
                 <tr>
                     <td align=right>Target URL</td>
-                    <td><input id=webaddress name=webaddress type=textbox size="40"></td>
+                    <td><input id=webaddress name=webAddress type=textbox size="40"></td>
                 </tr>
 
                 <tr>
@@ -39,11 +39,6 @@
                 <tr>
                     <td align=right>Rights</td>
                     <td><a href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a></td>
-                </tr>
-
-                <tr>
-                    <td align=xright>Follow Suffixes</td>
-                    <td><input type=checkbox id=suffixPassThrough name=suffixPassThrough checked=yes></td>
                 </tr>
 
                 <tr>

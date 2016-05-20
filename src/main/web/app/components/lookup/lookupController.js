@@ -4,7 +4,7 @@ angular.module('fims.lookup')
     function ($scope, $state, $stateParams, $window, LookupFactory) {
         var vm = this;
         vm.identifier = LookupFactory.identifier;
-        vm.submit = submitForm();
+        vm.submit = submitForm;
         vm.updateFactory = updateFactory;
 
         function updateFactory() {
