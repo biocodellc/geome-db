@@ -1098,6 +1098,7 @@ function removeConfig() {
                     return;
                 }
 
+                savedConfig = null;
                 populateConfigs();
                 dialog(data.success, title, buttons);
             }).fail(function(jqXHR) {
