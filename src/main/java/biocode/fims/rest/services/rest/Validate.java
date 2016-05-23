@@ -326,7 +326,7 @@ public class Validate extends FimsService {
                     .finalCopy(processController.getFinalCopy())
                     .build();
 
-            bcidService.create(bcid, user.getUserId());
+            bcidService.create(bcid, processController.getUserId());
 
             Expedition expedition = expeditionService.getExpedition(
                     processController.getExpeditionCode(),

@@ -453,10 +453,14 @@ public class Query extends FimsService {
 
     private String[] getAllGraphs(Integer projectId) {
         List<String> graphsList = new ArrayList<String>();
+        String username = null;
+        if (user != null) {
+            username = user.getUsername();
+        }
 
         ProjectMinter project= new ProjectMinter();
 
-        JSONArray graphs = project.getLatestGraphs(projectId, user.getUsername());
+        JSONArray graphs = project.getLatestGraphs(projectId, username);
         Iterator it = graphs.iterator();
 
         while (it.hasNext()) {
