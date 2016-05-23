@@ -15,7 +15,7 @@ import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.UserService;
+import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -39,8 +39,8 @@ public class Validate extends FimsService {
 
     @Autowired
     Validate(BcidService bcidService, ExpeditionService expeditionService,
-             UserService userService, SettingsManager settingsManager) {
-        super(userService, settingsManager);
+             OAuthProviderService providerService, SettingsManager settingsManager) {
+        super(providerService, settingsManager);
         this.bcidService = bcidService;
         this.expeditionService = expeditionService;
     }

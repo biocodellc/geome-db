@@ -2,10 +2,11 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.bcid.ProjectMinter;
-import biocode.fims.bcid.UserMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.entities.Expedition;
+import biocode.fims.entities.Project;
+import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
@@ -14,6 +15,8 @@ import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
+import biocode.fims.service.OAuthProviderService;
+import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.DatasetService;
@@ -47,13 +50,18 @@ public class Projects extends FimsService {
 
     private final ExpeditionService expeditionService;
     private final DatasetService datasetService;
+    private final ProjectService projectService;
+    private final UserService userService;
 
     @Autowired
     Projects(ExpeditionService expeditionService, DatasetService datasetService,
-             UserService userService, SettingsManager settingsManager) {
-        super(userService, settingsManager);
+             ProjectService projectService, UserService userService,
+             OAuthProviderService providerService, SettingsManager settingsManager) {
+        super(providerService, settingsManager);
         this.expeditionService = expeditionService;
         this.datasetService = datasetService;
+        this.projectService = projectService;
+        this.userService = userService;
     };
 
     @GET
@@ -525,10 +533,10 @@ public class Projects extends FimsService {
         }
 
         JSONObject response = p.getProjectUsers(projectId);
-        JSONArray projectUsers = (JSONArray) response.get("users");
+        Project project = projectService.getProjectWithMembers(projectId);
+        Set<User> projectMembers = project.getProjectMembers();
 
-        UserMinter userMinter = new UserMinter();
-        JSONArray users = userMinter.getUsers();
+        Set<User> allUsers = userService.getUsers();
 
         StringBuilder sb = new StringBuilder();
 
@@ -537,15 +545,13 @@ public class Projects extends FimsService {
         sb.append("<table data-projectId=\"" + projectId + "\" data-projectTitle=\"" + response.get("projectTitle") + "\">\n");
         sb.append("\t<tr>\n");
 
-        for (Object u: projectUsers) {
-            JSONObject user = (JSONObject) u;
-            String username = (String) user.get("username");
+        for (User member: projectMembers) {
             sb.append("\t<tr>\n");
             sb.append("\t\t<td>");
-            sb.append(username);
+            sb.append(member.getUsername());
             sb.append("</td>\n");
-            sb.append("\t\t<td><a id=\"remove_user\" data-userId=\"" + user.get("userId") + "\" data-username=\"" + username + "\" href=\"javascript:void();\">(remove)</a> ");
-            sb.append("<a id=\"edit_profile\" data-username=\"" + username + "\" href=\"javascript:void();\">(edit)</a></td>\n");
+            sb.append("\t\t<td><a id=\"remove_user\" data-userId=\"" + member.getUserId() + "\" data-username=\"" + member.getUsername() + "\" href=\"javascript:void();\">(remove)</a> ");
+            sb.append("<a id=\"edit_profile\" data-username=\"" + member.getUsername() + "\" href=\"javascript:void();\">(edit)</a></td>\n");
             sb.append("\t</tr>\n");
         }
 
@@ -555,9 +561,8 @@ public class Projects extends FimsService {
         sb.append("<select name=userId>\n");
         sb.append("\t\t\t<option value=\"0\">Create New User</option>\n");
 
-        for (Object u: users) {
-            JSONObject user = (JSONObject) u;
-            sb.append("\t\t\t<option value=\"" + user.get("userId") + "\">" + user.get("username") + "</option>\n");
+        for (User user: allUsers) {
+            sb.append("\t\t\t<option value=\"" + user.getUserId() + "\">" + user.getUsername() + "</option>\n");
         }
 
         sb.append("\t\t</select></td>\n");

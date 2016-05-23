@@ -8,7 +8,7 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fuseki.query.FimsFilterCondition;
 import biocode.fims.fuseki.query.FimsQueryBuilder;
 import biocode.fims.rest.FimsService;
-import biocode.fims.service.UserService;
+import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
@@ -37,8 +37,8 @@ public class Query extends FimsService {
     private int projectId;
 
     @Autowired
-    Query(UserService userService, SettingsManager settingsManager) {
-        super(userService, settingsManager);
+    Query(OAuthProviderService providerService, SettingsManager settingsManager) {
+        super(providerService, settingsManager);
     }
 
     /**

@@ -4,7 +4,7 @@ import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.service.UserService;
+import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +24,8 @@ import java.util.ArrayList;
 public class Expeditions extends FimsService {
 
     @Autowired
-    Expeditions(UserService userService, SettingsManager settingsManager) {
-        super(userService, settingsManager);
+    Expeditions(OAuthProviderService providerService, SettingsManager settingsManager) {
+        super(providerService, settingsManager);
     }
 
     @GET
@@ -45,11 +45,11 @@ public class Expeditions extends FimsService {
         sb.append("\t\t<th>Resource Type</th>\n");
         sb.append("\t</tr>\n");
 
-        for (Object r: resources) {
+        for (Object r : resources) {
             JSONObject resource = (JSONObject) r;
             sb.append("\t<tr>\n");
             sb.append("\t\t<td>");
-            sb.append("<a href=\"" + appRoot + "lookup.jsp?id=");
+            sb.append("<a href=\"" + appRoot + "lookup?id=");
             sb.append(resource.get("identifier"));
             sb.append("\">");
             sb.append(resource.get("identifier"));
@@ -99,7 +99,7 @@ public class Expeditions extends FimsService {
                 sb.append("\t\t</td>");
 
                 sb.append("\t\t<td>");
-                sb.append("<a href=\"" + appRoot + "lookup.jsp?id=");
+                sb.append("<a href=\"" + appRoot + "lookup?id=");
                 sb.append(dataset.get("identifier"));
                 sb.append("\">");
                 sb.append(dataset.get("identifier"));
@@ -135,7 +135,7 @@ public class Expeditions extends FimsService {
         sb.append("Identifier:");
         sb.append("\t\t</td>\n");
         sb.append("\t\t<td>");
-        sb.append("<a href=\"" + appRoot + "lookup.jsp?id=");
+        sb.append("<a href=\"" + appRoot + "lookup?id=");
         sb.append(metadata.get("identifier"));
         sb.append("\">");
         sb.append(metadata.get("identifier"));

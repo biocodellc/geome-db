@@ -1,15 +1,14 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.auth.Authenticator;
-import biocode.fims.bcid.UserMinter;
+import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.SendEmail;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
@@ -25,9 +24,13 @@ import javax.ws.rs.core.Response;
 @Path("users")
 public class Users extends FimsService {
 
+    private final UserService userService;
+
     @Autowired
-    Users(UserService userService, SettingsManager settingsManager) {
-        super(userService, settingsManager);
+    Users(UserService userService,
+          OAuthProviderService providerService, SettingsManager settingsManager) {
+        super(providerService, settingsManager);
+        this.userService = userService;
     }
 
     /**
@@ -42,26 +45,27 @@ public class Users extends FimsService {
         if (username.isEmpty()) {
             throw new BadRequestException("User not found.", "username is null");
         }
-        Authenticator a = new Authenticator();
-        JSONObject resetToken = a.generateResetToken(username);
+        User user = userService.generateResetToken(username);
+        if (user != null) {
 
-        String resetTokenURL = appRoot + "resetPass?resetToken=" +
-                resetToken.get("resetToken");
+            String resetTokenURL = appRoot + "resetPass?resetToken=" +
+                    user.getPasswordResetToken();
 
-        String emailBody = "You requested a password reset for your Biocode-Fims account.\n\n" +
-                "Use the following link within the next 24 hrs to reset your password.\n\n" +
-                resetTokenURL + "\n\n" +
-                "Thanks";
+            String emailBody = "You requested a password reset for your Biocode-Fims account.\n\n" +
+                    "Use the following link within the next 24 hrs to reset your password.\n\n" +
+                    resetTokenURL + "\n\n" +
+                    "Thanks";
 
-        // Send an Email that this completed
-        SendEmail sendEmail = new SendEmail(
-                settingsManager.retrieveValue("mailUser"),
-                settingsManager.retrieveValue("mailPassword"),
-                settingsManager.retrieveValue("mailFrom"),
-                resetToken.get("email").toString(),
-                "Reset Password Link",
-                emailBody);
-        sendEmail.start();
+            // Send an Email that this completed
+            SendEmail sendEmail = new SendEmail(
+                    settingsManager.retrieveValue("mailUser"),
+                    settingsManager.retrieveValue("mailPassword"),
+                    settingsManager.retrieveValue("mailFrom"),
+                    user.getEmail(),
+                    "Reset Password Link",
+                    emailBody);
+            sendEmail.start();
+        }
 
         return Response.ok("{\"success\":\"A password reset token has be sent to your email.\"}").build();
     }
@@ -72,9 +76,8 @@ public class Users extends FimsService {
     @Path("/admin/profile/listEditorAsTable/{user}")
     @Produces(MediaType.TEXT_HTML)
     public Response listAdminProfileEditorAsTable(@PathParam("user") String username) {
-        UserMinter u = new UserMinter();
-        JSONObject profile = u.getUserProfile(username);
-        return Response.ok(getProfileEditor(profile, true)).build();
+        User user = userService.getUser(username);
+        return Response.ok(getProfileEditor(user, true)).build();
     }
 
     @GET
@@ -82,9 +85,7 @@ public class Users extends FimsService {
     @Path("/profile/listEditorAsTable")
     @Produces(MediaType.TEXT_HTML)
     public Response listProfileEditorAsTable() {
-        UserMinter u = new UserMinter();
-        JSONObject profile = u.getUserProfile(user.getUsername());
-        return Response.ok(getProfileEditor(profile, false)).build();
+        return Response.ok(getProfileEditor(user, false)).build();
     }
 
     @GET
@@ -156,36 +157,34 @@ public class Users extends FimsService {
     @Path("/profile/listAsTable")
     @Produces(MediaType.TEXT_HTML)
     public Response listProfileAsTable() {
-        UserMinter u = new UserMinter();
-        JSONObject profile = u.getUserProfile(user.getUsername());
         StringBuilder sb = new StringBuilder();
 
         sb.append("<table id=\"profile\">\n");
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>First Name:</td>\n");
         sb.append("\t\t<td>");
-        sb.append(profile.get("firstName"));
+        sb.append(user.getFirstName());
         sb.append("</td>\n");
         sb.append("\t</tr>\n");
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>Last Name:</td>\n");
         sb.append("\t\t<td>");
-        sb.append(profile.get("lastName"));
+        sb.append(user.getLastName());
         sb.append("</td>\n");
         sb.append("\t</tr>\n");
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>Email:</td>\n");
         sb.append("\t\t<td>");
-        sb.append(profile.get("email"));
+        sb.append(user.getEmail());
         sb.append("</td>\n");
         sb.append("\t</tr>\n");
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>Institution:</td>\n");
         sb.append("\t\t<td>");
-        sb.append(profile.get("institution"));
+        sb.append(user.getInstitution());
         sb.append("</td>\n");
         sb.append("\t</tr>\n");
 
@@ -199,7 +198,7 @@ public class Users extends FimsService {
         return Response.ok(sb.toString()).build();
     }
 
-    private String getProfileEditor(JSONObject profile, Boolean isAdmin) {
+    private String getProfileEditor(User user, Boolean isAdmin) {
         StringBuilder sb = new StringBuilder();
 
         sb.append("<form>\n");
@@ -208,25 +207,25 @@ public class Users extends FimsService {
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>First Name</td>\n");
         sb.append(("\t\t<td><input type=\"text\" name=\"firstName\" value=\""));
-        sb.append(profile.get("firstName"));
+        sb.append(user.getFirstName());
         sb.append("\"></td>\n\t</tr>");
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>Last Name</td>\n");
         sb.append(("\t\t<td><input type=\"text\" name=\"lastName\" value=\""));
-        sb.append(profile.get("lastName"));
+        sb.append(user.getLastName());
         sb.append("\"></td>\n\t</tr>");
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>Email</td>\n");
         sb.append(("\t\t<td><input type=\"text\" name=\"email\" value=\""));
-        sb.append(profile.get("email"));
+        sb.append(user.getEmail());
         sb.append("\"></td>\n\t</tr>");
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>Institution</td>\n");
         sb.append(("\t\t<td><input type=\"text\" name=\"institution\" value=\""));
-        sb.append(profile.get("institution"));
+        sb.append(user.getInstitution());
         sb.append("\"></td>\n\t</tr>");
 
         sb.append("\t<tr>\n");
@@ -257,7 +256,7 @@ public class Users extends FimsService {
         sb.append("</td>\n\t</tr>\n");
         sb.append("</table>\n");
         sb.append("<input type=\"hidden\" name=\"username\" value=\"");
-        sb.append(profile.get("username"));
+        sb.append(user.getUsername());
         sb.append("\" />");
         sb.append("</form>\n");
 

@@ -1,7 +1,7 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.rest.FimsService;
-import biocode.fims.service.UserService;
+import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,8 +18,8 @@ import javax.ws.rs.core.Response;
 public class BiscicolUtils extends FimsService {
 
     @Autowired
-    BiscicolUtils(UserService userService, SettingsManager settingsManager) {
-        super(userService, settingsManager);
+    BiscicolUtils(OAuthProviderService providerService, SettingsManager settingsManager) {
+        super(providerService, settingsManager);
     }
 
     @GET

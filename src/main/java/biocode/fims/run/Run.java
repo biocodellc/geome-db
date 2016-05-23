@@ -1,6 +1,5 @@
 package biocode.fims.run;
 
-import biocode.fims.auth.Authenticator;
 import biocode.fims.bcid.*;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
@@ -37,20 +36,18 @@ public class Run {
 
     private final SettingsManager settingsManager;
     private final BcidService bcidService;
-    private final UserService userService;
     private final ExpeditionService expeditionService;
 
     private Process process;
     private ProcessController processController;
-    private String username;
+    private User user;
 
     @Autowired
     public Run(SettingsManager settingsManager, BcidService bcidService,
-               ExpeditionService expeditionService, UserService userService) {
+               ExpeditionService expeditionService) {
         this.settingsManager = settingsManager;
         this.bcidService = bcidService;
         this.expeditionService = expeditionService;
-        this.userService = userService;
     }
 
     public void setProcess(Process process) {
@@ -61,8 +58,8 @@ public class Run {
         this.processController = processController;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     /**
@@ -170,8 +167,6 @@ public class Run {
                         uploader.execute();
                         currentGraph = uploader.getGraphID();
 
-                        User user = userService.getUser(username);
-
                         Bcid bcid = new Bcid.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE)
                                 .ezidRequest(Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests")))
                                 .title(processController.getExpeditionCode() + " Dataset")
@@ -245,6 +240,7 @@ public class Run {
     public static void main(String args[])  throws Exception{
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
         ExpeditionService expeditionService = applicationContext.getBean(ExpeditionService.class);
+        UserService userService = applicationContext.getBean(UserService.class);
         Run run = (Run) SpringApplicationContext.getBean(Run.class);
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
         String username = "";
@@ -454,7 +450,6 @@ public class Run {
                             expeditionService);
                     run.setProcess(p);
                     run.setProcessController(processController);
-                    run.setUsername(username);
 
                     run.runAllLocally(true, false, false, force);
                     /*p.runValidation();
@@ -470,8 +465,8 @@ public class Run {
                             helpf.printHelp("fims ", options, true);
                             return;
                         } else {
-                            Authenticator authenticator = new Authenticator();
-                            if (!authenticator.login(username, password)) {
+                            User user = userService.getUser(username, password);
+                            if (user == null) {
                                 FimsPrinter.out.println("Invalid username and/or password");
                                 return;
                             }
@@ -481,6 +476,7 @@ public class Run {
                                 helpf.printHelp("fims ", options, true);
                                 return;
                             }
+                            run.setUser(user);
                         }
                     }
 
@@ -509,7 +505,6 @@ public class Run {
                     // Run the processor
                     run.setProcess(p);
                     run.setProcessController(processController);
-                    run.setUsername(username);
 
                     run.runAllLocally(triplify, upload, true, force);
                 }
