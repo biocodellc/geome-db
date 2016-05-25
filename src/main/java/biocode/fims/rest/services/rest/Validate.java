@@ -307,9 +307,13 @@ public class Validate extends FimsService {
             // run the triplifier
             Triplifier triplifier = new Triplifier(outputPrefix, uploadPath(), processController);
 
-            boolean runDeepRoots = Boolean.valueOf(settingsManager.retrieveValue("deepRoots"));
+            expeditionService.setEntityIdentifiers(
+                    processController.getMapping(),
+                    processController.getExpeditionCode(),
+                    processController.getProjectId()
+            );
 
-            triplifier.run(processController.getValidation().getSqliteFile(), runDeepRoots);
+            triplifier.run(processController.getValidation().getSqliteFile());
 
             // upload the dataset
             Uploader uploader = new Uploader(processController.getMapping().getMetadata().getTarget(),

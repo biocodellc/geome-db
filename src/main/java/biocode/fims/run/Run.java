@@ -153,11 +153,11 @@ public class Run {
 
                 // Triplify OR Upload -- not ever both
                 if (triplifier) {
-                    runTriplifier();
+                    runTriplifier(true);
                 } else if (upload) {
                     // upload the dataset
                     if (!isFastaUpload) {
-                        String tripleFile = runTriplifier();
+                        String tripleFile = runTriplifier(true);
 
                         // fetch the current graph before uploading the new graph. This is needed to copy over the fasta sequences
                         String previousGraph = fastaManager.fetchGraph();
@@ -215,19 +215,26 @@ public class Run {
                 // In other, words, this is typically used for local debug & test modes
             } else {
                 process.outputPrefix = "test";
-                runTriplifier();
+                runTriplifier(false);
             }
         }
     }
 
-    private String runTriplifier() {
+    private String runTriplifier(boolean entityRoots) {
         FimsPrinter.out.println("\nTriplifying...");
 
         // Run the triplifier
         Triplifier t = new Triplifier(process.outputPrefix, process.outputFolder, processController);
 
-        boolean runDeepRoots = Boolean.valueOf(settingsManager.retrieveValue("deepRoots"));
-        t.run(processController.getValidation().getSqliteFile(), runDeepRoots);
+        if (entityRoots) {
+            expeditionService.setEntityIdentifiers(
+                    processController.getMapping(),
+                    processController.getExpeditionCode(),
+                    processController.getProjectId()
+            );
+
+        }
+        t.run(processController.getValidation().getSqliteFile());
         FimsPrinter.out.println("\ttriple output file = " + t.getTripleOutputFile());
         return t.getTripleOutputFile();
     }
