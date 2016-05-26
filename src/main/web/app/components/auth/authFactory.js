@@ -1,7 +1,7 @@
 angular.module('fims.auth')
 
-.factory('AuthFactory', ['$http', '$rootScope', '$window', 'oAuth', 'REST_ROOT', 'APP_ROOT',
-    function ($http, $rootScope, $window, oAuth, REST_ROOT, APP_ROOT) {
+.factory('AuthFactory', ['$http', '$q', '$rootScope', '$window', 'oAuth', 'REST_ROOT', 'APP_ROOT',
+    function ($http, $q, $rootScope, $window, oAuth, REST_ROOT, APP_ROOT) {
         var triedToRefresh = false;
 
         var authFactory = {
