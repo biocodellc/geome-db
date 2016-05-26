@@ -1,0 +1,23 @@
+###########  dipnet-fims settings  ##########
+
+###########  biocode-fims-commons settings  ##########
+
+# the webapp directory to use for caching config file, and storing templates for download
+uploadDir = tripleOutput
+
+# the url where the webapp is deployed
+appRoot = http://www.biscicol.org/dipnet
+
+# ignoreUser defaults to false. If set to true then application does not run check to see if userId is unique
+# for a particular dataset.  That is, it allows users besides the dataset creator to load data to this dataset
+ignoreUser = false
+
+# when set to true, stack traces will be returned form the server when exceptions occur.
+# should be set to false for production use.
+debug = false
+
+# MySql database settings
+bcidUser = user
+bcidPassword = pass
+bcidUrl = jdbc:mysql://127.0.0.1:3306/db_name
+bcidClass = com.mysql.jdbc.Driver

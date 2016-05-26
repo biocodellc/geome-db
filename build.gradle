@@ -6,7 +6,6 @@ buildscript {
     dependencies {
         classpath "org.ajoberstar:gradle-git:1.4.2"
         classpath "com.github.marceloemanoel:gradle-environments-plugin:0.1"
-        classpath "org.akhikhl.gretty:gretty:1.2.4"
         classpath "org.hidetake:gradle-ssh-plugin:2.0.0"
     }
 }
@@ -22,7 +21,6 @@ apply plugin: "java"
 apply plugin: "war"
 apply plugin: "idea"
 apply plugin: "environments"
-apply plugin: "org.akhikhl.gretty"
 apply plugin: "org.hidetake.ssh"
 
 targetCompatibility = 1.7
@@ -38,10 +36,14 @@ configurations {
 }
 
 dependencies {
+    compile project(":biocode-fims-commons")
+    compile project(":biocode-fims-fuseki")
     provided 'org.eclipse.jetty:jetty-servlet:9.3.3.v20150827'
+
+    testCompile "junit:junit-dep:4.10"
 }
 
-sourceSets.main.compileClasspath += [configurations.provided]
+sourceSets.main.compileClasspath += configurations.provided
 
 idea {
     module{
@@ -56,18 +58,6 @@ project.ext.environment = defaultEnvironment
 
 clean {
     delete libsDir
-}
-
-farm {
-    webapp biscicolFimsWar, contextPath: '/'
-    webapp project
-}
-
-gretty {
-    port = grettyPort.toInteger()
-    contextPath = grettyPath
-    servletContainer = "jetty9"
-    debugPort = 5005
 }
 
 // jetty ssh plugin

@@ -1,7 +1,7 @@
 angular.module('fims.auth')
 
-.factory('AuthFactory', ['$http', '$rootScope', '$window', 'oAuth', 'REST_ROOT', 'APP_ROOT',
-    function ($http, $rootScope, $window, oAuth, REST_ROOT, APP_ROOT) {
+.factory('AuthFactory', ['$http', '$q', '$rootScope', '$window', 'oAuth', 'LOGIN_REST_ROOT', 'APP_ROOT',
+    function ($http, $q, $rootScope, $window, oAuth, LOGIN_REST_ROOT, APP_ROOT) {
         var triedToRefresh = false;
 
         var authFactory = {
@@ -40,7 +40,7 @@ angular.module('fims.auth')
         function login(username, password) {
             var config = {
                 method: 'POST',
-                url: REST_ROOT + 'authenticationService/oauth/accessToken',
+                url: LOGIN_REST_ROOT + 'authenticationService/oauth/accessToken',
                 data: {
                     client_id: client_id,
                     redirect_uri: APP_ROOT + '/oauth',
@@ -73,7 +73,7 @@ angular.module('fims.auth')
             if (checkAuthenticated() && !triedToRefresh && !angular.isUndefined(refreshToken)) {
                 var config = {
                     method: 'POST',
-                    url: REST_ROOT + 'authenticationService/oauth/refresh',
+                    url: LOGIN_REST_ROOT + 'authenticationService/oauth/refresh',
                     data: {
                         client_id: client_id,
                         refresh_token: refreshToken
