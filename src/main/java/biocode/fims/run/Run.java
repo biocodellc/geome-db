@@ -89,7 +89,7 @@ public class Run {
         }
 
         FastaManager fastaManager = new FusekiFastaManager(processController.getMapping().getMetadata().getQueryTarget(),
-                    processController, fastaFileName);
+                    processController, fastaFileName, expeditionService);
 
         // Validation Step
         if (isFastaUpload)

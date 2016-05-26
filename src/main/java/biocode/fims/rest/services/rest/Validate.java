@@ -133,7 +133,7 @@ public class Validate extends FimsService {
                     }
 
                     fastaManager = new FusekiFastaManager(
-                            processController.getMapping().getMetadata().getQueryTarget(), processController, fastaFile);
+                            processController.getMapping().getMetadata().getQueryTarget(), processController, fastaFile, expeditionService);
                     processController.setFastaManager(fastaManager);
                 }
             }
@@ -266,7 +266,7 @@ public class Validate extends FimsService {
         // from the old graph to the new graph
         if (fastaManager == null) {
             fastaManager = new FusekiFastaManager(processController.getMapping().getMetadata().getQueryTarget(),
-                    processController, null);
+                    processController, null, expeditionService);
         }
 
         // Create the process object --- this is done each time to orient the application
