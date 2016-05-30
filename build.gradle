@@ -30,8 +30,41 @@ repositories {
     mavenCentral()
 }
 
+//noinspection GroovyAssignabilityCheck
+configurations {
+    server
+}
+
+idea {
+    module {
+        scopes.PROVIDED.plus += [configurations.server]
+    }
+}
+
+//noinspection GroovyAssignabilityCheck
+sourceSets {
+    main {
+        compileClasspath += [configurations.server]
+    }
+    test {
+        compileClasspath += [configurations.server]
+        runtimeClasspath += [configurations.server]
+    }
+}
+
 dependencies {
-    compile 'org.glassfish.jersey.media:jersey-media-multipart:2.22.2'
+    server 'org.glassfish.jersey.media:jersey-media-multipart:2.22.2'
+
+    server 'org.glassfish.jersey.ext:jersey-spring3:2.22.2'
+    server 'javax.servlet:servlet-api:2.4'
+    server 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.6.0'
+    server 'com.googlecode.json-simple:json-simple:1.1.1'
+    server 'org.springframework.data:spring-data-jpa:1.10.1.RELEASE'
+    server group: 'org.hibernate.javax.persistence', name: 'hibernate-jpa-2.1-api', version: '1.0.0.Final'
+    server 'org.slf4j:slf4j-log4j12:1.7.19'
+    server 'org.apache.commons:commons-digester3:3.2'
+    server 'commons-cli:commons-cli:1.2'
+
     compile project(":biocode-fims-commons")
     compile project(":biocode-fims-fuseki")
 
@@ -40,9 +73,11 @@ dependencies {
 
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
+mainClassName = "biocode.fims.run.Run"
 
 project.ext.environment = defaultEnvironment
 
+//noinspection GroovyAssignabilityCheck
 clean {
     delete libsDir
 }
@@ -143,7 +178,7 @@ task restartFims {
     }
 }
 
-task restartFimsDev  {
+task restartFimsDev {
     group = 'biscicol.org'
     description = 'Restart biscicol.org dev jetty instance'
     doLast {
@@ -152,6 +187,121 @@ task restartFimsDev  {
                 executeSudo biscicolJettyDevPath + ' restart'
             }
         }
+    }
+}
+
+/**
+ * add all dependencies of scope "server" to the compile scope
+ */
+task addDependenciesToWar << {
+    // work around from project.configurations.server as custom scopes aren't propagated to parent project
+    for (p in project.getSubprojects()) {
+        project.configurations.compile.dependencies.addAll(p.configurations.server.dependencies)
+    }
+    project.configurations.compile.dependencies.addAll(project.configurations.server.dependencies)
+}
+
+
+ext.getDependencyFiles = {
+    def subProjectJars = []
+    def dependencyFiles = []
+
+    // get a list of the sub project jars to exclude as subProjects should be built at the same time as this project.
+    for (p in project.getSubprojects()) {
+        subProjectJars.add(p.jar.archiveName)
+    }
+
+    // work around from project.configurations.server.incoming.getFiles() as custom scopes aren't propagated to parent
+    // project
+    for (p in project.getSubprojects()) {
+        for (dependency in p.configurations.server.incoming.getFiles()) {
+            if (!subProjectJars.contains(dependency.getName()) &&
+                    !dependencyFiles.contains(dependency.absoluteFile)) {
+                dependencyFiles.add(dependency.absoluteFile)
+            }
+        }
+    }
+    for (dependency in project.configurations.server.incoming.getFiles()) {
+        if (!subProjectJars.contains(dependency.getName())) {
+            dependencyFiles.add(dependency.absoluteFile)
+        }
+    }
+    return dependencyFiles
+}
+
+//task updateDependenciesLocal {
+//    doLast {
+//        def files = getDependencyFiles()
+//
+//        project.copy {
+//            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//            from files
+//            into localLibsDirectory
+//
+//        }
+//    }
+//}
+
+//task deploy {
+//    dependsOn setLocalEnv
+//    dependsOn war
+//
+//    doLast {
+//        def dir = "/Users/rjewing/temp/biscicol/"
+//        project.copy {
+//            from war.destinationDir
+//            into dir
+//            include war.archiveName
+//        }
+//
+//        project.exec {
+//            workingDir dir
+//            commandLine "jar", "xvf", war.archiveName
+//        }
+//        project.exec {
+//            workingDir dir
+//            commandLine "rm", war.archiveName
+//        }
+//        project.copy {
+//            from localLibsDirectory
+//            into dir + "/WEB-INF/lib"
+//        }
+//        project.exec {
+//            workingDir dir
+//            commandLine "jar", "cvf", war.archiveName, dir
+//        }
+//
+//    }
+//}
+
+ext.updateRemoteDependencies = { location ->
+    def files = getDependencyFiles()
+
+    ssh.run {
+        session(remotes.biscicol) {
+            remove location
+            put from: files, into: location
+        }
+    }
+}
+
+task updateDependenciesDev {
+    group = "biscicol.org"
+    description = "update the jars located in " + remoteDevLibsDirectory
+
+    doLast {
+        updateRemoteDependencies(remoteDevLibsDirectory)
+    }
+}
+
+task updateDependencies {
+    group = "biscicol.org"
+    description = "update the jars located in " + remoteLibsDirectory
+
+    dependsOn verifyMasterBranch
+
+    doLast {
+        updateRemoteDependencies(remoteLibsDirectory)
     }
 }
 
@@ -164,9 +314,14 @@ task deployFims {
     dependsOn war
 
     doLast {
+        def workingDir = "/temp/biscicolProd/"
         ssh.run {
             session(remotes.biscicol) {
-                put from: war.archivePath.path, into: remoteWarDirectory + "/root.war"
+                put from: war.archivePath.path, into: workingDir
+                execute "unzip " + war.archiveName " -d " +workingDir
+                execute "cp -a " + remoteLibsDirectory + " . " + workingDir + "WEB-INF/lib/"
+                execute "zip -r " + remoteWarDirectory + "/root.war " + workingDir
+                execute "rm -rf " + workingDir
             }
         }
     }
@@ -180,21 +335,27 @@ task deployFimsDev {
     dependsOn war
 
     doLast {
+        def workingDir = "/temp/biscicolDev/"
         ssh.run {
             session(remotes.biscicol) {
-                put from: war.archivePath.path, into: remoteWarDevDirectory + "/root.war"
+                put from: war.archivePath.path, into: workingDir
+                execute "unzip " + war.archiveName " -d " +workingDir
+                execute "cp -a " + remoteDevLibsDirectory + " . " + workingDir + "WEB-INF/lib/"
+                execute "zip -r " + remoteWarDevDirectory + "/root.war " + workingDir
+                execute "rm -rf " + workingDir
             }
         }
     }
 }
 
-task deployFimsLocal  {
+task deployFimsLocal {
     description = 'local fims deployment'
 
     dependsOn setLocalEnv
+    dependsOn addDependenciesToWar
     dependsOn war
 
-   doLast {
+    doLast {
         project.copy {
             from war.destinationDir
             into localWarDirectory
@@ -204,4 +365,3 @@ task deployFimsLocal  {
     }
 }
 
-mainClassName = "biocode.fims.run.Run"

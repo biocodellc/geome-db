@@ -62,7 +62,7 @@ public class Projects extends FimsService {
         this.datasetService = datasetService;
         this.projectService = projectService;
         this.userService = userService;
-    };
+    }
 
     @GET
     @Path("/{projectId}/getLatLongColumns")
