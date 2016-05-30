@@ -943,7 +943,7 @@ function populateAbstract(targetDivId) {
         async: false,
         dataType : 'json'
     }).done(function(data) {
-        $(targetDivId).html(data.abstract +"<p>");
+        $(targetDivId).html(unescape(data.abstract) +"<p>");
     }).fail(function(jqXHR,textStatus) {
         if (textStatus == "timeout") {
             showMessage ("Timed out waiting for response!");
