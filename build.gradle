@@ -61,6 +61,8 @@ dependencies {
     compile project(":biocode-fims-fuseki")
     provided 'org.eclipse.jetty:jetty-servlet:9.3.3.v20150827'
 
+    server 'org.glassfish.jersey.ext:jersey-spring3:2.22.2'
+    
     testCompile "junit:junit-dep:4.10"
 }
 
