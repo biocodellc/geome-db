@@ -88,8 +88,6 @@ remotes {
         host = 'biscicol.org'
         user = biscicolUser
         password = biscicolPassword
-        // TODO: adding this line means stasks will fail, even though it is specified, for now, password specified above.
-        //file("${System.getProperty('user.home')}/.ssh/id_rsa")
     }
 }
 
@@ -228,51 +226,6 @@ ext.getDependencyFiles = {
     }
     return dependencyFiles
 }
-
-//task updateDependenciesLocal {
-//    doLast {
-//        def files = getDependencyFiles()
-//
-//        project.copy {
-//            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-//            from files
-//            into localLibsDirectory
-//
-//        }
-//    }
-//}
-
-//task deploy {
-//    dependsOn setLocalEnv
-//    dependsOn war
-//
-//    doLast {
-//        def dir = "/Users/rjewing/temp/biscicol/"
-//        project.copy {
-//            from war.destinationDir
-//            into dir
-//            include war.archiveName
-//        }
-//
-//        project.exec {
-//            workingDir dir
-//            commandLine "jar", "xvf", war.archiveName
-//        }
-//        project.exec {
-//            workingDir dir
-//            commandLine "rm", war.archiveName
-//        }
-//        project.copy {
-//            from localLibsDirectory
-//            into dir + "/WEB-INF/lib"
-//        }
-//        project.exec {
-//            workingDir dir
-//            commandLine "jar", "cvf", war.archiveName, dir
-//        }
-//
-//    }
-//}
 
 ext.updateRemoteDependencies = { location ->
     def files = getDependencyFiles()
