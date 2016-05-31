@@ -31,8 +31,29 @@ repositories {
 }
 
 
+//noinspection GroovyAssignabilityCheck
 configurations {
     provided
+    server
+}
+
+idea {
+    module {
+        scopes.PROVIDED.plus += [configurations.server]
+        scopes.PROVIDED.plus += [configurations.provided]
+    }
+}
+
+//noinspection GroovyAssignabilityCheck
+sourceSets {
+    main {
+        compileClasspath += [configurations.server]
+        compileClasspath += [configurations.provided]
+    }
+    test {
+        compileClasspath += [configurations.server]
+        runtimeClasspath += [configurations.server]
+    }
 }
 
 dependencies {
@@ -43,19 +64,11 @@ dependencies {
     testCompile "junit:junit-dep:4.10"
 }
 
-sourceSets.main.compileClasspath += configurations.provided
-
-idea {
-    module{
-        scopes.PROVIDED.plus += [configurations.provided]
-    }
-}
-
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
-
 project.ext.environment = defaultEnvironment
 
+//noinspection GroovyAssignabilityCheck
 clean {
     delete libsDir
 }
@@ -66,8 +79,6 @@ remotes {
         host = 'biscicol.org'
         user = biscicolUser
         password = biscicolPassword
-        // TODO: adding this line means stasks will fail, even though it is specified, for now, password specified above.
-        //file("${System.getProperty('user.home')}/.ssh/id_rsa")
     }
 }
 
@@ -169,6 +180,100 @@ task restartFimsDev  {
     }
 }
 
+/**
+ * add all dependencies of scope "server" to the compile scope
+ */
+task addDependenciesToWar << {
+    // work around from project.configurations.server as custom scopes aren't propagated to parent project
+    for (p in project.getSubprojects()) {
+        project.configurations.compile.dependencies.addAll(p.configurations.server.dependencies)
+    }
+    project.configurations.compile.dependencies.addAll(project.configurations.server.dependencies)
+}
+
+
+ext.getDependencyFiles = {
+    def subProjectJars = []
+    def dependencyFiles = []
+
+    // get a list of the sub project jars to exclude as subProjects should be built at the same time as this project.
+    for (p in project.getSubprojects()) {
+        subProjectJars.add(p.jar.archiveName)
+    }
+
+    // work around from project.configurations.server.incoming.getFiles() as custom scopes aren't propagated to parent
+    // project
+    for (p in project.getSubprojects()) {
+        for (dependency in p.configurations.server.incoming.getFiles()) {
+            if (!subProjectJars.contains(dependency.getName()) &&
+                    !dependencyFiles.contains(dependency.absoluteFile)) {
+                dependencyFiles.add(dependency.absoluteFile)
+            }
+        }
+    }
+    for (dependency in project.configurations.server.incoming.getFiles()) {
+        if (!subProjectJars.contains(dependency.getName())) {
+            dependencyFiles.add(dependency.absoluteFile)
+        }
+    }
+    return dependencyFiles
+}
+
+ext.updateRemoteDependencies = { location ->
+    def files = getDependencyFiles()
+
+    ssh.run {
+        session(remotes.biscicol) {
+            execute "/bin/rm -f "+ location + "*"
+            put from: files, into: location
+        }
+    }
+}
+
+task updateDependenciesDev {
+    group = "biscicol.org"
+    description = "update the jars located in " + remoteDevLibsDirectory
+
+    doLast {
+        updateRemoteDependencies(remoteDevLibsDirectory)
+    }
+}
+
+task updateDependencies {
+    group = "biscicol.org"
+    description = "update the jars located in " + remoteLibsDirectory
+
+    dependsOn verifyMasterBranch
+
+    doLast {
+        updateRemoteDependencies(remoteLibsDirectory)
+    }
+}
+
+ext.remoteDeploy = { workingDir, remoteLibsDir, remoteWarDir ->
+    ssh.run {
+        session(remotes.biscicol) {
+            // Cleanup to begin
+            execute "/bin/rm -rf " + workingDir
+            execute "/bin/mkdir " + workingDir
+            // Copy war file to server
+            put from: war.archivePath.path, into: workingDir
+            // Extract libs and copy from server
+            execute "/usr/bin/unzip -d " + workingDir + " " + workingDir + war.archiveName
+            execute "/bin/cp " + remoteLibsDir + "* " + workingDir + "WEB-INF/lib/"
+            // Remove the old war file
+            execute "/bin/rm " + workingDir + war.archiveName
+            // Need to remove the war file itself-- we instead just copy it into /tmp for safekeeping in case next step fails
+            execute "/bin/mv " + remoteWarDir + "root.war" + " /tmp/dipnet.deployed.war.backup"
+            // Need to execute zip command from the working Directory in order to get relative paths correct
+            execute "cd " + workingDir + ";/usr/bin/zip -r " + remoteWarDir + "dipnet.war " + " ."
+            // Cleanup
+            execute "/bin/rm -rf " + workingDir
+            execute "/bin/rm /tmp/deployed.war.backup"
+        }
+    }
+}
+
 task deployFims {
     group = 'biscicol.org'
     description = 'verify that all subprojects are on the master branch. Then build and copy war to biscicol.org production jetty webApp directory'
@@ -178,11 +283,8 @@ task deployFims {
     dependsOn war
 
     doLast {
-        ssh.run {
-            session(remotes.biscicol) {
-                put from: war.archivePath.path, into: remoteWarDirectory + "dipnet.war"
-            }
-        }
+        def workingDir = "/tmp/dipnetProd/"
+        remoteDeploy(workingDir, remoteLibsDirectory, remoteWarDirectory)
     }
 }
 
@@ -194,24 +296,25 @@ task deployFimsDev {
     dependsOn war
 
     doLast {
-        ssh.run {
-            session(remotes.biscicol) {
-                put from: war.archivePath.path, into: remoteWarDevDirectory + "dipnet.war"
-            }
-        }
+        def workingDir = "/tmp/dipnetDev/"
+        remoteDeploy(workingDir, remoteDevLibsDirectory, remoteWarDevDirectory)
+
     }
 }
 
 task deployFimsLocal {
-    description = 'local fims deployment'
+    description = 'local dipnet fims deployment'
 
     dependsOn setLocalEnv
+    dependsOn addDependenciesToWar
     dependsOn war
 
-    project.copy {
-        from war.destinationDir
-        into localWarDirectory
-        include war.archiveName
-        rename war.archiveName, "dipnet.war"
+    doLast {
+        project.copy {
+            from war.destinationDir
+            into localWarDirectory
+            include war.archiveName
+            rename war.archiveName, "dipnet.war"
+        }
     }
 }
