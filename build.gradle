@@ -232,7 +232,7 @@ ext.updateRemoteDependencies = { location ->
 
     ssh.run {
         session(remotes.biscicol) {
-            execute "/bin/rm -f "+ location + "*"
+            execute "/bin/rm -f " + location + "*"
             put from: files, into: location
         }
     }
@@ -258,7 +258,7 @@ task updateDependencies {
     }
 }
 
-ext.remoteDeploy { workingDir, remoteLibsDir, remoteWarDir ->
+ext.remoteDeploy = { workingDir, remoteLibsDir, remoteWarDir ->
     ssh.run {
         session(remotes.biscicol) {
             // Cleanup to begin
