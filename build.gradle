@@ -279,7 +279,7 @@ ext.updateRemoteDependencies = { location ->
 
     ssh.run {
         session(remotes.biscicol) {
-            remove location
+            execute "/bin/rm -f "+ location + "*"
             put from: files, into: location
         }
     }
@@ -314,7 +314,7 @@ task deployFims {
     dependsOn war
 
     doLast {
-        def workingDir = "/temp/biscicolProd/"
+        def workingDir = "/tmp/biscicolProd/"
         ssh.run {
             session(remotes.biscicol) {
                 put from: war.archivePath.path, into: workingDir
@@ -335,14 +335,26 @@ task deployFimsDev {
     dependsOn war
 
     doLast {
-        def workingDir = "/temp/biscicolDev/"
+        def workingDir = "/tmp/biscicolDev/"
         ssh.run {
             session(remotes.biscicol) {
+                // Cleanup to begin
+                execute "/bin/rm -rf " + workingDir
+                execute "/bin/mkdir " + workingDir
+                // Copy war file to server
                 put from: war.archivePath.path, into: workingDir
-                execute "unzip " + war.archiveName " -d " +workingDir
-                execute "cp -a " + remoteDevLibsDirectory + " . " + workingDir + "WEB-INF/lib/"
-                execute "zip -r " + remoteWarDevDirectory + "/root.war " + workingDir
-                execute "rm -rf " + workingDir
+                // Extract libs and copy from server
+                execute "/usr/bin/unzip -d " + workingDir + " " + workingDir+war.archiveName 
+                execute "/bin/cp " + remoteDevLibsDirectory + "* " + workingDir + "WEB-INF/lib/"
+                // Remove the old war file
+                execute "/bin/rm " + workingDir+war.archiveName
+                // Need to remove the war file itself-- we instead just copy it into /tmp for safekeeping in case next step fails
+                execute "/bin/mv " + remoteWarDevDirectory + "root.war" + " /tmp/deployed.war.backup"
+                // Need to execute zip command from the working Directory in order to get relative paths correct
+                execute "cd " + workingDir + ";/usr/bin/zip -r " + remoteWarDevDirectory + "root.war " + " ."
+                // Cleanup
+                execute "/bin/rm -rf " + workingDir
+                execute "/bin/rm /tmp/deployed.war.backup"
             }
         }
     }
