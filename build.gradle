@@ -62,7 +62,7 @@ dependencies {
     provided 'org.eclipse.jetty:jetty-servlet:9.3.3.v20150827'
 
     server 'org.glassfish.jersey.ext:jersey-spring3:2.22.2'
-    
+
     testCompile "junit:junit-dep:4.10"
 }
 
@@ -266,12 +266,12 @@ ext.remoteDeploy = { workingDir, remoteLibsDir, remoteWarDir ->
             // Remove the old war file
             execute "/bin/rm " + workingDir + war.archiveName
             // Need to remove the war file itself-- we instead just copy it into /tmp for safekeeping in case next step fails
-            execute "/bin/mv " + remoteWarDir + "root.war" + " /tmp/dipnet.deployed.war.backup"
+            execute "/bin/mv " + remoteWarDir + "dipnet.war" + " /tmp/dipnet.deployed.war.backup"
             // Need to execute zip command from the working Directory in order to get relative paths correct
             execute "cd " + workingDir + ";/usr/bin/zip -r " + remoteWarDir + "dipnet.war " + " ."
             // Cleanup
             execute "/bin/rm -rf " + workingDir
-            execute "/bin/rm /tmp/deployed.war.backup"
+            execute "/bin/rm /tmp/dipnet.deployed.war.backup"
         }
     }
 }
