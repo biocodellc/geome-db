@@ -896,6 +896,9 @@ function populateDefinitions(column) {
     })
     .done(function(data) {
         $("#definition").html(data);
+    }).fail(function(jqXHR, textStatus) {
+        hideTemplateInfo();
+        failError(jqXHR);
     });
 }
 
@@ -916,7 +919,8 @@ function populateColumns(targetDivId) {
             if (textStatus == "timeout") {
                 showMessage ("Timed out waiting for response!");
             } else {
-                showMessage ("Error completing request!" );
+                hideTemplateInfo();
+                failError(jqXHR);
             }
         });
 
@@ -944,7 +948,8 @@ function populateAbstract(targetDivId) {
         if (textStatus == "timeout") {
             showMessage ("Timed out waiting for response!");
         } else {
-            showMessage ("Error completing request!" );
+            hideTemplateInfo();
+            failError(jqXHR);
         }
     });
 }
