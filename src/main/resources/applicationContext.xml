@@ -25,6 +25,11 @@
 
     <bean id="springApplicationContext" class="biocode.fims.utils.SpringApplicationContext"/>
 
-    <bean id="expeditionMinter" class="biocode.fims.bcid.ExpeditionMinter"></bean>
+    <bean id="expeditionMinter" class="biocode.fims.bcid.ExpeditionMinter"/>
+
+    <bean id="GenbankManager" class="biocode.fims.genbank.GenbankManager">
+        <constructor-arg ref="settingsManager" />
+        <constructor-arg ref="bcidService" />
+    </bean>
 
 </beans>
