@@ -56,7 +56,7 @@ public class FastaGenerator {
                 // each entry starts with ">"
                 data.append("> ");
 
-                data.append(fastaSequence.getIdentifier());
+                data.append(fastaSequence.getRootIdentifier() + fastaSequence.getLocalIdentifier());
                 data.append(" [organism=");
                 data.append(fastaSequence.getOrganism());
                 data.append("]\n");
@@ -110,7 +110,7 @@ public class FastaGenerator {
 
                 FastaSequence fastaSequence = new FastaSequence(identifier.getSuffix(), sequence);
 
-                fastaSequence.setIdentifier(identifier.getBcidIdentifier());
+                fastaSequence.setRootIdentifier(identifier.getBcidIdentifier());
                 fastaSequence.setOrganism(genus + " " + species);
 
                 fastaSequences.add(fastaSequence);

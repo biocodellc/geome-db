@@ -31,7 +31,7 @@ public class GenbankManager {
         this.bcidService = bcidService;
     }
 
-    public void run(int projectId, String outputDirectory) {
+    public void run(int projectId, String outputDirectory, String templateFile, boolean generateSequin) {
         String divider = settingsManager.retrieveValue("divider");
         Set<Bcid> latestDatasets = bcidService.getLatestDatasets(projectId);
 
@@ -45,6 +45,16 @@ public class GenbankManager {
         FimsPrinter.out.println("Generating fasta file ...");
         String fastaFile = FastaGenerator.generate(latestDatasets, fusekiService, mapping, outputDirectory, divider);
         FimsPrinter.out.println("\tFasta file generated: " + fastaFile);
+
+        if (generateSequin) {
+            FimsPrinter.out.println("Generating sequin file ...");
+            SequinGenerator.generate(fastaFile, templateFile, outputDirectory);
+            FimsPrinter.out.println("Sequin and validation files generated. Please check all files with extension .val " +
+                    "for any errors during the sequin file generation process. All errors should be fixed before " +
+                    "submission to genbank. If no errors exist, then you can submit the files with .sqn extension to " +
+                    "genbank via http://www.ncbi.nlm.nih.gov/LargeDirSubs/dir_submit.cgi.");
+
+        }
     }
 
     /**
@@ -57,8 +67,10 @@ public class GenbankManager {
         GenbankManager manager = applicationContext.getBean(GenbankManager.class);
 
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
-        int projectId = 0;
+        int projectId;
         String outputDirectory;
+        String templateFile = null;
+        boolean generateSequin = false;
 
         // Direct output using the standardPrinter subClass of fimsPrinter which send to fimsPrinter.out (for command-line usage)
         FimsPrinter.out = new StandardPrinter();
@@ -73,7 +85,9 @@ public class GenbankManager {
         // Define our commandline options
         Options options = new Options();
         options.addOption("h", "help", false, "print this help message and exit");
-        options.addOption("f", "fasta", false, "Generate a fasta file to upload to feed to tbl2asn for biocode.fims.genbank submission");
+        options.addOption("f", "fasta", false, "Generate a fasta file to feed to tbl2asn for genbank submission");
+        options.addOption("s", "sequin", false, "Generate a sequin file for genbank submission");
+        options.addOption("t", "sequin_template", false, "The template file required for sequin generation");
         options.addOption("o", "output_directory", true, "Output Directory");
         options.addOption("p", "project_id", true, "Project Identifier.  A numeric integer corresponding to your project");
 
@@ -115,7 +129,17 @@ public class GenbankManager {
             FimsPrinter.out.println("Using default output_directory: " + defaultOutputDirectory);
         }
 
-        manager.run(projectId, outputDirectory);
+        if (cl.hasOption("s")) {
+            generateSequin = true;
+            if (cl.hasOption("t")) {
+                templateFile = cl.getOptionValue("t");
+            } else {
+                FimsPrinter.out.println("Must provide a template file when generating a sequin file");
+                return;
+            }
+        }
+
+        manager.run(projectId, outputDirectory, templateFile, generateSequin);
 
     }
 }
