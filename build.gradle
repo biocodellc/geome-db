@@ -190,40 +190,15 @@ task restartFimsDev  {
     }
 }
 
-ext.getDependencyFiles = {
-    def subProjectJars = []
-    def dependencyFiles = []
-
-    // get a list of the sub project jars to exclude as subProjects should be built at the same time as this project.
-    for (p in project.getSubprojects()) {
-        subProjectJars.add(p.jar.archiveName)
-    }
-
-    // work around from project.configurations.server.incoming.getFiles() as custom scopes aren't propagated to parent
-    // project
-    for (p in project.getSubprojects()) {
-        for (dependency in p.configurations.server.incoming.getFiles()) {
-            if (!subProjectJars.contains(dependency.getName()) &&
-                    !dependencyFiles.contains(dependency.absoluteFile)) {
-                dependencyFiles.add(dependency.absoluteFile)
-            }
-        }
-    }
-    for (dependency in project.configurations.server.incoming.getFiles()) {
-        if (!subProjectJars.contains(dependency.getName())) {
-            dependencyFiles.add(dependency.absoluteFile)
-        }
-    }
-    return dependencyFiles
-}
-
 ext.updateRemoteDependencies = { location ->
-    def files = getDependencyFiles()
+    subprojects.each { subproject ->
+        project.configurations.server.dependencies.addAll(subproject.configurations.server.dependencies)
+    }
 
     ssh.run {
         session(remotes.biscicol) {
-            execute "/bin/rm -f "+ location + "*"
-            put from: files, into: location
+            execute "/bin/rm -f " + location + "*"
+            put from: project.configurations.server.incoming.getFiles(), into: location
         }
     }
 }
