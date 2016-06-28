@@ -1364,6 +1364,7 @@ function validationFormToggle() {
                 if ($("#projects option[value='" + projectId + "']").length !== 0) {
                     $('#projects').val(projectId);
                     $('#projects').prop('disabled', true);
+                    $('#includePublic').prop('disabled', true);
                     $('#projects').trigger("change");
                     if ($('.toggle-content#projects_toggle').is(':hidden')) {
                         $('.toggle-content#projects_toggle').show(400);
@@ -1376,6 +1377,7 @@ function validationFormToggle() {
                         p.parent().append("<a id='refresh_map' href='#' onclick=\"generateMap('map', " + p.val() + ")\">Refresh Map</a>");
                     }
                     p.prop('disabled', false);
+                    $('#includePublic').prop('disabled', false);
                     if (!$("#" + datasetId).val()) {
                         $(".toggle-content#projects_toggle").hide(400);
                     } else if ($('.toggle-content#projects_toggle').is(':hidden')) {
@@ -1395,6 +1397,7 @@ function validationFormToggle() {
 
         if (!$("#" + datasetId).val()) {
             $("#projects").prop('disabled', false);
+            $('#includePublic').prop('disabled', false);
             if ($('.toggle-content#projects_toggle').is(':hidden')) {
                 $('.toggle-content#projects_toggle').show(400);
             }
