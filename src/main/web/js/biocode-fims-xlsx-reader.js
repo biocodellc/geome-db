@@ -72,7 +72,9 @@
 
             _.forEachRight(workbook.SheetNames, function(sheetName) {
                 var sheet = workbook.Sheets[sheetName];
-                sheets[sheetName] = XLSXReader.utils.parseSheet(sheet, readCells);
+                if (!_.isEmpty(sheet)) {
+                    sheets[sheetName] = XLSXReader.utils.parseSheet(sheet, readCells);
+                }
             });
 
             return sheets;
