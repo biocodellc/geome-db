@@ -1623,6 +1623,11 @@ function parseResults(messages) {
             }
         });
     });
+
+    if (message.length == 0) {
+        message = "<span style='color:green;'>Successfully Validated!</span>";
+    }
+    
     return message;
 }
 
