@@ -127,7 +127,7 @@
 
                 var sheet = workbook.Sheets[sheetName];
 
-                if (!sheet) {
+                if (_.isEmpty(sheet)) {
                     console.log("Workbook doesn't contain sheet: " + sheetName);
                     return deferred.resolve(null);
                 }
