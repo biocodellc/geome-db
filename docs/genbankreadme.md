@@ -10,6 +10,7 @@ Possible Tools to use
     https://submit.ncbi.nlm.nih.gov/subs/genbank/
  * BankIt (web based tool; seems to have limited utility)
  * Sequin (off-line tool; more analysis options)
+    http://www.ncbi.nlm.nih.gov/Sequin/
     Allows any type of data -- only needs organism as required.
     This option seems to give us the most power for inserting structured comments and qualifiers as needed.
    	
