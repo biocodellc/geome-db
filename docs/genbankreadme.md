@@ -28,6 +28,6 @@ Step 2: MANUAL LOADING
 1.	All submission types are focused on manual submission; e.g. email, web tool.
 Anyone can submit data. This happens OUTSIDE of FIMS.
 
-Step 3: FIMS INTEGRATION
+Step 3: GENBANK LINKER (FIMS INTEGRATION)
 #################################
-Daily polling of data from Genbank from FIMS end looking for ARK keys in the specimen_voucher qualifier field and updating the graph w/ the accession number.
+This step runs automatically.  Daily polling of data from Genbank from FIMS end looking for ARK keys in the specimen_voucher qualifier field and updating the graph w/ the accession number.
