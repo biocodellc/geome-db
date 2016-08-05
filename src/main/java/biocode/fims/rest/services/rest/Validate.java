@@ -324,7 +324,7 @@ public class Validate extends FimsService {
 
             Bcid bcid = new Bcid.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE)
                     .ezidRequest(Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests")))
-                    .title(processController.getExpeditionCode() + " Dataset")
+                    .title("Dataset: " + processController.getExpeditionCode())
                     .webAddress(URI.create(uploader.getEndpoint()))
                     .graph(currentGraph)
                     .finalCopy(processController.getFinalCopy())
