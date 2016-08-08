@@ -57,7 +57,7 @@ angular.module('biscicolApp')
                 loginRequired: true
             })
             .state('profile', {
-                url: "/secure/profile",
+                url: "/secure/profile?error",
                 templateUrl: "app/components/users/profile.html",
                 controller: "UserCtrl as vm",
                 loginRequired: true

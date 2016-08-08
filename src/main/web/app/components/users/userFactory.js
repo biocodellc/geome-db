@@ -1,7 +1,7 @@
 angular.module('fims.users')
 
-.factory('UserFactory', ['$rootScope', '$http', 'AuthFactory', 'REST_ROOT',
-    function($rootScope, $http, AuthFactory, REST_ROOT) {
+.factory('UserFactory', ['$rootScope', '$http', '$q', 'AuthFactory', 'REST_ROOT',
+    function($rootScope, $http, $q, AuthFactory, REST_ROOT) {
         
         var userFactory = {
             user: {},
@@ -24,10 +24,11 @@ angular.module('fims.users')
 
         function fetchUser() {
             if (AuthFactory.isAuthenticated) {
-                $http.get(REST_ROOT + 'users/profile')
+                return $http.get(REST_ROOT + 'users/profile')
                     .success(function (data, status, headers, config) {
                         setUser(data);
                     })
             }
+            return $q.reject;
         }
     }]);
