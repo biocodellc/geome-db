@@ -589,13 +589,11 @@ public class Projects extends FimsService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/{projectId}/admin/expeditions/")
     public Response listExpeditionsAsTable(@PathParam("projectId") int projectId) {
-        ProjectMinter projectMinter = new ProjectMinter();
-        if (!projectMinter.isProjectAdmin(user.getUsername(), projectId)) {
+        if (!projectService.isProjectAdmin(user, projectId)) {
             throw new ForbiddenRequestException("You must be this project's admin in order to view its expeditions.");
         }
 
-        ExpeditionMinter expeditionMinter = new ExpeditionMinter();
-        JSONArray expeditions = expeditionMinter.getExpeditions(projectId, user.getUsername());
+        Project project = projectService.getProjectWithExpeditions(projectId);
 
         StringBuilder sb = new StringBuilder();
         sb.append("<form method=\"POST\">\n");
@@ -607,19 +605,18 @@ public class Projects extends FimsService {
         sb.append("\t\t<th>Public</th>\n");
         sb.append("\t</tr>\n");
 
-        for (Object e: expeditions) {
-            JSONObject expedition = (JSONObject) e;
+        for (Expedition expedition: project.getExpeditions()) {
             sb.append("\t<tr>\n");
             sb.append("\t\t<td>");
-            sb.append(expedition.get("username"));
+            sb.append(expedition.getUser().getUsername());
             sb.append("</td>\n");
             sb.append("\t\t<td>");
-            sb.append(expedition.get("expeditionTitle"));
+            sb.append(expedition.getExpeditionTitle());
             sb.append("</td>\n");
             sb.append("\t\t<td><input name=\"");
-            sb.append(expedition.get("expeditionId"));
+            sb.append(expedition.getExpeditionId());
             sb.append("\" type=\"checkbox\"");
-            if (Boolean.valueOf(expedition.get("public").toString())) {
+            if (expedition.isPublic()) {
                 sb.append(" checked=\"checked\"");
             }
             sb.append("/></td>\n");
