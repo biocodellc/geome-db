@@ -17,6 +17,8 @@ import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
+import biocode.fims.tools.ServerSideSpreadsheetTools;
+import org.apache.commons.io.FilenameUtils;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.simple.JSONObject;
@@ -342,6 +344,18 @@ public class Validate extends FimsService {
                     expedition.getExpeditionId()
             );
 
+            // save the spreadsheet on the server
+            File inputFile = new File(processController.getInputFilename());
+            String ext = FilenameUtils.getExtension(inputFile.getName());
+            String filename = "bcid_id_" + bcid.getBcidId() + "." + ext;
+            File outputFile = new File(settingsManager.retrieveValue("serverRoot") + filename);
+
+            ServerSideSpreadsheetTools serverSideSpreadsheetTools = new ServerSideSpreadsheetTools(inputFile);
+            serverSideSpreadsheetTools.write(outputFile);
+
+            bcid.setSourceFile(filename);
+            bcidService.update(bcid);
+
             successMessage = "Dataset Identifier: http://n2t.net/" + bcid.getIdentifier() + " (wait 15 minutes for resolution to become active)";
             successMessage += "<br>\t" + "Data Elements Root: " + processController.getExpeditionCode();
 
@@ -352,7 +366,7 @@ public class Validate extends FimsService {
             }
 
             // delete the temporary file now that it has been uploaded
-            new File(processController.getInputFilename()).delete();
+            inputFile.delete();
         } else {
             successMessage += "<br>\t" + "FASTA data added to dataset belonging to Expedition Code: " + processController.getExpeditionCode();
             currentGraph = fastaManager.fetchGraph();

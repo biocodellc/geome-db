@@ -1,5 +1,8 @@
 ###########  biscicol-fims settings  ##########
 
+# location to store uploaded spreadsheets for backup
+serverRoot = /location/on/server/
+
 # get you're access token by visiting https://www.mapbox.com/account/apps/
 mapboxAccessToken = your_access_token
 
