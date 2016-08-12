@@ -52,6 +52,7 @@ public class Expeditions extends FimsService {
             sb.append("<a href=\"" + appRoot + "lookup?id=");
             sb.append(resource.get("identifier"));
             sb.append("\">");
+            sb.append("http://n2t.net/");
             sb.append(resource.get("identifier"));
             sb.append("</a>");
             sb.append("</td>\n");
@@ -102,6 +103,7 @@ public class Expeditions extends FimsService {
                 sb.append("<a href=\"" + appRoot + "lookup?id=");
                 sb.append(dataset.get("identifier"));
                 sb.append("\">");
+                sb.append("http://n2t.net/");
                 sb.append(dataset.get("identifier"));
                 sb.append("</a>");
                 sb.append("\t\t</td>");
@@ -138,6 +140,7 @@ public class Expeditions extends FimsService {
         sb.append("<a href=\"" + appRoot + "lookup?id=");
         sb.append(metadata.get("identifier"));
         sb.append("\">");
+        sb.append("http://n2t.net/");
         sb.append(metadata.get("identifier"));
         sb.append("</a>");
         sb.append("\t\t</td>\n");
