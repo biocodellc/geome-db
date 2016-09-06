@@ -1207,11 +1207,7 @@ function validationResults(data) {
     var title = "Validation Results";
     if (data.done != null) {
         $("#dialogContainer").dialog("close");
-        writeResults(
-        if (message.length == 0) {
-            message = "<span style='color:green;'>Successfully Validated!</span>";
-        }
-        parseResults(data.done));
+        writeResults(parseResults(data.done));
     } else {
         if (data.continue.message == "continue") {
             continueUpload(false);
