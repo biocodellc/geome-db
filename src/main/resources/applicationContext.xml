@@ -36,4 +36,10 @@
         <constructor-arg ref="settingsManager" />
         <constructor-arg ref="expeditionMinter" />
     </bean>
+
+    <bean id="EzidUpdator" class="biocode.fims.run.EzidUpdator">
+        <constructor-arg ref="bcidService" />
+        <constructor-arg ref="settingsManager" />
+    </bean>
+
 </beans>

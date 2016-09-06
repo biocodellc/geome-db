@@ -40,7 +40,7 @@ subprojects.each { subproject -> evaluationDependsOn( subproject.path ) }
 
 idea {
     module {
-        scopes.PROVIDED.plus += [configurations.server]
+        scopes.COMPILE.plus += [configurations.server]
     }
 }
 
