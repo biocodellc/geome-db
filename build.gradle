@@ -36,7 +36,7 @@ configurations {
 }
 
 // this is necessary for the subprojects.each closure to work correctly when dealing with the server configuration dependencies
-subprojects.each { subproject -> evaluationDependsOn( subproject.path ) }
+subprojects.each { subproject -> evaluationDependsOn(subproject.path) }
 
 idea {
     module {
@@ -303,5 +303,15 @@ task deployFimsLocal {
             rename fatWar.archiveName, "root.war"
         }
     }
+}
+
+task ezidUpdate(type: JavaExec) {
+    subprojects.each { subproject ->
+        project.configurations.server.dependencies.addAll(subproject.configurations.server.dependencies)
+    }
+
+    classpath = configurations.server + configurations.compile + sourceSets.main.runtimeClasspath
+
+    main = "biocode.fims.run.EzidUpdator"
 }
 
