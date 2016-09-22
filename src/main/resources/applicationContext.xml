@@ -6,21 +6,21 @@
 	http://www.springframework.org/schema/context
 	http://www.springframework.org/schema/context/spring-context-3.0.xsd"
 >
-    <import resource="classpath:data-access-config.xml" />
-    <context:component-scan base-package="biocode.fims.*" />
-    <context:property-placeholder location="classpath:dipnet-fims.props" />
+    <import resource="classpath:data-access-config.xml"/>
+    <context:component-scan base-package="biocode.fims.*"/>
+    <context:property-placeholder location="classpath:dipnet-fims.props"/>
 
     <bean id="propsFileResource" class="org.springframework.core.io.ClassPathResource">
-        <constructor-arg value="/dipnet-fims.props" />
+        <constructor-arg value="/dipnet-fims.props"/>
     </bean>
 
-    <bean id="settingsManager"  class="biocode.fims.settings.SettingsManager" factory-method="getInstance">
-        <constructor-arg ref="propsFileResource" />
+    <bean id="settingsManager" class="biocode.fims.settings.SettingsManager" factory-method="getInstance">
+        <constructor-arg ref="propsFileResource"/>
     </bean>
 
     <bean id="resolver" class="biocode.fims.bcid.Resolver">
-        <constructor-arg ref="bcidService" />
-        <constructor-arg ref="settingsManager" />
+        <constructor-arg ref="bcidService"/>
+        <constructor-arg ref="settingsManager"/>
     </bean>
 
     <bean id="springApplicationContext" class="biocode.fims.utils.SpringApplicationContext"/>
@@ -28,8 +28,12 @@
     <bean id="expeditionMinter" class="biocode.fims.bcid.ExpeditionMinter"/>
 
     <bean id="GenbankManager" class="biocode.fims.genbank.GenbankManager">
-        <constructor-arg ref="settingsManager" />
-        <constructor-arg ref="bcidService" />
+        <constructor-arg ref="settingsManager"/>
+        <constructor-arg ref="bcidService"/>
+    </bean>
+
+    <bean id="ezidUtils" class="biocode.fims.ezid.EzidUtils">
+        <constructor-arg ref="settingsManager"/>
     </bean>
 
 </beans>
