@@ -1282,35 +1282,44 @@ function loopMessages(level, groupMessage, messageArray) {
 function parseResults(messages) {
     var message = "";
 
-    // loop through the messages for each sheet
-    $.each(messages, function(key, val) {
-        $.each(val, function(sheetName, sheetMessages) {
-            if (sheetMessages.errors.length > 0) {
-                message += "<br>\t<b>Validation results on \"" + sheetName + "\" worksheet.</b>";
-                message += "<br><b>1 or more errors found.  Must fix to continue. Click each message for details</b><br>";
-            } else if (sheetMessages.warnings.length > 0) {
-                message += "<br>\t<b>Validation results on \"" + sheetName + "\" worksheet.</b>";
-                message += "<br><b>1 or more warnings found. Click each message for details</b><br>";
-            } else {
-                return false;
-            }
+    if (messages.config) {
+        message += "<br>\t<b>Invalid Project Configuration.</b>";
+        message += "<br>\t<b>Please talk to your project administrator to fix the following error(s):</b><br><br>";
 
-            if (sheetMessages.errors.length > 0) {
-                $.each(sheetMessages.errors, function(key, val) {
-                    $.each(val, function(groupMessage, messageArray) {
-                        message += loopMessages("Error", groupMessage, messageArray);
+        $.each(messages.config.errors, function (groupMessage, messageArray) {
+            message += loopMessages("Error", groupMessage, messageArray);
+        })
+    } else {
+        // loop through the messages for each sheet
+        $.each(messages.worksheets, function (key, val) {
+            $.each(val, function (sheetName, sheetMessages) {
+                if (sheetMessages.errors.length > 0) {
+                    message += "<br>\t<b>Validation results on \"" + sheetName + "\" worksheet.</b>";
+                    message += "<br><b>1 or more errors found.  Must fix to continue. Click each message for details</b><br>";
+                } else if (sheetMessages.warnings.length > 0) {
+                    message += "<br>\t<b>Validation results on \"" + sheetName + "\" worksheet.</b>";
+                    message += "<br><b>1 or more warnings found. Click each message for details</b><br>";
+                } else {
+                    return false;
+                }
+
+                if (sheetMessages.errors.length > 0) {
+                    $.each(sheetMessages.errors, function (key, val) {
+                        $.each(val, function (groupMessage, messageArray) {
+                            message += loopMessages("Error", groupMessage, messageArray);
+                        });
                     });
-                });
-            }
-            if (sheetMessages.warnings.length > 0) {
-                $.each(sheetMessages.warnings, function(key, val) {
-                    $.each(val, function(groupMessage, messageArray) {
-                        message += loopMessages("Warning", groupMessage, messageArray);
+                }
+                if (sheetMessages.warnings.length > 0) {
+                    $.each(sheetMessages.warnings, function (key, val) {
+                        $.each(val, function (groupMessage, messageArray) {
+                            message += loopMessages("Warning", groupMessage, messageArray);
+                        });
                     });
-                });
-            }
+                }
+            });
         });
-    });
+    }
 
     if (message.length == 0) {
         message = "<span style='color:green;'>Successfully Validated!</span>";
