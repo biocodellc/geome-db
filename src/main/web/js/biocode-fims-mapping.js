@@ -39,9 +39,9 @@ function getSampleCoordinates(configData) {
     // older browsers don't have a FileReader
     if (reader != null) {
         var deferred = new $.Deferred();
-        var inputFile= $('#' + datasetId)[0].files[0];
+        var inputFile= $('#dataset')[0].files[0];
 
-        var splitFileName = $('#' + datasetId).val().split('.');
+        var splitFileName = $('#dataset').val().split('.');
         if ($.inArray(splitFileName[splitFileName.length - 1], XLSXReader.exts) > -1) {
             XLSXReader(inputFile, true, false, function(reader) {
                 // get the data from the sample collection sheet

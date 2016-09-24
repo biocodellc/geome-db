@@ -141,23 +141,20 @@ public class Validate extends FimsService {
             }
 
 
-            // Test the configuration file to see that we're good to go...
-            ConfigurationFileTester cFT = new ConfigurationFileTester();
-            boolean configurationGood = true;
+        // Test the configuration file to see that we're good to go...
+        ConfigurationFileTester cFT = new ConfigurationFileTester(p.configFile);
+        boolean configurationGood = true;
 
-            cFT.init(p.configFile);
-
-            if (!cFT.checkUniqueKeys()) {
-                String message = "<br>CONFIGURATION FILE ERROR...<br>Please talk to your project administrator to fix the following error:<br>\t\n";
-                message += cFT.getMessages();
-                processController.setHasErrors(true);
-                processController.setValidated(false);
-                processController.appendStatus(message + "<br>");
-                configurationGood = false;
-                retVal.append("{\"done\": \"");
-                retVal.append(processController.getStatusSB().toString());
-                retVal.append("\"}");
-            }
+        if (!cFT.isValidConfig()) {
+            processController.setHasErrors(true);
+            processController.setValidated(false);
+            configurationGood = false;
+            retVal.append("{\"done\": ");
+            JSONObject messages = new JSONObject();
+            messages.put("config", cFT.getMessages());
+            retVal.append(messages.toJSONString());
+            retVal.append("}");
+        }
 
 
             // Run the process only if the configuration is good.
