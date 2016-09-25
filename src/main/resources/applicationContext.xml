@@ -74,4 +74,19 @@
         <constructor-arg ref="settingsManager"/>
     </bean>
 
+    <bean id="esClient" class="biocode.fims.query.elasticSearch.TransportClientFactoryBean">
+        <property name="clusterName" value="${clusterName}" />
+        <property name="clusterNodes" value="${clusterNodes}" />
+        <property name="clientIgnoreClusterName" value="${clientIgnoreClusterName}" />
+        <property name="clientNodesSamplerInterval" value="${clientNodesSamplerInterval}" />
+        <property name="clientPingTimeout" value="${clientPingTimeout}" />
+        <property name="clientTransportSniff" value="${clientTransportSniff}" />
+    </bean>
+
+    <bean id="fusekiIndexer" class="biocode.fims.fuseki.query.elasticSearch.FusekiIndexer">
+        <constructor-arg ref="esClient" />
+        <constructor-arg ref="bcidService" />
+        <constructor-arg ref="expeditionService" />
+        <constructor-arg ref="projectService" />
+    </bean>
 </beans>
