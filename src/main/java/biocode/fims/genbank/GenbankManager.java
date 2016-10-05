@@ -38,7 +38,7 @@ public class GenbankManager {
         File configFile = new ConfigurationFileFetcher(projectId, outputDirectory, false).getOutputFile();
 
         Mapping mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile);
+        mapping.addMappingRules(configFile);
 
         String fusekiService = mapping.getMetadata().getQueryTarget();
 
