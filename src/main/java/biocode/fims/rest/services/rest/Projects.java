@@ -76,7 +76,7 @@ public class Projects extends FimsService {
             File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
             Mapping mapping = new Mapping();
-            mapping.addMappingRules(new Digester(), configFile);
+            mapping.addMappingRules(configFile);
             String defaultSheet = mapping.getDefaultSheetName();
             ArrayList<Attribute> attributeList = mapping.getAllAttributes(defaultSheet);
 
@@ -105,7 +105,7 @@ public class Projects extends FimsService {
         File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
         Mapping mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile);
+        mapping.addMappingRules(configFile);
         ArrayList<Attribute> attributeArrayList = mapping.getAllAttributes(mapping.getDefaultSheetName());
 
         JSONArray attributes = new JSONArray();
@@ -669,7 +669,7 @@ public class Projects extends FimsService {
         File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
         Mapping mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile);
+        mapping.addMappingRules(configFile);
 
         return Response.ok("{\"uniqueKey\":\"" + mapping.getDefaultSheetUniqueKey() + "\"}").build();
     }
@@ -699,7 +699,7 @@ public class Projects extends FimsService {
         File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
         Mapping mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile);
+        mapping.addMappingRules(configFile);
 
         String fusekiQueryTarget = mapping.getMetadata().getQueryTarget() + "/query";
 

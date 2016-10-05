@@ -429,7 +429,7 @@ public class Run {
                 File configFile = new ConfigurationFileFetcher(projectId, output_directory, true).getOutputFile();
 
                 Mapping mapping = new Mapping();
-                mapping.addMappingRules(new Digester(), configFile);
+                mapping.addMappingRules(configFile);
 
                 //p.query(cl.getOptionValue("q"), cl.getOptionValue("f"), cl.getOptionValue("F"));
                 // TODO: construct filter statements from arguments passed in on command-line

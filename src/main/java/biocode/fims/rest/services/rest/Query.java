@@ -446,7 +446,7 @@ public class Query extends FimsService {
 
         // Parse the Mapping object (this object is used extensively in downstream functions!)
         Mapping mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile);
+        mapping.addMappingRules(configFile);
 
         return mapping;
     }
@@ -522,7 +522,7 @@ public class Query extends FimsService {
             }
         } else {
             Mapping mapping = new Mapping();
-            mapping.addMappingRules(new Digester(), configFile);
+            mapping.addMappingRules(configFile);
             ArrayList<Attribute> attributeArrayList = mapping.getAllAttributes(mapping.getDefaultSheetName());
             uri = mapping.lookupColumn(key, attributeArrayList);
         }
@@ -539,7 +539,7 @@ public class Query extends FimsService {
      */
     private FimsFilterCondition parseGETFilter(String filter) {
         Mapping mapping = new Mapping();
-        mapping.addMappingRules(new Digester(), configFile);
+        mapping.addMappingRules(configFile);
 
         String delimiter = ":";
         URI uri = null;
