@@ -29,7 +29,7 @@
 }).call(this);
 
 // function to parse the sample coordinates from the spreadsheet
-function getSampleCoordinates(configData) {
+function getSampleCoordinates(configData, inputFile) {
     try {
         var reader = new FileReader();
     } catch(err) {
@@ -39,9 +39,8 @@ function getSampleCoordinates(configData) {
     // older browsers don't have a FileReader
     if (reader != null) {
         var deferred = new $.Deferred();
-        var inputFile= $('#' + datasetId)[0].files[0];
 
-        var splitFileName = $('#' + datasetId).val().split('.');
+        var splitFileName = inputFile.name.split('.');
         if ($.inArray(splitFileName[splitFileName.length - 1], XLSXReader.exts) > -1) {
             XLSXReader(inputFile, true, false, function(reader) {
                 // get the data from the sample collection sheet
@@ -150,7 +149,7 @@ function displayMap(id, geoJSONData) {
     map.fitBounds(geoJSONLayer.getBounds());
 }
 
-function generateMap(id, projectId) {
+function generateMap(id, projectId, inputFile) {
     var deferred = $.Deferred();
     this.projectId = projectId;
 
@@ -166,7 +165,7 @@ function generateMap(id, projectId) {
                 ).done(function(uniqueKeyData) {
                     data.uniqueKey = uniqueKeyData.uniqueKey;
                 }).always(function() {
-                    getSampleCoordinates(data).done(function(geoJSONData) {
+                    getSampleCoordinates(data, inputFile).done(function(geoJSONData) {
                         if (geoJSONData.features.length == 0) {
                             $('#' + id).html('We didn\'t find any lat/long coordinates for your collection samples.');
                             deferred.reject();

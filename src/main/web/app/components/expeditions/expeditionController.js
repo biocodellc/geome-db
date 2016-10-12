@@ -1,4 +1,4 @@
-angular.module('fims.expeditions', ['fims.users', 'fims.modals'])
+angular.module('fims.expeditions')
 
 .controller('ExpeditionCtrl', ['$http', 'UserFactory', '$scope', 'LoadingModalFactory', 'FailModalFactory',
     function ($http, UserFactory, $scope, LoadingModalFactory, FailModalFactory) {

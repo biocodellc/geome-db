@@ -10,28 +10,29 @@ var app = angular.module('dipnetApp', [
     'fims.users',
     'fims.lookup',
     'fims.creator',
-    'utils.autofocus'
+    'utils.autofocus',
+    'ui.bootstrap.showErrors',
 ]);
 
 var currentUser = {};
-app.run(['UserFactory', function(UserFactory) {
+app.run(['UserFactory', function (UserFactory) {
     UserFactory.setUser(currentUser);
 }]);
 
-angular.element(document).ready(function() {
+angular.element(document).ready(function () {
     if (!angular.isDefined(window.sessionStorage.dipnet)) {
         // initialize the biscicol sessionStorage object to not get undefined errors later when
         // JSON.parse($window.sessionStorage.dipnet) is called
-        window.sessionStorage.dipnet= JSON.stringify({});
+        window.sessionStorage.dipnet = JSON.stringify({});
     }
-    
+
     var dipnetSessionStorage = JSON.parse(window.sessionStorage.dipnet);
     var accessToken = dipnetSessionStorage.accessToken;
     if (!isTokenExpired() && accessToken) {
         $.get('/biocode-fims/rest/users/profile?access_token=' + accessToken, function (data) {
             currentUser = data;
             angular.bootstrap(document, ['dipnetApp']);
-        }).fail(function() {
+        }).fail(function () {
             angular.bootstrap(document, ['dipnetApp']);
         });
     } else {
@@ -41,9 +42,9 @@ angular.element(document).ready(function() {
 
 
 app.controller('dipnetCtrl', ['$rootScope', '$scope', '$state', '$location', 'AuthFactory',
-    function($rootScope, $scope, $state, $location, AuthFactory) {
+    function ($rootScope, $scope, $state, $location, AuthFactory) {
         $scope.error = $location.search()['error'];
-        
+
         $rootScope.$on('$stateChangeStart', function (event, next) {
             if (next.loginRequired && !AuthFactory.isAuthenticated) {
                 event.preventDefault();
@@ -53,7 +54,7 @@ app.controller('dipnetCtrl', ['$rootScope', '$scope', '$state', '$location', 'Au
                 $state.go('login');
             }
         });
-}]);
+    }]);
 
 app.controller('NavCtrl', ['$rootScope', '$scope', '$location', '$state', 'AuthFactory', 'UserFactory',
     function ($rootScope, $scope, $location, $state, AuthFactory, UserFactory) {
@@ -68,23 +69,28 @@ app.controller('NavCtrl', ['$rootScope', '$scope', '$location', '$state', 'AuthF
             $rootScope.savedState = $state.current.name;
             $rootScope.savedStateParams = $state.params;
         }
+
         function logout() {
             AuthFactory.logout();
             UserFactory.removeUser();
         }
 
         $scope.$watch(
-            function(){ return AuthFactory.isAuthenticated},
+            function () {
+                return AuthFactory.isAuthenticated
+            },
 
-            function(newVal) {
+            function (newVal) {
                 vm.isAuthenticated = newVal;
             }
         )
 
         $scope.$watch(
-            function(){ return UserFactory.isAdmin},
+            function () {
+                return UserFactory.isAdmin
+            },
 
-            function(newVal) {
+            function (newVal) {
                 vm.isAdmin = newVal;
             }
         )
@@ -96,7 +102,9 @@ app.factory('postInterceptor', ['$injector', '$httpParamSerializerJQLike',
     function ($injector, $httpParamSerializerJQLike) {
         return {
             request: function (config) {
-                if (config.method == "POST") {
+                // when uploading files with ng-file-upload, the content-type is undefined. The browser
+                // will automatically set it to multipart/form-data if we leave it as undefined
+                if (config.method == "POST" && config.headers['Content-Type'] != undefined) {
                     config.headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
                     if (config.data instanceof Object)
                         config.data = $httpParamSerializerJQLike(config.data);

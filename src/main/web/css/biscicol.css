@@ -368,6 +368,20 @@ th {
     text-align: center;
 }
 
+.tab-content {
+    margin-top: 15px;
+}
+
+.groupMessage {
+    margin-bottom: 15px;
+}
+
+.nav>li.hidden-tab>a:hover, .nav>li.hidden-tab>a:focus {
+    cursor: default;
+    border: 1px solid transparent;
+    outline: none;
+}
+
 [ng\:cloak], [ng-cloak], .ng-cloak {
     display: none !important;
 }

@@ -6,57 +6,157 @@
         <h2>Validate and Load Data</h2>
 
         <div class="col-sm-12">
-            <form method="POST">
-                <div class="col-md-8">
-                    <table class="table">
-                        <tr>
-                            <td align="right">&nbsp;&nbsp;FIMS Data&nbsp;&nbsp;</td>
-                            <td><input type="file" class="btn btn-default btn-xs" name="file" id="file1" /></td>
-                        </tr>
+            <!-- TODO remove this when we refactor list() function -->
+            <input type="hidden" value="{{ vm.projectId }}" name="projectId" id="project">
+            <uib-tabset active="0">
+                <uib-tab index="-1" heading="" disable="true" classes="col-sm-offset-1 hidden-tab"></uib-tab>
 
-                        <tr>
-                            <td align="right">FASTA Data (optional)&nbsp;&nbsp;</td>
-                            <td colspan=2><input type="file" class="btn btn-default btn-xs" name="file" id="file2" /></td>
-                        </tr>
-
-                        <tr>
-                            <td align="right">Upload&nbsp;&nbsp;</td>
-                            <td style="font-size:11px;" colspan=2>
-                                <span ng-show="!vm.isAuthenticated">
-                                    <input ng-show="!vm.isAuthenticated" type="checkbox" disabled="disabled" /> (login to upload)
-                                </span>
-                                <input ng-show="vm.isAuthenticated" type="checkbox" id="upload" name="upload" />
-                            </td>
-                        </tr>
+                <!-- Validation Tab -->
+                <uib-tab index="0" heading="Validate">
+                    <form role="form" name="validateForm" class="form-horizontal"
+                          ng-submit="vm.dataset && vm.validate()">
 
 
-                        <tr class="toggle-content-upload toggle-content" id="expeditionCode_toggle">
-                            <td align="right">Dataset Code&nbsp;&nbsp;</td>
-                            <td colspan=2><input type="select" name="expeditionCode" id="expeditionCode" /></td>
-                        </tr>
+                        <fims-data ng-model="vm.dataset" change="vm.datasetChange()"></fims-data>
+                        <div class="col-sm-1 col-sm-offset-7">
+                            <button type="submit" class="btn btn-default">Validate</button>
+                        </div>
+                    </form>
+                </uib-tab>
 
-                        <tr class="toggle-content-upload toggle-content" id="expedition_public_toggle">
-                            <td align="right">Public&nbsp;&nbsp;</td>
-                            <td><input type="checkbox" name="public_status" id="public_status" /></td>
-                        </tr>
+                <!-- Upload Tab -->
+                <uib-tab index="1" heading="Upload" disable="!vm.isAuthenticated">
+                    <form role="form" name="vm.uploadForm" class="form-horizontal" novalidate ng-submit="vm.upload()">
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">Data Type</label>
+                            <div class="col-sm-6">
+                                <label class="btn btn-primary" ng-model="vm.dataTypes.fims"
+                                       ng-click="vm.checkDataTypes()"
+                                       uib-btn-checkbox>FIMS</label>
+                                <label class="btn btn-primary" ng-model="vm.dataTypes.fastq"
+                                       ng-click="vm.dataTypes.fasta = false"
+                                       uib-btn-checkbox>FASTQ</label>
+                                <label class="btn btn-primary" ng-model="vm.dataTypes.fasta"
+                                       ng-click="vm.dataTypes.fastq = false"
+                                       uib-btn-checkbox>FASTA</label>
+                            </div>
+                        </div>
 
-                        <tr class="toggle-content-upload toggle-content" id="datapoint_verification_toggle">
-                            <td align="right">Data points verified on map?&nbsp;&nbsp;</td>
-                            <td><input type="checkbox" name="coordinates_verified" id="coordinates_verified" /></td>
-                        </tr>
+                        <div class="form-group" show-errors>
+                            <label for="expeditionCode" class="col-sm-2 control-label">Dataset Code</label>
+                            <div class="col-sm-4">
+                                <select id="expeditionCode" name="expeditionCode" ng-model="vm.expeditionCode"
+                                        class="form-control col-sm-4" required>
+                                    <option value="">Select a dataset</option>
+                                    <option ng-repeat="expedition in vm.expeditions"
+                                            value="{{ expedition.expeditionCode }}">
+                                        {{ expedition.expeditionTitle }}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" class="btn btn-default" ng-click="vm.createExpedition()">New
+                                    Dataset
+                                </button>
+                            </div>
+                        </div>
 
-                        <tr>
-                            <td></td>
-                            <td><input type="hidden" value="{{ vm.projectId }}" name="projectId" id="project"></td>
-                            <td><input type="button" id="validationSubmit" value="Submit" class="btn btn-default btn-xs"></td>
-                        </tr>
-                    </table>
-                </div>
-            </form>
+                        <fims-data ng-model="vm.dataset" change="vm.datasetChange()"></fims-data>
+
+                        <div class="form-group" ng-show="vm.dataTypes.fasta" show-errors="{trigger: 'change'}">
+                            <label for="fasta" class="col-sm-2 control-label">FASTA Data</label>
+                            <div class="col-sm-6">
+                                <div class="input-group">
+                                    <label class="input-group-btn">
+                                        <span class="btn btn-default form-control">Browse &hellip;</span>
+                                        <input type="file" style="display:none;" id="fasta" name="fasta"
+                                               class="form-control"
+                                               ngf-select
+                                               ngf-pattern="'.fa,.mpfa,.fna,.fsa,.fas,.fasta'"
+                                               ngf-model-invalid="invalidFastaFile"
+                                               ng-required="vm.dataTypes.fasta"
+                                               ng-model="vm.fasta"/>
+                                    </label>
+                                    <input type="text" class="form-control"
+                                           ng-value="vm.fasta.name || invalidFastaFile.name" readonly/>
+                                </div>
+                                <p class="help-block col-sm-offset-2" ng-show="vm.uploadForm.fasta.$error.pattern">
+                                    File must have one of the following extensions: .fa, .mpfa, .fna, .fsa, .fas or
+                                    .fasta</p>
+                            </div>
+                        </div>
+
+                        <div ng-show="vm.dataTypes.fastq">
+                            <div class="form-group" show-errors="{trigger: 'change'}">
+                                <label for="fastq" class="col-sm-2 control-label">FASTQ Data</label>
+                                <div class="col-sm-6">
+                                    <div class="input-group">
+                                        <label class="input-group-btn">
+                                            <span class="btn btn-default form-control">Browse &hellip;</span>
+                                            <input type="file" style="display:none;" id="fastq" name="fastqFilenames"
+                                                   class="form-control"
+                                                   ngf-select
+                                                   ngf-model-invalid="invalidFastqFile"
+                                                   ngf-pattern="'.txt"
+                                                   ng-required="vm.dataTypes.fastq"
+                                                   ng-model="vm.fastq.filenames"/>
+                                        </label>
+                                        <input type="text" class="form-control"
+                                               ng-value="vm.fastq.filenames.name || invalidFastqFile.name"
+                                               readonly/>
+                                    </div>
+                                    <p class="help-block col-sm-offset-2" ng-show="vm.uploadForm.fastqFileNames.$error.pattern">
+                                        File must be a .txt file</p>
+                                </div>
+                            </div>
+
+                            <div class="row col-sm-offset-2">
+                                <div class="col-sm-3">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><input type="radio" ng-model="vm.fastq.pe"
+                                                                               value="false"/></span>
+                                        <input type="text" class="form-control" value="Single End"
+                                               style="background-color: #fff;" readonly/>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><input type="radio" ng-model="vm.fastq.pe"
+                                                                               value="true"/></span>
+                                        <input type="text" class="form-control" value="Paired End"
+                                               style="background-color: #fff;" readonly/>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="col-sm-offset-2" ng-show="vm.verifyDataPoints" ng-class="vm.coordinatesErrorClass">
+                            <div class="form-group">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="coordinatesVerified"
+                                               id="coordinates_verified" ng-model="vm.coordinatesVerified"
+                                               ng-click="vm.checkCoordinatesVerified()"/>
+                                        <span class="control-label">Data points verified on map?&nbsp;&nbsp;</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-1 col-sm-offset-7">
+                            <button type="submit" class="btn btn-default">Upload</button>
+                        </div>
+                    </form>
+
+                </uib-tab>
+            </uib-tabset>
+
+            <div class="col-sm-12" ng-show="vm.displayResults"
+                 ng-include="'app/components/validation/results/results.tpl.html'">
+            </div>
+
+            <div id='map' style="height:400px;width:600px;"></div>
         </div>
-
-        <div id=resultsContainer class="col-sm-12" style='overflow:auto; display:none;'></div>
-
-        <div id='map' style="height:400px;width:600px;"></div>
     </div>
 </div>

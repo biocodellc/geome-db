@@ -1,0 +1,62 @@
+<div ng-controller="ResultsCtrl as vm">
+    <!-- project config validation messages -->
+    <div ng-show="vm.results.messages.config" ng-init="validateSuccess = true">
+
+        <div class="tab-content" ng-show="!vm.isEmptyObject(sheetMessages.errors)">
+            <p><b>Invalid Project Configuration.</b><br>
+                <b>Please talk to your project administrator to fix the following error(s):</b></p>
+        </div>
+
+        <div ng-repeat="(groupMessage, messagesArray) in vm.results.messages.config.errors" uib-accordion-group
+             template-url="app/components/validation/results/resultsAccordionGroup.tpl.html"
+             class="groupMessage">
+            {{ vm.successfullyValidated = false;"" }}
+            <div uib-accordion-heading><span class="Error">Error: <span
+                    ng-bind-html="groupMessage | trusted_html"/></span>
+            </div>
+            <div ng-repeat="message in messagesArray">{{ message }}</div>
+        </div>
+
+    </div>
+
+    <!-- worksheet validation messages -->
+    <div ng-show="vm.results.messages.worksheets">
+        <div ng-repeat="(sheetName, sheetMessages) in vm.results.messages.worksheets">
+
+            <div class="tab-content" ng-show="!vm.isEmptyObject(sheetMessages.errors)">
+                <p><b>Validation results on {{ sheetName }} worksheet.</b><br>
+                    <b>1 or more errors found. Must fix to continue. Click each message for details</b></p>
+            </div>
+            <div class="tab-content"
+                 ng-show="vm.isEmptyObject(sheetMessages.errors) && !vm.isEmptyObject(sheetMessages.warnings)">
+                <p><b>Validation results on {{ sheetName }} worksheet.</b><br>
+                    <b>1 or more warnings found. Click each message for details</b></p>
+            </div>
+
+            <uib-accordion close-others="false"
+                           template-url="app/components/validation/results/resultsAccordion.tpl.html">
+                <div ng-repeat="(groupMessage, messagesArray) in sheetMessages.errors" uib-accordion-group
+                     template-url="app/components/validation/results/resultsAccordionGroup.tpl.html"
+                     class="groupMessage">
+                    {{ vm.successfullyValidated = false;"" }}
+                    <div uib-accordion-heading><span class="Error">Error: <span
+                            ng-bind-html="groupMessage | trusted_html"></span></span>
+                    </div>
+                    <div ng-repeat="message in messagesArray">{{ message }}</div>
+                </div>
+
+                <div ng-repeat="(groupMessage, messagesArray) in sheetMessages.warnings" uib-accordion-group
+                     template-url="app/components/validation/results/resultsAccordionGroup.tpl.html"
+                     class="groupMessage">
+                    {{ vm.successfullyValidated = false;"" }}
+                    <div uib-accordion-heading><span class="Warning">Warning: <span
+                            ng-bind-html="groupMessage | trusted_html"></span></span></div>
+                    <div ng-repeat="message in messagesArray">{{ message }}</div>
+                </div>
+            </uib-accordion>
+
+        </div>
+    </div>
+
+    <div ng-show="vm.results.successMessage" ng-bind-html="vm.results.successMessage | trusted_html"></div>
+</div>
