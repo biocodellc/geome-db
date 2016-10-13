@@ -29,7 +29,7 @@ angular.element(document).ready(function () {
     var dipnetSessionStorage = JSON.parse(window.sessionStorage.dipnet);
     var accessToken = dipnetSessionStorage.accessToken;
     if (!isTokenExpired() && accessToken) {
-        $.get('/biocode-fims/rest/users/profile?access_token=' + accessToken, function (data) {
+        $.get('/dipnet/rest/users/profile?access_token=' + accessToken, function (data) {
             currentUser = data;
             angular.bootstrap(document, ['dipnetApp']);
         }).fail(function () {

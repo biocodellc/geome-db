@@ -13,6 +13,12 @@
         </listener-class>
     </listener>
 
+    <session-config>
+        <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
+    </session-config>
+
     <servlet>
         <servlet-name>Jersey Web Application Rest</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
@@ -37,5 +43,20 @@
         <servlet-name>FimsDefaultServlet</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
+
+    <filter>
+        <filter-name>ClickjackFilterDeny</filter-name>
+        <filter-class>biocode.fims.rest.filters.ClickJackFilter</filter-class>
+        <init-param>
+            <param-name>mode</param-name>
+            <param-value>DENY</param-value>
+        </init-param>
+    </filter>
+
+    <!--  use the Deny version to prevent anyone, including yourself, from framing the page -->
+    <filter-mapping>
+        <filter-name>ClickjackFilterDeny</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
 </web-app>

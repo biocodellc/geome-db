@@ -1,7 +1,6 @@
 package biocode.fims.rest;
 
-
-import biocode.fims.rest.services.rest.AuthenticationService;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 /**
  * * Jersey Application for Dipnet REST Services
@@ -10,6 +9,7 @@ public class DipnetApplication extends FimsApplication {
 
     public DipnetApplication() {
         super();
-        register(AuthenticationService.class);
+        packages("biocode.fims.rest.services.rest");
+        register(MultiPartFeature.class);
     }
 }

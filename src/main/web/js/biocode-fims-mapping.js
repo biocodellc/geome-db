@@ -21,7 +21,7 @@
         return;
     }
 
-    $.getJSON("/biocode-fims/rest/utils/getMapboxToken", function(data) {
+    $.getJSON("/dipnet/rest/utils/getMapboxToken", function(data) {
         L.mapbox.accessToken = data.accessToken;
     }).fail(function() {
         console.log("Failed to retrieve mapbox accessToken. Mapping features will not work.");
@@ -159,9 +159,9 @@ function generateMap(id, projectId, inputFile) {
     }
     $('#' + id).html('Loading map...');
     // generate a map with markers for all sample points
-    $.getJSON("/biocode-fims/rest/projects/" + projectId + "/getLatLongColumns/"
+    $.getJSON("/dipnet/rest/projects/" + projectId + "/getLatLongColumns/"
         ).done(function(data) {
-            $.getJSON("/biocode-fims/rest/projects/" + projectId + "/uniqueKey/"
+            $.getJSON("/dipnet/rest/projects/" + projectId + "/uniqueKey/"
                 ).done(function(uniqueKeyData) {
                     data.uniqueKey = uniqueKeyData.uniqueKey;
                 }).always(function() {

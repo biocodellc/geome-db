@@ -1,7 +1,7 @@
 angular.module('fims.expeditions')
 
-.controller('ExpeditionCtrl', ['$http', 'UserFactory', '$scope', 'LoadingModalFactory', 'FailModalFactory',
-    function ($http, UserFactory, $scope, LoadingModalFactory, FailModalFactory) {
+.controller('ExpeditionCtrl', ['$http', 'UserFactory', '$scope', 'LoadingModalFactory', 'FailModalFactory', 'REST_ROOT',
+    function ($http, UserFactory, $scope, LoadingModalFactory, FailModalFactory, REST_ROOT) {
         var vm = this;
         vm.totalItems;
         vm.itemsPerPage = 100;
@@ -18,7 +18,7 @@ angular.module('fims.expeditions')
         function fetchPage() {
             LoadingModalFactory.open();
 
-            $http.get('/biocode-fims/rest/projects/25/expeditions/datasets/latest?page=' + vm.currentPage + "&limit=" + vm.itemsPerPage)
+            $http.get(REST_ROOT + 'projects/25/expeditions/datasets/latest?page=' + vm.currentPage + "&limit=" + vm.itemsPerPage)
                 .then(function(response) {
                     angular.extend(vm.content, response.data.content);
                     vm.content = response.data.content;
