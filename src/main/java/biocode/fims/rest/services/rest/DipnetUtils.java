@@ -12,13 +12,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- * Biscicol-Fims utility services
+ * Dipnet-Fims utility services
  */
 @Path("utils/")
-public class BiscicolUtils extends FimsService {
+public class DipnetUtils extends FimsService {
 
     @Autowired
-    BiscicolUtils(OAuthProviderService providerService, SettingsManager settingsManager) {
+    DipnetUtils(OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
     }
 

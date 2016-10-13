@@ -1,6 +1,5 @@
 grettyPort = 8080
 grettyPath = /dipnet
-biscicolFimsWar = /path/to/biscicol-fims/dist/biscicol-fims.war
 
 defaultEnvironment = local
 
