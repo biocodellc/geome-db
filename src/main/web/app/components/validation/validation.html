@@ -34,10 +34,10 @@
                                        ng-click="vm.checkDataTypes()"
                                        uib-btn-checkbox>FIMS</label>
                                 <label class="btn btn-primary" ng-model="vm.dataTypes.fastq"
-                                       ng-click="vm.dataTypes.fasta = false"
+                                       ng-click="vm.dataTypes.fasta = false && vm.checkDataTypes()"
                                        uib-btn-checkbox>FASTQ</label>
                                 <label class="btn btn-primary" ng-model="vm.dataTypes.fasta"
-                                       ng-click="vm.dataTypes.fastq = false"
+                                       ng-click="vm.dataTypes.fastq = false && vm.checkDataTypes()"
                                        uib-btn-checkbox>FASTA</label>
                             </div>
                         </div>
@@ -45,7 +45,8 @@
                         <div class="form-group" show-errors>
                             <label for="expeditionCode" class="col-sm-2 control-label">Dataset Code</label>
                             <div class="col-sm-4">
-                                <select id="expeditionCode" name="expeditionCode" ng-model="vm.expeditionCode"
+                                <select id="expeditionCode" name="expeditionCode"
+                                        ng-model="vm.expeditionCode"
                                         class="form-control col-sm-4" required>
                                     <option value="">Select a dataset</option>
                                     <option ng-repeat="expedition in vm.expeditions"
@@ -61,7 +62,7 @@
                             </div>
                         </div>
 
-                        <fims-data ng-model="vm.dataset" change="vm.datasetChange()"></fims-data>
+                        <fims-data ng-show="vm.dataTypes.fims" ng-model="vm.dataset" change="vm.datasetChange()"></fims-data>
 
                         <div class="form-group" ng-show="vm.dataTypes.fasta" show-errors="{trigger: 'change'}">
                             <label for="fasta" class="col-sm-2 control-label">FASTA Data</label>
@@ -105,30 +106,94 @@
                                                ng-value="vm.fastq.filenames.name || invalidFastqFile.name"
                                                readonly/>
                                     </div>
-                                    <p class="help-block col-sm-offset-2" ng-show="vm.uploadForm.fastqFileNames.$error.pattern">
+                                    <p class="help-block col-sm-offset-2"
+                                       ng-show="vm.uploadForm.fastqFileNames.$error.pattern">
                                         File must be a .txt file</p>
                                 </div>
                             </div>
 
-                            <div class="row col-sm-offset-2">
-                                <div class="col-sm-3">
-                                    <div class="input-group">
-                                        <span class="input-group-addon"><input type="radio" ng-model="vm.fastq.pe"
-                                                                               value="false"/></span>
-                                        <input type="text" class="form-control" value="Single End"
-                                               style="background-color: #fff;" readonly/>
+                            <div class="form-group" show-errors="">
+                                <label class="col-sm-2 control-label">Library Layout</label>
+                                <div class="row col-sm-6">
+                                    <div class="col-sm-6">
+                                        <div class="input-group">
+                                        <span class="input-group-addon"><input type="radio"
+                                                                               ng-model="vm.fastqMetadata.libraryLayout"
+                                                                               ng-required="vm.dataTypes.fastq && !vm.fastqMetadata.libraryLayout"
+                                                                               name="single"
+                                                                               value="single"/></span>
+                                            <input type="text" class="form-control" value="Single End" name="single"
+                                                   style="background-color: #fff;" readonly/>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-sm-3">
-                                    <div class="input-group">
-                                        <span class="input-group-addon"><input type="radio" ng-model="vm.fastq.pe"
-                                                                               value="true"/></span>
-                                        <input type="text" class="form-control" value="Paired End"
-                                               style="background-color: #fff;" readonly/>
+                                    <div class="col-sm-6">
+                                        <div class="input-group">
+                                        <span class="input-group-addon"><input type="radio"
+                                                                               ng-model="vm.fastqMetadata.libraryLayout"
+                                                                               ng-required="vm.dataTypes.fastq && !vm.fastqMetadata.libraryLayout"
+                                                                               name="paired"
+                                                                               value="paired"/></span>
+                                            <input type="text" class="form-control" value="Paired End" name="paired"
+                                                   style="background-color: #fff;" readonly/>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
+                            <div class="form-group" show-errors>
+                                <label for="libraryStrategy" class="col-sm-2 control-label">Library Strategy</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" id="libraryStrategy" name="libraryStrategy"
+                                           ng-model="vm.fastqMetadata.libraryStrategy"
+                                           ng-required="vm.dataTypes.fastq"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group" show-errors>
+                                <label for="librarySource" class="col-sm-2 control-label">Library Source</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" id="librarySource" name="librarySource"
+                                           ng-model="vm.fastqMetadata.librarySource"
+                                           ng-required="vm.dataTypes.fastq"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group" show-errors>
+                                <label for="librarySelection" class="col-sm-2 control-label">Library Selection</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" id="librarySelection"
+                                           name="librarySelection" ng-model="vm.fastqMetadata.librarySelection"
+                                           ng-required="vm.dataTypes.fastq"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group" show-errors>
+                                <label for="platform" class="col-sm-2 control-label">Platform</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" id="platform" name="platform"
+                                           ng-model="vm.fastqMetadata.platform"
+                                           ng-required="vm.dataTypes.fastq"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group" show-errors>
+                                <label for="instrumentModel" class="col-sm-2 control-label">Instrument Model</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" id="instrumentModel" name="instrumentModel"
+                                           ng-model="vm.fastqMetadata.instrumentModel"
+                                           ng-required="vm.dataTypes.fastq"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group" show-errors>
+                                <label for="designDescription" class="col-sm-2 control-label">Protocol citation or
+                                    website</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" id="designDescription"
+                                           name="designDescription" ng-model="vm.fastqMetadata.designDescription"
+                                           ng-required="vm.dataTypes.fastq"/>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-sm-offset-2" ng-show="vm.verifyDataPoints" ng-class="vm.coordinatesErrorClass">

@@ -13,8 +13,8 @@ angular.module('fims.validation')
             return statusPollingFactory;
 
             function startPolling() {
-                pollStatus();
-                polling = $interval(pollStatus, 500);
+                // pollStatus();
+                polling = $interval(pollStatus, 1000);
 
             }
 
@@ -24,9 +24,10 @@ angular.module('fims.validation')
 
             // Poll the server to get updates on the validation progress
             function pollStatus() {
+                ResultsDataFactory.showStatus = true;
                 $http.get(REST_ROOT + 'validate/status').then(
                     function (response) {
-                        if (response.data.error != null && !ResultsDataFactory.messages) {
+                        if (response.data.error && !ResultsDataFactory.validationMessages) {
                             ResultsDataFactory.error = response.data.error;
                             stopPolling();
                             ResultsDataFactory.showOkButton = true;

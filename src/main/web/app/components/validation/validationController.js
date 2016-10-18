@@ -2,6 +2,15 @@ angular.module('fims.validation')
 
     .controller('ValidationCtrl', ['$scope', '$q', '$http', '$uibModal', 'Upload', 'AuthFactory', 'ExpeditionFactory', 'FailModalFactory', 'ResultsDataFactory', 'StatusPollingFactory', 'PROJECT_ID', 'REST_ROOT',
         function ($scope, $q, $http, $uibModal, Upload, AuthFactory, ExpeditionFactory, FailModalFactory, ResultsDataFactory, StatusPollingFactory, PROJECT_ID, REST_ROOT) {
+            var defaultFastqMetadata = {
+                libraryLayout: null,
+                libraryStrategy: null,
+                librarySource: null,
+                librarySelection: null,
+                platform: null,
+                designDescription: null,
+                instrumentModel: null
+            };
             var vm = this;
 
             vm.projectId = PROJECT_ID;
@@ -13,11 +22,9 @@ angular.module('fims.validation')
             };
             vm.dataset = null;
             vm.fasta = null;
-            vm.fastq = {
-                filenames: null,
-                pe: false
-            };
-            vm.expeditionCode = "";
+            vm.fastqFilenames = null;
+            vm.fastqMetadata = angular.copy(defaultFastqMetadata);
+            vm.expeditonCode = "";
             vm.expeditions = [];
             vm.verifyDataPoints = false;
             vm.coordinatesVerified = false;
@@ -44,39 +51,50 @@ angular.module('fims.validation')
                 if (!vm.dataTypes.fasta && !vm.dataTypes.fastq) {
                     vm.dataTypes.fims = true;
                 }
+                if (!vm.dataTypes.fasta) {
+                    vm.fasta = null;
+                }
+                if (!vm.dataTypes.fims) {
+                    vm.dataTypes.fims = null;
+                }
+                if (!vm.dataTypes.fastq) {
+                    vm.fastqMetadata = angular.copy(defaultFastqMetadata);
+                }
             }
 
             function upload() {
                 ResultsDataFactory.reset();
                 $scope.$broadcast('show-errors-check-validity');
 
-                if (!checkCoordinatesVerified() || vm.uploadForm.$invalid || !(vm.dataset || vm.fasta)) {
-                    return;
-                }
+                // if (!checkCoordinatesVerified() || vm.uploadForm.$invalid || !(vm.dataset || vm.fasta)) {
+                //     return;
+                // }
 
                 validateSubmit({
                     projectId: PROJECT_ID,
                     expeditionCode: vm.expeditionCode,
+                    fastqMetadata: vm.fastqMetadata,
                     upload: true,
+                    public_status: true,
                     dataset: vm.dataset,
                     fasta: vm.fasta
                 }).then(
                     function (response) {
                         if (response.data.done) {
-                            angular.extend(ResultsDataFactory.messages, response.data.done);
+                            // angular.extend(ResultsDataFactory.validationMessages, response.data.done);
+                            ResultsDataFactory.validationMessages = response.data.done;
                             ResultsDataFactory.showOkButton = true;
-                        } else if (response.data.continue.message == "continue") {
-                            continueUpload();
+                            ResultsDataFactory.showValidationMessages = true;
                         } else if (response.data.continue) {
-                            ResultsDataFactory.messages = response.data.continue;
-                            ResultsDataFactory.showContinueButton = true;
-                            ResultsDataFactory.showCancelButton = true;
-
-                            $scope.$on("resultsModalContinueUploadEvent", function () {
+                            if (response.data.continue.message == "continue") {
                                 continueUpload();
-                                ResultsDataFactory.showContinueButton = false;
-                                ResultsDataFactory.showCancelButton = false;
-                            });
+                            } else {
+                                ResultsDataFactory.validationMessages = response.data.continue;
+                                ResultsDataFactory.showValidationMessages = true;
+                                ResultsDataFactory.showStatus = false;
+                                ResultsDataFactory.showContinueButton = true;
+                                ResultsDataFactory.showCancelButton = true;
+                            }
 
                         } else {
                             ResultsDataFactory.error = "Unexpected response from server. Please contact system admin.";
@@ -89,18 +107,38 @@ angular.module('fims.validation')
                 });
             }
 
+            $scope.$on("resultsModalContinueUploadEvent", function () {
+                continueUpload();
+                ResultsDataFactory.showContinueButton = false;
+                ResultsDataFactory.showCancelButton = false;
+                ResultsDataFactory.showValidationMessages = false;
+            });
+
             function continueUpload() {
                 StatusPollingFactory.startPolling();
-                return $http.get(REST_ROOT + "validate/continue").then(
+                return $http.get(REST_ROOT + "validate/continue?createExpedition=" + ResultsDataFactory.createExpedition).then(
                     function (response) {
                         if (response.data.error) {
                             ResultsDataFactory.error = response.data.error;
+                        } else if (response.data.continue) {
+                            ResultsDataFactory.uploadMessage = response.data.continue.message;
+                            ResultsDataFactory.showOkButton = false;
+                            ResultsDataFactory.showContinueButton = true;
+                            ResultsDataFactory.showCancelButton = true;
+                            ResultsDataFactory.showStatus = false;
+                            ResultsDataFactory.showUploadMessages = true;
+                            ResultsDataFactory.createExpedition = true;
                         } else {
-                            ResultsDataFactory.successMessage = response.data.done.message;
+                            ResultsDataFactory.successMessage = response.data.done;
+                            ResultsDataFactory.showStatus = false;
+                            ResultsDataFactory.showUploadMessages = false;
+                            ResultsDataFactory.showSuccessMessages = true;
+                            ResultsDataFactory.showOkButton = true;
+                            ResultsDataFactory.showContinueButton = false;
+                            ResultsDataFactory.showCancelButton = false;
+                            vm.displayResults = true;
                             resetForm();
                         }
-                        ResultsDataFactory.showOkButton = true;
-                        vm.displayResults = true;
 
                     }, function (response) {
                         ResultsDataFactory.reset();
@@ -138,6 +176,7 @@ angular.module('fims.validation')
             }
 
             function validate() {
+                ResultsDataFactory.reset();
                 validateSubmit({
                     projectId: PROJECT_ID,
                     expeditionCode: vm.expeditionCode,
@@ -145,8 +184,9 @@ angular.module('fims.validation')
                     dataset: vm.dataset
                 }).then(
                     function (response) {
-                        angular.extend(ResultsDataFactory.messages, response.data.done);
+                        ResultsDataFactory.validationMessages = response.data.done;
                         ResultsDataFactory.showOkButton = true;
+                        ResultsDataFactory.showValidationMessages = true;
                         StatusPollingFactory.stopPolling();
                     }
                 );
@@ -162,11 +202,12 @@ angular.module('fims.validation')
                     backdrop: 'static'
                 });
 
-                modalInstance.result.then(
-                    function () {
+                modalInstance.result.finally(function () {
                         vm.displayResults = true;
-                    }, function () {
-                        vm.displayResults = true;
+                        ResultsDataFactory.showStatus = false;
+                        ResultsDataFactory.showValidationMessages = true;
+                    ResultsDataFactory.showSuccessMessages = true;
+                        ResultsDataFactory.showUploadMessages = false;
                     }
                 )
 
@@ -175,10 +216,8 @@ angular.module('fims.validation')
             function resetForm() {
                 vm.dataset = null;
                 vm.fasta = null;
-                vm.fastq = {
-                    filenames: null,
-                    pe: false
-                };
+                vm.fastqFilenames = null;
+                angular.copy(defaultFastqMetadata, vm.fastqMetadata);
                 vm.expeditionCode = "";
                 vm.verifyDataPoints = false;
                 vm.coordinatesVerified = false;
