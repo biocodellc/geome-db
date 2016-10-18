@@ -3,6 +3,7 @@ src/main/web/app/components/auth/clientId.js
 *.iml
 *.props
 *.properties
+!src/main/resources/locale/*.properties
 dist/*
 build/*
 classes/*

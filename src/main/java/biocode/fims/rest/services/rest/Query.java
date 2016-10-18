@@ -59,7 +59,7 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.run("json", projectId));
+        File file = new File(q.writeJSON());
 
         // Wrie the file to a String and return it
         String response = readFile(file.getAbsolutePath());
@@ -149,7 +149,7 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.run("kml", projectId));
+        File file = new File(q.writeKML());
 
         // Return file to client
         Response.ResponseBuilder response = Response.ok((Object) file);
@@ -199,7 +199,6 @@ public class Query extends FimsService {
      * filter parameters are of the form:
      * name={URI} value={filter value}
      *
-     *
      * @return
      */
     @POST
@@ -213,7 +212,7 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.run("excel", projectId));
+        File file = new File(q.writeExcel(projectId));
 
         // Return file to client
         Response.ResponseBuilder response = Response.ok((Object) file);
@@ -250,8 +249,8 @@ public class Query extends FimsService {
                 graphs = Arrays.copyOf(valueArray, valueArray.length, String[].class);
             } else if (key.equalsIgnoreCase("project_id")) {
                 projectId = Integer.parseInt((String) value.get(0));
-                System.out.println("project_id_val=" + (String)value.get(0) );
-                System.out.println("project_id_int=" + projectId );
+                System.out.println("project_id_val=" + (String) value.get(0));
+                System.out.println("project_id_int=" + projectId);
             } else if (key.equalsIgnoreCase("boolean")) {
                 /// AND|OR
                 //projectId = Integer.parseInt((String) value.get(0));
@@ -276,7 +275,7 @@ public class Query extends FimsService {
         Mapping mapping = getMapping(projectId);
 
         // Build the Query
-        FimsQueryBuilder q = new FimsQueryBuilder(mapping, configFile, graphs, uploadPath());
+        FimsQueryBuilder q = new FimsQueryBuilder(mapping, graphs, uploadPath());
 
         // Loop the filterMap entries and build the filterConditionArrayList
         Iterator it = filterMap.entrySet().iterator();
@@ -324,26 +323,29 @@ public class Query extends FimsService {
         // Parse the GET filter
         FimsFilterCondition filterCondition = parseGETFilter(filter);
 
-        if (filterCondition != null) {
-            // Create a filter statement
-            ArrayList<FimsFilterCondition> arrayList = new ArrayList<FimsFilterCondition>();
-            arrayList.add(filterCondition);
+        // Create a filter statement
+        ArrayList<FimsFilterCondition> arrayList = new ArrayList<FimsFilterCondition>();
+        arrayList.add(filterCondition);
 
-            // Run the query
-            // Build the Query Object by passing this object and an array of graph objects, separated by commas
-            FimsQueryBuilder q = new FimsQueryBuilder(mapping, configFile, graphsArray, uploadPath());
+        // Run the query
+        // Build the Query Object by passing this object and an array of graph objects, separated by commas
+        FimsQueryBuilder q = new FimsQueryBuilder(mapping, graphsArray, uploadPath());
+
+        if (filterCondition != null) {
             // Add our filter conditions
             q.addFilter(arrayList);
-            // Run the query, passing in a format and returning the location of the output file
-            return new File(q.run(format, projectId));
-        } else {
-            // Run the query
-            // Build the Query Object by passing this object and an array of graph objects, separated by commas
-            FimsQueryBuilder q = new FimsQueryBuilder(mapping, configFile, graphsArray, uploadPath());
-            // Run the query, passing in a format and returning the location of the output file
-            return new File(q.run(format, projectId));
         }
+        // Run the query, passing in a format and returning the location of the output file
+        switch (format) {
+            case "excel":
+                return new File(q.writeExcel(projectId));
+            case "kml":
+                return new File(q.writeKML());
+            default:
+                return new File(q.writeJSON());
     }
+
+}
 
     private Mapping getMapping(Integer projectId) {
         configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
@@ -362,7 +364,7 @@ public class Query extends FimsService {
             username = user.getUsername();
         }
 
-        ProjectMinter project= new ProjectMinter();
+        ProjectMinter project = new ProjectMinter();
 
         JSONArray graphs = project.getLatestGraphs(projectId, username);
         Iterator it = graphs.iterator();

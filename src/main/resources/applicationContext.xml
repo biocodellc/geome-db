@@ -1,12 +1,17 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
 	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 	http://www.springframework.org/schema/context
-	http://www.springframework.org/schema/context/spring-context-3.0.xsd"
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/util
+    http://www.springframework.org/schema/util/spring-util-2.5.xsd"
+
 >
     <import resource="classpath:data-access-config.xml"/>
+    <import resource="classpath:dipnet-data-access-config.xml"/>
     <context:component-scan base-package="biocode.fims.*"/>
     <context:property-placeholder location="classpath:dipnet-fims.props"/>
 
@@ -24,7 +29,6 @@
     </bean>
 
     <bean id="datasetService" class="biocode.fims.utils.DatasetService">
-        <constructor-arg ref="expeditionService"/>
         <constructor-arg ref="bcidService"/>
     </bean>
 
@@ -40,5 +44,45 @@
     <bean id="ezidUtils" class="biocode.fims.ezid.EzidUtils">
         <constructor-arg ref="settingsManager"/>
     </bean>
+
+    <bean id="datasetPersistenceManager" scope="prototype"
+          class="biocode.fims.fuseki.fileManagers.dataset.FusekiDatasetPersistenceManager">
+        <constructor-arg ref="expeditionService"/>
+        <constructor-arg ref="bcidService"/>
+    </bean>
+
+    <bean id="datasetFileManager" scope="prototype" class="biocode.fims.fileManagers.dataset.DatasetFileManager">
+        <constructor-arg ref="datasetPersistenceManager"/>
+        <constructor-arg ref="settingsManager"/>
+        <constructor-arg ref="bcidService"/>
+        <constructor-arg ref="expeditionService"/>
+    </bean>
+
+    <bean id="fastaPersistenceManager" scope="prototype" class="biocode.fims.fileManagers.fasta.FusekiFastaPersistenceManager">
+        <constructor-arg ref="bcidService"/>
+        <constructor-arg ref="expeditionService"/>
+    </bean>
+
+    <bean id="fastaFileManager" scope="prototype" class="biocode.fims.fileManagers.fasta.FastaFileManager">
+        <constructor-arg ref="fastaPersistenceManager"/>
+    </bean>
+
+    <util:list id="fileManagers" scope="prototype" value-type="biocode.fims.fileManagers.AuxilaryFileManager">
+        <ref bean="fastaFileManager"/>
+    </util:list>
+
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basename" value="classpath:locale/messages"/>
+        <property name="useCodeAsDefaultMessage" value="true"/>
+    </bean>
+
+    <bean id="validate" scope="prototype" class="biocode.fims.rest.services.rest.Validate">
+        <constructor-arg ref="expeditionService"/>
+        <constructor-arg ref="fileManagers"/>
+        <constructor-arg ref="datasetFileManager"/>
+        <constructor-arg ref="OAuthProviderService"/>
+        <constructor-arg ref="settingsManager"/>
+    </bean>
+
 
 </beans>

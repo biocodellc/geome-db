@@ -84,6 +84,7 @@ dependencies {
 
     compile project(":biocode-fims-commons")
     compile project(":biocode-fims-fuseki")
+    compile project(":biocode-fims-sequences")
 
     testCompile "junit:junit-dep:4.10"
 }
