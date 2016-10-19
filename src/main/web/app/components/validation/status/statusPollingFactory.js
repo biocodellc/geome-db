@@ -1,7 +1,7 @@
 angular.module('fims.validation')
 
-    .factory('StatusPollingFactory', ['$http', '$interval', 'ResultsDataFactory', 'REST_ROOT',
-        function ($http, $interval, ResultsDataFactory, REST_ROOT) {
+    .factory('StatusPollingFactory', ['$http', '$interval', '$timeout', 'ResultsDataFactory', 'REST_ROOT',
+        function ($http, $interval, $timeout, ResultsDataFactory, REST_ROOT) {
             var polling = null;
 
             var statusPollingFactory = {
@@ -13,7 +13,8 @@ angular.module('fims.validation')
             return statusPollingFactory;
 
             function startPolling() {
-                // pollStatus();
+                // poll the 1st time after .5 seconds
+                $timeout(pollStatus, 500);
                 polling = $interval(pollStatus, 1000);
 
             }
