@@ -244,7 +244,7 @@ public class Query extends FimsService {
             String key = (String) thisEntry.getKey();
             // Values come over as a linked list
             LinkedList value = (LinkedList) thisEntry.getValue();
-            if (key.equalsIgnoreCase("graphs")) {
+            if (key.equalsIgnoreCase("graphs") || key.equalsIgnoreCase("graphs[]")) {
                 Object[] valueArray = value.toArray();
                 graphs = Arrays.copyOf(valueArray, valueArray.length, String[].class);
             } else if (key.equalsIgnoreCase("project_id")) {
