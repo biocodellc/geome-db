@@ -68,7 +68,7 @@ public class Validate extends FimsService {
                              @FormDataParam("dataset") FormDataBodyPart dataset,
                              @FormDataParam("fasta") FormDataBodyPart fasta,
                              @FormDataParam("fastqFilenames") FormDataBodyPart fastqFilenames) {
-        Map<String, String> fileMap = new HashMap<>();
+        Map<String, Map<String, Object>> fmProps = new HashMap<>();
         JSONObject returnValue = new JSONObject();
         boolean closeProcess = true;
         boolean removeController = true;
@@ -92,7 +92,10 @@ public class Validate extends FimsService {
                 InputStream is = dataset.getEntityAs(InputStream.class);
                 String tempFilename = saveFile(is, datasetFilename, "xls");
 
-                fileMap.put("dataset", tempFilename);
+                Map<String, Object> props = new HashMap<>();
+                props.put("filename", tempFilename);
+
+                fmProps.put("dataset", props);
             }
             if (fasta != null && fasta.getContentDisposition().getFileName() != null) {
                 String fastaFilename = fasta.getContentDisposition().getFileName();
@@ -101,13 +104,20 @@ public class Validate extends FimsService {
                 InputStream is = fasta.getEntityAs(InputStream.class);
                 String tempFilename = saveFile(is, fasta.getContentDisposition().getFileName(), "fasta");
 
-                fileMap.put("fasta", tempFilename);
+                Map<String, Object> props = new HashMap<>();
+                props.put("filename", tempFilename);
+
+                fmProps.put("fasta", props);
             }
             if (fastqFilenames != null && fastqFilenames.getContentDisposition().getFileName() != null) {
                 InputStream is = fastqFilenames.getEntityAs(InputStream.class);
                 String tempFilename = saveFile(is, fastqFilenames.getContentDisposition().getFileName(), "fastq");
 
-                fileMap.put("fastq", tempFilename);
+                Map<String, Object> props = new HashMap<>();
+                props.put("filename", tempFilename);
+                props.put("metadata", fastqMetadata);
+
+                fmProps.put("fastq", props);
             }
 
             File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
@@ -115,7 +125,7 @@ public class Validate extends FimsService {
             // Create the process object --- this is done each time to orient the application
             Process process = new Process.ProcessBuilder(datasetFileManager, processController)
                     .addFileManagers(fileManagers)
-                    .addFiles(fileMap)
+                    .addFmProperties(fmProps)
                     .configFile(configFile)
                     .build();
 
@@ -156,7 +166,7 @@ public class Validate extends FimsService {
             return Response.ok(returnValue.toJSONString()).build();
 
         } finally {
-            if (closeProcess) {
+            if (closeProcess && processController.getProcess() != null) {
                 processController.getProcess().close();
             }
             if (removeController) {
