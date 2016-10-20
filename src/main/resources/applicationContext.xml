@@ -78,6 +78,7 @@
 
     <bean id="validate" scope="prototype" class="biocode.fims.rest.services.rest.Validate">
         <constructor-arg ref="expeditionService"/>
+        <constructor-arg ref="dipnetExpeditionService"/>
         <constructor-arg ref="fileManagers"/>
         <constructor-arg ref="datasetFileManager"/>
         <constructor-arg ref="OAuthProviderService"/>

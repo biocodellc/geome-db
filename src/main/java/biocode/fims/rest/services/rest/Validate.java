@@ -1,10 +1,14 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.dipnet.entities.DipnetExpedition;
 import biocode.fims.dipnet.entities.FastqMetadata;
+import biocode.fims.dipnet.services.DipnetExpeditionService;
+import biocode.fims.entities.Expedition;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.dataset.DatasetFileManager;
 import biocode.fims.fimsExceptions.*;
+import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
@@ -12,8 +16,13 @@ import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.glassfish.jersey.media.multipart.*;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,15 +40,17 @@ import java.util.Map;
 public class Validate extends FimsService {
 
     private final ExpeditionService expeditionService;
+    private final DipnetExpeditionService dipnetExpeditionService;
     private final List<AuxilaryFileManager> fileManagers;
     private final DatasetFileManager datasetFileManager;
 
     @Autowired
-    Validate(ExpeditionService expeditionService, List<AuxilaryFileManager> fileManagers,
-             DatasetFileManager datasetFileManager,
+    Validate(ExpeditionService expeditionService, DipnetExpeditionService dipnetExpeditionService,
+             List<AuxilaryFileManager> fileManagers, DatasetFileManager datasetFileManager,
              OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
+        this.dipnetExpeditionService = dipnetExpeditionService;
         this.fileManagers = fileManagers;
         this.datasetFileManager = datasetFileManager;
     }
@@ -115,9 +126,19 @@ public class Validate extends FimsService {
 
                 Map<String, Object> props = new HashMap<>();
                 props.put("filename", tempFilename);
-                props.put("metadata", fastqMetadata);
 
-                fmProps.put("fastq", props);
+                try {
+                    // hack until we get FastqFileManger.upload working
+                    ObjectMapper mapper = new ObjectMapper();
+                    JSONObject metadata = (JSONObject) new JSONParser().parse(mapper.writeValueAsString(fastqMetadata));
+
+                    processController.setFastqMetadata(metadata);
+                    props.put("metadata", fastqMetadata);
+
+                    fmProps.put("fastq", props);
+                } catch (JsonProcessingException|ParseException e) {
+                    throw new ServerErrorException();
+                }
             }
 
             File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
@@ -224,6 +245,19 @@ public class Validate extends FimsService {
 
             try {
                 p.upload(createExpedition, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
+
+                // hack until we get FastqFileManger.upload working
+//                ObjectMapper mapper = new ObjectMapper();
+//                FastqMetadata fastqMetadata = mapper.readValue(processController.getFastqMetadata(), FastqMetadata.class);
+                FastqMetadata fastqMetadata = (FastqMetadata) JSONValue.parse(processController.getFastqMetadata().toJSONString());
+
+                Expedition expedition = expeditionService.getExpedition(processController.getExpeditionCode(), processController.getProjectId());
+                DipnetExpedition dipnetExpedition = new DipnetExpedition.DipnetExpeditionBuilder(expedition)
+                        .fastqMetadata(fastqMetadata)
+                        .build();
+
+                dipnetExpeditionService.create(dipnetExpedition);
+
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode() == UploadCode.EXPEDITION_CREATE) {
                     JSONObject message = new JSONObject();
