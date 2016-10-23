@@ -45,7 +45,7 @@ public class DipnetExpedition {
 
     private DipnetExpedition(DipnetExpeditionBuilder builder) {
         this.expedition = builder.expedition;
-        this.fastqMetadata = builder.fastqMetadata;
+        setFastqMetadata(builder.fastqMetadata);
     }
 
     @Id
@@ -66,6 +66,9 @@ public class DipnetExpedition {
 
     public void setFastqMetadata(FastqMetadata fastqMetadata) {
         this.fastqMetadata = fastqMetadata;
+        if (fastqMetadata != null) {
+            this.fastqMetadata.setDipnetExpedition(this);
+        }
     }
 
     @Transient

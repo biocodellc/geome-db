@@ -28,8 +28,10 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -120,25 +122,29 @@ public class Validate extends FimsService {
 
                 fmProps.put("fasta", props);
             }
-            if (fastqFilenames != null && fastqFilenames.getContentDisposition().getFileName() != null) {
-                InputStream is = fastqFilenames.getEntityAs(InputStream.class);
-                String tempFilename = saveFile(is, fastqFilenames.getContentDisposition().getFileName(), "fastq");
-
+            if (fastqMetadata != null || (fastqFilenames != null && fastqFilenames.getContentDisposition().getFileName() != null)) {
                 Map<String, Object> props = new HashMap<>();
-                props.put("filename", tempFilename);
-
-                try {
-                    // hack until we get FastqFileManger.upload working
-                    ObjectMapper mapper = new ObjectMapper();
-                    JSONObject metadata = (JSONObject) new JSONParser().parse(mapper.writeValueAsString(fastqMetadata));
-
-                    processController.setFastqMetadata(metadata);
-                    props.put("metadata", fastqMetadata);
-
-                    fmProps.put("fastq", props);
-                } catch (JsonProcessingException|ParseException e) {
-                    throw new ServerErrorException();
+                if (fastqFilenames != null && fastqFilenames.getContentDisposition().getFileName() != null) {
+                    InputStream is = fastqFilenames.getEntityAs(InputStream.class);
+                    String tempFilename = saveFile(is, fastqFilenames.getContentDisposition().getFileName(), "fastq");
+                    props.put("filename", tempFilename);
                 }
+
+
+                if (fastqMetadata != null) {
+                    try {
+                        // hack until we get FastqFileManger.upload working
+                        ObjectMapper mapper = new ObjectMapper();
+                        JSONObject metadata = (JSONObject) new JSONParser().parse(mapper.writeValueAsString(fastqMetadata));
+
+                        processController.setFastqMetadata(metadata);
+                        props.put("metadata", metadata);
+                    } catch (JsonProcessingException | ParseException e) {
+                        throw new ServerErrorException();
+                    }
+                }
+
+                fmProps.put("fastq", props);
             }
 
             File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
@@ -247,16 +253,28 @@ public class Validate extends FimsService {
                 p.upload(createExpedition, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
 
                 // hack until we get FastqFileManger.upload working
-//                ObjectMapper mapper = new ObjectMapper();
-//                FastqMetadata fastqMetadata = mapper.readValue(processController.getFastqMetadata(), FastqMetadata.class);
-                FastqMetadata fastqMetadata = (FastqMetadata) JSONValue.parse(processController.getFastqMetadata().toJSONString());
+                if (processController.getFastqMetadata() != null) {
+                    try {
+                        ObjectMapper mapper = new ObjectMapper();
+                        FastqMetadata fastqMetadata = mapper.readValue(processController.getFastqMetadata().toJSONString(), FastqMetadata.class);
 
-                Expedition expedition = expeditionService.getExpedition(processController.getExpeditionCode(), processController.getProjectId());
-                DipnetExpedition dipnetExpedition = new DipnetExpedition.DipnetExpeditionBuilder(expedition)
-                        .fastqMetadata(fastqMetadata)
-                        .build();
+                        Expedition expedition = expeditionService.getExpedition(processController.getExpeditionCode(), processController.getProjectId());
+                        DipnetExpedition dipnetExpedition = dipnetExpeditionService.getDipnetExpedition(expedition.getExpeditionId());
 
-                dipnetExpeditionService.create(dipnetExpedition);
+                        if (dipnetExpedition == null) {
+                            dipnetExpedition = new DipnetExpedition.DipnetExpeditionBuilder(expedition)
+                                    .fastqMetadata(fastqMetadata)
+                                    .build();
+
+                            dipnetExpeditionService.create(dipnetExpedition);
+                        } else {
+                            dipnetExpedition.setFastqMetadata(fastqMetadata);
+                            dipnetExpeditionService.update(dipnetExpedition);
+                        }
+                    } catch (IOException e) {
+                        throw new FimsRuntimeException("Failed to convert FastqMetadata object", 500, e);
+                    }
+                }
 
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode() == UploadCode.EXPEDITION_CREATE) {

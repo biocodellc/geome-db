@@ -2,6 +2,7 @@ package biocode.fims.dipnet.entities;
 
 import biocode.fims.converters.JSONArrayPersistenceConverter;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.util.List;
@@ -98,6 +99,9 @@ public class FastqMetadata {
         }
     }
 
+    // needed for jackson and hibernate
+    FastqMetadata() {}
+
     private FastqMetadata(FASTQMetadataBuilder builder) {
         this.libraryStrategy = builder.libraryStrategy;
         this.librarySource = builder.librarySource;
@@ -109,6 +113,7 @@ public class FastqMetadata {
         this.filenames = builder.filenames;
     }
 
+    @JsonIgnore
     @Id
     @Column(unique = true, nullable = false)
     public int getExpeditionId() {
@@ -199,7 +204,7 @@ public class FastqMetadata {
         return dipnetExpedition;
     }
 
-    private void setDipnetExpedition(DipnetExpedition dipnetExpedition) {
+    public void setDipnetExpedition(DipnetExpedition dipnetExpedition) {
         this.dipnetExpedition = dipnetExpedition;
     }
 
