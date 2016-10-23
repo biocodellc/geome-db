@@ -47,12 +47,9 @@
                             <div class="col-sm-4">
                                 <select id="expeditionCode" name="expeditionCode"
                                         ng-model="vm.expeditionCode"
+                                        ng-options="expedition.expeditionCode as expedition.expeditionTitle for expedition in vm.expeditions"
                                         class="form-control col-sm-4" required>
-                                    <option value="">Select a dataset</option>
-                                    <option ng-repeat="expedition in vm.expeditions"
-                                            value="{{ expedition.expeditionCode }}">
-                                        {{ expedition.expeditionTitle }}
-                                    </option>
+                                    <option value="">-- Select a Dataset --</option>
                                 </select>
                             </div>
                             <div class="col-sm-2">
@@ -98,12 +95,12 @@
                                                    class="form-control"
                                                    ngf-select
                                                    ngf-model-invalid="invalidFastqFile"
-                                                   ngf-pattern="'.txt"
+                                                   ngf-pattern="'.txt'"
                                                    ng-required="vm.dataTypes.fastq"
-                                                   ng-model="vm.fastq.filenames"/>
+                                                   ng-model="vm.fastqFilenames"/>
                                         </label>
                                         <input type="text" class="form-control"
-                                               ng-value="vm.fastq.filenames.name || invalidFastqFile.name"
+                                               ng-value="vm.fastqFilenames.name || invalidFastqFile.name"
                                                readonly/>
                                     </div>
                                     <p class="help-block col-sm-offset-2"
@@ -143,7 +140,15 @@
                             <div class="form-group" show-errors>
                                 <label for="libraryStrategy" class="col-sm-2 control-label">Library Strategy</label>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" id="libraryStrategy" name="libraryStrategy"
+                                    <select class="form-control" name="libraryStrategy"
+                                            ng-show="vm.fastqMetadataLists.libraryStrategy"
+                                            ng-model="vm.fastqMetadata.libraryStrategy"
+                                            ng-options="strategy for strategy in vm.fastqMetadataLists.libraryStrategy"
+                                            ng-required="vm.dataTypes.fastq">
+                                        <option value="">-- Select a Library Strategy --</option>
+                                    </select>
+                                    <input type="text" class="form-control" id="libraryStrategy" name="libraryStrategyManual"
+                                           ng-show="!vm.fastqMetadataLists.libraryStrategy"
                                            ng-model="vm.fastqMetadata.libraryStrategy"
                                            ng-required="vm.dataTypes.fastq"/>
                                 </div>
@@ -152,7 +157,15 @@
                             <div class="form-group" show-errors>
                                 <label for="librarySource" class="col-sm-2 control-label">Library Source</label>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" id="librarySource" name="librarySource"
+                                    <select class="form-control" name="librarySource"
+                                            ng-show="vm.fastqMetadataLists.librarySource"
+                                            ng-model="vm.fastqMetadata.librarySource"
+                                            ng-options="source for source in vm.fastqMetadataLists.librarySource"
+                                            ng-required="vm.dataTypes.fastq">
+                                        <option value="">-- Select a Library Source --</option>
+                                    </select>
+                                    <input type="text" class="form-control" id="librarySource" name="librarySourceManual"
+                                           ng-show="!vm.fastqMetadataLists.librarySource"
                                            ng-model="vm.fastqMetadata.librarySource"
                                            ng-required="vm.dataTypes.fastq"/>
                                 </div>
@@ -161,8 +174,16 @@
                             <div class="form-group" show-errors>
                                 <label for="librarySelection" class="col-sm-2 control-label">Library Selection</label>
                                 <div class="col-sm-6">
+                                    <select class="form-control" name="librarySelection"
+                                            ng-show="vm.fastqMetadataLists.librarySelection"
+                                            ng-model="vm.fastqMetadata.librarySelection"
+                                            ng-options="selection for selection in vm.fastqMetadataLists.librarySelection"
+                                            ng-required="vm.dataTypes.fastq">
+                                        <option value="">-- Select a Library Selection --</option>
+                                    </select>
                                     <input type="text" class="form-control" id="librarySelection"
-                                           name="librarySelection" ng-model="vm.fastqMetadata.librarySelection"
+                                           ng-show="!vm.fastqMetadataLists.librarySelection"
+                                           name="librarySelectionManual" ng-model="vm.fastqMetadata.librarySelection"
                                            ng-required="vm.dataTypes.fastq"/>
                                 </div>
                             </div>
@@ -170,7 +191,15 @@
                             <div class="form-group" show-errors>
                                 <label for="platform" class="col-sm-2 control-label">Platform</label>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" id="platform" name="platform"
+                                    <select class="form-control" name="platform"
+                                            ng-show="vm.fastqMetadataLists.platform"
+                                            ng-model="vm.fastqMetadata.platform"
+                                            ng-options="platform as platform for (platform, list) in vm.fastqMetadataLists.platform"
+                                            ng-required="vm.dataTypes.fastq">
+                                        <option value="">-- Select a Platform --</option>
+                                    </select>
+                                    <input type="text" class="form-control" id="platform" name="platformManual"
+                                           ng-show="!vm.fastqMetadataLists.platform"
                                            ng-model="vm.fastqMetadata.platform"
                                            ng-required="vm.dataTypes.fastq"/>
                                 </div>
@@ -179,7 +208,15 @@
                             <div class="form-group" show-errors>
                                 <label for="instrumentModel" class="col-sm-2 control-label">Instrument Model</label>
                                 <div class="col-sm-6">
-                                    <input type="text" class="form-control" id="instrumentModel" name="instrumentModel"
+                                    <select class="form-control" name="instrumentModel"
+                                            ng-show="vm.fastqMetadataLists.platform[vm.fastqMetadata.platform]"
+                                            ng-model="vm.fastqMetadata.instrumentModel"
+                                            ng-options="instrumentModel for instrumentModel in vm.fastqMetadataLists.platform[vm.fastqMetadata.platform]"
+                                            ng-required="vm.dataTypes.fastq">
+                                        <option value="">-- Select an Instrument Model --</option>
+                                    </select>
+                                    <input type="text" class="form-control" id="instrumentModel" name="instrumentModelManual"
+                                           ng-show="!vm.fastqMetadataLists.platform[vm.fastqMetadata.platform]"
                                            ng-model="vm.fastqMetadata.instrumentModel"
                                            ng-required="vm.dataTypes.fastq"/>
                                 </div>

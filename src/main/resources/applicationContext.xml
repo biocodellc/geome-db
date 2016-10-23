@@ -67,8 +67,11 @@
         <constructor-arg ref="fastaPersistenceManager"/>
     </bean>
 
+    <bean id="fastqFileManager" scope="prototype" class="biocode.fims.fileManagers.fastq.FastqFileManager"/>
+
     <util:list id="fileManagers" scope="prototype" value-type="biocode.fims.fileManagers.AuxilaryFileManager">
         <ref bean="fastaFileManager"/>
+        <ref bean="fastqFileManager"/>
     </util:list>
 
     <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">

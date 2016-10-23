@@ -706,4 +706,53 @@ public class Projects extends FimsService {
 
         return Response.ok(pageMap).build();
     }
+
+
+    @GET
+    @Path("/{projectId}/lists/fastqMetadata")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFastqMetadataLists(@PathParam("projectId") Integer projectId) {
+        JSONObject response = new JSONObject();
+
+        File configFile = new ConfigurationFileFetcher(
+                projectId,
+                uploadPath(),
+                false
+        ).getOutputFile();
+
+        Mapping mapping = new Mapping();
+        mapping.addMappingRules(configFile);
+
+        Validation validation = new Validation();
+        validation.addValidationRules(configFile, mapping);
+
+        response.put("libraryLayout", getList("libraryLayout", validation));
+        response.put("libraryStrategy", getList("libraryStrategy", validation));
+        response.put("librarySource", getList("librarySource", validation));
+        response.put("librarySelection", getList("librarySelection", validation));
+
+        JSONObject platformLists = new JSONObject();
+        java.util.List<String> platforms = getList("platform", validation);
+
+        for (String platform: platforms) {
+            platformLists.put(platform, getList(platform, validation));
+        }
+
+        response.put("platform", platformLists);
+
+        return Response.ok(response).build();
+    }
+
+    private java.util.List<String> getList(String listName, Validation validation) {
+        biocode.fims.digester.List list = validation.findList(listName);
+        java.util.List<String> listFields = new ArrayList<>();
+
+        if (list != null) {
+            for (Field f: list.getFields()) {
+                listFields.add(f.getValue());
+            }
+        }
+
+        return listFields;
+    }
 }

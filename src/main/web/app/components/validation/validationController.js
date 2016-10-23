@@ -20,6 +20,7 @@ angular.module('fims.validation')
                 fastq: false,
                 fasta: false
             };
+            vm.fastqMetadataLists = {};
             vm.dataset = null;
             vm.fasta = null;
             vm.fastqFilenames = null;
@@ -73,15 +74,15 @@ angular.module('fims.validation')
                 validateSubmit({
                     projectId: PROJECT_ID,
                     expeditionCode: vm.expeditionCode,
-                    fastqMetadata: vm.fastqMetadata,
+                    fastqMetadata: Upload.jsonBlob(vm.fastqMetadata),
                     upload: true,
                     public_status: true,
                     dataset: vm.dataset,
-                    fasta: vm.fasta
+                    fasta: vm.fasta,
+                    fastqFilenames: vm.fastqFilenames
                 }).then(
                     function (response) {
                         if (response.data.done) {
-                            // angular.extend(ResultsDataFactory.validationMessages, response.data.done);
                             ResultsDataFactory.validationMessages = response.data.done;
                             ResultsDataFactory.showOkButton = true;
                             ResultsDataFactory.showValidationMessages = true;
@@ -233,8 +234,8 @@ angular.module('fims.validation')
                         function (spreadsheetNaan) {
                             if (spreadsheetNaan > 0) {
                                 $http.get(REST_ROOT + "utils/getNAAN")
-                                    .then(function (data) {
-                                        checkNAAN(spreadsheetNaan, data.naan);
+                                    .then(function (response) {
+                                        checkNAAN(spreadsheetNaan, response.data.naan);
                                     });
                             }
                         });
@@ -327,12 +328,23 @@ angular.module('fims.validation')
                     })
             }
 
+            function getFastqMetadataLists() {
+                $http.get(REST_ROOT + "projects/" + PROJECT_ID + "/lists/fastqMetadata")
+                    .then(function (response) {
+                        angular.extend(vm.fastqMetadataLists, response.data);
+                    }, function (response) {
+                        FailModalFactory.open("Failed to load fastq metadata lists", response.data.usrMessage);
+                    });
+            }
+
             (function init() {
                 fimsBrowserCheck($('#warning'));
 
                 if (vm.isAuthenticated) {
                     getExpeditions();
                 }
+
+                getFastqMetadataLists();
             }).call();
 
         }]);
