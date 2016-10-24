@@ -1,7 +1,7 @@
 angular.module('fims.validation')
 
-    .controller('ValidationCtrl', ['$scope', '$q', '$http', '$uibModal', 'Upload', 'AuthFactory', 'ExpeditionFactory', 'FailModalFactory', 'ResultsDataFactory', 'StatusPollingFactory', 'PROJECT_ID', 'REST_ROOT',
-        function ($scope, $q, $http, $uibModal, Upload, AuthFactory, ExpeditionFactory, FailModalFactory, ResultsDataFactory, StatusPollingFactory, PROJECT_ID, REST_ROOT) {
+    .controller('ValidationCtrl', ['$scope', '$q', '$http', '$window', '$uibModal', 'Upload', 'AuthFactory', 'ExpeditionFactory', 'FailModalFactory', 'ResultsDataFactory', 'StatusPollingFactory', 'PROJECT_ID', 'REST_ROOT',
+        function ($scope, $q, $http, $window, $uibModal, Upload, AuthFactory, ExpeditionFactory, FailModalFactory, ResultsDataFactory, StatusPollingFactory, PROJECT_ID, REST_ROOT) {
             var defaultFastqMetadata = {
                 libraryLayout: null,
                 libraryStrategy: null,
@@ -11,6 +11,7 @@ angular.module('fims.validation')
                 designDescription: null,
                 instrumentModel: null
             };
+            var latestExpeditionCode = null;
             var vm = this;
 
             vm.projectId = PROJECT_ID;
@@ -31,12 +32,31 @@ angular.module('fims.validation')
             vm.coordinatesVerified = false;
             vm.displayResults = false;
             vm.coordinatesErrorClass = null;
+            vm.showGenbankDownload = false;
             vm.createExpedition = createExpedition;
             vm.datasetChange = datasetChange;
             vm.validate = validate;
             vm.upload = upload;
             vm.checkDataTypes = checkDataTypes;
             vm.checkCoordinatesVerified = checkCoordinatesVerified;
+            vm.downloadFastqFiles = downloadFastqFiles;
+
+            function downloadFastqFiles() {
+                if (latestExpeditionCode == null) {
+                    return;
+
+                }
+                $window.location = REST_ROOT + "expeditions/" + getExpeditionId() + "/sra/files";
+            }
+            function getExpeditionId() {
+                var expeditionId;
+                vm.expeditions.some(function(expedition) {
+                    if (expedition.expeditionCode == latestExpeditionCode) {
+                        expeditionId = expedition.expeditionId;
+                    }
+                });
+                return expeditionId;
+            }
 
             function checkCoordinatesVerified() {
                 if (vm.verifyDataPoints && !vm.coordinatesVerified) {
@@ -63,24 +83,39 @@ angular.module('fims.validation')
                 }
             }
 
+            function getUploadData() {
+                var data = {};
+
+                data.projectId = PROJECT_ID;
+                data.expeditionCode = vm.expeditionCode;
+                data.upload = true;
+                data.public_status = true;
+
+                if (vm.dataTypes.fims) {
+                    data.dataset = vm.dataset;
+                }
+                if (vm.dataTypes.fasta) {
+                    data.fasta = vm.fasta;
+                }
+                if (vm.dataTypes.fastq) {
+                    data.fastqMetadata = Upload.jsonBlob(vm.fastqMetadata);
+                    data.fastqFilenames = vm.fastqFilenames;
+                }
+
+                return data;
+            }
+
             function upload() {
                 ResultsDataFactory.reset();
                 $scope.$broadcast('show-errors-check-validity');
 
-                // if (!checkCoordinatesVerified() || vm.uploadForm.$invalid || !(vm.dataset || vm.fasta)) {
-                //     return;
-                // }
+                if (!checkCoordinatesVerified() || vm.uploadForm.$invalid || !(vm.dataset || vm.fasta)) {
+                    return;
+                }
 
-                validateSubmit({
-                    projectId: PROJECT_ID,
-                    expeditionCode: vm.expeditionCode,
-                    fastqMetadata: Upload.jsonBlob(vm.fastqMetadata),
-                    upload: true,
-                    public_status: true,
-                    dataset: vm.dataset,
-                    fasta: vm.fasta,
-                    fastqFilenames: vm.fastqFilenames
-                }).then(
+                var data = getUploadData();
+
+                validateSubmit(data).then(
                     function (response) {
                         if (response.data.done) {
                             ResultsDataFactory.validationMessages = response.data.done;
@@ -138,6 +173,8 @@ angular.module('fims.validation')
                             ResultsDataFactory.showContinueButton = false;
                             ResultsDataFactory.showCancelButton = false;
                             vm.displayResults = true;
+                            latestExpeditionCode = vm.expeditionCode;
+                            vm.showGenbankDownload = true;
                             resetForm();
                         }
 
@@ -153,6 +190,7 @@ angular.module('fims.validation')
             }
 
             function validateSubmit(data) {
+                vm.showGenbankDownload = false;
                 return Upload.upload({
                     url: REST_ROOT + "validate",
                     data: data

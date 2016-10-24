@@ -1,14 +1,8 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.digester.Field;
-import biocode.fims.digester.List;
-import biocode.fims.digester.Mapping;
-import biocode.fims.digester.Validation;
 import biocode.fims.rest.FimsService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.GET;
@@ -16,8 +10,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.util.ArrayList;
 
 /**
  * Dipnet-Fims utility services

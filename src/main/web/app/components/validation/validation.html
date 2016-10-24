@@ -59,7 +59,8 @@
                             </div>
                         </div>
 
-                        <fims-data ng-show="vm.dataTypes.fims" ng-model="vm.dataset" change="vm.datasetChange()"></fims-data>
+                        <fims-data ng-show="vm.dataTypes.fims" ng-model="vm.dataset"
+                                   change="vm.datasetChange()"></fims-data>
 
                         <div class="form-group" ng-show="vm.dataTypes.fasta" show-errors="{trigger: 'change'}">
                             <label for="fasta" class="col-sm-2 control-label">FASTA Data</label>
@@ -147,7 +148,8 @@
                                             ng-required="vm.dataTypes.fastq">
                                         <option value="">-- Select a Library Strategy --</option>
                                     </select>
-                                    <input type="text" class="form-control" id="libraryStrategy" name="libraryStrategyManual"
+                                    <input type="text" class="form-control" id="libraryStrategy"
+                                           name="libraryStrategyManual"
                                            ng-show="!vm.fastqMetadataLists.libraryStrategy"
                                            ng-model="vm.fastqMetadata.libraryStrategy"
                                            ng-required="vm.dataTypes.fastq"/>
@@ -164,7 +166,8 @@
                                             ng-required="vm.dataTypes.fastq">
                                         <option value="">-- Select a Library Source --</option>
                                     </select>
-                                    <input type="text" class="form-control" id="librarySource" name="librarySourceManual"
+                                    <input type="text" class="form-control" id="librarySource"
+                                           name="librarySourceManual"
                                            ng-show="!vm.fastqMetadataLists.librarySource"
                                            ng-model="vm.fastqMetadata.librarySource"
                                            ng-required="vm.dataTypes.fastq"/>
@@ -215,7 +218,8 @@
                                             ng-required="vm.dataTypes.fastq">
                                         <option value="">-- Select an Instrument Model --</option>
                                     </select>
-                                    <input type="text" class="form-control" id="instrumentModel" name="instrumentModelManual"
+                                    <input type="text" class="form-control" id="instrumentModel"
+                                           name="instrumentModelManual"
                                            ng-show="!vm.fastqMetadataLists.platform[vm.fastqMetadata.platform]"
                                            ng-model="vm.fastqMetadata.instrumentModel"
                                            ng-required="vm.dataTypes.fastq"/>
@@ -254,6 +258,11 @@
                 </uib-tab>
             </uib-tabset>
 
+            <div class="col-sm-12" ng-show="vm.showGenbankDownload">
+                <button type="button" ng-click="vm.downloadFastqFiles()" class="btn btn-primary">Download Genbank
+                    Files
+                </button>
+            </div>
             <div class="col-sm-12" ng-show="vm.displayResults"
                  ng-include="'app/components/validation/results/results.tpl.html'">
             </div>
