@@ -2,14 +2,18 @@ package biocode.fims.dipnet.services;
 
 import biocode.fims.digester.Mapping;
 import biocode.fims.dipnet.entities.DipnetExpedition;
+import biocode.fims.dipnet.entities.FastqMetadata;
 import biocode.fims.dipnet.repositories.DipnetExpeditionRepository;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.service.ExpeditionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Set;
 
 /**
@@ -20,6 +24,9 @@ import java.util.Set;
 public class DipnetExpeditionService {
     private final ExpeditionService expeditionService;
     private final DipnetExpeditionRepository dipnetExpeditionRepository;
+
+    @PersistenceContext(unitName = "dipnetEntityManagerFactory")
+    private EntityManager entityManager;
 
     @Autowired
     public DipnetExpeditionService(DipnetExpeditionRepository dipnetExpeditionRepository, ExpeditionService expeditionService) {
@@ -65,11 +72,17 @@ public class DipnetExpeditionService {
         expeditionService.update(dipnetExpedition.getExpedition());
     }
 
+    @Transactional(readOnly = true)
     public DipnetExpedition getDipnetExpedition(int dipnetExpeditionId) {
+        DipnetExpedition dipnetExpedition = null;
         Expedition expedition = expeditionService.getExpedition(dipnetExpeditionId);
 
-        DipnetExpedition dipnetExpedition = dipnetExpeditionRepository.findOneByExpeditionId(dipnetExpeditionId);
-        dipnetExpedition.setExpedition(expedition);
+        if (expedition != null) {
+            dipnetExpedition = dipnetExpeditionRepository.findOneByExpeditionId(dipnetExpeditionId);
+            if (dipnetExpedition != null) {
+                dipnetExpedition.setExpedition(expedition);
+            }
+        }
 
         return dipnetExpedition;
     }

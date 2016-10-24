@@ -59,15 +59,20 @@ public class DipnetExpedition {
             this.expeditionId = id;
     }
 
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "dipnetExpedition")
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "dipnetExpedition", orphanRemoval = true)
     public FastqMetadata getFastqMetadata() {
         return fastqMetadata;
     }
 
     public void setFastqMetadata(FastqMetadata fastqMetadata) {
-        this.fastqMetadata = fastqMetadata;
-        if (fastqMetadata != null) {
-            this.fastqMetadata.setDipnetExpedition(this);
+        if (this.fastqMetadata != null && fastqMetadata != null) {
+            // hack due to bug in hibernate
+            FastqMetadata.map(this.fastqMetadata, fastqMetadata);
+        } else {
+            this.fastqMetadata = fastqMetadata;
+            if (fastqMetadata != null) {
+                fastqMetadata.setDipnetExpedition(this);
+            }
         }
     }
 

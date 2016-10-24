@@ -258,4 +258,22 @@ public class FastqMetadata {
                 ", dipnetExpedition=" + dipnetExpedition +
                 '}';
     }
+
+    /**
+     * need to copy over all values to the existing {@link FastqMetadata} object. This is due to a
+     * hibernate bug where we are getting an EntityExistsException when trying to replace the old
+     * FastqMetadata object with a new one, even though removeOrphans = true;
+     * @param toUpdate
+     * @param dto
+     */
+    public static void map(FastqMetadata toUpdate, FastqMetadata dto) {
+        toUpdate.setDesignDescription(dto.getDesignDescription());
+        toUpdate.setFilenames(dto.getFilenames());
+        toUpdate.setInstrumentModel(dto.getInstrumentModel());
+        toUpdate.setLibraryLayout(dto.getLibraryLayout());
+        toUpdate.setLibrarySelection(dto.getLibrarySelection());
+        toUpdate.setLibraryStrategy(dto.getLibraryStrategy());
+        toUpdate.setLibrarySource(dto.getLibrarySource());
+        toUpdate.setPlatform(dto.getPlatform());
+    }
 }
