@@ -8,6 +8,7 @@ import biocode.fims.entities.Expedition;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.dataset.DatasetFileManager;
 import biocode.fims.fimsExceptions.*;
+import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.Process;
@@ -247,6 +248,11 @@ public class Validate extends FimsService {
 
             if (createExpedition) {
                 processController.setExpeditionTitle(processController.getExpeditionCode() + " spreadsheet");
+
+                // TODO find a better way to do this
+                if (expeditionService.getExpedition(processController.getExpeditionCode(), processController.getProjectId()) != null) {
+                    throw  new BadRequestException("Dataset with that name already exists.");
+                }
             }
 
             try {

@@ -9,7 +9,6 @@ import javax.persistence.*;
  * DipnetExpedition domain object. A DipnetExpedition has a one-to-one unidirectional relationship to
  * a biocode-fims {@link Expedition}.
  */
-//@JsonDeserialize(builder = DipnetExpedition.DipnetExpeditionBuilder.class)
 @Entity
 @Table(name = "dipnetExpeditions")
 public class DipnetExpedition {
@@ -19,7 +18,6 @@ public class DipnetExpedition {
 
     private Expedition expedition;
 
-    //    @JsonPOJOBuilder(buildMethodName = "build", withPrefix = "")
     public static class DipnetExpeditionBuilder {
         private Expedition expedition;
         private FastqMetadata fastqMetadata;
