@@ -188,7 +188,7 @@ public class FastqMetadata {
     }
 
     @Convert(converter = JSONArrayPersistenceConverter.class)
-    @Column(columnDefinition = "json NOT NULL")
+    @Column(columnDefinition = "text NOT NULL")
     public List<String> getFilenames() {
         return filenames;
     }
