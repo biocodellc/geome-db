@@ -42,8 +42,19 @@
 
                         <div class="form-group" show-errors>
                             <label for="expeditionCode" class="col-sm-2 control-label">Dataset Name</label>
-                            <div class="col-sm-4 col-md-2">
-                                <input type="text" id="expeditionCode" class="form-control" name="expeditionCode" ng-model="vm.expeditionCode" required>
+                            <div class="col-sm-6">
+                                <div class="col-sm-8 col-md-4" style="padding-left: 0px;">
+                                    <input type="text" id="expeditionCode" class="form-control" name="expeditionCode"
+                                           ng-model="vm.expeditionCode" ng-pattern="/^[a-zA-Z0-9_-]{4,50}$/" required>
+                                </div>
+                                <p class="help-block col-sm-12" style="padding-left:0px;"
+                                      ng-show="vm.uploadForm.expeditionCode.$error.exists">
+                                Dataset with that name already exists
+                                </p>
+                                <p class="help-block col-sm-12" style="padding-left:0px;"
+                                   ng-if="vm.uploadForm.expeditionCode.$error.pattern && vm.uploadForm.expeditionCode.$touched">
+                                    must contain only numbers, letters, or underscores and be 4 to 50 characters long
+                                </p>
                             </div>
                         </div>
 

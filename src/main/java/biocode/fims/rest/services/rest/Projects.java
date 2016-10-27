@@ -755,4 +755,14 @@ public class Projects extends FimsService {
 
         return listFields;
     }
+
+    @GET
+    @Path("{projectId}/expedition/{expeditionCode}")
+    @Authenticated
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getExpedition(@PathParam("projectId") Integer projectId,
+                                  @PathParam("expeditionCode") String expeditionCode) {
+        return Response.ok(expeditionService.getExpedition(expeditionCode, projectId)).build();
+    }
+
 }
