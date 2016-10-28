@@ -110,37 +110,34 @@ angular.module('fims.validation')
             function upload() {
                 $scope.$broadcast('show-errors-check-validity');
 
-                checkExpeditionExists()
-                    .finally(function () {
 
-                        if (!checkCoordinatesVerified() || vm.uploadForm.$invalid || !(vm.dataset || vm.fasta)) {
-                            return;
+                if (!checkCoordinatesVerified() || vm.uploadForm.$invalid || !(vm.dataset || vm.fasta)) {
+                    return;
+                }
+
+                var data = getUploadData();
+
+                validateSubmit(data).then(
+                    function (response) {
+                        if (response.data.done) {
+                            ResultsDataFactory.validationMessages = response.data.done;
+                            ResultsDataFactory.showOkButton = true;
+                            ResultsDataFactory.showValidationMessages = true;
+                        } else if (response.data.continue) {
+                            if (response.data.continue.message == "continue") {
+                                continueUpload();
+                            } else {
+                                ResultsDataFactory.validationMessages = response.data.continue;
+                                ResultsDataFactory.showValidationMessages = true;
+                                ResultsDataFactory.showStatus = false;
+                                ResultsDataFactory.showContinueButton = true;
+                                ResultsDataFactory.showCancelButton = true;
+                            }
+
+                        } else {
+                            ResultsDataFactory.error = "Unexpected response from server. Please contact system admin.";
+                            ResultsDataFactory.showOkButton = true;
                         }
-
-                        var data = getUploadData();
-
-                        validateSubmit(data).then(
-                            function (response) {
-                                if (response.data.done) {
-                                    ResultsDataFactory.validationMessages = response.data.done;
-                                    ResultsDataFactory.showOkButton = true;
-                                    ResultsDataFactory.showValidationMessages = true;
-                                } else if (response.data.continue) {
-                                    if (response.data.continue.message == "continue") {
-                                        continueUpload();
-                                    } else {
-                                        ResultsDataFactory.validationMessages = response.data.continue;
-                                        ResultsDataFactory.showValidationMessages = true;
-                                        ResultsDataFactory.showStatus = false;
-                                        ResultsDataFactory.showContinueButton = true;
-                                        ResultsDataFactory.showCancelButton = true;
-                                    }
-
-                                } else {
-                                    ResultsDataFactory.error = "Unexpected response from server. Please contact system admin.";
-                                    ResultsDataFactory.showOkButton = true;
-                                }
-                        });
                     });
             }
 
@@ -150,18 +147,6 @@ angular.module('fims.validation')
                 ResultsDataFactory.showCancelButton = false;
                 ResultsDataFactory.showValidationMessages = false;
             });
-
-            function checkExpeditionExists() {
-                return ExpeditionFactory.getExpedition(vm.expeditionCode)
-                    .then(function (response) {
-                        // if we get an expedition, then it already exists
-                        if (response.data) {
-                            vm.uploadForm.expeditionCode.$setValidity("exists", false);
-                        } else {
-                            vm.uploadForm.expeditionCode.$setValidity("exists", true);
-                        }
-                    });
-            }
 
             function continueUpload() {
                 StatusPollingFactory.startPolling();
