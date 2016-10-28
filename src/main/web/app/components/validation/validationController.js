@@ -12,6 +12,7 @@ angular.module('fims.validation')
                 instrumentModel: null
             };
             var latestExpeditionCode = null;
+            var modalInstance = null;
             var vm = this;
 
             vm.projectId = PROJECT_ID;
@@ -33,6 +34,7 @@ angular.module('fims.validation')
             vm.displayResults = false;
             vm.coordinatesErrorClass = null;
             vm.showGenbankDownload = false;
+            vm.activeTab = 0;
             vm.datasetChange = datasetChange;
             vm.validate = validate;
             vm.upload = upload;
@@ -101,7 +103,6 @@ angular.module('fims.validation')
             }
 
             function upload() {
-                ResultsDataFactory.reset();
                 $scope.$broadcast('show-errors-check-validity');
 
                 checkExpeditionExists()
@@ -134,10 +135,6 @@ angular.module('fims.validation')
                                     ResultsDataFactory.error = "Unexpected response from server. Please contact system admin.";
                                     ResultsDataFactory.showOkButton = true;
                                 }
-
-                            }
-                        ).finally(function () {
-                            StatusPollingFactory.stopPolling();
                         });
                     });
             }
@@ -176,13 +173,7 @@ angular.module('fims.validation')
                             ResultsDataFactory.showUploadMessages = true;
                         } else {
                             ResultsDataFactory.successMessage = response.data.done;
-                            ResultsDataFactory.showStatus = false;
-                            ResultsDataFactory.showUploadMessages = false;
-                            ResultsDataFactory.showSuccessMessages = true;
-                            ResultsDataFactory.showOkButton = true;
-                            ResultsDataFactory.showContinueButton = false;
-                            ResultsDataFactory.showCancelButton = false;
-                            vm.displayResults = true;
+                            modalInstance.close();
                             latestExpeditionCode = vm.expeditionCode;
                             vm.showGenbankDownload = true;
                             // TODO remove this
@@ -202,6 +193,7 @@ angular.module('fims.validation')
             }
 
             function validateSubmit(data) {
+                ResultsDataFactory.reset();
                 vm.showGenbankDownload = false;
                 return Upload.upload({
                     url: REST_ROOT + "validate",
@@ -227,7 +219,6 @@ angular.module('fims.validation')
             }
 
             function validate() {
-                ResultsDataFactory.reset();
                 validateSubmit({
                     projectId: PROJECT_ID,
                     expeditionCode: vm.expeditionCode,
@@ -236,15 +227,13 @@ angular.module('fims.validation')
                 }).then(
                     function (response) {
                         ResultsDataFactory.validationMessages = response.data.done;
-                        ResultsDataFactory.showOkButton = true;
-                        ResultsDataFactory.showValidationMessages = true;
-                        StatusPollingFactory.stopPolling();
+                        modalInstance.close();
                     }
                 );
             }
 
             function openResultsModal() {
-                var modalInstance = $uibModal.open({
+                modalInstance = $uibModal.open({
                     templateUrl: 'app/components/validation/results/resultsModal.tpl.html',
                     size: 'md',
                     controller: 'ResultsModalCtrl',
@@ -254,6 +243,7 @@ angular.module('fims.validation')
                 });
 
                 modalInstance.result.finally(function () {
+                        vm.activeTab = 2; // index 2 is the results tab
                         vm.displayResults = true;
                         ResultsDataFactory.showStatus = false;
                         ResultsDataFactory.showValidationMessages = true;
@@ -272,6 +262,7 @@ angular.module('fims.validation')
                 vm.expeditionCode = "";
                 vm.verifyDataPoints = false;
                 vm.coordinatesVerified = false;
+                $scope.$broadcast('show-errors-reset');
             }
 
             function datasetChange() {

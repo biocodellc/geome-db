@@ -8,7 +8,7 @@
         <div class="col-sm-12">
             <!-- TODO remove this when we refactor list() function -->
             <input type="hidden" value="{{ vm.projectId }}" name="projectId" id="project">
-            <uib-tabset active="0">
+            <uib-tabset active="vm.activeTab">
                 <uib-tab index="-1" heading="" disable="true" classes="col-sm-offset-1 hidden-tab"></uib-tab>
 
                 <!-- Validation Tab -->
@@ -255,16 +255,22 @@
                     </form>
 
                 </uib-tab>
+
+                <!-- Results Tab -->
+                <uib-tab index="2" heading="Results"  disable="!vm.displayResults">
+                    <div class="col-sm-11 col-sm-offset-1" ng-show="vm.showGenbankDownload">
+                        <button type="button" ng-click="vm.downloadFastqFiles()" class="btn btn-primary">Download Genbank
+                            Files
+                        </button>
+                        <a href="https://submit.ncbi.nlm.nih.gov/subs/sra/" class="btn btn-default">Submit to Genbank</a>
+                    </div>
+                    <div class="col-sm-11 col-sm-offset-1"
+                         ng-include="'app/components/validation/results/results.tpl.html'">
+                    </div>
+                </uib-tab>
             </uib-tabset>
 
-            <div class="col-sm-12" ng-show="vm.showGenbankDownload">
-                <button type="button" ng-click="vm.downloadFastqFiles()" class="btn btn-primary">Download Genbank
-                    Files
-                </button>
-            </div>
-            <div class="col-sm-12" ng-show="vm.displayResults"
-                 ng-include="'app/components/validation/results/results.tpl.html'">
-            </div>
+
 
             <div id='map' style="height:400px;width:600px;"></div>
         </div>
