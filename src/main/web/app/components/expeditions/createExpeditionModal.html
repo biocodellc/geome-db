@@ -1,24 +1,26 @@
 <form name="expeditionForm" novalidate ng-submit="vm.create()">
     <div class="modal-header">
-        <h3 class="modal-title">Dataset Creation!</h3>
+        <h3 class="modal-title">New Expedition</h3>
     </div>
     <div class="modal-body">
+        <p>In this system we refer to each dataset as an “Expedition” each of which includes the metadata and sequences
+            uploaded from a single dataset.</p>
         <div class="col-sm-12 alert alert-error" role="alert" ng-show="vm.error"><strong>Error! </strong>{{ vm.error }}
         </div>
         <div class="form-group" show-errors>
-            <label for="expeditionCode" class="control-label">Dataset Code</label>
-            <input type="text" class="form-control" id="expeditionCode" name="expeditionCode" ng-model="vm.expedition.expeditionCode"
+            <label for="expeditionCode" class="control-label">Expedition Name</label>
+            <input type="text" class="form-control" id="expeditionCode" name="expeditionCode"
+                   ng-model="vm.expedition.expeditionCode"
                    autofocus required ng-pattern=/^[a-zA-Z0-9_-]{4,50}$/ />
-            <p class="help-block" ng-if="expeditionForm.expeditionCode.$error.pattern && expeditionForm.expeditionCode.$touched"><b>Expedition Code</b>
+            <p class="help-block">
+                We recommend you name your dataset using following format GenusSpecies_markerabbreviation_yourInitials.
+                If your files include data from multiple taxa please replace GenusSpecies with a relevant descriptor
+                such as GenusSpp. or group such as seaurchins
+            </p>
+            <p class="help-block"
+               ng-if="expeditionForm.expeditionCode.$error.pattern && expeditionForm.expeditionCode.$touched"><b>Expedition
+                Code</b>
                 must contain only numbers, letters, or underscores and be 4 to 50 characters long</p>
-        </div>
-        <div class="form-group">
-            <div class="checkbox">
-                <label>
-                    <input type="checkbox" id="public" name="public" ng-model="vm.expedition.public" />
-                    <span class="control-label">Public Dataset</span>
-                </label>
-            </div>
         </div>
     </div>
     <div class="modal-footer">

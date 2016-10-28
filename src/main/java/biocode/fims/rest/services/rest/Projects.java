@@ -228,7 +228,7 @@ public class Projects extends FimsService {
      */
     private String printRuleMetadata(Rule r, biocode.fims.digester.List sList) {
         StringBuilder output = new StringBuilder();
-        output.append("<li>\n");
+        output.append("<ul class=\"list-unstyled\">\n");
         //
         if (r.getType().equals("checkInXMLFields")) {
             r.setType("Lookup Value From List");
@@ -280,7 +280,7 @@ public class Projects extends FimsService {
         output.append("\t\t</ul>\n");
         output.append("\t</li>\n");
 
-        output.append("</li>\n");
+        output.append("</ul>\n");
         return output.toString();
     }
 
@@ -341,7 +341,7 @@ public class Projects extends FimsService {
 
                 // Fetch any existing content for this key
                 if (group == null || group.equals("")) {
-                    group = "Default Group";
+                    group = "Available Columns";
                 }
                 StringBuilder existing = groups.get(group);
 
@@ -394,10 +394,10 @@ public class Projects extends FimsService {
             try {
                 groupName = pairs.getKey().toString();
             } catch (NullPointerException e) {
-                groupName = "Default Group";
+                groupName = "Column Headings";
             }
             if (groupName.equals("") || groupName.equals("null")) {
-                groupName = "Default Group";
+                groupName = "Column Headings";
             }
 
             // Anchors cannot have spaces in the name so we replace them with underscores

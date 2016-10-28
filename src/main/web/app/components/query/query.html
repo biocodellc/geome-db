@@ -1,54 +1,55 @@
-<div id="query" class="section">
-    <div class="sectioncontent">
+<div class="row">
+    <h2 class="page-header">Query</h2>
+    <p>Using this tool you can search the DIPnet database based on any of the FIMS fields by filtering
+        the database using the drop down menu. The results of your search can be downloaded as an
+        excel spreadsheet (.xsl) or a tab delimited text file (.csv).</p>
 
-        <h2>Query</h2>
+    <div ng-show="vm.error" class="alert alert-error">{{ vm.error }}</div>
+    <form method="POST">
+        <table border=0 class="table" style="width:800px;">
 
-        <div ng-show="vm.error" class="alert alert-error">{{ vm.error }}</div>
-        <form method="POST">
-            <table border=0 class="table" style="width:800px;">
+            <tr>
+                <td align=right>&nbsp;&nbsp;Choose Dataset(s)&nbsp;&nbsp;&nbsp;</td>
+                <td><select id=graphs multiple style="display:inline-block;width:400px;text-align:left;"></select>
+                </td>
+                <td><input type="hidden" value="{{ vm.projectId }}" id="project"></td>
+            </tr>
 
-                <tr>
-                    <td align=right>&nbsp;&nbsp;Choose Dataset(s)&nbsp;&nbsp;&nbsp;</td>
-                    <td><select id=graphs multiple style="display:inline-block;width:400px;text-align:left;"></select>
-                    </td>
-                    <td><input type="hidden" value="{{ vm.projectId }}" id="project"></td>
-                </tr>
+            <tr>
+                <td align=right>Filter</td>
+                <td>
+                    <select id="uri" style="max-width:100px;">
+                        <option value="0">Loading ...</option>
+                    </select>
+                    <p style='display:inline;'>=</p>
+                    <input type="text" name="filter_value" style="width:250px;"/>
+                    <input type=button value=+ id=add_filter class="btn btn-default btn-sm"/>
+                </td>
+            </tr>
 
-                <tr>
-                    <td align=right>Filter</td>
-                    <td>
-                        <select id="uri" style="max-width:100px;">
-                            <option value="0">Loading ...</option>
-                        </select>
-                        <p style='display:inline;'>=</p>
-                        <input type="text" name="filter_value" style="width:250px;"/>
-                        <input type=button value=+ id=add_filter class="btn btn-default btn-sm"/>
-                    </td>
-                </tr>
+            <tr>
+                <td colspan=2>
+                    <input type="button" ng-click="vm.queryJson()" value="table" class="btn btn-default btn-sm">
+                    <input type=button id="submit" value=csv class="btn btn-default btn-sm">
+                    <input type=button id="submit" value=excel class="btn btn-default btn-sm">
+                    <input type=button id="submit" value=kml class="btn btn-default btn-sm">
+                </td>
+            </tr>
+        </table>
+    </form>
 
-                <tr>
-                    <td colspan=2>
-                        <input type=button value=table ng-click="vm.queryJson()" class="btn btn-default btn-sm">
-                        <input type=button id="submit" value=excel class="btn btn-default btn-sm">
-                        <input type=button id="submit" value=kml class="btn btn-default btn-sm">
-                    </td>
-                </tr>
-            </table>
-        </form>
+    <div class="panel panel-default" ng-show="vm.queryResults" style="overflow: auto">
+        <span ng-show="vm.queryResults.length == 0">No Samples found.</span>
 
-        <div class="panel panel-default" ng-show="vm.queryResults" style="overflow: auto">
-            <span ng-show="vm.queryResults.length == 0">No Samples found.</span>
-
-            <table class="table table-condensed">
-                <thead>
-                <th ng-repeat="(key, value) in vm.queryResults[0]">{{ key }}</th>
-                </thead>
-                <tbody>
-                <tr ng-repeat="sample in vm.queryResults">
-                    <td ng-repeat="(key, value) in sample">{{ value }}</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+        <table class="table table-condensed">
+            <thead>
+            <th ng-repeat="(key, value) in vm.queryResults[0]">{{ key }}</th>
+            </thead>
+            <tbody>
+            <tr ng-repeat="sample in vm.queryResults">
+                <td ng-repeat="(key, value) in sample">{{ value }}</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>

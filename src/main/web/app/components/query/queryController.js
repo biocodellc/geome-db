@@ -49,6 +49,9 @@ angular.module('fims.query', [])
                         case "kml":
                             queryKml(params);
                             break;
+                        case "csv":
+                            queryCsv(params);
+                            break;
                     }
                 });
             });

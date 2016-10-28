@@ -1,26 +1,74 @@
-<div id="validation" class="section">
-    <div id="warning"></div>
-    <div class="sectioncontent" id="mainpage">
+<div class="row">
+    <h2>
+        Diversity of the Indo-Pacific Network (DIPnet) Field Information Management System (FIMS)
+    </h2>
 
-<h2>
-Diversity of the Indo-Pacific Network (DIPnet) Field Information Management System (FIMS)
-</h2>
+    <p>
+        A primary goal of DIPnet is to develop a web-based database and infrastructure to aid collaboration and the
+        cross-dissemination of published data. We use the DIPnet FIMS to manage and validate data for
+        population genetic analysis - namely individual genotypes and precise sampling locations. The following workflow is
+        used for working with metadata and sequence files in the FIMS system:
+    </p>
+</div>
 
-<p>&nbsp;</p>
+<div class="row">
+    <img id='workflowImage' src='docs/dipnetWorkflow.png'>
+</div>
 
-A primary goal of DIPnet is to develop a web-based database and infrastructure to aid collaboration and the cross-dissemination of published data. We use the DIPnet FIMS to manage and validate data important for popoulation analysis - namely individual genotypes and precise sampling locations.  The following workflow is used for working with Metadata and Sequence Files in the FIMS system:
+<div class="row">
+    <h2>
+        What you need to upload you data
+    </h2>
+    <ol>
+        <li>
+            Generate a template-This option allows the user to create an excel file with the appropriate column
+            headers. Each individual organism/sample is entered in a row in the spreadsheet and must have a
+            unique materialsampleID that is created by the user (your unique sample name). While only four
+            fields are required [materialSampleID, principalInvestigator, phylum and EITHER decimalLatitude AND
+            decimalLongitude OR locality (lat/longs are preferred)], nine additional fields are recommended, and
+            thus automatically checked. To get the most use out of your data please fill in as much of the
+            metadata as possible or that is relevant.
+        </li>
 
-<p>
+        <li>
+            Prepare your fasta file (mtDNA)
+            <ul>
+                <li>The name of your sequences must match the materialsampleIDs in the metadata file.</li>
+                <li>You can include multiple taxa in a single fasta/metadata file</li>
+            </ul>
+        </li>
 
-<img id='workflowImage' src='docs/dipnetWorkflow.png'>
+        <li>
+            Prepare your fastq file (next-generation sequencing)
+            <ul>
+                <li>FIMS will accept single and paired end read data</li>
+                <li>Files must be demultiplexed and trimmed of adaptors</li>
+                <li>Each fastq file should represent reads from a single individual</li>
+                <li>Names of fastq files must match the materialsampleIDs in the metadata file up to the file
+                    extension.
+                </li>
+            </ul>
+        </li>
+    </ol>
 
-<p>
-<h2>
-Repurposing previously published data
-</h2>
+    <p>
+        The actual sequence files will not be uploaded to the FIMS system. Instead the metadata file
+        that includes entries for each individual in the dataset and a text file of the fastq file names
+        (one per line) will be uploaded here. This process allows for the validation of the metadata
+        file to ensure that required fields are complete, that each materialsampleID is unique, and that
+        the materialsampleIDs match the fastq file names.
 
-We have already identified the 154 published studies for the region that could provide the necessary data for our goals which are available on at the DIPnet FIMS site and will soon be searchable in VertNet and aggregated into the GBIF data catalog.  For more information see <a href="https://indopacificnetwork.wikispaces.com/file/view/Keyse_etal_2014.pdf">Keyse, et al (2014)</a>
+        Once uploaded the FIMS system will produce two files for the user to ease the upload process to NCBI’s
+        Short Read Archive (SRA)
+    </p>
 
+    <ol>
+        <li>SRA metadata file</li>
+        <li>SRA BioSample file</li>
+    </ol>
 
-    </div>
+    <p>
+        The user will then be directed to the SRA website for file upload.
+    </p>
+
 </div>

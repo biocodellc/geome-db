@@ -1,34 +1,41 @@
-<div id="template" class="section">
-<div class="sectioncontent">
+<div class="row">
+    <h2 class="page-header">Generate Template</h2>
 
-<h2>Generate Template</h2>
+    <p>
+        Choose template from dropdown menu
+        <br>
+        or
+        <br>
+        Check available column heading below to include in your customized FIMS spreadsheet.
+    </p>
+</div>
 
-    <div class="col-sm-12">
-        <form class="form-inline">
-                <input type="hidden" value="{{ vm.projectId }}" id="project">
+<div class="row">
+    <form class="form-inline">
+        <input type="hidden" value="{{ vm.projectId }}" id="project">
 
-            <div class="form-group">
-                <label for="configs" class="col-sm-3 col-md-2 control-label">Choose Template Config:</label>
-                <div class="input-group col-sm-10 col-md-3">
-                    <select class="form-control" id="configs" onChange="updateCheckedBoxes();">
-                        <option value="0">Default</option>
-                    </select>
-                    <div class="input-group-btn">
-                        <button class="btn btn-default hidden" id="removeConfig">Remove</button>
-                    </div>
+        <div class="form-group">
+            <div class="input-group col-sm-10 col-md-6">
+                <select class="form-control" id="configs" onChange="updateCheckedBoxes();">
+                    <option value="0">Default</option>
+                </select>
+                <div class="input-group-btn">
+                    <button class="btn btn-danger hidden" id="removeConfig">Remove</button>
                 </div>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
+</div>
+
+<div class="row" style="margin-bottom:20px;">
+    <button type='button' id='excel_button' class="btn btn-primary">Export Excel</button>
+</div>
+
+<div class="row">
 
     <div id="templateInfo" style='min-height:200px;'>
 
         <div style="width: 45%; float:left;border-right: 1px solid gray; ">
-
-            <h2>Available Columns</h2>
-
-            <p>Check available column headings to include in your customized FIMS
-                spreadsheet.</p>
 
             <div id="cat1"></div>
 
@@ -41,7 +48,7 @@
 
             <h2>Definition</h2>
 
-            <p>Click on the "DEF" link next to any of the headings to see its definition in this pane.</p>
+            <p>Click on "DEF" next to any of the headings to see the definition of the term.</p>
 
             <div id='definition'></div>
         </div>
@@ -50,10 +57,4 @@
 
     <div style="clear:both;"></div>
 
-    <p>
-
-    <button type='button' id='excel_button' class="btn btn-primary">Export Excel</button>
-
-
-</div>
 </div>

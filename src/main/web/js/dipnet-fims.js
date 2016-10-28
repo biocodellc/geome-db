@@ -976,6 +976,12 @@ function queryKml(params) {
     download(RestRoot + "projects/query/kml/", params);
 }
 
+// Get results as CSV
+function queryCsv(params) {
+    showMessage("Downloading results as a CSV document<br>this will appear in your browsers download folder.");
+    download(RestRoot + "projects/query/csv/", params);
+}
+
 // create a form and then submit that form in order to download files
 function download(url, data) {
     //url and data options are required

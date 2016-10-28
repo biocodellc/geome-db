@@ -1,29 +1,28 @@
-    <div class="section">
-        <div class="sectioncontent">
-            <p><h3>Expedition Data</h3></p>
+<div class="row">
+    <h3 class="page-header">Expedition Data</h3>
+    <p>In this system we refer to each dataset as an “Expedition” each of which includes the metadata and sequences
+        uploaded from a single dataset.</p>
 
-            <div class="panel panel-default" ng-show="vm.initialized">
+    <div class="panel panel-default" ng-show="vm.initialized">
 
-                    <table class="table table-hover table-condensed text-center">
-                        <thead>
-                                  <th>Expedition Title</th>
-                                  <th># of samples</th>
-                                  <th># of sequences</th>
-                        </thead>
+        <table class="table table-hover table-condensed text-center">
+            <thead>
+            <th>Expedition Title</th>
+            <th># of samples</th>
+            <th># of sequences</th>
+            </thead>
 
-                        <tbody>
-                                  <tr ng-repeat="expedition in vm.content">
-                                      <td>{{ expedition.expeditionTitle }}</td>
-                                      <td>{{ expedition.latestDataset.identifierCount }}</td>
-                                      <td>{{ expedition.latestDataset.sequenceCount }}</td>
-                                  </tr>
-                                  </tbody>
-                    </table>
+            <tbody>
+            <tr ng-repeat="expedition in vm.content">
+                <td>{{ expedition.expeditionTitle }}</td>
+                <td>{{ expedition.latestDataset.identifierCount }}</td>
+                <td>{{ expedition.latestDataset.sequenceCount }}</td>
+            </tr>
+            </tbody>
+        </table>
 
-                <uib-pagination total-items="vm.totalItems" ng-model="vm.currentPage" ng-change="vm.pageChanged()" items-per-page="vm.itemsPerPage"></uib-pagination>
+        <uib-pagination total-items="vm.totalItems" ng-model="vm.currentPage" ng-change="vm.pageChanged()"
+                        items-per-page="vm.itemsPerPage"></uib-pagination>
 
-            </div>
-        </div>
     </div>
-
-
+</div>

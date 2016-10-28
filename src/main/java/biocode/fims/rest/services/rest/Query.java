@@ -73,6 +73,38 @@ public class Query extends FimsService {
     }
 
     /**
+     * Return CSV for a graph query as POST
+     * <p/>
+     * filter parameters are of the form:
+     * name={URI} value={filter value}
+     *
+     * @return
+     */
+    @POST
+    @Path("/csv/")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces("text/csv")
+    public Response queryCSVAsPOST(
+            MultivaluedMap<String, String> form) {
+
+        // Build the query, etc..
+        FimsQueryBuilder q = POSTQueryResult(form);
+
+        // Run the query, passing in a format and returning the location of the output file
+        File file = new File(q.writeCSV());
+
+        // Wrie the file to a String and return it
+        String response = readFile(file.getAbsolutePath());
+
+        // Return response
+        if (response == null) {
+            return Response.status(204).build();
+        } else {
+            return Response.ok(response).build();
+        }
+    }
+
+    /**
      * Return JSON for a graph query.
      *
      * @param graphs indicate a comma-separated list of graphs, or all
