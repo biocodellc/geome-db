@@ -11,6 +11,7 @@ angular.module('fims.validation')
                 showCancelButton: false,
                 showOkButton: false,
                 showContinueButton: false,
+                createExpedition: false,
                 showStatus: false,
                 showValidationMessages: false,
                 showUploadMessages: false,

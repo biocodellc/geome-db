@@ -30,7 +30,9 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label">Data Type</label>
                             <div class="col-sm-6">
-                                <label class="btn btn-primary active">FIMS</label>
+                                <label class="btn btn-primary" ng-model="vm.dataTypes.fims"
+                                       ng-click="vm.checkDataTypes()"
+                                       uib-btn-checkbox>FIMS</label>
                                 <label class="btn btn-primary" ng-model="vm.dataTypes.fastq"
                                        ng-click="vm.dataTypes.fasta = false && vm.checkDataTypes()"
                                        uib-btn-checkbox>FASTQ</label>
@@ -41,20 +43,19 @@
                         </div>
 
                         <div class="form-group" show-errors>
-                            <label for="expeditionCode" class="col-sm-2 control-label">Dataset Name</label>
-                            <div class="col-sm-6">
-                                <div class="col-sm-8 col-md-4" style="padding-left: 0px;">
-                                    <input type="text" id="expeditionCode" class="form-control" name="expeditionCode"
-                                           ng-model="vm.expeditionCode" ng-pattern="/^[a-zA-Z0-9_-]{4,50}$/" required>
-                                </div>
-                                <p class="help-block col-sm-12" style="padding-left:0px;"
-                                      ng-show="vm.uploadForm.expeditionCode.$error.exists">
-                                Dataset with that name already exists
-                                </p>
-                                <p class="help-block col-sm-12" style="padding-left:0px;"
-                                   ng-if="vm.uploadForm.expeditionCode.$error.pattern && vm.uploadForm.expeditionCode.$touched">
-                                    must contain only numbers, letters, or underscores and be 4 to 50 characters long
-                                </p>
+                            <label for="expeditionCode" class="col-sm-2 control-label">Dataset Code</label>
+                            <div class="col-sm-4">
+                                <select id="expeditionCode" name="expeditionCode"
+                                        ng-model="vm.expeditionCode"
+                                        ng-options="expedition.expeditionCode as expedition.expeditionTitle for expedition in vm.expeditions"
+                                        class="form-control col-sm-4" required>
+                                    <option value="">-- Select a Dataset --</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" class="btn btn-default" ng-click="vm.createExpedition()">New
+                                    Dataset
+                                </button>
                             </div>
                         </div>
 
