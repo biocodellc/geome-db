@@ -1,7 +1,7 @@
 angular.module('fims.expeditions')
 
-    .controller("CreateExpeditionsModalCtrl", ['$scope', '$uibModalInstance', 'ExpeditionFactory', 'PROJECT_ID',
-        function ($scope, $uibModalInstance, ExpeditionFactory, PROJECT_ID) {
+    .controller("CreateExpeditionsModalCtrl", ['$scope', '$uibModalInstance', 'ExpeditionFactory', 'LoadingModalFactory', 'PROJECT_ID',
+        function ($scope, $uibModalInstance, ExpeditionFactory, LoadingModalFactory, PROJECT_ID) {
             var vm = this;
             vm.error = null;
             vm.expedition = {
@@ -20,6 +20,7 @@ angular.module('fims.expeditions')
 
                 vm.expedition.expeditionTitle = vm.expedition.expeditionCode + " spreadsheet";
 
+                LoadingModalFactory.open();
                 ExpeditionFactory.createExpedition(vm.expedition)
                     .then(function () {
                         // handle success response
@@ -29,6 +30,9 @@ angular.module('fims.expeditions')
                             vm.error = response.data.usrMessage;
                         else
                             vm.error = "Server Error! Status code: " + response.status;
+                    })
+                    .finally(function () {
+                        LoadingModalFactory.close();
                     });
             };
 

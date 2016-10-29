@@ -23,7 +23,7 @@ angular.module('fims.expeditions')
                     angular.extend(vm.content, response.data.content);
                     vm.content = response.data.content;
                     vm.totalItems = response.data.totalElements;
-                    LoadingModalFactory.modalInstance.close();
+                    LoadingModalFactory.close();
                     vm.initialized = true;
                 }, function(response) {
                     FailModalFactory.show(null, response.data.usrMessage)

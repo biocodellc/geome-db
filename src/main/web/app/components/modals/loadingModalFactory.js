@@ -5,19 +5,23 @@ angular.module('fims.modals')
         var modalInstance;
         var loadingModalFactory = {
             open: open,
-            modalInstance: modalInstance,
+            close: close,
         };
 
         return loadingModalFactory;
 
         function open() {
-            loadingModalFactory.modalInstance = $uibModal.open({
+            modalInstance = $uibModal.open({
                 templateUrl: 'app/components/modals/templates/loadingModal.tpl.html',
                 size: 'sm',
                 windowClass: 'app-modal-window',
                 backdrop: true,
 
             });
+        }
+
+        function close() {
+            modalInstance.close();
         }
 
     }]);
