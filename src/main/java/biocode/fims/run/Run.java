@@ -18,6 +18,7 @@ import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
 import biocode.fims.utils.SpringApplicationContext;
+import com.hp.hpl.jena.util.FileUtils;
 import org.apache.commons.cli.*;
 import org.apache.commons.digester3.Digester;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,7 @@ public class Run {
      * @param upload
      * @param expeditionCheck -- only set to FALSE for testing and debugging usually, or local triplify usage.
      */
-    public void runAllLocally(Boolean triplifier, Boolean upload, Boolean expeditionCheck, Boolean forceAll) {
+    public void runAllLocally(Boolean triplifier, Boolean upload, Boolean expeditionCheck, Boolean forceAll, String writeTriplesLang) {
         String currentGraph;
         boolean isFastaUpload = false;
         String fastaFileName = null;
@@ -153,11 +154,11 @@ public class Run {
 
                 // Triplify OR Upload -- not ever both
                 if (triplifier) {
-                    runTriplifier(true);
+                    runTriplifier(true, writeTriplesLang);
                 } else if (upload) {
                     // upload the dataset
                     if (!isFastaUpload) {
-                        String tripleFile = runTriplifier(true);
+                        String tripleFile = runTriplifier(true, writeTriplesLang);
 
                         // fetch the current graph before uploading the new graph. This is needed to copy over the fasta sequences
                         String previousGraph = fastaManager.fetchGraph();
@@ -215,16 +216,17 @@ public class Run {
                 // In other, words, this is typically used for local debug & test modes
             } else {
                 process.outputPrefix = "test";
-                runTriplifier(false);
+                runTriplifier(false, writeTriplesLang);
             }
         }
     }
 
-    private String runTriplifier(boolean entityRoots) {
+    private String runTriplifier(boolean entityRoots, String writeTriplesLang) {
         FimsPrinter.out.println("\nTriplifying...");
 
         // Run the triplifier
         Triplifier t = new Triplifier(process.outputPrefix, process.outputFolder, processController);
+        t.setOutputLanguage(writeTriplesLang);
 
         if (entityRoots) {
             expeditionService.setEntityIdentifiers(
@@ -297,6 +299,8 @@ public class Run {
         options.addOption("configFile", true, "Use a local config file instead of getting from server");
 
         options.addOption("t", "triplify", false, "Triplify only (upload process triplifies)");
+        options.addOption("T", "writeTriplesFormat", true, "NTriple|Turtle|N3 Default is NTriple if not specified");
+
         options.addOption("l", "local", false, "Local option operates purely locally and does not create proper globally unique identifiers.  Running the local option means you don't need a username and password.");
 
         options.addOption("u", "upload", false, "Upload");
@@ -408,6 +412,21 @@ public class Run {
             output_directory = defaultOutputDirectory;
         }
 
+        // Set the default writeTriplesLang option value
+        String writeTriplesLang = FileUtils.langNTriple;
+
+        if (cl.hasOption("writeTriplesFormat")) {
+            if (cl.getOptionValue("writeTriplesFormat").toString().equalsIgnoreCase("Turtle")) {
+                writeTriplesLang = FileUtils.langTurtle;
+            }
+            else if (cl.getOptionValue("writeTriplesFormat").toString().equalsIgnoreCase("N3")) {
+                writeTriplesLang = FileUtils.langN3;
+            } else {
+                writeTriplesLang = FileUtils.langNTriple;
+                System.out.println ("writeTriplesFormat option " + cl.getOptionValue("T") + " not recognized, defaulting to " + FileUtils.langNTriple);
+            }
+        }
+
         // Check that output directory is writable
         try {
             if (!new File(output_directory).canWrite()) {
@@ -458,7 +477,7 @@ public class Run {
                     run.setProcess(p);
                     run.setProcessController(processController);
 
-                    run.runAllLocally(true, false, false, force);
+                    run.runAllLocally(true, false, false, force, writeTriplesLang);
                     /*p.runValidation();
                     triplifier t = new triplifier("test", output_directory);
                     p.mapping.Run(t, pc);
@@ -513,7 +532,8 @@ public class Run {
                     run.setProcess(p);
                     run.setProcessController(processController);
 
-                    run.runAllLocally(triplify, upload, true, force);
+
+                    run.runAllLocally(triplify, upload, true, force, writeTriplesLang);
                 }
             }
         } catch (Exception e) {
