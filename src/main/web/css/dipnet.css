@@ -5,7 +5,7 @@ body {
     margin: 0;
     padding: 10px;
     font-family: sans-serif;
-    //background: #f6f7b4;
+    font-size: 14.5px;
 }
 
 a {
@@ -223,4 +223,11 @@ th {
     font-size: 16px;
     padding-top: 9px; /* vertically center glyphicon with input element */
     margin-left: -7.5px;
+}
+
+@media (min-width: 767px) {
+    .container-fluid {
+        margin-left: 30px;
+        margin-right: 30px;
+    }
 }
