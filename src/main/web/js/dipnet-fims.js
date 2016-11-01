@@ -1,6 +1,6 @@
 /* ====== General Utility Functions ======= */
 var appRoot = "/dipnet/";
-var RestRoot = "/dipnet/rest/";
+var RestRoot = "/dipnet/rest/v1.1/";
 
 $.ajaxSetup({
     beforeSend: function(jqxhr, config) {
