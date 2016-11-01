@@ -15,6 +15,7 @@ import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
 import biocode.fims.utils.SpringApplicationContext;
+import com.hp.hpl.jena.util.FileUtils;
 import org.apache.commons.cli.*;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ public class Run {
      * @param upload
      * @param deepRoots -- only set to FALSE for testing and debugging usually, or local triplify usage.
      */
-    public void runAllLocally(Boolean upload, boolean deepRoots, Boolean forceAll) {
+    public void runAllLocally(Boolean upload, boolean deepRoots, Boolean forceAll, String writeTriplesLang) {
         if (!processController.getProcess().validate()) {
             // If there is errors, tell the user and stop the operation
             FimsPrinter.out.println(processController.printMessages());
@@ -107,18 +108,19 @@ public class Run {
             // In other, words, this is typically used for local debug & test modes
         } else {
             if (deepRoots) {
-                runTriplifier(true);
+                runTriplifier(true, writeTriplesLang);
             } else {
-                runTriplifier(false);
+                runTriplifier(false, writeTriplesLang);
             }
         }
     }
 
-    private String runTriplifier(boolean entityRoots) {
+    private String runTriplifier(boolean entityRoots, String writeTriplesLang) {
         FimsPrinter.out.println("\nTriplifying...");
 
         // Run the triplifier
         Triplifier t = new Triplifier("test", processController.getOutputFolder(), processController);
+        t.setOutputLanguage(writeTriplesLang);
 
         if (entityRoots) {
             expeditionService.setEntityIdentifiers(
@@ -193,6 +195,8 @@ public class Run {
         options.addOption("configFile", true, "Use a local config file instead of getting from server");
 
         options.addOption("t", "triplify", false, "Triplify only (upload process triplifies)");
+        options.addOption("T", "writeTriplesFormat", true, "NTriple|Turtle|N3 Default is NTriple if not specified");
+
         options.addOption("l", "local", false, "Local option operates purely locally and does not create proper globally unique identifiers.  Running the local option means you don't need a username and password.");
 
         options.addOption("u", "upload", false, "Upload");
@@ -304,6 +308,21 @@ public class Run {
             output_directory = defaultOutputDirectory;
         }
 
+        // Set the default writeTriplesLang option value
+        String writeTriplesLang = FileUtils.langNTriple;
+
+        if (cl.hasOption("writeTriplesFormat")) {
+            if (cl.getOptionValue("writeTriplesFormat").toString().equalsIgnoreCase("Turtle")) {
+                writeTriplesLang = FileUtils.langTurtle;
+            }
+            else if (cl.getOptionValue("writeTriplesFormat").toString().equalsIgnoreCase("N3")) {
+                writeTriplesLang = FileUtils.langN3;
+            } else {
+                writeTriplesLang = FileUtils.langNTriple;
+                System.out.println ("writeTriplesFormat option " + cl.getOptionValue("T") + " not recognized, defaulting to " + FileUtils.langNTriple);
+            }
+        }
+
         // Check that output directory is writable
         try {
             if (!new File(output_directory).canWrite()) {
@@ -381,7 +400,7 @@ public class Run {
                     processController.setProcess(process);
                     run.setProcessController(processController);
 
-                    run.runAllLocally(false, false, force);
+                    run.runAllLocally(false, false, force, writeTriplesLang);
 
                 } else {
                     if (triplify || upload) {
@@ -432,7 +451,7 @@ public class Run {
                     processController.setProcess(process);
                     run.setProcessController(processController);
 
-                    run.runAllLocally(upload, true, force);
+                    run.runAllLocally(upload, true, force, writeTriplesLang);
                 }
             }
         } catch (Exception e) {
