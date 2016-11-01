@@ -26,7 +26,7 @@ angular.module('fims.expeditions')
                     LoadingModalFactory.close();
                     vm.initialized = true;
                 }, function(response) {
-                    FailModalFactory.show(null, response.data.usrMessage)
+                    FailModalFactory.open(null, response.data.usrMessage)
                 });
         }
 

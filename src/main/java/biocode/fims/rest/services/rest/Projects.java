@@ -28,6 +28,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -41,6 +42,7 @@ import java.util.List;
 /**
  * REST services dealing with projects
  */
+@Controller
 @Path("projects")
 public class Projects extends FimsService {
 

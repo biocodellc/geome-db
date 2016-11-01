@@ -15,6 +15,7 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -29,6 +30,7 @@ import java.util.*;
 /**
  * Query interface for Biocode-fims expedition
  */
+@Controller
 @Path("/projects/query")
 public class Query extends FimsService {
     private static Logger logger = LoggerFactory.getLogger(Query.class);
