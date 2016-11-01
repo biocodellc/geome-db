@@ -1,6 +1,5 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
@@ -10,7 +9,6 @@ import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
-import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
@@ -19,17 +17,11 @@ import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.utils.DatasetService;
-import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -49,17 +41,14 @@ public class Projects extends FimsService {
     private static Logger logger = LoggerFactory.getLogger(Projects.class);
 
     private final ExpeditionService expeditionService;
-    private final DatasetService datasetService;
     private final ProjectService projectService;
     private final UserService userService;
 
     @Autowired
-    Projects(ExpeditionService expeditionService, DatasetService datasetService,
-             ProjectService projectService, UserService userService,
+    Projects(ExpeditionService expeditionService, ProjectService projectService, UserService userService,
              OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
-        this.datasetService = datasetService;
         this.projectService = projectService;
         this.userService = userService;
     }
@@ -84,7 +73,7 @@ public class Projects extends FimsService {
 
             for (Attribute attribute : attributeList) {
                 // when we find the column corresponding to the definedBy for lat and long, add them to the response
-                if(decimalLatDefinedBy.equalsIgnoreCase(attribute.getDefined_by())) {
+                if (decimalLatDefinedBy.equalsIgnoreCase(attribute.getDefined_by())) {
                     response.put("lat_column", attribute.getColumn());
                 } else if (decimalLongDefinedBy.equalsIgnoreCase(attribute.getDefined_by())) {
                     response.put("long_column", attribute.getColumn());
@@ -127,7 +116,7 @@ public class Projects extends FimsService {
     @Path("/{projectId}/getDefinition/{columnName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDefinitions(@PathParam("projectId") int projectId,
-                                  @PathParam("columnName") String columnName) {
+                                   @PathParam("columnName") String columnName) {
         TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
         StringBuilder output = new StringBuilder();
 
@@ -225,7 +214,6 @@ public class Projects extends FimsService {
      * Print ruleMetadata
      *
      * @param sList We pass in a List of fields we want to associate with this rule
-     *
      * @return
      */
     private String printRuleMetadata(Rule r, biocode.fims.digester.List sList) {
@@ -545,7 +533,7 @@ public class Projects extends FimsService {
         sb.append("<table data-projectId=\"" + projectId + "\" data-projectTitle=\"" + response.get("projectTitle") + "\">\n");
         sb.append("\t<tr>\n");
 
-        for (User member: projectMembers) {
+        for (User member : projectMembers) {
             sb.append("\t<tr>\n");
             sb.append("\t\t<td>");
             sb.append(member.getUsername());
@@ -561,7 +549,7 @@ public class Projects extends FimsService {
         sb.append("<select name=userId>\n");
         sb.append("\t\t\t<option value=\"0\">Create New User</option>\n");
 
-        for (User user: allUsers) {
+        for (User user : allUsers) {
             sb.append("\t\t\t<option value=\"" + user.getUserId() + "\">" + user.getUsername() + "</option>\n");
         }
 
@@ -605,7 +593,7 @@ public class Projects extends FimsService {
         sb.append("\t\t<th>Public</th>\n");
         sb.append("\t</tr>\n");
 
-        for (Expedition expedition: project.getExpeditions()) {
+        for (Expedition expedition : project.getExpeditions()) {
             sb.append("\t<tr>\n");
             sb.append("\t\t<td>");
             sb.append(expedition.getUser().getUsername());
@@ -672,40 +660,5 @@ public class Projects extends FimsService {
         mapping.addMappingRules(configFile);
 
         return Response.ok("{\"uniqueKey\":\"" + mapping.getDefaultSheetUniqueKey() + "\"}").build();
-    }
-
-    /**
-     * Return a JSON representation of the expedition's that a user is a member of. Each expedition
-     * includes information regarding the latest dataset and the number of identifiers and
-     * sequences in the dataset.
-     *
-     * @param projectId
-     *
-     * @return
-     */
-    @GET
-    @Authenticated
-    @Path("/{projectId}/expeditions/datasets/latest")
-    @Produces({MediaType.APPLICATION_JSON})
-    public Response listExpeditionsWithLatestDatasets(@PathParam("projectId") Integer projectId,
-                                                      @QueryParam("page") @DefaultValue("1") int page,
-                                                      @QueryParam("limit") @DefaultValue("100") int limit) {
-        Pageable pageRequest = new PageRequest(page - 1, limit, Sort.Direction.ASC, "expeditionCode");
-        Page<Expedition> expeditions = expeditionService.getExpeditions(projectId, user.getUserId(), pageRequest);
-
-        if (!expeditions.hasContent())
-            return Response.ok(expeditions).build();
-
-        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
-
-        Mapping mapping = new Mapping();
-        mapping.addMappingRules(configFile);
-
-        String fusekiQueryTarget = mapping.getMetadata().getQueryTarget() + "/query";
-
-        Map<String, Object> pageMap = new SpringObjectMapper().convertValue(expeditions, Map.class);
-        pageMap.put("content", datasetService.listExpeditionDatasetsWithCounts(expeditions.getContent(), fusekiQueryTarget));
-
-        return Response.ok(pageMap).build();
     }
 }

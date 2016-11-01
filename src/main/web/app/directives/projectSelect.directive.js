@@ -5,7 +5,7 @@ angular.module('biscicolApp')
         restrict: 'A',
         templateUrl: 'app/directives/projectSelect.directive.html',
         controller: 'ProjectSelectCtrl',
-        controllerAs: 'vm',
+        controllerAs: 'projectSelectVm',
         bindToController: true,
         link: function($scope, $element, $attributes) {
             $rootScope.$broadcast('projectSelectLoadedEvent');
@@ -51,7 +51,7 @@ angular.module('biscicolApp')
             }
         }
 
-        $scope.$watch('vm.projectId', function(value) {
+        $scope.$watch('projectSelectVm.projectId', function(value) {
             if (value > 0) {
                 // hack for existing jquery code
                 $('#projects').val(value).trigger('change');

@@ -48,7 +48,7 @@ angular.module('biscicolApp')
             .state('query', {
                 url: "/query",
                 templateUrl: "app/components/query/query.html",
-                controller: "QueryCtrl as vm",
+                controller: "QueryCtrl as queryVm",
             })
             .state('creator', {
                 url: "/bcidCreator",
@@ -83,7 +83,7 @@ angular.module('biscicolApp')
         $locationProvider.html5Mode(true);
 
         // For any unmatched url, redirect to /
-        $urlRouterProvider.otherwise("/");
+        // $urlRouterProvider.otherwise("/");
 
         // redirect all legacy route
         $urlRouterProvider

@@ -4,14 +4,13 @@ angular.module('fims.modals')
     function($uibModal) {
         var modalInstance;
         var failModalFactory = {
-            open: open,
-            modalInstance: modalInstance
+            open: open
         };
 
         return failModalFactory;
 
         function open(title, message) {
-            failModalFactory.modalInstance = $uibModal.open({
+            modalInstance = $uibModal.open({
                 templateUrl: 'app/components/modals/templates/failModal.tpl.html',
                 size: 'md',
                 controller: 'FailModalCtrl',

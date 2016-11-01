@@ -1,17 +1,14 @@
 package biocode.fims.run;
 
-import biocode.fims.bcid.*;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
-import biocode.fims.entities.Expedition;
+import biocode.fims.digester.Validation;
 import biocode.fims.entities.User;
-import biocode.fims.entities.Bcid;
-import biocode.fims.fasta.FastaManager;
-import biocode.fims.fuseki.Uploader;
-import biocode.fims.fuseki.fasta.FusekiFastaManager;
+import biocode.fims.fileManagers.dataset.DatasetFileManager;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.UploadCode;
 import biocode.fims.fuseki.query.FimsQueryBuilder;
 import biocode.fims.fuseki.triplify.Triplifier;
-import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.FimsPrinter;
@@ -19,14 +16,15 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
 import biocode.fims.utils.SpringApplicationContext;
 import org.apache.commons.cli.*;
-import org.apache.commons.digester3.Digester;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import javax.ws.rs.BadRequestException;
 import java.io.File;
-import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class to upload and triplify via cmd line
@@ -35,70 +33,32 @@ import java.net.URI;
 public class Run {
 
     private final SettingsManager settingsManager;
-    private final BcidService bcidService;
     private final ExpeditionService expeditionService;
+    private final DatasetFileManager datasetFileManager;
 
-    private Process process;
     private ProcessController processController;
-    private User user;
 
     @Autowired
-    public Run(SettingsManager settingsManager, BcidService bcidService,
-               ExpeditionService expeditionService) {
+    public Run(SettingsManager settingsManager, ExpeditionService expeditionService, DatasetFileManager datasetFileManager) {
         this.settingsManager = settingsManager;
-        this.bcidService = bcidService;
         this.expeditionService = expeditionService;
+        this.datasetFileManager = datasetFileManager;
     }
 
-    public void setProcess(Process process) {
-        this.process = process;
-    }
-
-    public void setProcessController(ProcessController processController) {
+    private void setProcessController(ProcessController processController) {
         this.processController = processController;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     /**
      * runAll method is designed to go through the FIMS process for a local application.  The REST services
      * would handle user input/output differently
      *
-     * @param triplifier
      * @param upload
-     * @param expeditionCheck -- only set to FALSE for testing and debugging usually, or local triplify usage.
+     * @param deepRoots -- only set to FALSE for testing and debugging usually, or local triplify usage.
      */
-    public void runAllLocally(Boolean triplifier, Boolean upload, Boolean expeditionCheck, Boolean forceAll) {
-        String currentGraph;
-        boolean isFastaUpload = false;
-        String fastaFileName = null;
-
-        // determine if this is a fasta file or not
-        if (processController.getInputFilename().endsWith(".fasta")) {
-            isFastaUpload = true;
-            fastaFileName = processController.getInputFilename();
-            // need to set processController.getInputFilename to null
-            processController.setInputFilename(null);
-        }
-
-        if (isFastaUpload && triplifier && !upload) {
-            FimsPrinter.out.println("We don't currently support only triplifying of Fasta files");
-            return;
-        }
-
-        FastaManager fastaManager = new FusekiFastaManager(processController.getMapping().getMetadata().getQueryTarget(),
-                    processController, fastaFileName, expeditionService);
-
-        // Validation Step
-        if (isFastaUpload)
-            fastaManager.validate(process.outputFolder);
-        else
-            process.runValidation();
-
-        // If there is errors, tell the user and stop the operation
-        if (processController.getHasErrors()) {
+    public void runAllLocally(Boolean upload, boolean deepRoots, Boolean forceAll) {
+        if (!processController.getProcess().validate()) {
+            // If there is errors, tell the user and stop the operation
             FimsPrinter.out.println(processController.printMessages());
             return;
         }
@@ -117,104 +77,38 @@ public class Run {
             if (!continueOperation) {
                 return;
             }
-            processController.setClearedOfWarnings(true);
         }
 
-        //
+        if (upload) {
+            // We only need to check on assigning Expedition if the user wants to upload data
+            processController.setExpeditionTitle(processController.getExpeditionCode() + " spreadsheet");
+            try {
+                boolean createExpedition = forceAll;
+                processController.getProcess().upload(createExpedition, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
+            } catch (FimsRuntimeException e) {
+                if (e.getErrorCode() == UploadCode.EXPEDITION_CREATE) {
+                    String message = "\nThe dataset code \"" + processController.getExpeditionCode() + "\" does not exist.  " +
+                            "Do you wish to create it now?" +
+                            "\nIf you choose to continue, your data will be associated with this new dataset code.";
+                    Boolean continueOperation = FimsInputter.in.continueOperation(message);
 
-        // We only need to check on assigning Expedition if the user wants to triplify or upload data
-        if (triplifier || upload) {
-
-            if (expeditionCheck) {
-                // Expedition Check Step
-                if (!processController.isExpeditionAssignedToUserAndExists())
-                    process.runExpeditionCheck();
-                // if an expedition creation is required, get feedback from user
-                if (processController.isExpeditionCreateRequired()) {
-                    if (isFastaUpload) {
-                        throw new BadRequestException("You can only upload fasta files to existing expeditions unless you" +
-                                " are simultaneously uploading a new dataset.");
+                    if (!continueOperation)
+                        return;
+                    else {
+                        processController.getProcess().upload(true, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
                     }
-
-                    if (forceAll) {
-                        process.runExpeditionCreate(bcidService);
-                    } else {
-                        String message = "\nThe dataset code \"" + processController.getExpeditionCode() + "\" does not exist.  " +
-                                "Do you wish to create it now?" +
-                                "\nIf you choose to continue, your data will be associated with this new dataset code.";
-                        Boolean continueOperation = FimsInputter.in.continueOperation(message);
-                        if (!continueOperation)
-                            return;
-                        else
-                            process.runExpeditionCreate(bcidService);
-                    }
-
+                } else {
+                    throw e;
                 }
+            }
+            FimsPrinter.out.println(processController.getSuccessMessage());
 
-                // Triplify OR Upload -- not ever both
-                if (triplifier) {
-                    runTriplifier(true);
-                } else if (upload) {
-                    // upload the dataset
-                    if (!isFastaUpload) {
-                        String tripleFile = runTriplifier(true);
-
-                        // fetch the current graph before uploading the new graph. This is needed to copy over the fasta sequences
-                        String previousGraph = fastaManager.fetchGraph();
-                        Uploader uploader = new Uploader(processController.getMapping().getMetadata().getTarget(),
-                                new File(tripleFile));
-
-                        uploader.execute();
-                        currentGraph = uploader.getGraphID();
-
-                        Bcid bcid = new Bcid.BcidBuilder(ResourceTypes.DATASET_RESOURCE_TYPE)
-                                .ezidRequest(Boolean.parseBoolean(settingsManager.retrieveValue("ezidRequests")))
-                                .title(processController.getExpeditionCode() + " Dataset")
-                                .webAddress(URI.create(uploader.getEndpoint()))
-                                .graph(currentGraph)
-                                .finalCopy(processController.getFinalCopy())
-                                .build();
-
-                        bcidService.create(bcid, user.getUserId());
-                        Expedition expedition = expeditionService.getExpedition(
-                                processController.getExpeditionCode(),
-                                processController.getProjectId()
-                        );
-
-                        bcidService.attachBcidToExpedition(
-                                bcid,
-                                expedition.getExpeditionId()
-                        );
-
-                        FimsPrinter.out.println("Dataset Identifier: http://n2t.net/" + bcid.getIdentifier() + " (wait 15 minutes for resolution to become active)");
-                        FimsPrinter.out.println("\t" + "Data Elements Root: " + processController.getExpeditionCode());
-
-                        // copy over the fasta sequences if this is not the first dataset uploaded, but only if there is no
-                        // new fasta file to upload
-                        if (previousGraph != null && fastaManager.getFastaFilename() == null) {
-                            fastaManager.copySequences(previousGraph, currentGraph);
-                        }
-                    } else {
-                        currentGraph = fastaManager.fetchGraph();
-
-                        if (currentGraph == null) {
-                            throw new BadRequestException("No existing dataset was detected. Your fasta file must be " + "" +
-                                    "associated with an existing dataset.");
-                        }
-                        fastaManager.upload(
-                                currentGraph,
-                                System.getProperty("user.dir") + File.separator + "tripleOutput",
-                                processController.getExpeditionCode() + "_output");
-                        new BcidMinter().updateBcidTimestamp(currentGraph);
-
-                        FimsPrinter.out.println("<br>\t" + "FASTA data added");
-                    }
-
-                }
-                // If we don't Run the expedition check then we DO NOT assign any ARK roots or special expedition information
-                // In other, words, this is typically used for local debug & test modes
+            // If we don't Run the expedition check then we DO NOT assign any ARK roots or special expedition information
+            // In other, words, this is typically used for local debug & test modes
+        } else {
+            if (deepRoots) {
+                runTriplifier(true);
             } else {
-                process.outputPrefix = "test";
                 runTriplifier(false);
             }
         }
@@ -224,7 +118,7 @@ public class Run {
         FimsPrinter.out.println("\nTriplifying...");
 
         // Run the triplifier
-        Triplifier t = new Triplifier(process.outputPrefix, process.outputFolder, processController);
+        Triplifier t = new Triplifier("test", processController.getOutputFolder(), processController);
 
         if (entityRoots) {
             expeditionService.setEntityIdentifiers(
@@ -234,7 +128,8 @@ public class Run {
             );
 
         }
-        t.run(processController.getValidation().getSqliteFile());
+        JSONObject sample = (JSONObject) datasetFileManager.getDataset().getSamples().get(0);
+        t.run(processController.getValidation().getSqliteFile(), new ArrayList<String>(sample.keySet()));
         FimsPrinter.out.println("\ttriple output file = " + t.getTripleOutputFile());
         return t.getTripleOutputFile();
     }
@@ -244,18 +139,19 @@ public class Run {
      *
      * @param args
      */
-    public static void main(String args[])  throws Exception{
+    public static void main(String args[]) throws Exception {
         ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
         ExpeditionService expeditionService = applicationContext.getBean(ExpeditionService.class);
         UserService userService = applicationContext.getBean(UserService.class);
-        Run run = (Run) SpringApplicationContext.getBean(Run.class);
+        DatasetFileManager datasetFileManager = applicationContext.getBean(DatasetFileManager.class);
+        Run run = new Run(SettingsManager.getInstance(), expeditionService, datasetFileManager);
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
         String username = "";
         String password = "";
         int projectId = 0;
         //System.out.print(defaultOutputDirectory);
 
-        // Test configuration :
+        // VersionTransformer configuration :
         // -d -t -u -i sampledata/Apogon***.xls
 
         // Direct output using the standardPrinter subClass of fimsPrinter which send to fimsPrinter.out (for command-line usage)
@@ -286,7 +182,7 @@ public class Run {
         Options options = new Options();
         options.addOption("h", "help", false, "print this help message and exit");
         options.addOption("q", "query", true, "Run a query and pass in graph UUIDs to look at for this query -- Use this along with options C and S");
-        options.addOption("f", "format", true, "excel|html|json|cspace  specifying the return format for the query");
+        options.addOption("f", "format", true, "excel|tab|csv|kml|json|cspace  specifying the return format for the query");
         options.addOption("F", "filter", true, "Filter results based on a keyword search");
 
         options.addOption("e", "dataset_code", true, "Dataset code.  You will need to obtain a data code before " +
@@ -434,35 +330,58 @@ public class Run {
                 //p.query(cl.getOptionValue("q"), cl.getOptionValue("f"), cl.getOptionValue("F"));
                 // TODO: construct filter statements from arguments passed in on command-line
                 // Build the Query Object by passing this object and an array of graph objects, separated by commas
-                FimsQueryBuilder q = new FimsQueryBuilder(mapping, configFile, cl.getOptionValue("q").split(","), output_directory);
+                FimsQueryBuilder q = new FimsQueryBuilder(mapping, cl.getOptionValue("q").split(","), output_directory);
                 // Run the query, passing in a format and returning the location of the output file
-                System.out.println(q.run(cl.getOptionValue("f"), projectId));
+                switch (cl.getOptionValue("f")) {
+                    case "json":
+                        System.out.println(q.writeJSON());
+                        break;
+                    case "cspace":
+                        Validation validation = new Validation();
+                        validation.addValidationRules(configFile, mapping);
+                        System.out.println(q.writeCSPACE(validation));
+                        break;
+                    case "excel":
+                        System.out.println(q.writeExcel(projectId));
+                        break;
+                    case "tab":
+                        System.out.println(q.writeTAB());
+                        break;
+                    case "csv":
+                        System.out.println(q.writeCSV());
+                        break;
+                    case "kml":
+                        System.out.println(q.writeKML());
+                        break;
+                }
             }
             /*
            Run the validator
             */
             else {
                 ProcessController processController = new ProcessController(projectId, dataset_code);
-                processController.setInputFilename(input_file);
+                processController.setOutputFolder(output_directory);
+                Map<String, Map<String, Object>> fmProps = new HashMap<>();
+                Map<String, Object> props = new HashMap<>();
+                props.put("filename", input_file);
+
+                fmProps.put("dataset", props);
+
                 // if we only want to triplify and not upload, then we operate in LOCAL mode
                 if (local && triplify) {
                     processController.appendStatus("Triplifying using LOCAL only options, useful for debugging\n");
                     processController.appendStatus("Does not construct GUIDs, use Deep Roots, or connect to project-specific configurationFiles");
-                    processController.setInputFilename(input_file);
 
-                    Process p = new Process(
-                            output_directory,
-                            processController,
-                            new File(cl.getOptionValue("configFile")),
-                            expeditionService);
-                    run.setProcess(p);
+                    // Create the process object --- this is done each time to orient the application
+                    Process process = new Process.ProcessBuilder(datasetFileManager, processController)
+                            .addFmProperties(fmProps)
+                            .configFile(new File(cl.getOptionValue("configFile")))
+                            .build();
+
+                    processController.setProcess(process);
                     run.setProcessController(processController);
 
-                    run.runAllLocally(true, false, false, force);
-                    /*p.runValidation();
-                    triplifier t = new triplifier("test", output_directory);
-                    p.mapping.Run(t, pc);
-                    p.mapping.print();  */
+                    run.runAllLocally(false, false, force);
 
                 } else {
                     if (triplify || upload) {
@@ -483,37 +402,37 @@ public class Run {
                                 helpf.printHelp("fims ", options, true);
                                 return;
                             }
-                            run.setUser(user);
                         }
                     }
 
 
                     // Now Run the process
-                    Process p;
+                    Process process;
                     // use local configFile if specified
                     if (cl.hasOption("configFile")) {
                         System.out.println("using local config file = " + cl.getOptionValue("configFile").toString());
-                        p = new Process(
-                                output_directory,
-                                processController,
-                                new File(cl.getOptionValue("configFile")),
-                                expeditionService);
+                        // Create the process object --- this is done each time to orient the application
+                        process = new Process.ProcessBuilder(datasetFileManager, processController)
+                                .addFmProperties(fmProps)
+                                .configFile(new File(cl.getOptionValue("configFile")))
+                                .build();
+
                     } else {
-                        p = new Process(
-                                output_directory,
-                                processController,
-                                expeditionService
-                        );
+                        File configFile = new ConfigurationFileFetcher(projectId, output_directory, false).getOutputFile();
+                        process = new Process.ProcessBuilder(datasetFileManager, processController)
+                                .addFmProperties(fmProps)
+                                .configFile(configFile)
+                                .build();
                     }
 
                     FimsPrinter.out.println("Initializing ...");
                     FimsPrinter.out.println("\tinputFilename = " + input_file);
 
                     // Run the processor
-                    run.setProcess(p);
+                    processController.setProcess(process);
                     run.setProcessController(processController);
 
-                    run.runAllLocally(triplify, upload, true, force);
+                    run.runAllLocally(upload, true, force);
                 }
             }
         } catch (Exception e) {

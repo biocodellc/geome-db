@@ -4,6 +4,7 @@ import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Mapping;
+import biocode.fims.digester.Validation;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fuseki.query.FimsFilterCondition;
 import biocode.fims.fuseki.query.FimsQueryBuilder;
@@ -16,6 +17,7 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -30,6 +32,7 @@ import java.util.*;
 /**
  * Query interface for Biocode-fims expedition
  */
+@Controller
 @Path("/projects/query")
 public class Query extends FimsService {
     private static Logger logger = LoggerFactory.getLogger(Query.class);
@@ -60,7 +63,7 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.run("json", projectId));
+        File file = new File(q.writeJSON());
 
         // Wrie the file to a String and return it
         String response = readFile(file.getAbsolutePath());
@@ -150,7 +153,7 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.run("kml", projectId));
+        File file = new File(q.writeKML());
 
         // Return file to client
         Response.ResponseBuilder response = Response.ok((Object) file);
@@ -217,7 +220,7 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.run("tab", projectId));
+        File file = new File(q.writeTAB());
 
         // Return file to client
         Response.ResponseBuilder response = Response.ok(file);
@@ -309,7 +312,7 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.run("excel", projectId));
+        File file = new File(q.writeExcel(projectId));
 
         // Return file to client
         Response.ResponseBuilder response = Response.ok((Object) file);
@@ -341,7 +344,7 @@ public class Query extends FimsService {
             String key = (String) thisEntry.getKey();
             // Values come over as a linked list
             LinkedList value = (LinkedList) thisEntry.getValue();
-            if (key.equalsIgnoreCase("graphs")) {
+            if (key.equalsIgnoreCase("graphs") || key.equalsIgnoreCase("graphs[]")) {
                 Object[] valueArray = value.toArray();
                 graphs = Arrays.copyOf(valueArray, valueArray.length, String[].class);
             } else if (key.equalsIgnoreCase("project_id")) {
@@ -360,7 +363,7 @@ public class Query extends FimsService {
         }
 
         // Make sure graphs and projectId are set
-        if (graphs != null && graphs.length < 1 && projectId != 0) {
+        if (graphs == null || graphs.length < 1 || projectId == 0) {
             throw new FimsRuntimeException("ERROR: incomplete arguments", 400);
         }
 
@@ -372,7 +375,7 @@ public class Query extends FimsService {
         Mapping mapping = getMapping(projectId);
 
         // Build the Query
-        FimsQueryBuilder q = new FimsQueryBuilder(mapping, configFile, graphs, uploadPath());
+        FimsQueryBuilder q = new FimsQueryBuilder(mapping, graphs, uploadPath());
 
         // Loop the filterMap entries and build the filterConditionArrayList
         Iterator it = filterMap.entrySet().iterator();
@@ -420,24 +423,32 @@ public class Query extends FimsService {
         // Parse the GET filter
         FimsFilterCondition filterCondition = parseGETFilter(filter);
 
-        if (filterCondition != null) {
-            // Create a filter statement
-            ArrayList<FimsFilterCondition> arrayList = new ArrayList<FimsFilterCondition>();
-            arrayList.add(filterCondition);
+        // Create a filter statement
+        ArrayList<FimsFilterCondition> arrayList = new ArrayList<FimsFilterCondition>();
+        arrayList.add(filterCondition);
 
-            // Run the query
-            // Build the Query Object by passing this object and an array of graph objects, separated by commas
-            FimsQueryBuilder q = new FimsQueryBuilder(mapping, configFile, graphsArray, uploadPath());
+        // Run the query
+        // Build the Query Object by passing this object and an array of graph objects, separated by commas
+        FimsQueryBuilder q = new FimsQueryBuilder(mapping, graphsArray, uploadPath());
+
+        if (filterCondition != null) {
             // Add our filter conditions
             q.addFilter(arrayList);
-            // Run the query, passing in a format and returning the location of the output file
-            return new File(q.run(format, projectId));
-        } else {
-            // Run the query
-            // Build the Query Object by passing this object and an array of graph objects, separated by commas
-            FimsQueryBuilder q = new FimsQueryBuilder(mapping, configFile, graphsArray, uploadPath());
-            // Run the query, passing in a format and returning the location of the output file
-            return new File(q.run(format, projectId));
+        }
+        // Run the query, passing in a format and returning the location of the output file
+        switch (format) {
+            case "excel":
+                return new File(q.writeExcel(projectId));
+            case "kml":
+                return new File(q.writeKML());
+            case "tab":
+                return new File(q.writeTAB());
+            case "cspace":
+                Validation validation = new Validation();
+                validation.addValidationRules(configFile, mapping);
+                return new File(q.writeCSPACE(validation));
+            default:
+                return new File(q.writeJSON());
         }
     }
 
