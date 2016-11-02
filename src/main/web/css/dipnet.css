@@ -92,6 +92,10 @@ div.toggle-content {
     color: #7a868e;
 }
 
+.ui-front {
+    z-index: 1001;
+}
+
 .ui-widget {
     font-size: .9em;
 }
