@@ -7,6 +7,7 @@ import biocode.fims.dipnet.entities.FastqMetadata;
 import biocode.fims.dipnet.services.DipnetExpeditionService;
 import biocode.fims.dipnet.sra.DipnetBioSampleMapper;
 import biocode.fims.dipnet.sra.DipnetSraMetadataMapper;
+import biocode.fims.entities.Bcid;
 import biocode.fims.fileManagers.dataset.Dataset;
 import biocode.fims.fileManagers.dataset.DatasetFileManager;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -77,8 +78,13 @@ public class Expeditions extends FimsService {
         datasetFileManager.setProcessController(processController);
         Dataset dataset = datasetFileManager.getDataset();
 
+        Bcid entityBcid = expedition.getExpedition().getEntityBcids().get(0);
+
         SraMetadataMapper metadataMapper = new DipnetSraMetadataMapper(expedition.getFastqMetadata(), dataset.getSamples());
-        BioSampleMapper bioSampleMapper = new DipnetBioSampleMapper(dataset.getSamples(), expedition.getFastqMetadata().getLibraryStrategy());
+        BioSampleMapper bioSampleMapper = new DipnetBioSampleMapper(
+                dataset.getSamples(),
+                expedition.getFastqMetadata().getLibraryStrategy(),
+                entityBcid.getIdentifier().toString());
 
         File file = SraFileGenerator.generateFiles(bioSampleMapper, metadataMapper, uploadPath());
 

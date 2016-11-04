@@ -29,14 +29,17 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
         add("identified_by");
         add("lat_lon");
         add("sex");
+        add("bcid");
     }};
 
     private final String libraryStrategy;
     private final Iterator samplesIt;
+    private final String rootBcid;
 
 
-    public DipnetBioSampleMapper(JSONArray samples, String libraryStrategy) {
+    public DipnetBioSampleMapper(JSONArray samples, String libraryStrategy, String rootBcid) {
         this.libraryStrategy = libraryStrategy;
+        this.rootBcid = rootBcid;
 
         if (samples == null || samples.size() == 0) {
             throw new FimsRuntimeException(SraCode.MISSING_DATASET, 400);
@@ -102,6 +105,7 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
         bioSampleAttributes.add(latLongSb.toString());
 
         bioSampleAttributes.add((String) sample.get("sex"));
+        bioSampleAttributes.add(rootBcid + sample.get("materialSampleID"));
 
         return bioSampleAttributes;
     }
