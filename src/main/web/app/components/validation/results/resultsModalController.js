@@ -36,6 +36,11 @@ angular.module('fims.validation')
 
             vm.close = close;
             vm.continueUpload = continueUpload;
+            vm.cancel = cancel;
+
+            function cancel() {
+                $uibModalInstance.dismiss('cancel');
+            }
 
             function close() {
                 $uibModalInstance.close();

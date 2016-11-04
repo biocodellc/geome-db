@@ -8,6 +8,9 @@
         (in tab delimited text format) while the upload tab will also validate your files and ensure that each
         materialSampleID is accompanied by a fasta/fastq file of the same name.</p>
 
+    <p>The Upload option is available only to DIPnet members. I you are not yet a member visit
+        <a href="diversityinfopacific.net">www.diversityindopacific.net</a> to find out how to join.</p>
+
     <div class="col-sm-12">
         <!-- TODO remove this when we refactor list() function -->
         <input type="hidden" value="{{ vm.projectId }}" name="projectId" id="project">
@@ -53,19 +56,14 @@
                             <select id="expeditionCode" name="expeditionCode"
                                     ng-model="vm.expeditionCode"
                                     ng-options="expedition.expeditionCode as expedition.expeditionTitle for expedition in vm.expeditions"
-                                    class="form-control col-sm-6" required>
-                                <option value="">-- Select an Expedition --</option>
+                                    class="form-control col-sm-6">
+                                <option value="">-- Create an Expedition --</option>
                             </select>
-                        </div>
-                        <div class="col-sm-2">
-                            <button type="button" ng-hide="!vm.dataTypes.fims" class="btn btn-default"
-                                    ng-click="vm.createExpedition()">New
-                                Expedition
-                            </button>
                         </div>
                     </div>
 
                     <fims-data ng-show="vm.dataTypes.fims" ng-model="vm.dataset"
+                               ng-required="vm.dataTypes.fims"
                                change="vm.datasetChange()"></fims-data>
 
                     <div class="form-group" ng-show="vm.dataTypes.fasta" show-errors="{trigger: 'change'}">

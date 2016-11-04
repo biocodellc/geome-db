@@ -88,6 +88,10 @@ div.toggle-content {
     font-size: 16px;
 }
 
+.ignore-error {
+    color: #737373 !important;
+}
+
 .dropdown-menu>li>a.disabled {
     color: #7a868e;
 }

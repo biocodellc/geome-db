@@ -12,6 +12,7 @@ angular.module('fims.validation')
                 instrumentModel: null
             };
             var latestExpeditionCode = null;
+            var createExpeditionCode = null;
             var modalInstance = null;
             var vm = this;
 
@@ -27,7 +28,7 @@ angular.module('fims.validation')
             vm.fasta = null;
             vm.fastqFilenames = null;
             vm.fastqMetadata = angular.copy(defaultFastqMetadata);
-            vm.expeditonCode = "";
+            vm.expeditonCode = null;
             vm.expeditions = [];
             vm.verifyDataPoints = false;
             vm.coordinatesVerified = false;
@@ -35,7 +36,6 @@ angular.module('fims.validation')
             vm.coordinatesErrorClass = null;
             vm.showGenbankDownload = false;
             vm.activeTab = 0;
-            vm.createExpedition = createExpedition;
             vm.datasetChange = datasetChange;
             vm.validate = validate;
             vm.upload = upload;
@@ -89,7 +89,7 @@ angular.module('fims.validation')
                 var data = {};
 
                 data.projectId = PROJECT_ID;
-                data.expeditionCode = vm.expeditionCode;
+                data.expeditionCode = vm.expeditionCode ? vm.expeditionCode : createExpeditionCode;
                 data.upload = true;
                 data.public_status = true;
 
@@ -111,10 +111,30 @@ angular.module('fims.validation')
                 $scope.$broadcast('show-errors-check-validity');
 
 
-                if (!checkCoordinatesVerified() || vm.uploadForm.$invalid || !(vm.dataset || vm.fasta)) {
+                if (!checkCoordinatesVerified() || vm.uploadForm.$invalid) {
                     return;
                 }
 
+                if (!vm.expeditionCode) {
+                    var modalInstance = $uibModal.open({
+                        templateUrl: 'app/components/expeditions/createExpeditionModal.html',
+                        controller: 'CreateExpeditionsModalCtrl',
+                        controllerAs: 'vm',
+                        size: 'md'
+                    });
+
+                    modalInstance.result.then(function (expeditionCode) {
+                        createExpeditionCode = expeditionCode;
+                        submitUpload();
+                        ResultsDataFactory.createExpedition = true;
+                    }, function () {
+                    });
+                } else {
+                    submitUpload();
+                }
+            }
+
+            function submitUpload() {
                 var data = getUploadData();
 
                 validateSubmit(data).then(
@@ -123,6 +143,7 @@ angular.module('fims.validation')
                             ResultsDataFactory.validationMessages = response.data.done;
                             ResultsDataFactory.showOkButton = true;
                             ResultsDataFactory.showValidationMessages = true;
+                            createExpeditionCode = null;
                         } else if (response.data.continue) {
                             if (response.data.continue.message == "continue") {
                                 continueUpload();
@@ -133,10 +154,10 @@ angular.module('fims.validation')
                                 ResultsDataFactory.showContinueButton = true;
                                 ResultsDataFactory.showCancelButton = true;
                             }
-
                         } else {
                             ResultsDataFactory.error = "Unexpected response from server. Please contact system admin.";
                             ResultsDataFactory.showOkButton = true;
+                            createExpeditionCode = null;
                         }
                     });
             }
@@ -174,11 +195,16 @@ angular.module('fims.validation')
                         ResultsDataFactory.reset();
                         ResultsDataFactory.error = response.data.error || response.data.usrMessage || "Server Error!";
                         ResultsDataFactory.showOkButton = true;
-                    }).finally(
-                    function () {
-                        StatusPollingFactory.stopPolling();
-                    }
-                );
+                    })
+                    .finally(
+                        function () {
+                            if (ResultsDataFactory.createExpedition) {
+                                getExpeditions();
+                                vm.expeditionCode = createExpeditionCode;
+                            }
+                            StatusPollingFactory.stopPolling();
+                        }
+                    );
             }
 
             function validateSubmit(data) {
@@ -231,15 +257,24 @@ angular.module('fims.validation')
                     backdrop: 'static'
                 });
 
-                modalInstance.result.finally(function () {
-                        vm.activeTab = 2; // index 2 is the results tab
-                        vm.displayResults = true;
-                        ResultsDataFactory.showStatus = false;
-                        ResultsDataFactory.showValidationMessages = true;
-                        ResultsDataFactory.showSuccessMessages = true;
-                        ResultsDataFactory.showUploadMessages = false;
-                    }
-                )
+                modalInstance.result
+                    .then(
+                        function () {
+                        },
+                        function () {
+                            // if we are here, then the user canceled the upload
+                            createExpeditionCode = null;
+
+                        })
+                    .finally(function () {
+                            vm.activeTab = 2; // index 2 is the results tab
+                            vm.displayResults = true;
+                            ResultsDataFactory.showStatus = false;
+                            ResultsDataFactory.showValidationMessages = true;
+                            ResultsDataFactory.showSuccessMessages = true;
+                            ResultsDataFactory.showUploadMessages = false;
+                        }
+                    )
 
             }
 
@@ -248,7 +283,7 @@ angular.module('fims.validation')
                 vm.fasta = null;
                 vm.fastqFilenames = null;
                 angular.copy(defaultFastqMetadata, vm.fastqMetadata);
-                vm.expeditionCode = "";
+                vm.expeditionCode = null;
                 vm.verifyDataPoints = false;
                 vm.coordinatesVerified = false;
                 $scope.$broadcast('show-errors-reset');
@@ -283,22 +318,6 @@ angular.module('fims.validation')
                     vm.verifyDataPoints = false;
                     vm.coordinatesVerified = false;
                 }
-            }
-
-            function createExpedition() {
-                var modalInstance = $uibModal.open({
-                    templateUrl: 'app/components/expeditions/createExpeditionModal.html',
-                    controller: 'CreateExpeditionsModalCtrl',
-                    controllerAs: 'vm',
-                    size: 'md'
-                });
-
-                modalInstance.result.then(function (expeditionCode) {
-                    getExpeditions();
-                    vm.expeditionCode = expeditionCode;
-                }, function () {
-                });
-
             }
 
             function parseSpreadsheet(regExpression, sheetName) {
