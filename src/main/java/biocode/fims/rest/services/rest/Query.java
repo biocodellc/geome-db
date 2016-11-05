@@ -61,17 +61,9 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.writeJSON());
+        JSONArray samples = q.getJSON();
 
-        // Wrie the file to a String and return it
-        String response = readFile(file.getAbsolutePath());
-
-        // Return response
-        if (response == null) {
-            return Response.status(204).build();
-        } else {
-            return Response.ok(response).build();
-        }
+        return Response.ok(samples).build();
     }
 
     /**
@@ -95,15 +87,7 @@ public class Query extends FimsService {
         // Run the query, passing in a format and returning the location of the output file
         File file = new File(q.writeCSV());
 
-        // Wrie the file to a String and return it
-        String response = readFile(file.getAbsolutePath());
-
-        // Return response
-        if (response == null) {
-            return Response.status(204).build();
-        } else {
-            return Response.ok(response).build();
-        }
+        return Response.ok(file).build();
     }
 
     /**
@@ -120,15 +104,15 @@ public class Query extends FimsService {
             @QueryParam("project_id") Integer project_id,
             @QueryParam("filter") String filter) {
 
-        File file = GETQueryResult(graphs, project_id, filter, "json");
+        FimsQueryBuilder queryBuilder = GETFimsQueryBuilder(graphs, project_id, filter);
 
-        String response = readFile(file.getAbsolutePath());
+        JSONArray samples = queryBuilder.getJSON();
 
         // Return response
-        if (response == null) {
+        if (samples.size() == 0) {
             return Response.status(204).build();
         } else {
-            return Response.ok(response).build();
+            return Response.ok(samples).build();
         }
     }
 
@@ -148,20 +132,18 @@ public class Query extends FimsService {
             @QueryParam("filter") String filter) {
 
         // Construct a file
-        File file = GETQueryResult(graphs, project_id, filter, "kml");
+        FimsQueryBuilder queryBuilder = GETFimsQueryBuilder(graphs, project_id, filter);
+
+        File file = new File(queryBuilder.writeKML());
 
         // Return file to client
-        Response.ResponseBuilder response = Response.ok((Object) file);
+        Response.ResponseBuilder response = Response.ok(file);
 
         response.header("Content-Disposition",
                 "attachment; filename=dipnet-fims-output.kml");
 
         // Return response
-        if (response == null) {
-            return Response.status(204).build();
-        } else {
-            return response.build();
-        }
+        return response.build();
     }
 
     /**
@@ -212,19 +194,17 @@ public class Query extends FimsService {
             @QueryParam("project_id") Integer projectId,
             @QueryParam("filter") String filter) {
 
-        File file = GETQueryResult(graphs, projectId, filter, "excel");
+        FimsQueryBuilder queryBuilder = GETFimsQueryBuilder(graphs, projectId, filter);
+
+        File file = new File(queryBuilder.writeExcel(projectId));
 
         // Return file to client
-        Response.ResponseBuilder response = Response.ok((Object) file);
+        Response.ResponseBuilder response = Response.ok(file);
         response.header("Content-Disposition",
                 "attachment; filename=dipnet-fims-output.xlsx");
 
         // Return response
-        if (response == null) {
-            return Response.status(204).build();
-        } else {
-            return response.build();
-        }
+        return response.build();
     }
 
     /**
@@ -334,10 +314,9 @@ public class Query extends FimsService {
      * @param graphs
      * @param projectId
      * @param filter
-     * @param format
      * @return
      */
-    private File GETQueryResult(String graphs, Integer projectId, String filter, String format) {
+    private FimsQueryBuilder GETFimsQueryBuilder(String graphs, Integer projectId, String filter) {
         String[] graphsArray;
 
         try {
@@ -369,16 +348,8 @@ public class Query extends FimsService {
             // Add our filter conditions
             q.addFilter(arrayList);
         }
-        // Run the query, passing in a format and returning the location of the output file
-        switch (format) {
-            case "excel":
-                return new File(q.writeExcel(projectId));
-            case "kml":
-                return new File(q.writeKML());
-            default:
-                return new File(q.writeJSON());
-    }
 
+        return q;
 }
 
     private Mapping getMapping(Integer projectId) {
