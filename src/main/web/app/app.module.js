@@ -10,6 +10,7 @@ var app = angular.module('dipnetApp', [
     'fims.users',
     'fims.lookup',
     'fims.creator',
+    'fims.home',
     'utils.autofocus',
     'ui.bootstrap.showErrors',
 ]);

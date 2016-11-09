@@ -10,6 +10,7 @@ angular.module('dipnetApp')
             .state('home', {
                 url: "/",
                 templateUrl: "app/components/home/home.html",
+                controller: "HomeCtrl as vm"
             })
             .state('login', {
                 url: "/login",
