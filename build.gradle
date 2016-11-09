@@ -12,10 +12,14 @@ buildscript {
 
 plugins {
     id 'org.hidetake.ssh' version '1.6.0'
+    id "com.eriwen.gradle.js" version "2.14.1"
 }
 
+
+import com.eriwen.gradle.js.tasks.MinifyJsTask
 import org.ajoberstar.grgit.*
 import groovy.io.FileType
+import groovy.json.*
 
 apply plugin: "java"
 apply plugin: "application"
@@ -23,14 +27,14 @@ apply plugin: "war"
 apply plugin: "idea"
 apply plugin: "environments"
 apply plugin: "org.hidetake.ssh"
+apply plugin: "com.eriwen.gradle.js"
 
-targetCompatibility = 1.7
-sourceCompatibility = 1.7
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
 }
-
 
 //noinspection GroovyAssignabilityCheck
 configurations {
@@ -46,7 +50,7 @@ idea {
 }
 
 // this is necessary for the fatWar task subprojects.each closure to work correctly
-subprojects.each { subproject -> evaluationDependsOn( subproject.path ) }
+subprojects.each { subproject -> evaluationDependsOn(subproject.path) }
 
 //noinspection GroovyAssignabilityCheck
 sourceSets {
@@ -89,6 +93,40 @@ dependencies {
     testCompile "junit:junit-dep:4.10"
 }
 
+javascript.source {
+    externLibs {
+        js {
+            srcDir "src/main/web/js/externalLibs"
+            include "*.js"
+        }
+    }
+    app {
+        js {
+            srcDir "src/main/web/app"
+            include "**/*.js"
+            exclude "app.js"
+            exclude "app.module.js"
+            exclude "**/module.js"
+        }
+    }
+    js {
+        js {
+            srcDir "src/main/web/js"
+            include "*.js"
+            exclude "all.js"
+            exclude "all.min.js"
+            exclude "allExternalLibs.min.js"
+        }
+    }
+    modules {
+        js {
+            srcDir "src/main/web/app"
+            include "**/module.js"
+        }
+    }
+}
+
+
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
 mainClassName = "biocode.fims.genbank.GenbankManager"
@@ -116,6 +154,17 @@ allprojects {
     }
 }
 
+war {
+    // exclude the src/main/web/app & src/main/web/js dirs. These files are concatenatedd and minified in the minifyJs task
+    // and added in the webInf closure
+    exclude("app")
+    exclude("js")
+    webInf {
+        from "${buildDir}/js"
+        into "/js/"
+    }
+}
+
 task setProductionEnv << {
     project.ext.environment = "production"
 }
@@ -125,7 +174,6 @@ task setDevelopmentEnv << {
 task setLocalEnv << {
     project.ext.environment = "local"
 }
-
 
 // if setProductionEnv or setDevelopmentEnv is run, make sure this is done before processResources
 setProductionEnv.mustRunAfter compileJava
@@ -194,7 +242,7 @@ task restartFims {
     }
 }
 
-task restartFimsDev  {
+task restartFimsDev {
     group = 'biscicol.org'
     description = 'Restart biscicol.org dev jetty instance'
     doLast {
@@ -300,6 +348,15 @@ task fatWar(type: War) {
 
     classpath configurations.server
     classpath configurations.compile
+
+    // exclude the src/main/web/app & src/main/web/js dirs. These files are concatenated and minified in the minifyJs task
+    // and added in the webInf closure
+    exclude("app")
+    exclude("js")
+    webInf {
+        from "${buildDir}/js"
+        into "/js/"
+    }
 }
 
 task deployFimsLocal {
@@ -317,3 +374,64 @@ task deployFimsLocal {
         }
     }
 }
+
+combineJs {
+    encoding = "UTF-8"
+    source = files("src/main/web/app/app.module.js", javascript.source.modules.js.files, javascript.source.app.js.files, javascript.source.js.js.files)
+    dest = file("src/main/web/js/all.js")
+}
+
+task jsExternalLibs(type: MinifyJsTask) {
+    source = files(javascript.source.externLibs.js.files)
+    dest = file("${buildDir}/js/allExternalLibs.min.js")
+    sourceMap = file("${buildDir}/js/allExternalLibs.min.map")
+    closure {
+        warningLevel = 'QUIET'
+        compilerOptions.language = "ECMASCRIPT5"
+    }
+
+    doLast { task ->
+        file(dest) << "\n//# sourceMappingURL=allExternalLibs.min.map"
+
+        def sources = []
+
+        task.source.files.each { file ->
+            sources << ".." + file.canonicalPath.minus(projectDir.canonicalPath + "/" + webAppDirName)
+        }
+
+        Map srcMap = new JsonSlurper().parseText(sourceMap.text)
+        srcMap.sources = sources
+        sourceMap.withWriter("UTF-8") { it << new JsonBuilder(srcMap).toPrettyString() }
+    }
+}
+
+task jsApp(type: MinifyJsTask) {
+    source = files("src/main/web/app/app.module.js", javascript.source.modules.js.files, javascript.source.app.js.files, javascript.source.js.js.files)
+    dest = file("${buildDir}/js/all.min.js")
+    sourceMap = file("${buildDir}/js/all.min.map")
+    closure {
+        compilerOptions.language = "ECMASCRIPT5"
+    }
+
+    doLast { task ->
+        file(dest) << "\n//# sourceMappingURL=all.min.map"
+
+        def sources = []
+
+        task.source.files.each { file ->
+            sources << ".." + file.canonicalPath.minus(projectDir.canonicalPath + "/" + webAppDirName)
+        }
+
+        Map srcMap = new JsonSlurper().parseText(sourceMap.text)
+        srcMap.sources = sources
+        sourceMap.withWriter("UTF-8") { it << new JsonBuilder(srcMap).toPrettyString() }
+    }
+}
+
+task minifyJs(overwrite: true) {
+    dependsOn jsExternalLibs
+    dependsOn jsApp
+}
+
+fatWar.dependsOn minifyJs
+war.dependsOn minifyJs

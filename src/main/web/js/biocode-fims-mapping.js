@@ -1,6 +1,6 @@
 (function(undefined) {
     'use strict';
-    // Check if dependecies are available.
+    // Check if dependencies are available.
     if (typeof XLSXReader === 'undefined') {
         console.log('xlsx-reader.js is required. Get it from https://gist.github.com/psjinx/8002786');
         return;

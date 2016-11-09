@@ -1,6 +1,7 @@
+/*https://gist.github.com/psjinx/8002786*/
 (function(undefined) {
     'use strict';
-    // Check if dependecies are available.
+    // Check if dependencies are available.
     if (typeof XLSX === 'undefined') {
         console.log('xlsx.js is required. Get it from https://github.com/SheetJS/js-xlsx');
         return;
