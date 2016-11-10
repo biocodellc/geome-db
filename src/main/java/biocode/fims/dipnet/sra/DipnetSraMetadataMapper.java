@@ -45,8 +45,21 @@ public class DipnetSraMetadataMapper extends AbstractSraMetadataMapper {
         List<String> metadata = new ArrayList<>();
         String sampleId = (String) sample.get("materialSampleID");
 
+        String title;
+        String species = (String) sample.get("species");
+        String genus = (String) sample.get("genus");
+
+        if (!StringUtils.isBlank(genus)) {
+            title = fastqMetadata.getLibraryStrategy() + "_" + genus;
+            if (!StringUtils.isBlank(species)) {
+                title += "_" + species;
+            }
+        } else {
+            title = fastqMetadata.getLibraryStrategy() + "_" + sample.get("phylum");
+        }
+
         metadata.add(sampleId);
-        metadata.add(fastqMetadata.getLibraryStrategy() + "_" + sample.get("species"));
+        metadata.add(title);
         metadata.add(fastqMetadata.getLibraryStrategy());
         metadata.add(fastqMetadata.getLibrarySource());
         metadata.add(fastqMetadata.getLibrarySelection());

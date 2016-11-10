@@ -14,6 +14,10 @@ import java.util.List;
 @Table(name = "fastqMetadata")
 public class FastqMetadata {
 
+    // TODO use this when we refactor fastqMetadata out of dipnet and into biocode-fims-sequences
+    private static String PAIRED_LAYOUT = "paired";
+    private static String SINGLE_LAYOUT = "single";
+
     private int expeditionId;
     private String libraryStrategy;
     private String librarySource;

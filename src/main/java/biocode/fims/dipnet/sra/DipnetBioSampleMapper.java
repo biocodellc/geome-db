@@ -15,6 +15,7 @@ import java.util.List;
  * Class that maps dipnet project attributes to sra BioSample attributes
  */
 public class DipnetBioSampleMapper implements BioSampleMapper {
+    private static final String BLANK_ATTRIBUTE = "missing";
     private static final List<String> BIOSAMPLE_HEADERS = new ArrayList<String>() {{
         add("sample_name");
         add("sample_title");
@@ -63,22 +64,37 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
         JSONObject sample = (JSONObject) samplesIt.next();
         List<String> bioSampleAttributes = new ArrayList<>();
 
+        String organism;
+        String species = (String) sample.get("species");
+        String genus = (String) sample.get("genus");
+
+        if (!StringUtils.isBlank(genus)) {
+            organism = genus;
+            if (!StringUtils.isBlank(species)) {
+                organism += " " + species;
+            }
+        } else {
+            organism = (String) sample.get("phylum");
+        }
+
         bioSampleAttributes.add((String) sample.get("materialSampleID"));
-        bioSampleAttributes.add(libraryStrategy + "_" + sample.get("species"));
-        bioSampleAttributes.add(sample.get("genus") + " " + sample.get("species"));
+        bioSampleAttributes.add(libraryStrategy + "_" + organism.replace(" ", "_"));
+        bioSampleAttributes.add(organism);
         bioSampleAttributes.add(getCollectionDate(sample));
 
         StringBuilder geoLocSb = new StringBuilder();
         geoLocSb.append(sample.get("country"));
         if (!StringUtils.isBlank((String) sample.get("locality"))) {
-            geoLocSb.append(": ");
+            if (geoLocSb.length() > 1) {
+                geoLocSb.append(": ");
+            }
             geoLocSb.append(sample.get("locality"));
         }
-        bioSampleAttributes.add(geoLocSb.toString());
+        bioSampleAttributes.add(modifyBlankAttribute(geoLocSb.toString()));
 
-        bioSampleAttributes.add((String) sample.get("geneticTissueType"));
+        bioSampleAttributes.add(modifyBlankAttribute((String) sample.get("geneticTissueType")));
         bioSampleAttributes.add((String) sample.get("principalInvestigator"));
-        bioSampleAttributes.add((String) sample.get("recordedBy"));
+        bioSampleAttributes.add(modifyBlankAttribute((String) sample.get("recordedBy")));
 
         StringBuilder depthSb = new StringBuilder();
         if (!StringUtils.isBlank((String) sample.get("minimumDepthInMeters"))) {
@@ -89,10 +105,10 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
                 depthSb.append(sample.get("maximumDepthInMeters"));
             }
         }
-        bioSampleAttributes.add(depthSb.toString());
+        bioSampleAttributes.add(modifyBlankAttribute(depthSb.toString()));
 
-        bioSampleAttributes.add((String) sample.get("lifeStage"));
-        bioSampleAttributes.add((String) sample.get("identifiedBy"));
+        bioSampleAttributes.add(modifyBlankAttribute((String) sample.get("lifeStage")));
+        bioSampleAttributes.add(modifyBlankAttribute((String) sample.get("identifiedBy")));
 
         StringBuilder latLongSb = new StringBuilder();
         if (!StringUtils.isBlank((String) sample.get("decimalLat")) &&
@@ -102,12 +118,20 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
             latLongSb.append(" ");
             latLongSb.append(sample.get("decimalLong"));
         }
-        bioSampleAttributes.add(latLongSb.toString());
+        bioSampleAttributes.add(modifyBlankAttribute(latLongSb.toString()));
 
-        bioSampleAttributes.add((String) sample.get("sex"));
+        bioSampleAttributes.add(modifyBlankAttribute((String) sample.get("sex")));
         bioSampleAttributes.add(rootBcid + sample.get("materialSampleID"));
 
         return bioSampleAttributes;
+    }
+
+    private String modifyBlankAttribute(String attribute) {
+        if (StringUtils.isBlank(attribute)) {
+            return BLANK_ATTRIBUTE;
+        }
+
+        return attribute;
     }
 
     private String getCollectionDate(JSONObject sample) {
@@ -128,6 +152,6 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
             }
         }
 
-        return collectionDate.toString();
+        return modifyBlankAttribute(collectionDate.toString());
     }
 }
