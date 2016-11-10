@@ -4,6 +4,7 @@ src/main/web/app/components/auth/clientId.js
 *.iml
 *.props
 *.properties
+!src/main/environment/*/log4j.properties
 dist/*
 build/*
 classes/*
@@ -11,7 +12,6 @@ javadocs/*
 tripleOutput/*
 .gradle
 jetty-env.xml
-src/main/java/biocode/fims/rest/test.java
 biscicol-fims.ipr
 biscicol-fims.iws
 out/
