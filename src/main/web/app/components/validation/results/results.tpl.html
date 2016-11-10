@@ -18,7 +18,7 @@
                     <div uib-accordion-heading><span class="Error">Error: <span
                             ng-bind-html="groupMessage | trusted_html"/></span>
                     </div>
-                    <div ng-repeat="message in messagesArray">{{ message }}</div>
+                    <div ng-repeat="message in messagesArray track by $index">{{ message }}</div>
                 </div>
             </uib-accordion>
         </div>
@@ -46,7 +46,7 @@
                         <div uib-accordion-heading><span class="Error">Error: <span
                                 ng-bind-html="groupMessage | trusted_html"></span></span>
                         </div>
-                        <div ng-repeat="message in messagesArray">{{ message }}</div>
+                        <div ng-repeat="message in messagesArray track by $index">{{ message }}</div>
                     </div>
 
                     <div ng-repeat="(groupMessage, messagesArray) in sheetMessages.warnings" uib-accordion-group

@@ -210,6 +210,9 @@ angular.module('fims.validation')
             function validateSubmit(data) {
                 ResultsDataFactory.reset();
                 vm.showGenbankDownload = false;
+                // start polling here, since firefox support for progress events doesn't seem to be very good
+                StatusPollingFactory.startPolling();
+                openResultsModal();
                 return Upload.upload({
                     url: REST_ROOT + "validate",
                     data: data
@@ -221,11 +224,6 @@ angular.module('fims.validation')
                         ResultsDataFactory.error = response.data.usrMessage || "Server Error!";
                         ResultsDataFactory.showOkButton = true;
                         return response;
-                    }, function (evt) {
-                        if (evt.type == "load") {
-                            StatusPollingFactory.startPolling();
-                            openResultsModal();
-                        }
                     }
                 ).finally(function () {
                     StatusPollingFactory.stopPolling();

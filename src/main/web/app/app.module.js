@@ -13,6 +13,7 @@ var app = angular.module('dipnetApp', [
     'fims.home',
     'utils.autofocus',
     'ui.bootstrap.showErrors',
+    'angularSpinner'
 ]);
 
 var currentUser = {};

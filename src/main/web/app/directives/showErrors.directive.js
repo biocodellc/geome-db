@@ -30,7 +30,7 @@
                 trigger = getTrigger(options);
                 // modified by RJ Ewing to allow multiple inputs under the same show-errors directive
                 inputEls = el[0].querySelectorAll('.form-control[name]');
-                inputEls.forEach(function (el) {
+                angular.forEach(inputEls, function (el) {
                     inputEl = el;
 
                     inputNgEl = angular.element(inputEl);

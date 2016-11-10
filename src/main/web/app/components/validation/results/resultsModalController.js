@@ -3,7 +3,7 @@ angular.module('fims.validation')
         function () {
             var resultsDataFactory = {};
             var defaultState = {
-                validationMessages: {},
+                validationMessages: null,
                 error: "",
                 status: "",
                 uploadMessage: "",
