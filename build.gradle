@@ -203,7 +203,7 @@ ext.updateRemoteDependencies = { location ->
     ssh.run {
         session(remotes.biscicol) {
             execute "/bin/rm -f " + location + "*"
-            put from: files, into: location
+            put from: project.configurations.server.incoming.getFiles(), into: location
         }
     }
 }
