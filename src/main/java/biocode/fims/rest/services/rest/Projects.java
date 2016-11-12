@@ -84,7 +84,7 @@ public class Projects extends FimsService {
 
             for (Attribute attribute : attributeList) {
                 // when we find the column corresponding to the definedBy for lat and long, add them to the response
-                if(decimalLatDefinedBy.equalsIgnoreCase(attribute.getDefined_by())) {
+                if (decimalLatDefinedBy.equalsIgnoreCase(attribute.getDefined_by())) {
                     response.put("lat_column", attribute.getColumn());
                 } else if (decimalLongDefinedBy.equalsIgnoreCase(attribute.getDefined_by())) {
                     response.put("long_column", attribute.getColumn());
@@ -127,8 +127,8 @@ public class Projects extends FimsService {
     @Path("/{projectId}/getDefinition/{columnName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDefinitions(@PathParam("projectId") int projectId,
-                                  @PathParam("columnName") String columnName) {
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+                                   @PathParam("columnName") String columnName) {
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
         StringBuilder output = new StringBuilder();
 
         Iterator attributes = t.getMapping().getAllAttributes(t.getMapping().getDefaultSheetName()).iterator();
@@ -225,7 +225,6 @@ public class Projects extends FimsService {
      * Print ruleMetadata
      *
      * @param sList We pass in a List of fields we want to associate with this rule
-     *
      * @return
      */
     private String printRuleMetadata(Rule r, biocode.fims.digester.List sList) {
@@ -290,7 +289,7 @@ public class Projects extends FimsService {
     @Path("/{projectId}/attributes")
     @Produces(MediaType.TEXT_HTML)
     public Response getAttributes(@PathParam("projectId") int projectId) {
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
         LinkedList<String> requiredColumns = t.getRequiredColumns("error");
         LinkedList<String> desiredColumns = t.getRequiredColumns("warning");
         // Use TreeMap for natural sorting of groups
@@ -545,7 +544,7 @@ public class Projects extends FimsService {
         sb.append("<table data-projectId=\"" + projectId + "\" data-projectTitle=\"" + response.get("projectTitle") + "\">\n");
         sb.append("\t<tr>\n");
 
-        for (User member: projectMembers) {
+        for (User member : projectMembers) {
             sb.append("\t<tr>\n");
             sb.append("\t\t<td>");
             sb.append(member.getUsername());
@@ -561,7 +560,7 @@ public class Projects extends FimsService {
         sb.append("<select name=userId>\n");
         sb.append("\t\t\t<option value=\"0\">Create New User</option>\n");
 
-        for (User user: allUsers) {
+        for (User user : allUsers) {
             sb.append("\t\t\t<option value=\"" + user.getUserId() + "\">" + user.getUsername() + "</option>\n");
         }
 
@@ -605,7 +604,7 @@ public class Projects extends FimsService {
         sb.append("\t\t<th>Public</th>\n");
         sb.append("\t</tr>\n");
 
-        for (Expedition expedition: project.getExpeditions()) {
+        for (Expedition expedition : project.getExpeditions()) {
             sb.append("\t<tr>\n");
             sb.append("\t\t<td>");
             sb.append(expedition.getUser().getUsername());
@@ -644,7 +643,7 @@ public class Projects extends FimsService {
             @FormParam("projectId") Integer projectId) {
 
         // Create the template processor which handles all functions related to the template, reading, generation
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
 
         // Set the default sheet-name
         String defaultSheetname = t.getMapping().getDefaultSheetName();
@@ -680,7 +679,6 @@ public class Projects extends FimsService {
      * sequences in the dataset.
      *
      * @param projectId
-     *
      * @return
      */
     @GET
@@ -719,7 +717,7 @@ public class Projects extends FimsService {
         File configFile = new ConfigurationFileFetcher(
                 projectId,
                 uploadPath(),
-                false
+                true
         ).getOutputFile();
 
         Mapping mapping = new Mapping();
@@ -736,7 +734,7 @@ public class Projects extends FimsService {
         JSONObject platformLists = new JSONObject();
         java.util.List<String> platforms = getList("platform", validation);
 
-        for (String platform: platforms) {
+        for (String platform : platforms) {
             platformLists.put(platform, getList(platform, validation));
         }
 
@@ -750,7 +748,7 @@ public class Projects extends FimsService {
         java.util.List<String> listFields = new ArrayList<>();
 
         if (list != null) {
-            for (Field f: list.getFields()) {
+            for (Field f : list.getFields()) {
                 listFields.add(f.getValue());
             }
         }

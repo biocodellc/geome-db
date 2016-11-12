@@ -35,7 +35,7 @@ public class GenbankManager {
         String divider = settingsManager.retrieveValue("divider");
         Set<Bcid> latestDatasets = bcidService.getLatestDatasets(projectId);
 
-        File configFile = new ConfigurationFileFetcher(projectId, outputDirectory, false).getOutputFile();
+        File configFile = new ConfigurationFileFetcher(projectId, outputDirectory, true).getOutputFile();
 
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);

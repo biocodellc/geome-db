@@ -67,7 +67,7 @@ public class Expeditions extends FimsService {
         if (expedition == null || expedition.getFastqMetadata() == null) {
             throw new BadRequestException("Either the dataset and/or fastq metadata do not exist");
         }
-        File configFile = new ConfigurationFileFetcher(expedition.getExpedition().getProject().getProjectId(), uploadPath(), false).getOutputFile();
+        File configFile = new ConfigurationFileFetcher(expedition.getExpedition().getProject().getProjectId(), uploadPath(), true).getOutputFile();
 
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);
