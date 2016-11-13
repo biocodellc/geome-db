@@ -2,6 +2,7 @@ package biocode.fims.genbank;
 
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
+import biocode.fims.dipnet.config.DipnetAppConfig;
 import biocode.fims.entities.Bcid;
 import biocode.fims.service.BcidService;
 import biocode.fims.settings.FimsPrinter;
@@ -11,6 +12,7 @@ import org.apache.commons.cli.*;
 import org.apache.commons.digester3.Digester;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
@@ -63,7 +65,7 @@ public class GenbankManager {
      * @param args
      */
     public static void main(String args[])  throws Exception {
-        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(DipnetAppConfig.class);
         GenbankManager manager = applicationContext.getBean(GenbankManager.class);
 
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";

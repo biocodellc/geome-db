@@ -9,6 +9,7 @@ import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.dataset.DatasetFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.ServerErrorException;
+import biocode.fims.query.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
@@ -18,6 +19,7 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.client.Client;
 import org.glassfish.jersey.media.multipart.*;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -43,16 +45,18 @@ public class Validate extends FimsService {
     private final DipnetExpeditionService dipnetExpeditionService;
     private final List<AuxilaryFileManager> fileManagers;
     private final DatasetFileManager datasetFileManager;
+    private final Client esClient;
 
     @Autowired
-    Validate(ExpeditionService expeditionService, DipnetExpeditionService dipnetExpeditionService,
-             List<AuxilaryFileManager> fileManagers, DatasetFileManager datasetFileManager,
-             OAuthProviderService providerService, SettingsManager settingsManager) {
+    public Validate(ExpeditionService expeditionService, DipnetExpeditionService dipnetExpeditionService,
+                    List<AuxilaryFileManager> fileManagers, DatasetFileManager datasetFileManager,
+                    OAuthProviderService providerService, SettingsManager settingsManager, Client esClient) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
         this.dipnetExpeditionService = dipnetExpeditionService;
         this.fileManagers = fileManagers;
         this.datasetFileManager = datasetFileManager;
+        this.esClient = esClient;
     }
 
     /**
@@ -145,7 +149,7 @@ public class Validate extends FimsService {
                 fmProps.put("fastq", props);
             }
 
-            File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
+            File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
             // Create the process object --- this is done each time to orient the application
             Process process = new Process.ProcessBuilder(datasetFileManager, processController)
@@ -249,6 +253,17 @@ public class Validate extends FimsService {
 
             try {
                 p.upload(createExpedition, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
+
+                // index the dataset with elasticsearch. Move this to datasetFileManager.upload if we decide to use
+                // es as a default for FIMS. Should be a config option
+                ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
+                indexer.indexDataset(
+                        processController.getProjectId(),
+                        processController.getExpeditionCode(),
+                        processController.getMapping().getDefaultSheetUniqueKey(),
+                        datasetFileManager.getDataset().getSamples()
+                );
+
 
                 // hack until we get FastqFileManger.upload working
                 if (processController.getFastqMetadata() != null) {
