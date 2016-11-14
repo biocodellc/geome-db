@@ -36,8 +36,6 @@ public class DipnetAppConfig  extends FimsAppConfig {
     @Autowired
     Environment env;
     @Autowired
-    FimsAppConfig fimsAppConfig;
-    @Autowired
     BcidService bcidService;
     @Autowired
     ExpeditionService expeditionService;
@@ -58,17 +56,16 @@ public class DipnetAppConfig  extends FimsAppConfig {
 
     @Bean
     public GenbankManager genbankManager() {
-        return new GenbankManager(null, bcidService);
+        return new GenbankManager(settingsManager(), bcidService);
     }
 
     @Bean
     @Scope("prototype")
     public DatasetFileManager datasetFileManager() {
         DatasetPersistenceManager persistenceManager = new FusekiDatasetPersistenceManager(expeditionService, bcidService);
-        return new DatasetFileManager(persistenceManager, null, expeditionService, bcidService);
+        return new DatasetFileManager(persistenceManager, settingsManager(), expeditionService, bcidService);
     }
 
-    @Override
     @Bean
     public Client esClient() throws Exception {
         TransportClientFactoryBean factoryBean = new TransportClientFactoryBean();
