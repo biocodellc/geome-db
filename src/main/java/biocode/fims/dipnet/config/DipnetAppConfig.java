@@ -1,7 +1,7 @@
 package biocode.fims.dipnet.config;
 
 import biocode.fims.application.config.FimsAppConfig;
-import biocode.fims.fileManagers.dataset.DatasetFileManager;
+import biocode.fims.fileManagers.dataset.FimsMetadataFileManager;
 import biocode.fims.fileManagers.dataset.DatasetPersistenceManager;
 import biocode.fims.fuseki.fileManagers.dataset.FusekiDatasetPersistenceManager;
 import biocode.fims.fuseki.query.elasticSearch.FusekiIndexer;
@@ -61,9 +61,9 @@ public class DipnetAppConfig  extends FimsAppConfig {
 
     @Bean
     @Scope("prototype")
-    public DatasetFileManager datasetFileManager() {
+    public FimsMetadataFileManager datasetFileManager() {
         DatasetPersistenceManager persistenceManager = new FusekiDatasetPersistenceManager(expeditionService, bcidService);
-        return new DatasetFileManager(persistenceManager, settingsManager(), expeditionService, bcidService);
+        return new FimsMetadataFileManager(persistenceManager, settingsManager(), expeditionService, bcidService);
     }
 
     @Bean

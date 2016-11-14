@@ -3,30 +3,20 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
 import biocode.fims.dipnet.entities.DipnetExpedition;
-import biocode.fims.dipnet.entities.FastqMetadata;
 import biocode.fims.dipnet.services.DipnetExpeditionService;
 import biocode.fims.dipnet.sra.DipnetBioSampleMapper;
 import biocode.fims.dipnet.sra.DipnetSraMetadataMapper;
 import biocode.fims.entities.Bcid;
-import biocode.fims.fileManagers.dataset.Dataset;
-import biocode.fims.fileManagers.dataset.DatasetFileManager;
+import biocode.fims.fileManagers.dataset.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.ProcessController;
-import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.sra.BioSampleMapper;
 import biocode.fims.sra.SraFileGenerator;
-import biocode.fims.sra.SraMetadataGenerator;
 import biocode.fims.sra.SraMetadataMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.json.simple.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +27,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import javax.xml.crypto.Data;
 import java.io.File;
 
 /**
@@ -49,10 +38,10 @@ public class Expeditions extends FimsService {
 
     private static Logger logger = LoggerFactory.getLogger(ExpeditionRestService.class);
     private final DipnetExpeditionService expeditionService;
-    private final DatasetFileManager datasetFileManager;
+    private final FimsMetadataFileManager datasetFileManager;
 
     @Autowired
-    public Expeditions(DipnetExpeditionService expeditionService, DatasetFileManager datasetFileManager,
+    public Expeditions(DipnetExpeditionService expeditionService, FimsMetadataFileManager datasetFileManager,
                        OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
@@ -76,13 +65,13 @@ public class Expeditions extends FimsService {
         processController.setOutputFolder(uploadPath());
         processController.setMapping(mapping);
         datasetFileManager.setProcessController(processController);
-        Dataset dataset = datasetFileManager.getDataset();
+        JSONArray dataset = datasetFileManager.getDataset();
 
         Bcid entityBcid = expedition.getExpedition().getEntityBcids().get(0);
 
-        SraMetadataMapper metadataMapper = new DipnetSraMetadataMapper(expedition.getFastqMetadata(), dataset.getSamples());
+        SraMetadataMapper metadataMapper = new DipnetSraMetadataMapper(expedition.getFastqMetadata(), dataset);
         BioSampleMapper bioSampleMapper = new DipnetBioSampleMapper(
-                dataset.getSamples(),
+                dataset,
                 expedition.getFastqMetadata().getLibraryStrategy(),
                 entityBcid.getIdentifier().toString());
 

@@ -3,7 +3,7 @@ package biocode.fims.dipnet.run;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.dipnet.config.DipnetAppConfig;
 import biocode.fims.entities.User;
-import biocode.fims.fileManagers.dataset.DatasetFileManager;
+import biocode.fims.fileManagers.dataset.FimsMetadataFileManager;
 import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.ExpeditionService;
@@ -11,7 +11,6 @@ import biocode.fims.service.UserService;
 import biocode.fims.settings.FimsPrinter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,7 +35,7 @@ public class BulkLoader {
     static String inputFastaDirectory = "/Users/jdeck/Google Drive/!DIPnet_DB/Repository/1_cleaned_nonaligned_fasta_files";
 
     private static ExpeditionService expeditionService;
-    private static DatasetFileManager datasetFileManager;
+    private static FimsMetadataFileManager datasetFileManager;
 
     static boolean triplify = false;
     static boolean upload = true;
@@ -49,7 +48,7 @@ public class BulkLoader {
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(DipnetAppConfig.class);
         UserService userService = applicationContext.getBean(UserService.class);
         expeditionService = applicationContext.getBean(ExpeditionService.class);
-        datasetFileManager = applicationContext.getBean(DatasetFileManager.class);
+        datasetFileManager = applicationContext.getBean(FimsMetadataFileManager.class);
 
         // Redirect output to file
         PrintStream out = new PrintStream(new FileOutputStream(outputDirectory + File.separator + "dipnetloading_output.txt"));

@@ -6,7 +6,7 @@ import biocode.fims.dipnet.entities.FastqMetadata;
 import biocode.fims.dipnet.services.DipnetExpeditionService;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fileManagers.AuxilaryFileManager;
-import biocode.fims.fileManagers.dataset.DatasetFileManager;
+import biocode.fims.fileManagers.dataset.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.query.elasticSearch.ElasticSearchIndexer;
@@ -44,12 +44,12 @@ public class Validate extends FimsService {
     private final ExpeditionService expeditionService;
     private final DipnetExpeditionService dipnetExpeditionService;
     private final List<AuxilaryFileManager> fileManagers;
-    private final DatasetFileManager datasetFileManager;
+    private final FimsMetadataFileManager datasetFileManager;
     private final Client esClient;
 
     @Autowired
     public Validate(ExpeditionService expeditionService, DipnetExpeditionService dipnetExpeditionService,
-                    List<AuxilaryFileManager> fileManagers, DatasetFileManager datasetFileManager,
+                    List<AuxilaryFileManager> fileManagers, FimsMetadataFileManager datasetFileManager,
                     OAuthProviderService providerService, SettingsManager settingsManager, Client esClient) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
@@ -110,7 +110,7 @@ public class Validate extends FimsService {
                 Map<String, Object> props = new HashMap<>();
                 props.put("filename", tempFilename);
 
-                fmProps.put("dataset", props);
+                fmProps.put("fimsMetadata", props);
             }
             if (fasta != null && fasta.getContentDisposition().getFileName() != null) {
                 String fastaFilename = fasta.getContentDisposition().getFileName();
@@ -261,7 +261,7 @@ public class Validate extends FimsService {
                         processController.getProjectId(),
                         processController.getExpeditionCode(),
                         processController.getMapping().getDefaultSheetUniqueKey(),
-                        datasetFileManager.getDataset().getSamples()
+                        datasetFileManager.getDataset()
                 );
 
 
