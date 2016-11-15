@@ -30,6 +30,9 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
         add("identified_by");
         add("lat_lon");
         add("sex");
+        add("breed");
+        add("host");
+        add("age");
         add("bcid");
     }};
 
@@ -84,10 +87,9 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
 
         StringBuilder geoLocSb = new StringBuilder();
         geoLocSb.append(sample.get("country"));
-        if (!StringUtils.isBlank((String) sample.get("locality"))) {
-            if (geoLocSb.length() > 1) {
-                geoLocSb.append(": ");
-            }
+        // must start with a country, otherwise sra validation fails
+        if (!StringUtils.isBlank((String) sample.get("locality")) & !StringUtils.isBlank(geoLocSb.toString())){
+            geoLocSb.append(": ");
             geoLocSb.append(sample.get("locality"));
         }
         bioSampleAttributes.add(modifyBlankAttribute(geoLocSb.toString()));
@@ -121,6 +123,9 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
         bioSampleAttributes.add(modifyBlankAttribute(latLongSb.toString()));
 
         bioSampleAttributes.add(modifyBlankAttribute((String) sample.get("sex")));
+        bioSampleAttributes.add(BLANK_ATTRIBUTE);
+        bioSampleAttributes.add(BLANK_ATTRIBUTE);
+        bioSampleAttributes.add(BLANK_ATTRIBUTE);
         bioSampleAttributes.add(rootBcid + sample.get("materialSampleID"));
 
         return bioSampleAttributes;
