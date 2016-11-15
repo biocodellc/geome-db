@@ -1,7 +1,7 @@
 package biocode.fims.dipnet.run;
 
 import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.dipnet.config.DipnetAppConfig;
+import biocode.fims.application.config.DipnetAppConfig;
 import biocode.fims.entities.User;
 import biocode.fims.fileManagers.dataset.FimsMetadataFileManager;
 import biocode.fims.run.Process;

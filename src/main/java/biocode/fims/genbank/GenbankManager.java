@@ -2,18 +2,16 @@ package biocode.fims.genbank;
 
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
-import biocode.fims.dipnet.config.DipnetAppConfig;
+import biocode.fims.application.config.DipnetAppConfig;
 import biocode.fims.entities.Bcid;
 import biocode.fims.service.BcidService;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
 import org.apache.commons.cli.*;
-import org.apache.commons.digester3.Digester;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
 import java.util.Set;

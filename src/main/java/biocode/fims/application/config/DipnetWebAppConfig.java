@@ -1,6 +1,5 @@
-package biocode.fims.dipnet.config;
+package biocode.fims.application.config;
 
-import biocode.fims.application.config.FimsWebAppConfig;
 import biocode.fims.dipnet.services.DipnetExpeditionService;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.fasta.FastaFileManager;
@@ -8,12 +7,9 @@ import biocode.fims.fileManagers.fasta.FastaPersistenceManager;
 import biocode.fims.fileManagers.fasta.FusekiFastaPersistenceManager;
 import biocode.fims.fileManagers.fastq.FastqFileManager;
 import biocode.fims.rest.services.rest.Validate;
-import biocode.fims.service.BcidService;
-import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,23 +18,19 @@ import java.util.List;
  * configuration class for dipnet-fims webapp
  */
 @Configuration
-@Import({DipnetAppConfig.class})
-@ComponentScan(basePackages = {"biocode.fims.rest"})
-@EnableScheduling
-@EnableAspectJAutoProxy
-public class DipnetWebAppConfig extends FimsWebAppConfig {
+@Import({DipnetAppConfig.class, FimsWebAppConfig.class})
+public class DipnetWebAppConfig {
 
     @Autowired DipnetAppConfig dipnetAppConfig;
-    @Autowired BcidService bcidService;
-    @Autowired ExpeditionService expeditionService;
+    @Autowired FimsAppConfig fimsAppConfig;
     @Autowired DipnetExpeditionService dipnetExpeditionService;
     @Autowired OAuthProviderService providerService;
 
     @Bean
     @Scope("prototype")
     public FastaFileManager fastaFileManager() {
-        FastaPersistenceManager persistenceManager = new FusekiFastaPersistenceManager(bcidService, expeditionService);
-        return new FastaFileManager(persistenceManager, null, bcidService);
+        FastaPersistenceManager persistenceManager = new FusekiFastaPersistenceManager(fimsAppConfig.bcidService, fimsAppConfig.expeditionService);
+        return new FastaFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.bcidService);
     }
 
     @Bean
@@ -59,8 +51,8 @@ public class DipnetWebAppConfig extends FimsWebAppConfig {
     @Bean
     @Scope("prototype")
     public Validate validate() throws Exception {
-        return new Validate(expeditionService, dipnetExpeditionService, fileManagers(),
-                dipnetAppConfig.datasetFileManager(), providerService, null, dipnetAppConfig.esClient());
+        return new Validate(fimsAppConfig.expeditionService, dipnetExpeditionService, fileManagers(),
+                dipnetAppConfig.datasetFileManager(), providerService, fimsAppConfig.settingsManager, dipnetAppConfig.esClient());
     }
 
 }

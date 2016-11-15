@@ -8,7 +8,7 @@
     </context-param>
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>biocode.fims.dipnet.config.DipnetWebAppConfig</param-value>
+        <param-value>biocode.fims.application.config.DipnetWebAppConfig</param-value>
     </context-param>
 
     <listener>
