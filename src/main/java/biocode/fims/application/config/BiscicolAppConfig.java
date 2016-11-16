@@ -16,9 +16,6 @@ import java.io.FileNotFoundException;
  */
 @Configuration
 @Import({FimsAppConfig.class})
-@ImportResource({
-        "classpath:data-access-config.xml"
-})
 public class BiscicolAppConfig {
     @Autowired
     FimsAppConfig fimsAppConfig;
@@ -30,11 +27,6 @@ public class BiscicolAppConfig {
     public FimsMetadataFileManager datasetFileManager() {
         DatasetPersistenceManager persistenceManager = new FusekiDatasetPersistenceManager(fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
         return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
-    }
-
-    @Bean
-    public Run run() {
-        return new Run(fimsAppConfig.settingsManager, fimsAppConfig.expeditionService, datasetFileManager());
     }
 
     @Bean

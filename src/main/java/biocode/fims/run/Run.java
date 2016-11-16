@@ -31,20 +31,17 @@ import java.util.Map;
  */
 public class Run {
 
-    private final SettingsManager settingsManager;
+    private final boolean ignoreUser;
     private final ExpeditionService expeditionService;
     private final DatasetFileManager datasetFileManager;
-
     private ProcessController processController;
 
-    public Run(SettingsManager settingsManager, ExpeditionService expeditionService, DatasetFileManager datasetFileManager) {
-        this.settingsManager = settingsManager;
+    public Run(ExpeditionService expeditionService, DatasetFileManager datasetFileManager,
+               ProcessController processController, boolean ignoreUser) {
         this.expeditionService = expeditionService;
         this.datasetFileManager = datasetFileManager;
-    }
-
-    private void setProcessController(ProcessController processController) {
         this.processController = processController;
+        this.ignoreUser = ignoreUser;
     }
 
     /**
@@ -82,7 +79,7 @@ public class Run {
             processController.setExpeditionTitle(processController.getExpeditionCode() + " spreadsheet");
             try {
                 boolean createExpedition = forceAll;
-                processController.getProcess().upload(createExpedition, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
+                processController.getProcess().upload(createExpedition, ignoreUser, expeditionService);
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode() == UploadCode.EXPEDITION_CREATE) {
                     String message = "\nThe dataset code \"" + processController.getExpeditionCode() + "\" does not exist.  " +
@@ -93,7 +90,7 @@ public class Run {
                     if (!continueOperation)
                         return;
                     else {
-                        processController.getProcess().upload(true, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
+                        processController.getProcess().upload(true, ignoreUser, expeditionService);
                     }
                 } else {
                     throw e;
@@ -142,7 +139,9 @@ public class Run {
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(BiscicolAppConfig.class);
         UserService userService = applicationContext.getBean(UserService.class);
         DatasetFileManager datasetFileManager = applicationContext.getBean(DatasetFileManager.class);
-        Run run = applicationContext.getBean(Run.class);
+        SettingsManager settingsManager = applicationContext.getBean(SettingsManager.class);
+        ExpeditionService expeditionService = applicationContext.getBean(ExpeditionService.class);
+
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
         String username = "";
         String password = "";
@@ -376,6 +375,9 @@ public class Run {
             else {
                 ProcessController processController = new ProcessController(projectId, dataset_code);
                 processController.setOutputFolder(output_directory);
+
+                boolean ignoreUser = Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser"));
+                Run run = new Run(expeditionService, datasetFileManager, processController, ignoreUser);
                 Map<String, Map<String, Object>> fmProps = new HashMap<>();
                 Map<String, Object> props = new HashMap<>();
                 props.put("filename", input_file);
@@ -394,7 +396,6 @@ public class Run {
                             .build();
 
                     processController.setProcess(process);
-                    run.setProcessController(processController);
 
                     run.runAllLocally(false, false, force, writeTriplesLang);
 
@@ -445,7 +446,6 @@ public class Run {
 
                     // Run the processor
                     processController.setProcess(process);
-                    run.setProcessController(processController);
 
                     run.runAllLocally(upload, true, force, writeTriplesLang);
                 }
