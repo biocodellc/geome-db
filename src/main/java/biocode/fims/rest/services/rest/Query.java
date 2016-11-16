@@ -434,7 +434,7 @@ public class Query extends FimsService {
         } else {
             Mapping mapping = new Mapping();
             mapping.addMappingRules(configFile);
-            ArrayList<Attribute> attributeArrayList = mapping.getAllAttributes(mapping.getDefaultSheetName());
+            ArrayList<Attribute> attributeArrayList = mapping.getDefaultSheetAttributes();
             uri = mapping.lookupColumn(key, attributeArrayList);
         }
         return new FimsFilterCondition(uri, value, FimsFilterCondition.AND);
@@ -485,7 +485,7 @@ public class Query extends FimsService {
                 }
                 // If there is no semicolon here then assume the user passed in a column name
                 else {
-                    ArrayList<Attribute> attributeArrayList = mapping.getAllAttributes(mapping.getDefaultSheetName());
+                    ArrayList<Attribute> attributeArrayList = mapping.getDefaultSheetAttributes();
                     uri = mapping.lookupColumn(key, attributeArrayList);
                 }
             }

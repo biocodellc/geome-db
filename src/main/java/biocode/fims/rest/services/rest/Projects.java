@@ -80,7 +80,7 @@ public class Projects extends FimsService {
             Mapping mapping = new Mapping();
             mapping.addMappingRules(configFile);
             String defaultSheet = mapping.getDefaultSheetName();
-            ArrayList<Attribute> attributeList = mapping.getAllAttributes(defaultSheet);
+            ArrayList<Attribute> attributeList = mapping.getDefaultSheetAttributes();
 
             response.put("data_sheet", defaultSheet);
 
@@ -108,7 +108,7 @@ public class Projects extends FimsService {
 
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);
-        ArrayList<Attribute> attributeArrayList = mapping.getAllAttributes(mapping.getDefaultSheetName());
+        ArrayList<Attribute> attributeArrayList = mapping.getDefaultSheetAttributes();
 
         JSONArray attributes = new JSONArray();
 
@@ -133,7 +133,7 @@ public class Projects extends FimsService {
         TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
         StringBuilder output = new StringBuilder();
 
-        Iterator attributes = t.getMapping().getAllAttributes(t.getMapping().getDefaultSheetName()).iterator();
+        Iterator attributes = t.getMapping().getDefaultSheetAttributes().iterator();
         // Get a list of rules for the first digester.Worksheet instance
         Worksheet sheet = t.getValidation().getWorksheets().get(0);
 
@@ -300,7 +300,7 @@ public class Projects extends FimsService {
         //StringBuilder output = new StringBuilder();
         // A list of names we've already added
         ArrayList addedNames = new ArrayList();
-        Iterator attributes = t.getMapping().getAllAttributes(t.getMapping().getDefaultSheetName()).iterator();
+        Iterator attributes = t.getMapping().getDefaultSheetAttributes().iterator();
         while (attributes.hasNext()) {
             Attribute a = (Attribute) attributes.next();
 
