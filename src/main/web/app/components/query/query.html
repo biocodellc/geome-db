@@ -34,15 +34,15 @@
     </form>
 
     <div class="panel panel-default" ng-show="queryVm.queryResults" style="overflow: auto">
-        <span ng-show="queryVm.queryResults.length == 0">No Samples found.</span>
+        <span ng-show="queryVm.queryResults.length == 0">No resources found.</span>
 
         <table class="table table-condensed">
             <thead>
             <th ng-repeat="(key, value) in queryVm.queryResults[0]">{{ key }}</th>
             </thead>
             <tbody>
-            <tr ng-repeat="sample in queryVm.queryResults">
-                <td ng-repeat="(key, value) in sample">{{ value }}</td>
+            <tr ng-repeat="resource in queryVm.queryResults">
+                <td ng-repeat="(key, value) in resource">{{ value }}</td>
             </tr>
             </tbody>
         </table>

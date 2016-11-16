@@ -30,7 +30,7 @@ public class BiscicolWebAppConfig {
     @Bean
     @Scope("prototype")
     public Validate validate() throws Exception {
-        return new Validate(biscicolAppConfig.fimsAppConfig.expeditionService, biscicolAppConfig.datasetFileManager(),
+        return new Validate(biscicolAppConfig.fimsAppConfig.expeditionService, biscicolAppConfig.FimsMetadataFileManager(),
                fileManagers(), providerService, biscicolAppConfig.fimsAppConfig.settingsManager);
     }
 }

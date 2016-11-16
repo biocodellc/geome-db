@@ -67,14 +67,14 @@ public class QueryTransformer1_0 implements Transformer {
         JSONArray data = new JSONArray();
 
         for (Object obj : entity) {
-            JSONObject sample = (JSONObject) obj;
+            JSONObject resource = (JSONObject) obj;
 
             if (headers.size() == 0) {
-                headers.addAll(sample.keySet());
+                headers.addAll(resource.keySet());
             }
 
             JSONArray row = new JSONArray();
-            for (Object val : sample.values()) {
+            for (Object val : resource.values()) {
                 row.add(val);
             }
 

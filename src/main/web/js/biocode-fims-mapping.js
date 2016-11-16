@@ -28,8 +28,8 @@
     });
 }).call(this);
 
-// function to parse the sample coordinates from the spreadsheet
-function getSampleCoordinates(configData) {
+// function to parse the resource coordinates from the spreadsheet
+function getResourceCoordinates(configData) {
     try {
         var reader = new FileReader();
     } catch(err) {
@@ -44,7 +44,7 @@ function getSampleCoordinates(configData) {
         var splitFileName = $('#dataset').val().split('.');
         if ($.inArray(splitFileName[splitFileName.length - 1], XLSXReader.exts) > -1) {
             XLSXReader(inputFile, true, false, function(reader) {
-                // get the data from the sample collection sheet
+                // get the data from the resource collection sheet
                 var data  = reader.sheets[configData.data_sheet].data;
 
                 // return the geoJSON data
@@ -158,16 +158,16 @@ function generateMap(id, projectId) {
         map = undefined;
     }
     $('#' + id).html('Loading map...');
-    // generate a map with markers for all sample points
+    // generate a map with markers for all resource points
     $.getJSON("/biocode-fims/rest/projects/" + projectId + "/getLatLongColumns/"
         ).done(function(data) {
             $.getJSON("/biocode-fims/rest/projects/" + projectId + "/uniqueKey/"
                 ).done(function(uniqueKeyData) {
                     data.uniqueKey = uniqueKeyData.uniqueKey;
                 }).always(function() {
-                    getSampleCoordinates(data).done(function(geoJSONData) {
+                    getResourceCoordinates(data).done(function(geoJSONData) {
                         if (geoJSONData.features.length == 0) {
-                            $('#' + id).html('We didn\'t find any lat/long coordinates for your collection samples.');
+                            $('#' + id).html('We didn\'t find any lat/long coordinates for your collection resources.');
                         } else {
                             displayMap(id, geoJSONData);
                             }

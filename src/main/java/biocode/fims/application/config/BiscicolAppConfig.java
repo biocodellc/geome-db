@@ -1,10 +1,9 @@
 package biocode.fims.application.config;
 
-import biocode.fims.fileManagers.dataset.DatasetPersistenceManager;
-import biocode.fims.fileManagers.dataset.FimsMetadataFileManager;
-import biocode.fims.fuseki.fileManagers.dataset.FusekiDatasetPersistenceManager;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataPersistenceManager;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
+import biocode.fims.fuseki.fileManagers.fimsMetadata.FusekiFimsMetadataPersistenceManager;
 import biocode.fims.run.EzidUpdator;
-import biocode.fims.run.Run;
 import biocode.fims.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
@@ -24,8 +23,8 @@ public class BiscicolAppConfig {
 
     @Bean
     @Scope("prototype")
-    public FimsMetadataFileManager datasetFileManager() {
-        DatasetPersistenceManager persistenceManager = new FusekiDatasetPersistenceManager(fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
+    public FimsMetadataFileManager FimsMetadataFileManager() {
+        FimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
         return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
     }
 

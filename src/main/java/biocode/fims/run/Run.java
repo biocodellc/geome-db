@@ -5,7 +5,7 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
 import biocode.fims.entities.User;
-import biocode.fims.fileManagers.dataset.DatasetFileManager;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.UploadCode;
 import biocode.fims.fuseki.query.FimsQueryBuilder;
@@ -33,13 +33,13 @@ public class Run {
 
     private final boolean ignoreUser;
     private final ExpeditionService expeditionService;
-    private final DatasetFileManager datasetFileManager;
+    private final FimsMetadataFileManager FimsMetadataFileManager;
     private ProcessController processController;
 
-    public Run(ExpeditionService expeditionService, DatasetFileManager datasetFileManager,
+    public Run(ExpeditionService expeditionService, FimsMetadataFileManager FimsMetadataFileManager,
                ProcessController processController, boolean ignoreUser) {
         this.expeditionService = expeditionService;
-        this.datasetFileManager = datasetFileManager;
+        this.FimsMetadataFileManager = FimsMetadataFileManager;
         this.processController = processController;
         this.ignoreUser = ignoreUser;
     }
@@ -124,8 +124,8 @@ public class Run {
             );
 
         }
-        JSONObject sample = (JSONObject) datasetFileManager.getDataset().get(0);
-        t.run(processController.getValidation().getSqliteFile(), new ArrayList<String>(sample.keySet()));
+        JSONObject resource = (JSONObject) FimsMetadataFileManager.getDataset().get(0);
+        t.run(processController.getValidation().getSqliteFile(), new ArrayList<String>(resource.keySet()));
         FimsPrinter.out.println("\ttriple output file = " + t.getTripleOutputFile());
         return t.getTripleOutputFile();
     }
@@ -138,7 +138,7 @@ public class Run {
     public static void main(String args[]) throws Exception {
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(BiscicolAppConfig.class);
         UserService userService = applicationContext.getBean(UserService.class);
-        DatasetFileManager datasetFileManager = applicationContext.getBean(DatasetFileManager.class);
+        FimsMetadataFileManager FimsMetadataFileManager = applicationContext.getBean(FimsMetadataFileManager.class);
         SettingsManager settingsManager = applicationContext.getBean(SettingsManager.class);
         ExpeditionService expeditionService = applicationContext.getBean(ExpeditionService.class);
 
@@ -377,7 +377,7 @@ public class Run {
                 processController.setOutputFolder(output_directory);
 
                 boolean ignoreUser = Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser"));
-                Run run = new Run(expeditionService, datasetFileManager, processController, ignoreUser);
+                Run run = new Run(expeditionService, FimsMetadataFileManager, processController, ignoreUser);
                 Map<String, Map<String, Object>> fmProps = new HashMap<>();
                 Map<String, Object> props = new HashMap<>();
                 props.put("filename", input_file);
@@ -390,7 +390,7 @@ public class Run {
                     processController.appendStatus("Does not construct GUIDs, use Deep Roots, or connect to project-specific configurationFiles");
 
                     // Create the process object --- this is done each time to orient the application
-                    Process process = new Process.ProcessBuilder(datasetFileManager, processController)
+                    Process process = new Process.ProcessBuilder(FimsMetadataFileManager, processController)
                             .addFmProperties(fmProps)
                             .configFile(new File(cl.getOptionValue("configFile")))
                             .build();
@@ -428,14 +428,14 @@ public class Run {
                     if (cl.hasOption("configFile")) {
                         System.out.println("using local config file = " + cl.getOptionValue("configFile").toString());
                         // Create the process object --- this is done each time to orient the application
-                        process = new Process.ProcessBuilder(datasetFileManager, processController)
+                        process = new Process.ProcessBuilder(FimsMetadataFileManager, processController)
                                 .addFmProperties(fmProps)
                                 .configFile(new File(cl.getOptionValue("configFile")))
                                 .build();
 
                     } else {
                         File configFile = new ConfigurationFileFetcher(projectId, output_directory, false).getOutputFile();
-                        process = new Process.ProcessBuilder(datasetFileManager, processController)
+                        process = new Process.ProcessBuilder(FimsMetadataFileManager, processController)
                                 .addFmProperties(fmProps)
                                 .configFile(configFile)
                                 .build();
