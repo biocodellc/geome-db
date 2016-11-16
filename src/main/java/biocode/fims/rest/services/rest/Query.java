@@ -63,10 +63,7 @@ public class Query extends FimsService {
         FimsQueryBuilder q = POSTQueryResult(form);
 
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(q.writeJSON());
-
-        // Wrie the file to a String and return it
-        String response = readFile(file.getAbsolutePath());
+        String response = q.getJSON().toJSONString();
 
         // Return response
         if (response == null) {
@@ -90,9 +87,9 @@ public class Query extends FimsService {
             @QueryParam("project_id") Integer project_id,
             @QueryParam("filter") String filter) {
 
-        File file = GETQueryResult(graphs, project_id, filter, "json");
+        FimsQueryBuilder q = GETQueryResult(graphs, project_id, filter);
 
-        String response = readFile(file.getAbsolutePath());
+        String response = q.getJSON().toJSONString();
 
         // Return response
         if (response == null) {
@@ -118,10 +115,10 @@ public class Query extends FimsService {
             @QueryParam("filter") String filter) {
 
         // Construct a file
-        File file = GETQueryResult(graphs, project_id, filter, "kml");
+        FimsQueryBuilder q = GETQueryResult(graphs, project_id, filter);
 
         // Return file to client
-        Response.ResponseBuilder response = Response.ok((Object) file);
+        Response.ResponseBuilder response = Response.ok(q.writeKML());
 
         response.header("Content-Disposition",
                 "attachment; filename=biocode-fims-output.kml");
@@ -184,10 +181,14 @@ public class Query extends FimsService {
             @QueryParam("filter") String filter) {
 
         // Construct a file
-        File file = GETQueryResult(graphs, project_id, filter, "cspace");
+        FimsQueryBuilder q = GETQueryResult(graphs, project_id, filter);
+
+        Mapping mapping = getMapping(projectId);
+        Validation validation = new Validation();
+        validation.addValidationRules(configFile, mapping);
 
         // Return file to client
-        Response.ResponseBuilder response = Response.ok((Object) file);
+        Response.ResponseBuilder response = Response.ok(q.writeCSPACE(validation));
 
         // response.header("Content-Disposition",
         //       "attachment; filename=biocode-fims-output.xml");
@@ -248,10 +249,10 @@ public class Query extends FimsService {
             @QueryParam("project_id") Integer projectId,
             @QueryParam("filter") String filter) {
 
-        File file = GETQueryResult(graphs, projectId, filter, "tab");
+        FimsQueryBuilder q = GETQueryResult(graphs, projectId, filter);
 
         // Return file to client
-        Response.ResponseBuilder response = Response.ok((Object) file);
+        Response.ResponseBuilder response = Response.ok(q.writeTAB());
         response.header("Content-Disposition",
                 "attachment; filename=biocode-fims-output.txt");
 
@@ -277,10 +278,10 @@ public class Query extends FimsService {
             @QueryParam("project_id") Integer projectId,
             @QueryParam("filter") String filter) {
 
-        File file = GETQueryResult(graphs, projectId, filter, "excel");
+        FimsQueryBuilder q = GETQueryResult(graphs, projectId, filter);
 
         // Return file to client
-        Response.ResponseBuilder response = Response.ok((Object) file);
+        Response.ResponseBuilder response = Response.ok(q.writeExcel(projectId));
         response.header("Content-Disposition",
                 "attachment; filename=biocode-fims-output.xlsx");
 
@@ -400,10 +401,9 @@ public class Query extends FimsService {
      * @param graphs
      * @param projectId
      * @param filter
-     * @param format
      * @return
      */
-    private File GETQueryResult(String graphs, Integer projectId, String filter, String format) {
+    private FimsQueryBuilder GETQueryResult(String graphs, Integer projectId, String filter) {
         String[] graphsArray;
 
         try {
@@ -435,21 +435,8 @@ public class Query extends FimsService {
             // Add our filter conditions
             q.addFilter(arrayList);
         }
-        // Run the query, passing in a format and returning the location of the output file
-        switch (format) {
-            case "excel":
-                return new File(q.writeExcel(projectId));
-            case "kml":
-                return new File(q.writeKML());
-            case "tab":
-                return new File(q.writeTAB());
-            case "cspace":
-                Validation validation = new Validation();
-                validation.addValidationRules(configFile, mapping);
-                return new File(q.writeCSPACE(validation));
-            default:
-                return new File(q.writeJSON());
-        }
+
+        return q;
     }
 
     private Mapping getMapping(Integer projectId) {

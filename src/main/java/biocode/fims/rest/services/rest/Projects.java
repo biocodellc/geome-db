@@ -117,7 +117,7 @@ public class Projects extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDefinitions(@PathParam("projectId") int projectId,
                                    @PathParam("columnName") String columnName) {
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
         StringBuilder output = new StringBuilder();
 
         Iterator attributes = t.getMapping().getAllAttributes(t.getMapping().getDefaultSheetName()).iterator();
@@ -278,7 +278,7 @@ public class Projects extends FimsService {
     @Path("/{projectId}/attributes")
     @Produces(MediaType.TEXT_HTML)
     public Response getAttributes(@PathParam("projectId") int projectId) {
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
         LinkedList<String> requiredColumns = t.getRequiredColumns("error");
         LinkedList<String> desiredColumns = t.getRequiredColumns("warning");
         // Use TreeMap for natural sorting of groups
@@ -632,7 +632,7 @@ public class Projects extends FimsService {
             @FormParam("projectId") Integer projectId) {
 
         // Create the template processor which handles all functions related to the template, reading, generation
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
 
         // Set the default sheet-name
         String defaultSheetname = t.getMapping().getDefaultSheetName();

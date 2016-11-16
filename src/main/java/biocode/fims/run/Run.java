@@ -1,5 +1,6 @@
 package biocode.fims.run;
 
+import biocode.fims.application.config.BiscicolAppConfig;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
@@ -14,13 +15,11 @@ import biocode.fims.service.UserService;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
-import biocode.fims.utils.SpringApplicationContext;
 import com.hp.hpl.jena.util.FileUtils;
 import org.apache.commons.cli.*;
 import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,7 +28,6 @@ import java.util.Map;
 
 /**
  * Class to upload and triplify via cmd line
- * TODO refactor to remove duplicate code.
  */
 public class Run {
 
@@ -39,7 +37,6 @@ public class Run {
 
     private ProcessController processController;
 
-    @Autowired
     public Run(SettingsManager settingsManager, ExpeditionService expeditionService, DatasetFileManager datasetFileManager) {
         this.settingsManager = settingsManager;
         this.expeditionService = expeditionService;
@@ -130,7 +127,7 @@ public class Run {
             );
 
         }
-        JSONObject sample = (JSONObject) datasetFileManager.getDataset().getSamples().get(0);
+        JSONObject sample = (JSONObject) datasetFileManager.getDataset().get(0);
         t.run(processController.getValidation().getSqliteFile(), new ArrayList<String>(sample.keySet()));
         FimsPrinter.out.println("\ttriple output file = " + t.getTripleOutputFile());
         return t.getTripleOutputFile();
@@ -142,18 +139,17 @@ public class Run {
      * @param args
      */
     public static void main(String args[]) throws Exception {
-        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
-        ExpeditionService expeditionService = applicationContext.getBean(ExpeditionService.class);
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(BiscicolAppConfig.class);
         UserService userService = applicationContext.getBean(UserService.class);
         DatasetFileManager datasetFileManager = applicationContext.getBean(DatasetFileManager.class);
-        Run run = new Run(SettingsManager.getInstance(), expeditionService, datasetFileManager);
+        Run run = applicationContext.getBean(Run.class);
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
         String username = "";
         String password = "";
         int projectId = 0;
         //System.out.print(defaultOutputDirectory);
 
-        // VersionTransformer configuration :
+        // TEST configuration :
         // -d -t -u -i sampledata/Apogon***.xls
 
         // Direct output using the standardPrinter subClass of fimsPrinter which send to fimsPrinter.out (for command-line usage)
@@ -353,7 +349,7 @@ public class Run {
                 // Run the query, passing in a format and returning the location of the output file
                 switch (cl.getOptionValue("f")) {
                     case "json":
-                        System.out.println(q.writeJSON());
+                        System.out.println(q.getJSON());
                         break;
                     case "cspace":
                         Validation validation = new Validation();
@@ -384,7 +380,7 @@ public class Run {
                 Map<String, Object> props = new HashMap<>();
                 props.put("filename", input_file);
 
-                fmProps.put("dataset", props);
+                fmProps.put("fimsMetadata", props);
 
                 // if we only want to triplify and not upload, then we operate in LOCAL mode
                 if (local && triplify) {

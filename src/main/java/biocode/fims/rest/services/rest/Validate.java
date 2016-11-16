@@ -15,8 +15,6 @@ import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -27,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
 @Path("validate")
 public class Validate extends FimsService {
 
@@ -35,10 +32,9 @@ public class Validate extends FimsService {
     private final List<AuxilaryFileManager> fileManagers;
     private final DatasetFileManager datasetFileManager;
 
-    @Autowired
-    Validate(ExpeditionService expeditionService,
-             DatasetFileManager datasetFileManager, List<AuxilaryFileManager> fileManagers,
-             OAuthProviderService providerService, SettingsManager settingsManager) {
+    public Validate(ExpeditionService expeditionService,
+                    DatasetFileManager datasetFileManager, List<AuxilaryFileManager> fileManagers,
+                    OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
         this.datasetFileManager = datasetFileManager;
@@ -91,7 +87,7 @@ public class Validate extends FimsService {
                 Map<String, Object> props = new HashMap<>();
                 props.put("filename", tempFilename);
 
-                fmProps.put("dataset", props);
+                fmProps.put("fimsMetadata", props);
             }
 
             File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();

@@ -1,5 +1,6 @@
 package biocode.fims.run;
 
+import biocode.fims.application.config.BiscicolAppConfig;
 import biocode.fims.entities.Bcid;
 import biocode.fims.ezid.EzidException;
 import biocode.fims.ezid.EzidService;
@@ -8,9 +9,8 @@ import biocode.fims.service.BcidService;
 import biocode.fims.settings.SettingsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -24,7 +24,6 @@ public class EzidUpdator {
     private SettingsManager settingsManager;
     private final EzidUtils ezidUtils;
 
-    @Autowired
     public EzidUpdator(BcidService bcidService, SettingsManager settingsManager, EzidUtils ezidUtils) {
         this.bcidService = bcidService;
         this.settingsManager = settingsManager;
@@ -67,7 +66,7 @@ public class EzidUpdator {
     }
 
     public static void main(String[] args) throws Exception {
-        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(BiscicolAppConfig.class);
         EzidUpdator updator = applicationContext.getBean(EzidUpdator.class);
 
         updator.run();
