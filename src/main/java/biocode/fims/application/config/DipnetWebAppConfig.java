@@ -6,6 +6,7 @@ import biocode.fims.fileManagers.fasta.FastaFileManager;
 import biocode.fims.fileManagers.fasta.FastaPersistenceManager;
 import biocode.fims.fileManagers.fasta.FusekiFastaPersistenceManager;
 import biocode.fims.fileManagers.fastq.FastqFileManager;
+import biocode.fims.query.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.rest.services.rest.Validate;
 import biocode.fims.service.OAuthProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,10 +50,15 @@ public class DipnetWebAppConfig {
     }
 
     @Bean
+    public ElasticSearchIndexer esIndexer() throws Exception {
+        return new ElasticSearchIndexer(dipnetAppConfig.esClient);
+    }
+
+    @Bean
     @Scope("prototype")
     public Validate validate() throws Exception {
         return new Validate(fimsAppConfig.expeditionService, dipnetExpeditionService, fileManagers(),
-                dipnetAppConfig.datasetFileManager(), providerService, fimsAppConfig.settingsManager, dipnetAppConfig.esClient());
+                dipnetAppConfig.fimsMetadataFileManager(), providerService, fimsAppConfig.settingsManager, esIndexer());
     }
 
 }

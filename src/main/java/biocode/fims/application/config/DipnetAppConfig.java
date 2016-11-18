@@ -1,14 +1,15 @@
 package biocode.fims.application.config;
 
-import biocode.fims.fileManagers.dataset.FimsMetadataFileManager;
-import biocode.fims.fileManagers.dataset.DatasetPersistenceManager;
-import biocode.fims.fuseki.fileManagers.dataset.FusekiDatasetPersistenceManager;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataPersistenceManager;
+import biocode.fims.fuseki.fileManagers.fimsMetadata.FusekiFimsMetadataPersistenceManager;
 import biocode.fims.fuseki.query.elasticSearch.FusekiIndexer;
 import biocode.fims.genbank.GenbankManager;
 import biocode.fims.query.elasticSearch.TransportClientFactoryBean;
 import biocode.fims.service.ProjectService;
 import biocode.fims.utils.DatasetService;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.ElasticsearchClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
@@ -32,6 +33,8 @@ public class DipnetAppConfig  {
     FimsAppConfig fimsAppConfig;
     @Autowired
     ProjectService projectService;
+    @Autowired
+    Client esClient;
 
     @Bean
     public DatasetService datasetService() {
@@ -45,13 +48,14 @@ public class DipnetAppConfig  {
 
     @Bean
     @Scope("prototype")
-    public FimsMetadataFileManager datasetFileManager() {
-        DatasetPersistenceManager persistenceManager = new FusekiDatasetPersistenceManager(fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
+    public FimsMetadataFileManager fimsMetadataFileManager() {
+        FimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
         return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
     }
 
     @Bean
-    public Client esClient() throws Exception {
+    // This bean handles the creation/destruction of the esClient bean that is autowired
+    public TransportClientFactoryBean transportClientFactoryBean() {
         TransportClientFactoryBean factoryBean = new TransportClientFactoryBean();
         factoryBean.setClusterName(env.getProperty("clusterName"));
         factoryBean.setClientIgnoreClusterName(Boolean.valueOf(env.getProperty("clientIgnoreClusterName")));
@@ -59,11 +63,11 @@ public class DipnetAppConfig  {
         factoryBean.setClientPingTimeout(env.getProperty("clientPingTimeout"));
         factoryBean.setClientTransportSniff(Boolean.valueOf(env.getProperty("clientTransportSniff")));
         factoryBean.setClusterNodes(env.getProperty("clusterNodes"));
-        return factoryBean.getObject();
+        return factoryBean;
     }
 
     @Bean
     public FusekiIndexer fusekiIndexer() throws Exception {
-        return new FusekiIndexer(esClient(), projectService, datasetFileManager());
+        return new FusekiIndexer(esClient, projectService, fimsMetadataFileManager());
     }
 }
