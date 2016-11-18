@@ -8,7 +8,7 @@ import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.utils.SendEmail;
+import biocode.fims.utils.EmailUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -59,14 +59,11 @@ public class Users extends FimsService {
                     "Thanks";
 
             // Send an Email that this completed
-            SendEmail sendEmail = new SendEmail(
-                    settingsManager.retrieveValue("mailUser"),
-                    settingsManager.retrieveValue("mailPassword"),
-                    settingsManager.retrieveValue("mailFrom"),
+            EmailUtils.sendEmail(
                     user.getEmail(),
                     "Reset Password Link",
-                    emailBody);
-            sendEmail.start();
+                    emailBody
+            );
         }
 
         return Response.ok("{\"success\":\"A password reset token has be sent to your email.\"}").build();
