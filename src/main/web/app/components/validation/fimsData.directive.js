@@ -25,7 +25,7 @@ angular.module('fims.validation')
                 }
 
                 ngModelCtrl.$render = function () {
-                    scope.dataset = ngModelCtrl.$modelValue;
+                    scope.fimsMetadata = ngModelCtrl.$modelValue;
                 };
             },
             templateUrl: 'app/components/validation/fimsData.tpl.html'

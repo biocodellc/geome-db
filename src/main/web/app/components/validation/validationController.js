@@ -24,7 +24,7 @@ angular.module('fims.validation')
                 fasta: false
             };
             vm.fastqMetadataLists = {};
-            vm.dataset = null;
+            vm.fimsMetadata = null;
             vm.fasta = null;
             vm.fastqFilenames = null;
             vm.fastqMetadata = angular.copy(defaultFastqMetadata);
@@ -36,7 +36,7 @@ angular.module('fims.validation')
             vm.coordinatesErrorClass = null;
             vm.showGenbankDownload = false;
             vm.activeTab = 0;
-            vm.datasetChange = datasetChange;
+            vm.fimsMetadataChange = fimsMetadataChange;
             vm.validate = validate;
             vm.upload = upload;
             vm.checkDataTypes = checkDataTypes;
@@ -94,7 +94,7 @@ angular.module('fims.validation')
                 data.public_status = true;
 
                 if (vm.dataTypes.fims) {
-                    data.dataset = vm.dataset;
+                    data.fimsMetadata = vm.fimsMetadata;
                 }
                 if (vm.dataTypes.fasta) {
                     data.fasta = vm.fasta;
@@ -236,7 +236,7 @@ angular.module('fims.validation')
                     projectId: PROJECT_ID,
                     expeditionCode: vm.expeditionCode,
                     upload: false,
-                    dataset: vm.dataset
+                    fimsMetadata: vm.fimsMetadata
                 }).then(
                     function (response) {
                         ResultsDataFactory.validationMessages = response.data.done;
@@ -277,7 +277,7 @@ angular.module('fims.validation')
             }
 
             function resetForm() {
-                vm.dataset = null;
+                vm.fimsMetadata = null;
                 vm.fasta = null;
                 vm.fastqFilenames = null;
                 angular.copy(defaultFastqMetadata, vm.fastqMetadata);
@@ -287,11 +287,11 @@ angular.module('fims.validation')
                 $scope.$broadcast('show-errors-reset');
             }
 
-            function datasetChange() {
+            function fimsMetadataChange() {
                 // Clear the results
                 ResultsDataFactory.reset();
 
-                if (vm.dataset) {
+                if (vm.fimsMetadata) {
                     // Check NAAN
                     parseSpreadsheet("~naan=[0-9]+~", "Instructions").then(
                         function (spreadsheetNaan) {
@@ -303,7 +303,7 @@ angular.module('fims.validation')
                             }
                         });
 
-                    generateMap('map', PROJECT_ID, vm.dataset).then(
+                    generateMap('map', PROJECT_ID, vm.fimsMetadata).then(
                         function () {
                             vm.verifyDataPoints = true;
                         }, function () {
@@ -328,9 +328,9 @@ angular.module('fims.validation')
                 // older browsers don't have a FileReader
                 if (f != null) {
 
-                    var splitFileName = vm.dataset.name.split('.');
+                    var splitFileName = vm.fimsMetadata.name.split('.');
                     if (XLSXReader.exts.indexOf(splitFileName[splitFileName.length - 1]) > -1) {
-                        $q.when(XLSXReader.utils.findCell(vm.dataset, regExpression, sheetName)).then(function (match) {
+                        $q.when(XLSXReader.utils.findCell(vm.fimsMetadata, regExpression, sheetName)).then(function (match) {
                             if (match) {
                                 deferred.resolve(match.toString().split('=')[1].slice(0, -1));
                             } else {

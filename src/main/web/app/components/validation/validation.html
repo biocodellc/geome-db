@@ -22,10 +22,10 @@
                 <p>The validate option checks that all required fields are complete and that each materialSampleID is
                     unique</p>
                 <form role="form" name="validateForm" class="form-horizontal"
-                      ng-submit="vm.dataset && vm.validate()">
+                      ng-submit="vm.fimsMetadata && vm.validate()">
 
 
-                    <fims-data ng-model="vm.dataset" change="vm.datasetChange()"></fims-data>
+                    <fims-data ng-model="vm.fimsMetadata" change="vm.fimsMetadataChange()"></fims-data>
                     <div class="col-sm-1 col-sm-offset-9">
                         <button type="submit" class="btn btn-default">Validate</button>
                     </div>
@@ -62,9 +62,9 @@
                         </div>
                     </div>
 
-                    <fims-data ng-show="vm.dataTypes.fims" ng-model="vm.dataset"
+                    <fims-data ng-show="vm.dataTypes.fims" ng-model="vm.fimsMetadata"
                                ng-required="vm.dataTypes.fims"
-                               change="vm.datasetChange()"></fims-data>
+                               change="vm.fimsMetadataChange()"></fims-data>
 
                     <div class="form-group" ng-show="vm.dataTypes.fasta" show-errors="{trigger: 'change'}">
                         <label for="fasta" class="col-sm-2 control-label">FASTA Data</label>

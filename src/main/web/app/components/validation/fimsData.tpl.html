@@ -4,15 +4,15 @@
         <div class="input-group">
             <label class="input-group-btn">
                 <span class="btn btn-default form-control">Browse &hellip;</span>
-                <input type="file" style="display:none;" id="fimsData" name="dataset"
+                <input type="file" style="display:none;" id="fimsData" name="fimsMetadata"
                        class="form-control"
                        ngf-select="modelValueChange($files)"
                        ngf-pattern="'.xls,.xlsx,.txt'"
                        required
-                       ngf-model-invalid="invalidDatasetFile"
-                       ng-model="dataset"/>
+                       ngf-model-invalid="invalidFimsMetadataFile"
+                       ng-model="fimsMetadata"/>
             </label>
-            <input type="text" class="form-control" ng-value="dataset.name || invalidDatasetFile.name" readonly/>
+            <input type="text" class="form-control" ng-value="fimsMetadata.name || invalidFimsMetadataFile.name" readonly/>
         </div>
         <p class="help-block" ng-show="invalid">
             File must have one of the following extensions: .xls, xlsx, or .txt</p>
