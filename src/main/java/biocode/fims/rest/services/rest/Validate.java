@@ -6,7 +6,7 @@ import biocode.fims.dipnet.entities.FastqMetadata;
 import biocode.fims.dipnet.services.DipnetExpeditionService;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fileManagers.AuxilaryFileManager;
-import biocode.fims.fileManagers.dataset.FimsMetadataFileManager;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.query.elasticSearch.ElasticSearchIndexer;
@@ -19,7 +19,6 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.elasticsearch.client.Client;
 import org.glassfish.jersey.media.multipart.*;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -44,19 +43,19 @@ public class Validate extends FimsService {
     private final ExpeditionService expeditionService;
     private final DipnetExpeditionService dipnetExpeditionService;
     private final List<AuxilaryFileManager> fileManagers;
-    private final FimsMetadataFileManager datasetFileManager;
-    private final Client esClient;
+    private final FimsMetadataFileManager fimsMetadataFileManager;
+    private final ElasticSearchIndexer esIndexer;
 
     @Autowired
     public Validate(ExpeditionService expeditionService, DipnetExpeditionService dipnetExpeditionService,
-                    List<AuxilaryFileManager> fileManagers, FimsMetadataFileManager datasetFileManager,
-                    OAuthProviderService providerService, SettingsManager settingsManager, Client esClient) {
+                    List<AuxilaryFileManager> fileManagers, FimsMetadataFileManager fimsMetadataFileManager,
+                    OAuthProviderService providerService, SettingsManager settingsManager, ElasticSearchIndexer esIndexer) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
         this.dipnetExpeditionService = dipnetExpeditionService;
         this.fileManagers = fileManagers;
-        this.datasetFileManager = datasetFileManager;
-        this.esClient = esClient;
+        this.fimsMetadataFileManager = fimsMetadataFileManager;
+        this.esIndexer = esIndexer;
     }
 
     /**
@@ -67,7 +66,7 @@ public class Validate extends FimsService {
      * @param isPublic
      * @param upload
      * @param expeditionCode
-     * @param dataset
+     * @param fimsMetadata
      * @param fasta
      * @param fastqFilenames
      * @return
@@ -80,7 +79,7 @@ public class Validate extends FimsService {
                              @FormDataParam("public") @DefaultValue("false") boolean isPublic,
                              @FormDataParam("upload") @DefaultValue("false") boolean upload,
                              @FormDataParam("expeditionCode") String expeditionCode,
-                             @FormDataParam("dataset") FormDataBodyPart dataset,
+                             @FormDataParam("fimsMetadata") FormDataBodyPart fimsMetadata,
                              @FormDataParam("fasta") FormDataBodyPart fasta,
                              @FormDataParam("fastqFilenames") FormDataBodyPart fastqFilenames) {
         Map<String, Map<String, Object>> fmProps = new HashMap<>();
@@ -100,12 +99,12 @@ public class Validate extends FimsService {
             // update the status
             processController.appendStatus("Initializing...");
 
-            if (dataset != null && dataset.getContentDisposition().getFileName() != null) {
-                String datasetFilename = dataset.getContentDisposition().getFileName();
-                processController.appendStatus("\nDataset filename = " + datasetFilename);
+            if (fimsMetadata != null && fimsMetadata.getContentDisposition().getFileName() != null) {
+                String fimsMetadataFilename = fimsMetadata.getContentDisposition().getFileName();
+                processController.appendStatus("\nFims Metadata Dataset filename = " + fimsMetadataFilename);
 
-                InputStream is = dataset.getEntityAs(InputStream.class);
-                String tempFilename = saveFile(is, datasetFilename, "xls");
+                InputStream is = fimsMetadata.getEntityAs(InputStream.class);
+                String tempFilename = saveFile(is, fimsMetadataFilename, "xls");
 
                 Map<String, Object> props = new HashMap<>();
                 props.put("filename", tempFilename);
@@ -152,10 +151,11 @@ public class Validate extends FimsService {
             File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
             // Create the process object --- this is done each time to orient the application
-            Process process = new Process.ProcessBuilder(datasetFileManager, processController)
+            Process process = new Process.ProcessBuilder(fimsMetadataFileManager, processController)
                     .addFileManagers(fileManagers)
                     .addFmProperties(fmProps)
                     .configFile(configFile)
+                    .elasticSearchIndexer(esIndexer)
                     .build();
 
             processController.setProcess(process);
@@ -253,17 +253,6 @@ public class Validate extends FimsService {
 
             try {
                 p.upload(createExpedition, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
-
-                // index the dataset with elasticsearch. Move this to datasetFileManager.upload if we decide to use
-                // es as a default for FIMS. Should be a config option
-                ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
-                indexer.indexDataset(
-                        processController.getProjectId(),
-                        processController.getExpeditionCode(),
-                        processController.getMapping().getDefaultSheetUniqueKey(),
-                        datasetFileManager.getDataset()
-                );
-
 
                 // hack until we get FastqFileManger.upload working
                 if (processController.getFastqMetadata() != null) {

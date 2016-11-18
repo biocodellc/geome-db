@@ -3,7 +3,7 @@ package biocode.fims.dipnet.run;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.application.config.DipnetAppConfig;
 import biocode.fims.entities.User;
-import biocode.fims.fileManagers.dataset.FimsMetadataFileManager;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.ExpeditionService;
@@ -108,7 +108,7 @@ public class BulkLoader {
         HashMap<String, Map<String, Object>> fmProps = new HashMap<>();
         HashMap<String, Object> props = new HashMap<>();
         props.put("filename", inputFile);
-        fmProps.put("dataset", props);
+        fmProps.put("fimsMetadata", props);
 
         File configFile = new ConfigurationFileFetcher(pc.getProjectId(), pc.getOutputFolder(), true).getOutputFile();
 

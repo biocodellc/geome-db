@@ -7,7 +7,7 @@ import biocode.fims.dipnet.services.DipnetExpeditionService;
 import biocode.fims.dipnet.sra.DipnetBioSampleMapper;
 import biocode.fims.dipnet.sra.DipnetSraMetadataMapper;
 import biocode.fims.entities.Bcid;
-import biocode.fims.fileManagers.dataset.FimsMetadataFileManager;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.ProcessController;
@@ -38,14 +38,14 @@ public class Expeditions extends FimsService {
 
     private static Logger logger = LoggerFactory.getLogger(ExpeditionRestService.class);
     private final DipnetExpeditionService expeditionService;
-    private final FimsMetadataFileManager datasetFileManager;
+    private final FimsMetadataFileManager fimsMetadataFileManager;
 
     @Autowired
-    public Expeditions(DipnetExpeditionService expeditionService, FimsMetadataFileManager datasetFileManager,
+    public Expeditions(DipnetExpeditionService expeditionService, FimsMetadataFileManager fimsMetadataFileManager,
                        OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
-        this.datasetFileManager = datasetFileManager;
+        this.fimsMetadataFileManager = fimsMetadataFileManager;
     }
     @GET
     @Path("/{expeditionId}/sra/files")
@@ -54,7 +54,7 @@ public class Expeditions extends FimsService {
         DipnetExpedition expedition = expeditionService.getDipnetExpedition(expeditionId);
 
         if (expedition == null || expedition.getFastqMetadata() == null) {
-            throw new BadRequestException("Either the dataset and/or fastq metadata do not exist");
+            throw new BadRequestException("Either the fims metadata and/or fastq metadata do not exist");
         }
         File configFile = new ConfigurationFileFetcher(expedition.getExpedition().getProject().getProjectId(), uploadPath(), true).getOutputFile();
 
@@ -64,8 +64,8 @@ public class Expeditions extends FimsService {
         ProcessController processController = new ProcessController(expedition.getExpedition().getProject().getProjectId(), expedition.getExpedition().getExpeditionCode());
         processController.setOutputFolder(uploadPath());
         processController.setMapping(mapping);
-        datasetFileManager.setProcessController(processController);
-        JSONArray dataset = datasetFileManager.getDataset();
+        fimsMetadataFileManager.setProcessController(processController);
+        JSONArray dataset = fimsMetadataFileManager.getDataset();
 
         Bcid entityBcid = expedition.getExpedition().getEntityBcids().get(0);
 
