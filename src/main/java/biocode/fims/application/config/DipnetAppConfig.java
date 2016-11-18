@@ -1,15 +1,15 @@
 package biocode.fims.application.config;
 
+import biocode.fims.elasticSearch.ESFimsMetadataPersistenceManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataPersistenceManager;
 import biocode.fims.fuseki.fileManagers.fimsMetadata.FusekiFimsMetadataPersistenceManager;
 import biocode.fims.fuseki.query.elasticSearch.FusekiIndexer;
 import biocode.fims.genbank.GenbankManager;
-import biocode.fims.query.elasticSearch.TransportClientFactoryBean;
+import biocode.fims.elasticSearch.TransportClientFactoryBean;
 import biocode.fims.service.ProjectService;
 import biocode.fims.utils.DatasetService;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.ElasticsearchClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
@@ -49,7 +49,7 @@ public class DipnetAppConfig  {
     @Bean
     @Scope("prototype")
     public FimsMetadataFileManager fimsMetadataFileManager() {
-        FimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
+        FimsMetadataPersistenceManager persistenceManager = new ESFimsMetadataPersistenceManager(esClient);
         return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
     }
 

@@ -9,7 +9,7 @@ import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.ServerErrorException;
-import biocode.fims.query.elasticSearch.ElasticSearchIndexer;
+import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;

@@ -2,11 +2,12 @@ package biocode.fims.application.config;
 
 import biocode.fims.dipnet.services.DipnetExpeditionService;
 import biocode.fims.fileManagers.AuxilaryFileManager;
+import biocode.fims.fileManagers.fasta.ESFastaPersistenceManager;
 import biocode.fims.fileManagers.fasta.FastaFileManager;
 import biocode.fims.fileManagers.fasta.FastaPersistenceManager;
 import biocode.fims.fileManagers.fasta.FusekiFastaPersistenceManager;
 import biocode.fims.fileManagers.fastq.FastqFileManager;
-import biocode.fims.query.elasticSearch.ElasticSearchIndexer;
+import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.rest.services.rest.Validate;
 import biocode.fims.service.OAuthProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ public class DipnetWebAppConfig {
     @Bean
     @Scope("prototype")
     public FastaFileManager fastaFileManager() {
-        FastaPersistenceManager persistenceManager = new FusekiFastaPersistenceManager(fimsAppConfig.bcidService, fimsAppConfig.expeditionService);
+        FastaPersistenceManager persistenceManager = new ESFastaPersistenceManager();
         return new FastaFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.bcidService);
     }
 
