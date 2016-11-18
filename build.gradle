@@ -55,12 +55,12 @@ subprojects.each { subproject -> evaluationDependsOn(subproject.path) }
 //noinspection GroovyAssignabilityCheck
 sourceSets {
     main {
-        compileClasspath += [configurations.server]
-        compileClasspath += [configurations.provided]
+        compileClasspath.plus(configurations.server)
+        compileClasspath.plus(configurations.provided)
     }
     test {
-        compileClasspath += [configurations.server]
-        runtimeClasspath += [configurations.server]
+        compileClasspath.plus(configurations.server)
+        runtimeClasspath.plus(configurations.server)
     }
 }
 
@@ -93,11 +93,18 @@ dependencies {
     testCompile "junit:junit-dep:4.10"
 }
 
+// specify files that require a specific loading order
+ext.externLibsOrdered = ["${projectDir}/src/main/web/js/externalLibs/lodash.js", "${projectDir}/src/main/web/js/externalLibs/papaparse.min.js",
+        "${projectDir}/src/main/web/js/externalLibs/xlsx.min.js", "${projectDir}/src/main/web/js/externalLibs/xlsx-reader.js"]
 javascript.source {
     externLibs {
         js {
             srcDir "src/main/web/js/externalLibs"
             include "*.js"
+            // exclude any file that is in the externLibsOrdered list
+            exclude {
+                it.file in files(externLibsOrdered).files
+            }
         }
     }
     app {
@@ -155,7 +162,7 @@ allprojects {
 }
 
 war {
-    // exclude the src/main/web/app & src/main/web/js dirs. These files are concatenatedd and minified in the minifyJs task
+    // exclude the src/main/web/app & src/main/web/js dirs. These files are concatenated and minified in the minifyJs task
     // and added in the webInf closure
     exclude("app")
     exclude("js")
@@ -382,7 +389,7 @@ combineJs {
 }
 
 task jsExternalLibs(type: MinifyJsTask) {
-    source = files(javascript.source.externLibs.js.files)
+    source = externLibsOrdered + javascript.source.externLibs.js.files
     dest = file("${buildDir}/js/allExternalLibs.min.js")
     sourceMap = file("${buildDir}/js/allExternalLibs.min.map")
     closure {
