@@ -433,5 +433,10 @@ task minifyJs(overwrite: true) {
     dependsOn jsApp
 }
 
+task copyEnvironmentFiles(overwrite: true) {
+    dependsOn copyWebXml
+    dependsOn copyEnvironmentResources
+}
+
 fatWar.dependsOn minifyJs
 war.dependsOn minifyJs
