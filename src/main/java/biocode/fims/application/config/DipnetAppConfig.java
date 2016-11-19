@@ -65,9 +65,4 @@ public class DipnetAppConfig  {
         factoryBean.setClusterNodes(env.getProperty("clusterNodes"));
         return factoryBean;
     }
-
-    @Bean
-    public FusekiIndexer fusekiIndexer() throws Exception {
-        return new FusekiIndexer(esClient, projectService, fimsMetadataFileManager());
-    }
 }
