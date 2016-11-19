@@ -55,12 +55,12 @@ subprojects.each { subproject -> evaluationDependsOn(subproject.path) }
 //noinspection GroovyAssignabilityCheck
 sourceSets {
     main {
-        compileClasspath.plus(configurations.server)
-        compileClasspath.plus(configurations.provided)
+        compileClasspath += [configurations.server]
+        compileClasspath += [configurations.provided]
     }
     test {
-        compileClasspath.plus(configurations.server)
-        runtimeClasspath.plus(configurations.server)
+        compileClasspath += [configurations.server]
+        runtimeClasspath += [configurations.server]
     }
 }
 
@@ -95,7 +95,7 @@ dependencies {
 
 // specify files that require a specific loading order
 ext.externLibsOrdered = ["${projectDir}/src/main/web/js/externalLibs/lodash.js", "${projectDir}/src/main/web/js/externalLibs/papaparse.min.js",
-        "${projectDir}/src/main/web/js/externalLibs/xlsx.min.js", "${projectDir}/src/main/web/js/externalLibs/xlsx-reader.js"]
+                         "${projectDir}/src/main/web/js/externalLibs/xlsx.min.js", "${projectDir}/src/main/web/js/externalLibs/xlsx-reader.js"]
 javascript.source {
     externLibs {
         js {
@@ -440,10 +440,90 @@ task minifyJs(overwrite: true) {
     dependsOn jsApp
 }
 
+task expandedJs() {
+    doLast {
+        String indexFile = new File()
+    }
+
+}
+
 task copyEnvironmentFiles(overwrite: true) {
     dependsOn copyWebXml
     dependsOn copyEnvironmentResources
 }
 
+task addProdJsLibs(type: WebJsLibTask,
+        description: 'Modify index.html to include the combined, minified, and compressed js files') {
+    html = file('src/main/web' + '/index.html')
+    environment = 'production'
+}
+
+task addDevJsLibs(type: WebJsLibTask,
+        description: 'Modify the index.html to include all js files') {
+    html = file('src/main/web/index.html')
+    environment = 'local'
+}
+
+class WebJsLibTask extends DefaultTask {
+    final def tag = "<!-- LIBRARY LOADING -->"
+    final def endTag = "<!-- END: LIBRARY LOADING -->"
+
+    @InputFile
+    File html
+
+    @Input
+    String environment
+
+    @OutputFile
+    @Optional
+    File outputHtml
+
+    def environmentToInclude = ['local': DEV_INCLUDE, 'production': PROD_INCLUDE]
+
+    final static def DEV_INCLUDE = """
+<!-- USE individual js files FOR LOCAL DEV -->
+<script src=\"libs/head/1.0.3/head.min.js\" data-headjs-load=\"js/init.js\"></script>
+"""
+    final static def PROD_INCLUDE = """
+<!-- use minified and combined js file FOR PROD -->
+<script src="js/allExternalLibs.min.js"></script>
+<script src="js/all.min.js"></script>
+"""
+
+    @TaskAction
+    def void applyScriptAndStylesheetTags() {
+        if (html.exists()) {
+            def htmlReplacement = html.getText().replaceAll(
+                    "$tag\\p{all}*$endTag",
+                    "$tag${getHtmlReplacement(environment)}$endTag")
+            if (outputHtml == null) outputHtml = html
+            outputHtml.setText(htmlReplacement, 'UTF-8')
+        }
+    }
+
+    def String getHtmlReplacement(String environment) {
+        switch (environment) {
+            case 'local':
+                return getLocalHtml()
+            case 'production':
+                return environmentToInclude['production']
+        }
+    }
+
+    def String getLocalHtml() {
+        String html = "\n"
+
+        project.jsExternalLibs.source.files.each { file ->
+            html += "<script src=\"" + file.canonicalPath.minus(project.projectDir.canonicalPath + "/" + project.webAppDirName + "/") + "\"></script>\n";
+        }
+        project.jsApp.source.files.each { file ->
+            html += "<script src=\"" + file.canonicalPath.minus(project.projectDir.canonicalPath + "/" + project.webAppDirName + "/") + "\"></script>\n";
+        }
+
+        return html
+    }
+}
+
+minifyJs.dependsOn addProdJsLibs
 fatWar.dependsOn minifyJs
 war.dependsOn minifyJs

@@ -75,10 +75,10 @@ angular.module('fims.validation')
                     vm.dataTypes.fims = true;
                 }
                 if (!vm.dataTypes.fasta) {
-                    vm.fasta = null;
+                    vm.fasta = false;
                 }
                 if (!vm.dataTypes.fims) {
-                    vm.dataTypes.fims = null;
+                    vm.dataTypes.fims = false;
                 }
                 if (!vm.dataTypes.fastq) {
                     vm.fastqMetadata = angular.copy(defaultFastqMetadata);

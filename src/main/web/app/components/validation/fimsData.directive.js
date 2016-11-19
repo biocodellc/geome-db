@@ -5,7 +5,8 @@ angular.module('fims.validation')
             restrict: 'E',
             require: 'ngModel',
             scope: {
-                change: "&"
+                change: "&",
+                isRequired: "="
             },
             link: function (scope, el, attrs, ngModelCtrl) {
                 scope.inValid = false;

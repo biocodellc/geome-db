@@ -8,7 +8,7 @@
                        class="form-control"
                        ngf-select="modelValueChange($files)"
                        ngf-pattern="'.xls,.xlsx,.txt'"
-                       required
+                       ng-required="isRequired"
                        ngf-model-invalid="invalidFimsMetadataFile"
                        ng-model="fimsMetadata"/>
             </label>

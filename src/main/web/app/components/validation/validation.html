@@ -63,7 +63,7 @@
                     </div>
 
                     <fims-data ng-show="vm.dataTypes.fims" ng-model="vm.fimsMetadata"
-                               ng-required="vm.dataTypes.fims"
+                               is-required="vm.dataTypes.fims"
                                change="vm.fimsMetadataChange()"></fims-data>
 
                     <div class="form-group" ng-show="vm.dataTypes.fasta" show-errors="{trigger: 'change'}">
