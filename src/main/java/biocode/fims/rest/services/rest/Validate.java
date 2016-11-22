@@ -1,13 +1,17 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.digester.Mapping;
 import biocode.fims.dipnet.entities.DipnetExpedition;
 import biocode.fims.dipnet.entities.FastqMetadata;
 import biocode.fims.dipnet.services.DipnetExpeditionService;
 import biocode.fims.entities.Expedition;
+import biocode.fims.fasta.FastaData;
 import biocode.fims.fileManagers.AuxilaryFileManager;
+import biocode.fims.fileManagers.fasta.ESFastaPersistenceManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
+import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.rest.FimsService;
@@ -17,8 +21,11 @@ import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
+import biocode.fims.utils.SpringApplicationContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang.StringUtils;
+import org.elasticsearch.client.Client;
 import org.glassfish.jersey.media.multipart.*;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -32,6 +39,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +75,8 @@ public class Validate extends FimsService {
      * @param upload
      * @param expeditionCode
      * @param fimsMetadata
-     * @param fasta
+     * @param fastaDataList  1 FastaData object required for each fastaFile. FastaData.filename must match fastaFile.filename
+     * @param fastaFiles
      * @param fastqFilenames
      * @return
      */
@@ -80,8 +89,10 @@ public class Validate extends FimsService {
                              @FormDataParam("upload") @DefaultValue("false") boolean upload,
                              @FormDataParam("expeditionCode") String expeditionCode,
                              @FormDataParam("fimsMetadata") FormDataBodyPart fimsMetadata,
-                             @FormDataParam("fasta") FormDataBodyPart fasta,
-                             @FormDataParam("fastqFilenames") FormDataBodyPart fastqFilenames) {
+                             @FormDataParam("fastaData") List<FastaData> fastaDataList,
+                             @FormDataParam("fastaFile") List<FormDataBodyPart> fastaFiles,
+                             @FormDataParam("fastqFilenames") FormDataBodyPart fastqFilenames,
+                             final FormDataMultiPart multiPart) {
         Map<String, Map<String, Object>> fmProps = new HashMap<>();
         JSONObject returnValue = new JSONObject();
         boolean closeProcess = true;
@@ -111,15 +122,43 @@ public class Validate extends FimsService {
 
                 fmProps.put("fimsMetadata", props);
             }
-            if (fasta != null && fasta.getContentDisposition().getFileName() != null) {
-                String fastaFilename = fasta.getContentDisposition().getFileName();
-                processController.appendStatus("\nFASTA filename = " + fastaFilename);
+            if ((fastaDataList != null && !fastaDataList.isEmpty()) || (fastaFiles != null && !fastaFiles.isEmpty())) {
+                List<FastaData> fastaFileManagerData = new ArrayList<>();
 
-                InputStream is = fasta.getEntityAs(InputStream.class);
-                String tempFilename = saveFile(is, fasta.getContentDisposition().getFileName(), "fasta");
+                for (FormDataBodyPart fastaFile : fastaFiles) {
+                    FastaData fastaData = null;
+
+                    String fastaFilename = fastaFile.getContentDisposition().getFileName();
+                    processController.appendStatus("\nFASTA filename = " + fastaFilename);
+
+                    for (FastaData fData: fastaDataList) {
+                        if (StringUtils.equals(fastaFilename, fData.getFilename())) {
+                            fastaData = fData;
+                            // remove the fData so we can later verify that every fData contains a matching fastaFile
+                            fastaDataList.remove(fData);
+                            break;
+                        }
+                    }
+
+                    if (fastaData == null) {
+                        throw new BadRequestException("could not find a matching FastaData for fastaFile: " + fastaFilename,
+                                "Make sure every fastaFile has a corresponding FastaData object with the correct FastaData.filename");
+                    }
+
+                    InputStream is = fastaFile.getEntityAs(InputStream.class);
+                    String tempFilename = saveFile(is, fastaFilename, "fasta");
+
+                    // set the filename to the tmpFilename, as this is how we will refer to it downstream
+                    fastaData.setFilename(tempFilename);
+                    fastaFileManagerData.add(fastaData);
+                }
+
+                if (!fastaDataList.isEmpty()) {
+                    // TODO throw exception. fastaData found w/o matching fastaFile
+                }
 
                 Map<String, Object> props = new HashMap<>();
-                props.put("filename", tempFilename);
+                props.put("fastaData", fastaFileManagerData);
 
                 fmProps.put("fasta", props);
             }
@@ -321,6 +360,23 @@ public class Validate extends FimsService {
         }
 
         return "{\"status\": \"" + processController.getStatusSB().toString() + "\"}";
+    }
+
+    @GET
+    @Path("test")
+    public String test() {
+        ProcessController processController = new ProcessController(25, "TEST");
+        File configFile = new ConfigurationFileFetcher(25, uploadPath(), true).getOutputFile();
+        Mapping mapping = new Mapping();
+        mapping.addMappingRules(configFile);
+        processController.setMapping(mapping);
+
+        Client esClient = (Client) SpringApplicationContext.getBean(Client.class);
+
+        ESFastaPersistenceManager persistenceManager = new ESFastaPersistenceManager(esClient);
+        persistenceManager.getFastaSequences(processController, "fastaSequence");
+
+        return "ok";
     }
 }
 

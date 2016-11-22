@@ -25,7 +25,8 @@ angular.module('fims.validation')
             };
             vm.fastqMetadataLists = {};
             vm.fimsMetadata = null;
-            vm.fasta = null;
+            vm.fastaFile = null;
+            vm.fastaData = {};
             vm.fastqFilenames = null;
             vm.fastqMetadata = angular.copy(defaultFastqMetadata);
             vm.expeditonCode = null;
@@ -97,7 +98,9 @@ angular.module('fims.validation')
                     data.fimsMetadata = vm.fimsMetadata;
                 }
                 if (vm.dataTypes.fasta) {
-                    data.fasta = vm.fasta;
+                    data.fastaFile = vm.fastaFile;
+                    vm.fastaData.filename = vm.fastaFile.name;
+                    data.fastaData = Upload.jsonBlob([vm.fastaData]);
                 }
                 if (vm.dataTypes.fastq) {
                     data.fastqMetadata = Upload.jsonBlob(vm.fastqMetadata);
@@ -278,7 +281,8 @@ angular.module('fims.validation')
 
             function resetForm() {
                 vm.fimsMetadata = null;
-                vm.fasta = null;
+                vm.fastaFile = null;
+                vm.fastaData = null;
                 vm.fastqFilenames = null;
                 angular.copy(defaultFastqMetadata, vm.fastqMetadata);
                 vm.expeditionCode = null;

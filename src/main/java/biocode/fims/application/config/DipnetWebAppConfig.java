@@ -31,8 +31,8 @@ public class DipnetWebAppConfig {
     @Bean
     @Scope("prototype")
     public FastaFileManager fastaFileManager() {
-        FastaPersistenceManager persistenceManager = new ESFastaPersistenceManager();
-        return new FastaFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.bcidService);
+        FastaPersistenceManager persistenceManager = new ESFastaPersistenceManager(dipnetAppConfig.esClient);
+        return new FastaFileManager(persistenceManager, fimsAppConfig.settingsManager);
     }
 
     @Bean
