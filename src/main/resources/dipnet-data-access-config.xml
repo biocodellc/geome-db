@@ -22,6 +22,11 @@
         <property name="url" value="${dipnetUrl}" />
         <property name="username" value="${dipnetUser}" />
         <property name="password" value="${dipnetPassword}" />
+        <property name="connectionProperties">
+            <props>
+                <prop key="useSSL">false</prop>
+            </props>
+        </property>
     </bean>
 
     <bean id="jpaVendorAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
