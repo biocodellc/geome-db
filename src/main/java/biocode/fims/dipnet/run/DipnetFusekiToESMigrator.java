@@ -51,8 +51,11 @@ public class DipnetFusekiToESMigrator {
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);
 
+        int totalResource = 0;
+
         // we need to fetch each Expedition individually as the SheetUniqueKey is only unique on the Expedition level
         for (Expedition expedition : project.getExpeditions()) {
+            int resources = 0;
             FusekiFimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(expeditionService, bcidService);
             FimsMetadataFileManager fimsMetadataFileManager = new FimsMetadataFileManager(
                     persistenceManager, SettingsManager.getInstance(), expeditionService, bcidService);
@@ -82,6 +85,7 @@ public class DipnetFusekiToESMigrator {
             JSONArray dataset = fimsMetadataFileManager.index();
 
             for (Object o: dataset) {
+                resources++;
                 JSONObject resource = (JSONObject) o;
 
                 String sequence = (String) resource.remove("sequence");
@@ -96,7 +100,7 @@ public class DipnetFusekiToESMigrator {
                 }
             }
 
-            System.out.println("\nindexing ....\n");
+            System.out.println("\nindexing " + resources + " resources ....\n");
 
             ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
             indexer.indexDataset(
@@ -104,7 +108,9 @@ public class DipnetFusekiToESMigrator {
                     expedition.getExpeditionCode(),
                     dataset
             );
+            totalResource += resources;
         }
+        System.out.println("Indexed " + totalResource + " resources");
     }
 
     public static void main(String[] args) {
