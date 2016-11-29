@@ -5,39 +5,60 @@
         excel spreadsheet (.xsl) or a tab delimited text file (.csv).</p>
 
     <div ng-show="vm.error" class="alert alert-error">{{ vm.error }}</div>
-    <form method="POST">
-        <table border=0 class="table" style="width:800px;">
+    <div class="col-sm-12">
+        <form method="POST" class="form-horizontal" name="queryForm">
 
-            <tr>
-                <td align=right>&nbsp;&nbsp;Choose Dataset(s)&nbsp;&nbsp;&nbsp;</td>
-                <td><select id=graphs multiple style="display:inline-block;width:400px;text-align:left;"></select>
-                </td>
-                <td><input type="hidden" value="{{ vm.projectId }}" id="project"></td>
-            </tr>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Expedition(s)</label>
+                <div class="col-sm-6">
+                    <select multiple
+                            ng-options="expedition.expeditionCode as expedition.expeditionTitle for expedition in vm.expeditions"
+                            ng-model="vm.expeditionCodes"
+                            class="form-control"
+                    ></select>
+                </div>
+            </div>
 
-            <tr>
-                <td align=right>Filter</td>
-                <td>
-                    <select id="uri" style="max-width:100px;">
-                        <option value="0">Loading ...</option>
-                    </select>
-                    <p style='display:inline;'>=</p>
-                    <input type="text" name="filter_value" style="width:250px;"/>
-                    <input type=button value=+ id=add_filter class="btn btn-default btn-sm"/>
-                </td>
-            </tr>
+            <div class="form-group">
+                <div class="row">
+                    <label class="control-label col-sm-2">Filter(s)</label>
+                </div>
+            </div>
+            <div class="form-group row" ng-repeat="filter in vm.filters track by $index">
+                <div class="col-sm-offset-2 col-sm-2">
+                    <select ng-model="filter.key"
+                            ng-change="vm.filters[$index].value=null"
+                            ng-options="filter.uri as filter.column for filter in vm.filterOptions"
+                            class="form-control"
+                    ></select>
+                </div>
+                <div class="col-sm-1 text-center"><span>=</span></div>
+                <div class="col-sm-2">
+                    <input type="text" class="form-control" ng-model="filter.value"/>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm" ng-show="vm.filters.length > 1"
+                        ng-click="vm.removeFilter($index)">
+                    <span class="glyphicon glyphicon-remove"></span>
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" ng-show="$last" ng-click="vm.addFilter()">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+            </div>
 
-            <tr>
-                <td colspan=2>
-                    <input type="button" ng-click="vm.queryJson()" value="table" class="btn btn-default btn-sm">
-                    <input type=button id="submit" value=csv class="btn btn-default btn-sm">
-                    <input type=button id="submit" value=excel class="btn btn-default btn-sm">
-                    <input type=button id="submit" value=kml class="btn btn-default btn-sm">
-                </td>
-            </tr>
-        </table>
-    </form>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-6">
+                    <button ng-click="vm.queryJson()" class="btn btn-default btn-sm">Table</button>
+                    <button ng-click="vm.downloadCsv()" class="btn btn-default btn-sm">CSV</button>
+                    <button ng-click="vm.downloadExcel()" class="btn btn-default btn-sm">Excel</button>
+                    <button ng-click="vm.downloadKml()" class="btn btn-default btn-sm">KML</button>
+                </div>
+            </div>
+        </form>
 
+    </div>
+</div>
+
+<div class="row">
     <div class="panel panel-default" ng-show="vm.queryResults" style="overflow: auto">
         <span ng-show="vm.queryResults.length == 0">No Samples found.</span>
 
@@ -46,10 +67,16 @@
             <th ng-repeat="(key, value) in vm.queryResults[0]">{{ key }}</th>
             </thead>
             <tbody>
-            <tr ng-repeat="sample in vm.queryResults">
-                <td ng-repeat="(key, value) in sample">{{ value }}</td>
+            <tr ng-repeat="resource in vm.queryResults">
+                <td ng-repeat="(key, value) in resource">{{ value }}</td>
             </tr>
             </tbody>
         </table>
+        <!--<ul uib-pagination total-items="vm.queryInfo.totalElements" ng-model="vm.currentPage"-->
+                        <!--ng-change="vm.queryJson()"-->
+                        <!--max-size="10"-->
+                        <!--force-ellipses="true"-->
+                        <!--boundary-link-numbers="true"-->
+                        <!--items-per-page="vm.queryInfo.size"></ul>-->
     </div>
 </div>
