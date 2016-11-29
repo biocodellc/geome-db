@@ -1,6 +1,7 @@
 package biocode.fims.application.config;
 
 import biocode.fims.dipnet.services.DipnetExpeditionService;
+import biocode.fims.elasticSearch.query.EsQuery;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.fasta.ESFastaPersistenceManager;
 import biocode.fims.fileManagers.fasta.FastaFileManager;
@@ -51,7 +52,7 @@ public class DipnetWebAppConfig {
     }
 
     @Bean
-    public ElasticSearchIndexer esIndexer() throws Exception {
+    public ElasticSearchIndexer esIndexer() {
         return new ElasticSearchIndexer(dipnetAppConfig.esClient);
     }
 
