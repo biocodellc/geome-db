@@ -2,10 +2,12 @@ package biocode.fims.dipnet.run;
 
 import biocode.fims.application.config.DipnetAppConfig;
 import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
+import biocode.fims.fileManagers.fasta.FastaFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fuseki.fileManagers.fimsMetadata.FusekiFimsMetadataPersistenceManager;
 import biocode.fims.fuseki.query.elasticSearch.FusekiIndexer;
@@ -88,12 +90,12 @@ public class DipnetFusekiToESMigrator {
                 resources++;
                 JSONObject resource = (JSONObject) o;
 
-                String sequence = (String) resource.remove("sequence");
+                String sequence = (String) resource.remove("urn:sequence");
 
                 if (sequence != null) {
                     JSONObject fastaSequence = new JSONObject();
-                    fastaSequence.put("sequence", sequence);
-                    fastaSequence.put("marker", marker);
+                    fastaSequence.put("urn:sequence", sequence);
+                    fastaSequence.put("urn:marker", marker);
                     JSONArray fastaSequences = new JSONArray();
                     fastaSequences.add(fastaSequence);
                     resource.put("fastaSequence", fastaSequences);

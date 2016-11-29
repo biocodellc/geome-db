@@ -23,11 +23,12 @@ angular.module('fims.query', [])
             vm.downloadKml = downloadKml;
 
             function queryJson() {
-                $http.post(REST_ROOT + "projects/query/json/?page=" + (vm.currentPage - 1), getQueryPostParams())
+                // TODO fix performance issue with 100 results
+                $http.post(REST_ROOT + "projects/query/json/?limit=20&page=" + (vm.currentPage - 1), getQueryPostParams())
                     .then(
                         function (response) {
                             // vm.queryInfo = response.data;
-                            vm.queryResults = response.data.content;
+                            vm.queryResults = response.data;
                             // delete vm.queryInfo.content;
                         }, function (response) {
                             if (response.status = -1 && !response.data) {

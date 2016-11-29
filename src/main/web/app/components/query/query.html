@@ -60,23 +60,23 @@
 
 <div class="row">
     <div class="panel panel-default" ng-show="vm.queryResults" style="overflow: auto">
-        <span ng-show="vm.queryResults.length == 0">No Samples found.</span>
+        <span ng-show="vm.queryResults.totalElements == 0">No Samples found.</span>
 
         <table class="table table-condensed">
             <thead>
-            <th ng-repeat="(key, value) in vm.queryResults[0]">{{ key }}</th>
+            <th ng-repeat="(key, value) in vm.queryResults.content[0]">{{ key }}</th>
             </thead>
             <tbody>
-            <tr ng-repeat="resource in vm.queryResults">
+            <tr ng-repeat="resource in vm.queryResults.content">
                 <td ng-repeat="(key, value) in resource">{{ value }}</td>
             </tr>
             </tbody>
         </table>
-        <!--<ul uib-pagination total-items="vm.queryInfo.totalElements" ng-model="vm.currentPage"-->
-                        <!--ng-change="vm.queryJson()"-->
-                        <!--max-size="10"-->
-                        <!--force-ellipses="true"-->
-                        <!--boundary-link-numbers="true"-->
-                        <!--items-per-page="vm.queryInfo.size"></ul>-->
+        <ul uib-pagination total-items="vm.queryResults.totalElements" ng-model="vm.currentPage"
+                        ng-change="vm.queryJson()"
+                        max-size="10"
+                        force-ellipses="true"
+                        boundary-link-numbers="true"
+                        items-per-page="vm.queryResults.size"></ul>
     </div>
 </div>

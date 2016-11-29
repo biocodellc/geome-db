@@ -65,13 +65,13 @@ public class Query extends FimsService {
             @QueryParam("limit") @DefaultValue("100") int limit,
             MultivaluedMap<String, String> form) {
 
-        Pageable pageable = new PageRequest(page , limit);
+        Pageable pageable = new PageRequest(page, limit);
 
         // Build the query, etc..
         ElasticSearchQuery query = POSTElasticSearchQuery(form);
         query.pageable(pageable);
 
-        EsQuery esQuery = new EsQuery(esClient, query);
+        EsQuery esQuery = new EsQuery(esClient, query, uploadPath());
 
         return Response.ok(esQuery.getJSON()).build();
     }
@@ -94,12 +94,10 @@ public class Query extends FimsService {
         // Build the query, etc..
         ElasticSearchQuery query = POSTElasticSearchQuery(form);
 
-        EsQuery esQuery = new EsQuery(esClient, query);
+        EsQuery esQuery = new EsQuery(esClient, query, uploadPath());
 
-        // TODO handle projectId better
-        Integer projectId = Integer.valueOf(query.getIndicies()[0]);
         // Run the query, passing in a format and returning the location of the output file
-        File file = new File(esQuery.writeCsv(getMapping(projectId).getDefaultSheetAttributes(), uploadPath()));
+        File file = new File(esQuery.writeCsv());
 
         Response.ResponseBuilder response = Response.ok(file);
 
@@ -112,7 +110,6 @@ public class Query extends FimsService {
     /**
      * Return JSON for a graph query.
      *
-     * @param graphs indicate a comma-separated list of graphs, or all
      * @return
      */
     @GET
@@ -129,7 +126,7 @@ public class Query extends FimsService {
         ElasticSearchQuery query = GETElasticSearchQuery(expeditions, projectId, filter);
         query.pageable(pageable);
 
-        EsQuery esQuery = new EsQuery(esClient, query);
+        EsQuery esQuery = new EsQuery(esClient, query, uploadPath());
 
         return Response.ok(esQuery.getJSON()).build();
     }
@@ -138,7 +135,6 @@ public class Query extends FimsService {
      * Return KML for a graph query using POST
      * filter is just a single value to filter the entire dataset
      *
-     * @param graphs indicate a comma-separated list of graphs, or all
      * @return
      */
     @GET
@@ -152,9 +148,9 @@ public class Query extends FimsService {
         // Construct a file
         ElasticSearchQuery query = GETElasticSearchQuery(expeditions, projectId, filter);
 
-        EsQuery esQuery = new EsQuery(esClient, query);
+        EsQuery esQuery = new EsQuery(esClient, query, uploadPath());
 
-        File file = new File(esQuery.writeKml(getMapping(projectId).getDefaultSheetAttributes(), uploadPath()));
+        File file = new File(esQuery.writeKml());
 
         // Return file to client
         Response.ResponseBuilder response = Response.ok(file);
@@ -184,11 +180,9 @@ public class Query extends FimsService {
         // Build the query, etc..
         ElasticSearchQuery query = POSTElasticSearchQuery(form);
 
-        EsQuery esQuery = new EsQuery(esClient, query);
+        EsQuery esQuery = new EsQuery(esClient, query, uploadPath());
 
-        // TODO handle projectId better
-        Integer projectId = Integer.valueOf(query.getIndicies()[0]);
-        File file = new File(esQuery.writeKml(getMapping(projectId).getDefaultSheetAttributes(), uploadPath()));
+        File file = new File(esQuery.writeKml());
 
         // Return file to client
         Response.ResponseBuilder response = Response.ok(file);
@@ -206,7 +200,6 @@ public class Query extends FimsService {
     /**
      * Return Excel for a graph query.  The GET query runs a simple FILTER query for any term
      *
-     * @param graphs indicate a comma-separated list of graphs, or all
      * @return
      */
     @GET
@@ -219,10 +212,9 @@ public class Query extends FimsService {
 
         ElasticSearchQuery query = GETElasticSearchQuery(expeditions, projectId, filter);
 
-        EsQuery esQuery = new EsQuery(esClient, query);
+        EsQuery esQuery = new EsQuery(esClient, query, uploadPath());
 
-//        File file = new File(queryBuilder.writeExcel(projectId));
-        File file = esQuery.writeExcel(getMapping(projectId).getDefaultSheetAttributes(), uploadPath());
+        File file = esQuery.writeExcel();
 
         // Return file to client
         Response.ResponseBuilder response = Response.ok(file);
@@ -251,12 +243,10 @@ public class Query extends FimsService {
         // Build the query, etc..
         ElasticSearchQuery query = POSTElasticSearchQuery(form);
 
-        EsQuery esQuery = new EsQuery(esClient, query);
+        EsQuery esQuery = new EsQuery(esClient, query, uploadPath());
 
         // Run the query, passing in a format and returning the location of the output file
-        // TODO handle projectId better
-        Integer projectId = Integer.valueOf(query.getIndicies()[0]);
-        File file = esQuery.writeExcel(getMapping(projectId).getDefaultSheetAttributes(), uploadPath());
+        File file = esQuery.writeExcel();
 
         // Return file to client
         Response.ResponseBuilder response = Response.ok(file);
@@ -309,46 +299,46 @@ public class Query extends FimsService {
             LinkedList value = (LinkedList) entry.getValue();
 
             // Treat keys with ":" as a uri
-            if (key.contains(":")) {
-                key = getColumn(attributes, key);
+            if (!key.contains(":")) {
+                key = mapping.lookupUriForColumn(key, attributes);
             }
 
             String v = (String) value.get(0);// only expect 1 value here
             filterMap.put(key, v);
         }
 
-        return new ElasticSearchQuery(getQueryBuilder(filterMap, expeditionCodes), new String[] {String.valueOf(projectId)})
+        return new ElasticSearchQuery(
+                getQueryBuilder(filterMap, expeditionCodes),
+                new String[]{String.valueOf(projectId)},
+                attributes
+        )
                 .source(getSource(attributes))
-                .types(new String[] {ElasticSearchIndexer.TYPE});
+                .types(new String[]{ElasticSearchIndexer.TYPE});
 
     }
 
     private String[] getSource(List<Attribute> attributes) {
         List<String> source = new ArrayList<>();
 
-        attributes.forEach(a -> source.add(a.getColumn()));
+        for (Attribute attribute : attributes) {
+            source.add(attribute.getUri());
+        }
 
         return source.toArray(new String[0]);
     }
+
     private QueryBuilder getQueryBuilder(Map<String, String> filters, List<String> expeditionCodes) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
-        expeditionCodes.forEach(e ->
-                boolQueryBuilder.should(QueryBuilders.matchQuery("expedition.expeditionCode", e)));
-
-        filters.forEach((field, value) -> boolQueryBuilder.must(QueryBuilders.matchQuery(field, value)));
-
-        return boolQueryBuilder;
-    }
-
-    private String getColumn(List<Attribute> attributes, String uri) {
-        for (Attribute attribute : attributes) {
-            if (attribute.getUri().equals(uri)) {
-                return attribute.getColumn();
-            }
+        for (String expedition : expeditionCodes) {
+            boolQueryBuilder.should(QueryBuilders.matchQuery("expedition.expeditionCode", expedition));
         }
 
-        return uri;
+        for (Map.Entry<String, String> filter : filters.entrySet()) {
+            boolQueryBuilder.must(QueryBuilders.matchQuery(filter.getKey(), filter.getValue()));
+        }
+
+        return boolQueryBuilder;
     }
 
     /**
@@ -368,11 +358,11 @@ public class Query extends FimsService {
         List<Attribute> attributes = mapping.getDefaultSheetAttributes();
 
         // Parse the GET filter
-        Map<String, String> filters = parseGETFilter(filter, attributes);
+        Map<String, String> filters = parseGETFilter(filter, attributes, mapping);
 
-        return new ElasticSearchQuery(getQueryBuilder(filters, expeditions), new String[] {String.valueOf(projectId)})
+        return new ElasticSearchQuery(getQueryBuilder(filters, expeditions), new String[]{String.valueOf(projectId)}, mapping.getDefaultSheetAttributes())
                 .source(getSource(attributes))
-                .types(new String[] {ElasticSearchIndexer.TYPE});
+                .types(new String[]{ElasticSearchIndexer.TYPE});
 
     }
 
@@ -393,7 +383,7 @@ public class Query extends FimsService {
      * @param filterQueryString
      * @return
      */
-    private Map<String, String> parseGETFilter(String filterQueryString, List<Attribute> attributes) {
+    private Map<String, String> parseGETFilter(String filterQueryString, List<Attribute> attributes, Mapping mapping) {
         Map<String, String> filters = new HashMap<>();
 
         if (filterQueryString == null)
@@ -413,12 +403,8 @@ public class Query extends FimsService {
 
                 String key = filter[0];
 
-                if (key.contains(":")) {
-                    for (Attribute a: attributes) {
-                        if (a.getUri().equals(key)) {
-                            key = a.getColumn();
-                        }
-                    }
+                if (!key.contains(":")) {
+                    key = mapping.lookupUriForColumn(key, attributes);
                 }
 
                 filters.put(
@@ -433,23 +419,6 @@ public class Query extends FimsService {
         }
 
         return filters;
-    }
-
-    public static void main(String[] args) {
-        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(DipnetAppConfig.class);
-        Client client = applicationContext.getBean(Client.class);
-
-        ElasticSearchQuery query = new ElasticSearchQuery(QueryBuilders.boolQuery(), new String[] {"25"})
-                .types(new String[] {ElasticSearchIndexer.TYPE});
-
-        File configFile = new ConfigurationFileFetcher(25, "/Users/rjewing/IdeaProjects/dipnet-fims/tripleOutput", true).getOutputFile();
-
-        // Parse the Mapping object (this object is used extensively in downstream functions!)
-        Mapping mapping = new Mapping();
-        mapping.addMappingRules(configFile);
-
-        EsQuery esQuery = new EsQuery(client, query);
-        esQuery.writeExcel(mapping.getDefaultSheetAttributes(), "/Users/rjewing/IdeaProjects/dipnet-fims/tripleOutput");
     }
 }
 
