@@ -361,23 +361,6 @@ public class Validate extends FimsService {
 
         return "{\"status\": \"" + processController.getStatusSB().toString() + "\"}";
     }
-
-    @GET
-    @Path("test")
-    public String test() {
-        ProcessController processController = new ProcessController(25, "TEST");
-        File configFile = new ConfigurationFileFetcher(25, uploadPath(), true).getOutputFile();
-        Mapping mapping = new Mapping();
-        mapping.addMappingRules(configFile);
-        processController.setMapping(mapping);
-
-        Client esClient = (Client) SpringApplicationContext.getBean(Client.class);
-
-        ESFastaPersistenceManager persistenceManager = new ESFastaPersistenceManager(esClient);
-        persistenceManager.getFastaSequences(processController, "fastaSequence");
-
-        return "ok";
-    }
 }
 
 
