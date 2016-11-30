@@ -3,6 +3,9 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
+import biocode.fims.elasticSearch.ElasticSearchIndexer;
+import biocode.fims.elasticSearch.query.ElasticSearchQuery;
+import biocode.fims.elasticSearch.query.EsQuery;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
@@ -19,6 +22,19 @@ import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.DatasetService;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.common.xcontent.ToXContent;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.nested.Nested;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -26,16 +42,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.*;
@@ -54,14 +68,16 @@ public class Projects extends FimsService {
     private final DatasetService datasetService;
     private final ProjectService projectService;
     private final UserService userService;
+    private Client esClient;
 
     @Autowired
-    Projects(ExpeditionService expeditionService, DatasetService datasetService,
+    Projects(ExpeditionService expeditionService, DatasetService datasetService, Client esClient,
              ProjectService projectService, UserService userService,
              OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
         this.datasetService = datasetService;
+        this.esClient = esClient;
         this.projectService = projectService;
         this.userService = userService;
     }
@@ -687,26 +703,37 @@ public class Projects extends FimsService {
     @Authenticated
     @Path("/{projectId}/expeditions/datasets/latest")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response listExpeditionsWithLatestDatasets(@PathParam("projectId") Integer projectId,
-                                                      @QueryParam("page") @DefaultValue("1") int page,
-                                                      @QueryParam("limit") @DefaultValue("100") int limit) {
-        Pageable pageRequest = new PageRequest(page - 1, limit, Sort.Direction.ASC, "expeditionCode");
-        Page<Expedition> expeditions = expeditionService.getExpeditions(projectId, user.getUserId(), pageRequest);
+    public Response listExpeditionsWithLatestDatasets(@PathParam("projectId") Integer projectId) {
+        // TODO using terms aggregation may not be accurate, since documents are stored across shards
+        // possibly need to store the sequence count as a field and them sum that
+        // also, aggs can't use pagination, so we are fetching 1000 expeditions. to support pagination, we need to query
+        // the expeditionCodes
 
-        if (!expeditions.hasContent())
-            return Response.ok(expeditions).build();
+        AggregationBuilder aggsBuilder = AggregationBuilders.terms("expeditions").field("expedition.expeditionCode.keyword")
+                .subAggregation(
+                    AggregationBuilders.nested("fastaSequenceCount", "fastaSequence")
+                )
+                .order(Terms.Order.term(true))
+                .size(1000);
 
-        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+        SearchResponse response = esClient.prepareSearch(String.valueOf(projectId))
+                .setTypes(ElasticSearchIndexer.TYPE)
+                .setSize(0)
+                .addAggregation(aggsBuilder).get();
 
-        Mapping mapping = new Mapping();
-        mapping.addMappingRules(configFile);
+        Terms terms = response.getAggregations().get("expeditions");
+        List<JSONObject> buckets = new ArrayList<>();
 
-        String fusekiQueryTarget = mapping.getMetadata().getQueryTarget() + "/query";
+        for (Terms.Bucket bucket: terms.getBuckets()) {
+            JSONObject b = new JSONObject();
+            b.put("resourceCount", bucket.getDocCount());
+            b.put("expeditionCode", bucket.getKey());
+            b.put("fastaSequenceCount", ((Nested) bucket.getAggregations().get("fastaSequenceCount")).getDocCount());
 
-        Map<String, Object> pageMap = new SpringObjectMapper().convertValue(expeditions, Map.class);
-        pageMap.put("content", datasetService.listExpeditionDatasetsWithCounts(expeditions.getContent(), fusekiQueryTarget));
+            buckets.add(b);
+        }
 
-        return Response.ok(pageMap).build();
+        return Response.ok(buckets).build();
     }
 
 

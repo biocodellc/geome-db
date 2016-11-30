@@ -7,24 +7,23 @@ angular.module('fims.expeditions')
         vm.itemsPerPage = 100;
         vm.currentPage = 1;
         vm.pageChanged = pageChanged;
-        vm.content = [];
-        vm.initialized = false;
+        vm.results = [];
+        vm.displayResults = [];
         fetchPage();
 
         function pageChanged() {
-            fetchPage();
+            vm.displayResults = vm.results.slice((vm.currentPage - 1) * vm.itemsPerPage, vm.currentPage * vm.itemsPerPage);
         }
 
         function fetchPage() {
             LoadingModalFactory.open();
 
-            $http.get(REST_ROOT + 'projects/25/expeditions/datasets/latest?page=' + vm.currentPage + "&limit=" + vm.itemsPerPage)
+            $http.get(REST_ROOT + 'projects/25/expeditions/datasets/latest')
                 .then(function(response) {
-                    angular.extend(vm.content, response.data.content);
-                    vm.content = response.data.content;
-                    vm.totalItems = response.data.totalElements;
+                    angular.extend(vm.results, response.data);
                     LoadingModalFactory.close();
-                    vm.initialized = true;
+                    pageChanged();
+                    vm.totalItems = vm.results.length;
                 }, function(response) {
                     FailModalFactory.open(null, response.data.usrMessage)
                 });

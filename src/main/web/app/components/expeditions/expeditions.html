@@ -3,7 +3,7 @@
     <p>In this system we refer to each dataset as an “Expedition” each of which includes the metadata and sequences
         uploaded from a single dataset.</p>
 
-    <div class="panel panel-default" ng-show="vm.initialized">
+    <div class="panel panel-default" ng-show="vm.displayResults.length > 0">
 
         <table class="table table-hover table-condensed text-center">
             <thead>
@@ -13,10 +13,10 @@
             </thead>
 
             <tbody>
-            <tr ng-repeat="expedition in vm.content">
-                <td>{{ expedition.expeditionTitle }}</td>
-                <td>{{ expedition.latestDataset.identifierCount }}</td>
-                <td>{{ expedition.latestDataset.sequenceCount }}</td>
+            <tr ng-repeat="expedition in vm.displayResults">
+                <td>{{ expedition.expeditionCode}}</td>
+                <td>{{ expedition.resourceCount}}</td>
+                <td>{{ expedition.fastaSequenceCount}}</td>
             </tr>
             </tbody>
         </table>
