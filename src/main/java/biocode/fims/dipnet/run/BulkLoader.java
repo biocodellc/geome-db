@@ -108,7 +108,7 @@ public class BulkLoader {
         HashMap<String, Map<String, Object>> fmProps = new HashMap<>();
         HashMap<String, Object> props = new HashMap<>();
         props.put("filename", inputFile);
-        fmProps.put("fimsMetadata", props);
+        fmProps.put(FimsMetadataFileManager.NAME, props);
 
         File configFile = new ConfigurationFileFetcher(pc.getProjectId(), pc.getOutputFolder(), true).getOutputFile();
 

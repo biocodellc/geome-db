@@ -9,6 +9,8 @@ import biocode.fims.entities.Expedition;
 import biocode.fims.fasta.FastaData;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.fasta.ESFastaPersistenceManager;
+import biocode.fims.fileManagers.fasta.FastaFileManager;
+import biocode.fims.fileManagers.fastq.FastqFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -120,7 +122,7 @@ public class Validate extends FimsService {
                 Map<String, Object> props = new HashMap<>();
                 props.put("filename", tempFilename);
 
-                fmProps.put("fimsMetadata", props);
+                fmProps.put(FimsMetadataFileManager.NAME, props);
             }
             if ((fastaDataList != null && !fastaDataList.isEmpty()) || (fastaFiles != null && !fastaFiles.isEmpty())) {
                 List<FastaData> fastaFileManagerData = new ArrayList<>();
@@ -160,7 +162,7 @@ public class Validate extends FimsService {
                 Map<String, Object> props = new HashMap<>();
                 props.put("fastaData", fastaFileManagerData);
 
-                fmProps.put("fasta", props);
+                fmProps.put(FastaFileManager.NAME, props);
             }
             if (fastqMetadata != null || (fastqFilenames != null && fastqFilenames.getContentDisposition().getFileName() != null)) {
                 Map<String, Object> props = new HashMap<>();
@@ -184,7 +186,7 @@ public class Validate extends FimsService {
                     }
                 }
 
-                fmProps.put("fastq", props);
+                fmProps.put(FastqFileManager.NAME, props);
             }
 
             File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
