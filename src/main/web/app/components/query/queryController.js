@@ -8,8 +8,10 @@ angular.module('fims.query', [])
             };
             var vm = this;
             vm.error = null;
+            vm.moreSearchOptions = false;
             vm.filterOptions = [];
             vm.filters = [];
+            vm._all = null;
             vm.expeditions = [];
             vm.expeditionCodes = [];
             vm.queryResults = null;
@@ -66,7 +68,6 @@ angular.module('fims.query', [])
             function getQueryPostParams() {
                 var params = {
                     expeditions: vm.expeditionCodes,
-                    projectId: PROJECT_ID
                 };
 
                 angular.forEach(vm.filters, function(filter) {
@@ -74,6 +75,10 @@ angular.module('fims.query', [])
                         params[filter.field] = filter.value;
                     }
                 });
+
+                if (vm._all) {
+                    params._all = vm._all;
+                }
 
                 return params;
             }

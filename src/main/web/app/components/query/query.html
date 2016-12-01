@@ -4,54 +4,78 @@
         the database using the drop down menu. The results of your search can be downloaded as an
         excel spreadsheet (.xsl) or a tab delimited text file (.csv).</p>
 
-    <div ng-show="vm.error" class="alert alert-error">{{ vm.error }}</div>
+    <div ng-show="vm.error" class="alert alert-error">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        {{ vm.error }}
+    </div>
     <div class="col-sm-12">
         <form method="POST" class="form-horizontal" name="queryForm">
 
             <div class="form-group">
-                <label class="col-sm-2 control-label">Expedition(s)</label>
-                <div class="col-sm-6">
-                    <select multiple
-                            ng-options="expedition.expeditionCode as expedition.expeditionTitle for expedition in vm.expeditions"
-                            ng-model="vm.expeditionCodes"
-                            class="form-control"
-                    ></select>
+                <div class="col-sm-offset-2 col-sm-6">
+                    <input type="text" placeholder="Full text search..." ng-model="vm._all" class="form-control"/>
+                    <a class="help-block text-right" href="#" ng-click="vm.moreSearchOptions = !vm.moreSearchOptions">More
+                        search
+                        options</a>
                 </div>
             </div>
 
-            <div class="form-group">
-                <div class="row">
-                    <label class="control-label col-sm-2">Filter(s)</label>
+            <div ng-show="vm.moreSearchOptions">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Expedition(s)</label>
+                    <div class="col-sm-6">
+                        <select multiple
+                                ng-options="expedition.expeditionCode as expedition.expeditionTitle for expedition in vm.expeditions"
+                                ng-model="vm.expeditionCodes"
+                                class="form-control"
+                        ></select>
+                    </div>
                 </div>
-            </div>
-            <div class="form-group row" ng-repeat="filter in vm.filters track by $index">
-                <div class="col-sm-offset-2 col-sm-2">
-                    <select ng-model="filter.field"
-                            ng-change="vm.filters[$index].value=null"
-                            ng-options="filter.field as filter.displayName for filter in vm.filterOptions"
-                            class="form-control"
-                    ></select>
+
+                <div class="form-group">
+                    <div class="row">
+                        <label class="control-label col-sm-2">Filter(s)</label>
+                    </div>
                 </div>
-                <div class="col-sm-1 text-center"><span>=</span></div>
-                <div class="col-sm-2">
-                    <input type="text" class="form-control" ng-model="filter.value"/>
+                <div class="form-group row" ng-repeat="filter in vm.filters track by $index">
+                    <div class="col-sm-offset-2 col-sm-2">
+                        <select ng-model="filter.field"
+                                ng-change="vm.filters[$index].value=null"
+                                ng-options="filter.field as filter.displayName for filter in vm.filterOptions"
+                                class="form-control"
+                        ></select>
+                    </div>
+                    <div class="col-sm-1 text-center"><span>=</span></div>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" ng-model="filter.value"/>
+                    </div>
+                    <button type="button" class="btn btn-danger btn-sm" ng-show="vm.filters.length > 1"
+                            ng-click="vm.removeFilter($index)">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" ng-show="$last" ng-click="vm.addFilter()">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
                 </div>
-                <button type="button" class="btn btn-danger btn-sm" ng-show="vm.filters.length > 1"
-                        ng-click="vm.removeFilter($index)">
-                    <span class="glyphicon glyphicon-remove"></span>
-                </button>
-                <button type="button" class="btn btn-primary btn-sm" ng-show="$last" ng-click="vm.addFilter()">
-                    <span class="glyphicon glyphicon-plus"></span>
-                </button>
             </div>
 
             <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-6">
-                    <button ng-click="vm.queryJson()" class="btn btn-default btn-sm">Table</button>
-                    <button ng-click="vm.downloadCsv()" class="btn btn-default btn-sm">CSV</button>
-                    <button ng-click="vm.downloadExcel()" class="btn btn-default btn-sm">Excel</button>
-                    <button ng-click="vm.downloadKml()" class="btn btn-default btn-sm">KML</button>
+                    <button ng-click="vm.queryJson()" class="btn pull-right btn-default"><span
+                            class="glyphicon glyphicon-search"></span> Search
+                    </button>
                 </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary dropdown-toggle"
+                                data-toggle="dropdown">Download <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" ng-click="vm.downloadCsv()">CSV</a></li>
+                            <li><a href="#" ng-click="vm.downloadKml()">KML</a></li>
+                            <li><a href="#" ng-click="vm.downloadExcel()">Excel</a></li>
+                        </ul>
+                    </div>
             </div>
         </form>
 
@@ -73,10 +97,10 @@
             </tbody>
         </table>
         <ul uib-pagination total-items="vm.queryResults.totalElements" ng-model="vm.currentPage"
-                        ng-change="vm.queryJson()"
-                        max-size="10"
-                        force-ellipses="true"
-                        boundary-link-numbers="true"
-                        items-per-page="vm.queryResults.size"></ul>
+            ng-change="vm.queryJson()"
+            max-size="10"
+            force-ellipses="true"
+            boundary-link-numbers="true"
+            items-per-page="vm.queryResults.size"></ul>
     </div>
 </div>
