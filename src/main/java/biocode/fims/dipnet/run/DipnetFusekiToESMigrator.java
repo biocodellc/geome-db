@@ -98,7 +98,7 @@ public class DipnetFusekiToESMigrator {
                     fastaSequence.put("urn:marker", marker);
                     JSONArray fastaSequences = new JSONArray();
                     fastaSequences.add(fastaSequence);
-                    resource.put("fastaSequence", fastaSequences);
+                    resource.put(FastaFileManager.ENTITY_CONCEPT_ALIAS, fastaSequences);
                 }
             }
 

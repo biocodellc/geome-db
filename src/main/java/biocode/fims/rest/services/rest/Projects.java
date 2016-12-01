@@ -4,15 +4,12 @@ import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
-import biocode.fims.elasticSearch.query.ElasticSearchQuery;
-import biocode.fims.elasticSearch.query.EsQuery;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
-import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
@@ -21,16 +18,8 @@ import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.utils.DatasetService;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.xcontent.ToXContent;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
@@ -40,16 +29,12 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.*;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.*;
@@ -65,18 +50,16 @@ public class Projects extends FimsService {
     private static Logger logger = LoggerFactory.getLogger(Projects.class);
 
     private final ExpeditionService expeditionService;
-    private final DatasetService datasetService;
     private final ProjectService projectService;
     private final UserService userService;
     private Client esClient;
 
     @Autowired
-    Projects(ExpeditionService expeditionService, DatasetService datasetService, Client esClient,
+    Projects(ExpeditionService expeditionService, Client esClient,
              ProjectService projectService, UserService userService,
              OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
-        this.datasetService = datasetService;
         this.esClient = esClient;
         this.projectService = projectService;
         this.userService = userService;

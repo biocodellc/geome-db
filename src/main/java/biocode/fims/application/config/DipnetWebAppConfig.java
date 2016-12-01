@@ -1,12 +1,10 @@
 package biocode.fims.application.config;
 
 import biocode.fims.dipnet.services.DipnetExpeditionService;
-import biocode.fims.elasticSearch.query.EsQuery;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.fasta.ESFastaPersistenceManager;
 import biocode.fims.fileManagers.fasta.FastaFileManager;
 import biocode.fims.fileManagers.fasta.FastaPersistenceManager;
-import biocode.fims.fileManagers.fasta.FusekiFastaPersistenceManager;
 import biocode.fims.fileManagers.fastq.FastqFileManager;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.rest.services.rest.Validate;
