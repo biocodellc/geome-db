@@ -26,9 +26,9 @@
             </div>
             <div class="form-group row" ng-repeat="filter in vm.filters track by $index">
                 <div class="col-sm-offset-2 col-sm-2">
-                    <select ng-model="filter.key"
+                    <select ng-model="filter.field"
                             ng-change="vm.filters[$index].value=null"
-                            ng-options="filter.uri as filter.column for filter in vm.filterOptions"
+                            ng-options="filter.field as filter.displayName for filter in vm.filterOptions"
                             class="form-control"
                     ></select>
                 </div>

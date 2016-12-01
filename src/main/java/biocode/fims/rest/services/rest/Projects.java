@@ -3,13 +3,16 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
+import biocode.fims.dipnet.query.DipnetQueryUtils;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
+import biocode.fims.elasticSearch.query.ElasticSearchFilter;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.FimsService;
+import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
@@ -18,6 +21,8 @@ import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
@@ -107,21 +112,16 @@ public class Projects extends FimsService {
 
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);
-        ArrayList<Attribute> attributeArrayList = mapping.getDefaultSheetAttributes();
 
-        JSONArray attributes = new JSONArray();
+        ArrayNode filters = new SpringObjectMapper().createArrayNode();
 
-        Iterator it = attributeArrayList.iterator();
-        while (it.hasNext()) {
-            Attribute a = (Attribute) it.next();
-            JSONObject attribute = new JSONObject();
-            attribute.put("column", a.getColumn());
-            attribute.put("uri", a.getUri());
-
-            attributes.add(attribute);
+        for (ElasticSearchFilter f: DipnetQueryUtils.getAvailableFilters(mapping)) {
+            ObjectNode filter = filters.addObject();
+            filter.put("field", f.getField());
+            filter.put("displayName", f.getDisplayName());
         }
 
-        return Response.ok(attributes.toJSONString()).build();
+        return Response.ok(filters).build();
     }
 
     @GET

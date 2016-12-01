@@ -3,7 +3,7 @@ angular.module('fims.query', [])
     .controller('QueryCtrl', ['$http', '$element', 'ExpeditionFactory', 'PROJECT_ID', 'REST_ROOT',
         function ($http, $element, ExpeditionFactory, PROJECT_ID, REST_ROOT) {
             var defaultFilter = {
-                key: null,
+                field: null,
                 value: null
             };
             var vm = this;
@@ -43,7 +43,7 @@ angular.module('fims.query', [])
 
             function addFilter() {
                 var filter = angular.copy(defaultFilter);
-                filter.key = vm.filterOptions[0].uri;
+                filter.field = vm.filterOptions[0].field;
                 vm.filters.push(filter);
             }
 
@@ -71,7 +71,7 @@ angular.module('fims.query', [])
 
                 angular.forEach(vm.filters, function(filter) {
                     if (filter.value) {
-                        params[filter.key] = filter.value;
+                        params[filter.field] = filter.value;
                     }
                 });
 

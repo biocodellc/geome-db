@@ -1,15 +1,14 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Mapping;
 import biocode.fims.dipnet.query.DipnetQueryUtils;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
+import biocode.fims.elasticSearch.query.ElasticSearchFilter;
 import biocode.fims.elasticSearch.query.ElasticSearchQuery;
 import biocode.fims.elasticSearch.query.ElasticSearchQuerier;
-import biocode.fims.fileManagers.fasta.FastaFileManager;
-import biocode.fims.fimsExceptions.*;
-import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.fimsExceptions.QueryErrorCode;
 import biocode.fims.query.*;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
@@ -18,7 +17,7 @@ import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.lucene.search.join.ScoreMode;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -37,7 +36,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.*;
-import java.net.URLDecoder;
 import java.util.*;
 
 /**
@@ -46,6 +44,7 @@ import java.util.*;
 @Controller
 @Path("/projects/query")
 public class Query extends FimsService {
+    private static final Logger logger = LoggerFactory.getLogger(Query.class);
 
     private static Integer projectId = Integer.parseInt(SettingsManager.getInstance().retrieveValue("projectId"));
     private Mapping mapping;
@@ -195,8 +194,7 @@ public class Query extends FimsService {
         try {
             justData = new XSSFWorkbook(new FileInputStream(file));
         } catch (IOException e) {
-            System.out.println("failed to open excel file");
-//                logger.error("failed to open QueryWriter excelFile", e);
+                logger.error("failed to open excel file", e);
         }
 
         TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), justData);
@@ -221,8 +219,7 @@ public class Query extends FimsService {
      */
     private ElasticSearchQuery POSTElasticSearchQuery(MultivaluedMap<String, String> form) {
         List<String> expeditionCodes = new ArrayList<>();
-
-        HashMap<String, String> filterMap = new HashMap<String, String>();
+        HashMap<ElasticSearchFilter, String> filterMap = new HashMap<>();
 
         // remove the projectId if present
         form.remove("projectId");
@@ -234,54 +231,65 @@ public class Query extends FimsService {
             expeditionCodes.addAll(form.remove("expeditions[]"));
         }
 
-        // Create a process object here so we can look at uri/column values
-        Mapping mapping = getMapping();
-
-        List<Attribute> attributes = mapping.getDefaultSheetAttributes();
+        List<ElasticSearchFilter> filters = DipnetQueryUtils.getAvailableFilters(getMapping());
 
         for (Map.Entry entry : form.entrySet()) {
             String key = (String) entry.getKey();
             // Values come over as a linked list
             LinkedList value = (LinkedList) entry.getValue();
 
-            // Treat keys with ":" as a uri
-            if (!key.contains(":")) {
-                key = mapping.lookupUriForColumn(key, attributes);
-            }
+            String v = (String) value.get(0); // only expect 1 value here
 
-            String v = (String) value.get(0);// only expect 1 value here
-            filterMap.put(key, v);
+            filterMap.put(lookupFilter(key, filters), v);
         }
 
         return new ElasticSearchQuery(
                 getQueryBuilder(filterMap, expeditionCodes),
                 new String[]{String.valueOf(projectId)},
-                attributes
-        )
-                .source(getSource(attributes))
-                .types(new String[]{ElasticSearchIndexer.TYPE});
-
+                new String[]{ElasticSearchIndexer.TYPE}
+        );
     }
 
-    private String[] getSource(List<Attribute> attributes) {
-        List<String> source = new ArrayList<>();
-
-        for (Attribute attribute : attributes) {
-            source.add(attribute.getUri());
+    private ElasticSearchFilter lookupFilter(String key, List<ElasticSearchFilter> filters) {
+        // _all is a special filter
+        if (key.equals("_all")) {
+            return DipnetQueryUtils.get_AllFilter();
         }
 
-        return source.toArray(new String[0]);
+        // if field doesn't contain a ":", then we assume this is the filter displayName
+        boolean isDisplayName = !key.contains(":");
+
+        for (ElasticSearchFilter filter: filters) {
+            if (isDisplayName && key.equals(filter.getDisplayName())) {
+                return filter;
+            } else if (key.equals(filter.getField())) {
+                return filter;
+            }
+        }
+
+        throw new FimsRuntimeException(QueryErrorCode.UNKNOWN_FILTER, "is " + key + " a filterable field?", 400, key);
     }
 
-    private QueryBuilder getQueryBuilder(Map<String, String> filters, List<String> expeditionCodes) {
+    private QueryBuilder getQueryBuilder(Map<ElasticSearchFilter, String> filters, List<String> expeditionCodes) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
         for (String expedition : expeditionCodes) {
             boolQueryBuilder.should(QueryBuilders.matchQuery("expedition.expeditionCode", expedition));
         }
 
-        for (Map.Entry<String, String> filter : filters.entrySet()) {
-            boolQueryBuilder.must(QueryBuilders.matchQuery(filter.getKey(), filter.getValue()));
+        for (Map.Entry<ElasticSearchFilter, String> entry: filters.entrySet()) {
+            ElasticSearchFilter filter = entry.getKey();
+
+            if (filter.isNested()) {
+                boolQueryBuilder.must(
+                        QueryBuilders.nestedQuery(
+                                filter.getPath(),
+                                QueryBuilders.matchQuery(filter.getField(), entry.getValue()),
+                                ScoreMode.None)
+                );
+            } else {
+                boolQueryBuilder.must(QueryBuilders.matchQuery(filter.getField(), entry.getValue()));
+            }
         }
 
         return boolQueryBuilder;
