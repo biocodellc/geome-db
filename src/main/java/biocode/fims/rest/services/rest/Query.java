@@ -186,8 +186,7 @@ public class Query extends FimsService {
                 results,
                 DipnetQueryUtils.getJsonFieldTransforms(getMapping()),
                 uploadPath(),
-                ",",
-                "csv"
+                ","
         );
 
         File metadataFile = metadataJsonWriter.write();

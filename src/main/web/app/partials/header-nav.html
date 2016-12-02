@@ -25,7 +25,8 @@
                         <ul class="dropdown-menu">
                             <li><a ui-sref="template" class='enabled'>Generate Template</a></li>
                             <li><a ui-sref="validate" class='enabled'>Validate and Load Data</a></li>
-                            <li><a ui-sref="query" class='enabled'>Query</a></li>
+                            <li ng-show="vm.isAuthenticated"><a ui-sref="query" class='enabled'>Query</a></li>
+                            <li ng-show="!vm.isAuthenticated"><a href="#" class='disabled'>Query</a></lin>
                             <li ng-show="vm.isAuthenticated"><a ui-sref="expeditionManager" class='enabled'>Expedition Manager</a></li>
                             <li ng-show="!vm.isAuthenticated"><a href="#" class='disabled'>Expedition Manager</a></lin>
                             <li ng-show="vm.isAuthenticated && vm.isAdmin"><a ui-sref='projects' class='enabled'>Project Manager</a></li>
