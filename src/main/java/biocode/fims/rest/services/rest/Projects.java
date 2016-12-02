@@ -5,7 +5,7 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.dipnet.query.DipnetQueryUtils;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
-import biocode.fims.elasticSearch.query.ElasticSearchFilter;
+import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
@@ -29,7 +29,6 @@ import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +114,7 @@ public class Projects extends FimsService {
 
         ArrayNode filters = new SpringObjectMapper().createArrayNode();
 
-        for (ElasticSearchFilter f: DipnetQueryUtils.getAvailableFilters(mapping)) {
+        for (ElasticSearchFilterField f: DipnetQueryUtils.getAvailableFilters(mapping)) {
             ObjectNode filter = filters.addObject();
             filter.put("field", f.getField());
             filter.put("displayName", f.getDisplayName());

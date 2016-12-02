@@ -4,16 +4,21 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
 import biocode.fims.dipnet.query.DipnetQueryUtils;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
-import biocode.fims.elasticSearch.query.ElasticSearchFilter;
+import biocode.fims.elasticSearch.query.ElasticSearchFilterCondition;
+import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
 import biocode.fims.elasticSearch.query.ElasticSearchQuery;
 import biocode.fims.elasticSearch.query.ElasticSearchQuerier;
+import biocode.fims.fasta.FastaJsonWriter;
+import biocode.fims.fasta.FastaSequenceJsonFieldFilter;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.QueryErrorCode;
 import biocode.fims.query.*;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.OAuthProviderService;
+import biocode.fims.settings.PathManager;
 import biocode.fims.settings.SettingsManager;
+import biocode.fims.utils.FileUtils;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -163,6 +168,58 @@ public class Query extends FimsService {
         }
     }
 
+    @POST
+    @Path("/fasta/")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces("application/zip")
+    public Response queryFasta(
+            MultivaluedMap<String, String> form) {
+
+        // Build the query, etc..
+        ElasticSearchQuery query = POSTElasticSearchQuery(form);
+
+        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+
+        ArrayNode results = elasticSearchQuerier.getAllResults();
+
+        JsonWriter metadataJsonWriter = new DelimitedTextJsonWriter(
+                results,
+                DipnetQueryUtils.getJsonFieldTransforms(getMapping()),
+                uploadPath(),
+                ",",
+                "csv"
+        );
+
+        File metadataFile = metadataJsonWriter.write();
+
+        List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = getFastaSequenceFilters(form);
+
+        JsonWriter fastaJsonWriter = new FastaJsonWriter(
+                results,
+                DipnetQueryUtils.getFastaSequenceFields(getMapping()),
+                uploadPath(),
+                fastaSequenceFilters);
+
+        File fastaFile = fastaJsonWriter.write();
+
+        Map<String, File> fileMap = new HashMap<>();
+        fileMap.put("dipnet-fims-output.csv", metadataFile);
+        fileMap.put("dipnet-fims-output.fasta", fastaFile);
+
+
+        Response.ResponseBuilder response = Response.ok(FileUtils.zip(fileMap, uploadPath()), "application/zip");
+
+        response.header("Content-Disposition",
+                "attachment; filename=dipnet-fims-output.zip");
+
+        // Return response
+        if (response == null) {
+            return Response.status(204).build();
+        } else {
+            return response.build();
+        }
+    }
+
     /**
      * Return Excel for a graph query using POST
      * * <p/>
@@ -219,7 +276,7 @@ public class Query extends FimsService {
      */
     private ElasticSearchQuery POSTElasticSearchQuery(MultivaluedMap<String, String> form) {
         List<String> expeditionCodes = new ArrayList<>();
-        HashMap<ElasticSearchFilter, String> filterMap = new HashMap<>();
+        List<ElasticSearchFilterCondition> filterConditions = new ArrayList<>();
 
         // remove the projectId if present
         form.remove("projectId");
@@ -231,26 +288,59 @@ public class Query extends FimsService {
             expeditionCodes.addAll(form.remove("expeditions[]"));
         }
 
-        List<ElasticSearchFilter> filters = DipnetQueryUtils.getAvailableFilters(getMapping());
+        List<ElasticSearchFilterField> filterFields = DipnetQueryUtils.getAvailableFilters(getMapping());
 
-        for (Map.Entry entry : form.entrySet()) {
-            String key = (String) entry.getKey();
-            // Values come over as a linked list
-            LinkedList value = (LinkedList) entry.getValue();
+        for (Map.Entry<String, List<String>> entry : form.entrySet()) {
 
-            String v = (String) value.get(0); // only expect 1 value here
+            // only expect 1 value
+            ElasticSearchFilterCondition filterCondition = new ElasticSearchFilterCondition(
+                    lookupFilter(entry.getKey(), filterFields),
+                    entry.getValue().get(0));
 
-            filterMap.put(lookupFilter(key, filters), v);
+            filterConditions.add(filterCondition);
         }
 
         return new ElasticSearchQuery(
-                getQueryBuilder(filterMap, expeditionCodes),
+                getQueryBuilder(filterConditions, expeditionCodes),
                 new String[]{String.valueOf(projectId)},
                 new String[]{ElasticSearchIndexer.TYPE}
         );
     }
 
-    private ElasticSearchFilter lookupFilter(String key, List<ElasticSearchFilter> filters) {
+    private List<FastaSequenceJsonFieldFilter> getFastaSequenceFilters(MultivaluedMap<String, String> form) {
+        List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = new ArrayList<>();
+
+        List<ElasticSearchFilterField> fastaFilterFields = DipnetQueryUtils.getFastaFilters(getMapping());
+
+        for (Map.Entry<String, List<String>> entry: form.entrySet()) {
+
+            try {
+                ElasticSearchFilterField filterField = lookupFilter(entry.getKey(), fastaFilterFields);
+
+                // fastaSequences are nested objects. the filterField getField would look like {nestedPath}.{attribute_uri}
+                // since fastaSequenceFilters only filter fastaSequence objects, we need to remove the nestedPath
+                String fastaSequenceFilterPath = filterField.getField().replace(filterField.getPath() + ".", "");
+
+                fastaSequenceFilters.add(
+                        new FastaSequenceJsonFieldFilter(
+                                fastaSequenceFilterPath,
+                                entry.getValue().get(0))
+                );
+
+            } catch (FimsRuntimeException e) {
+                if (e.getErrorCode().equals(QueryErrorCode.UNKNOWN_FILTER)) {
+                    // ignore
+                } else {
+                    throw e;
+                }
+            }
+
+        }
+
+        return fastaSequenceFilters;
+    }
+
+    private ElasticSearchFilterField lookupFilter(String key, List<ElasticSearchFilterField> filters) {
         // _all is a special filter
         if (key.equals("_all")) {
             return DipnetQueryUtils.get_AllFilter();
@@ -259,7 +349,7 @@ public class Query extends FimsService {
         // if field doesn't contain a ":", then we assume this is the filter displayName
         boolean isDisplayName = !key.contains(":");
 
-        for (ElasticSearchFilter filter: filters) {
+        for (ElasticSearchFilterField filter: filters) {
             if (isDisplayName && key.equals(filter.getDisplayName())) {
                 return filter;
             } else if (key.equals(filter.getField())) {
@@ -270,25 +360,25 @@ public class Query extends FimsService {
         throw new FimsRuntimeException(QueryErrorCode.UNKNOWN_FILTER, "is " + key + " a filterable field?", 400, key);
     }
 
-    private QueryBuilder getQueryBuilder(Map<ElasticSearchFilter, String> filters, List<String> expeditionCodes) {
+    private QueryBuilder getQueryBuilder(List<ElasticSearchFilterCondition> filterConditions, List<String> expeditionCodes) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
         for (String expedition : expeditionCodes) {
             boolQueryBuilder.should(QueryBuilders.matchQuery("expedition.expeditionCode", expedition));
+            boolQueryBuilder.minimumNumberShouldMatch(1);
         }
 
-        for (Map.Entry<ElasticSearchFilter, String> entry: filters.entrySet()) {
-            ElasticSearchFilter filter = entry.getKey();
+        for (ElasticSearchFilterCondition filterCondition: filterConditions) {
 
-            if (filter.isNested()) {
+            if (filterCondition.isNested()) {
                 boolQueryBuilder.must(
                         QueryBuilders.nestedQuery(
-                                filter.getPath(),
-                                QueryBuilders.matchQuery(filter.getField(), entry.getValue()),
+                                filterCondition.getPath(),
+                                QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()),
                                 ScoreMode.None)
                 );
             } else {
-                boolQueryBuilder.must(QueryBuilders.matchQuery(filter.getField(), entry.getValue()));
+                boolQueryBuilder.must(QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()));
             }
         }
 
@@ -302,7 +392,6 @@ public class Query extends FimsService {
 
         File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
 
-        // Parse the Mapping object (this object is used extensively in downstream functions!)
         mapping = new Mapping();
         mapping.addMappingRules(configFile);
 

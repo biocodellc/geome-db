@@ -23,6 +23,7 @@ angular.module('fims.query', [])
             vm.downloadExcel = downloadExcel;
             vm.downloadCsv = downloadCsv;
             vm.downloadKml = downloadKml;
+            vm.downloadFasta = downloadFasta;
 
             function queryJson() {
                 // TODO fix performance issue with 100 results
@@ -63,6 +64,10 @@ angular.module('fims.query', [])
 
             function downloadCsv() {
                 download(REST_ROOT + "projects/query/csv", getQueryPostParams());
+            }
+
+            function downloadFasta() {
+                download(REST_ROOT + "projects/query/fasta", getQueryPostParams());
             }
 
             function getQueryPostParams() {

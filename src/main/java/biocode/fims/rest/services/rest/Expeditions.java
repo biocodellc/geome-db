@@ -13,9 +13,8 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.sra.BioSampleMapper;
-import biocode.fims.sra.SraFileGenerator;
-import biocode.fims.sra.SraMetadataMapper;
+import biocode.fims.sra.*;
+import biocode.fims.utils.FileUtils;
 import org.json.simple.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +27,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * REST interface calls for working with expeditions.
@@ -75,9 +76,14 @@ public class Expeditions extends FimsService {
                 expedition.getFastqMetadata().getLibraryStrategy(),
                 entityBcid.getIdentifier().toString());
 
-        File file = SraFileGenerator.generateFiles(bioSampleMapper, metadataMapper, uploadPath());
+        File bioSampleFile = BioSampleAttributesGenerator.generateFile(bioSampleMapper, uploadPath());
+        File sraMetadataFile = SraMetadataGenerator.generateFile(metadataMapper, uploadPath());
 
-        Response.ResponseBuilder response = Response.ok(file, "application/zip");
+        Map<String, File> fileMap = new HashMap<>();
+        fileMap.put("bioSample-attributes.tsv", bioSampleFile);
+        fileMap.put("sra-attributes.tsv", sraMetadataFile);
+
+        Response.ResponseBuilder response = Response.ok(FileUtils.zip(fileMap, uploadPath()), "application/zip");
         response.header("Content-Disposition",
                     "attachment; filename=sra-files.zip");
 

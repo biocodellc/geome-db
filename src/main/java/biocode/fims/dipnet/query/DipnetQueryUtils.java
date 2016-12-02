@@ -3,7 +3,8 @@ package biocode.fims.dipnet.query;
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
-import biocode.fims.elasticSearch.query.ElasticSearchFilter;
+import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
+import biocode.fims.fasta.FastaSequenceFields;
 import biocode.fims.fileManagers.fasta.FastaFileManager;
 import biocode.fims.query.JsonFieldTransform;
 import com.fasterxml.jackson.core.JsonPointer;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Helper class for obtaining DIPNet specific Query information
  * @author RJ Ewing
  */
 public class DipnetQueryUtils {
@@ -22,20 +24,33 @@ public class DipnetQueryUtils {
      * @param mapping
      * @return
      */
-    public static List<ElasticSearchFilter> getAvailableFilters(Mapping mapping) {
-        List<ElasticSearchFilter> filters = new ArrayList<>();
+    public static List<ElasticSearchFilterField> getAvailableFilters(Mapping mapping) {
+        List<ElasticSearchFilterField> filters = new ArrayList<>();
 
         for (Attribute attribute : mapping.getDefaultSheetAttributes()) {
-            filters.add(new ElasticSearchFilter(attribute.getUri(), attribute.getColumn()));
+            filters.add(new ElasticSearchFilterField(attribute.getUri(), attribute.getColumn(), attribute.getDatatype()));
         }
+
+        filters.addAll(getFastaFilters(mapping));
+        return filters;
+    }
+
+    /**
+     * get the list of filterable fields for fastaSequence
+     * @param mapping
+     * @return
+     */
+    public static List<ElasticSearchFilterField> getFastaFilters(Mapping mapping) {
+        List<ElasticSearchFilterField> filters = new ArrayList<>();
 
         Entity fastaEntity = mapping.findEntity(FastaFileManager.ENTITY_CONCEPT_ALIAS);
 
         for (Attribute attribute : fastaEntity.getAttributes()) {
             filters.add(
-                    new ElasticSearchFilter(
+                    new ElasticSearchFilterField(
                             fastaEntity.getConceptAlias() + "." + attribute.getUri(),
-                            fastaEntity.getConceptAlias() + "." + attribute.getColumn())
+                            fastaEntity.getConceptAlias() + "." + attribute.getColumn(),
+                            attribute.getDatatype())
                             .nested(fastaEntity.isEsNestedObject())
                             .path(fastaEntity.getConceptAlias())
             );
@@ -45,11 +60,12 @@ public class DipnetQueryUtils {
     }
 
     /**
-     * ElasticSearchFilter that will search all fields.
+     * ElasticSearchFilterField that will search all fields.
+     *
      * @return
      */
-    public static ElasticSearchFilter get_AllFilter() {
-        return new ElasticSearchFilter("_all", null);
+    public static ElasticSearchFilterField get_AllFilter() {
+        return new ElasticSearchFilterField("_all", null, null);
     }
 
     /**
@@ -76,25 +92,36 @@ public class DipnetQueryUtils {
     }
 
     /**
-     * get a list of attributes as JsonFieldTransform objects to be used in transforming
-     * the json fastqSequence fields into human readable fields.
+     * get a {@link FastaSequenceFields} object representing the project {@link Mapping}
      *
      * @param mapping
      * @return
      */
-    public static List<JsonFieldTransform> getFastaJsonFieldTransforms(Mapping mapping) {
-        List<JsonFieldTransform> fieldTransforms = new ArrayList<>();
+    public static FastaSequenceFields getFastaSequenceFields(Mapping mapping) {
+        List<JsonFieldTransform> metadataFields = new ArrayList<>();
 
-        for (Attribute a : mapping.findEntity(FastaFileManager.ENTITY_CONCEPT_ALIAS).getAttributes()) {
-            fieldTransforms.add(
-                    new JsonFieldTransform(
-                            a.getColumn(),
-                            JsonPointer.compile("/" + a.getUri()),
-                            a.getDatatype()
-                    )
-            );
+        Entity fastaEntity = mapping.findEntity(FastaFileManager.ENTITY_CONCEPT_ALIAS);
+        String sequencePath = FastaFileManager.SEQUENCE_ATTRIBUTE_URI;
+
+        for (Attribute a : fastaEntity.getAttributes()) {
+
+            if (!a.getUri().equals(FastaFileManager.SEQUENCE_ATTRIBUTE_URI)) {
+
+                metadataFields.add(new JsonFieldTransform(
+                        a.getColumn(),
+                        JsonPointer.compile("/" + a.getUri()),
+                        a.getDatatype()
+                ));
+            }
         }
 
-        return fieldTransforms;
+        Attribute identifierAttribute = mapping.lookupAttribute(mapping.getDefaultSheetUniqueKey(), mapping.getDefaultSheetName());
+
+        return new FastaSequenceFields(
+                fastaEntity.getConceptAlias(),
+                identifierAttribute.getUri(),
+                sequencePath,
+                metadataFields
+        );
     }
 }

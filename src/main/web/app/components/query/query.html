@@ -39,9 +39,9 @@
                 </div>
                 <div class="form-group row" ng-repeat="filter in vm.filters track by $index">
                     <div class="col-sm-offset-2 col-sm-2">
-                        <select ng-model="filter.field"
+                        <select ng-model="filter.filterField"
                                 ng-change="vm.filters[$index].value=null"
-                                ng-options="filter.field as filter.displayName for filter in vm.filterOptions"
+                                ng-options="filter.filterField as filter.displayName for filter in vm.filterOptions"
                                 class="form-control"
                         ></select>
                     </div>
@@ -73,6 +73,7 @@
                         <ul class="dropdown-menu">
                             <li><a href="#" ng-click="vm.downloadCsv()">CSV</a></li>
                             <li><a href="#" ng-click="vm.downloadKml()">KML</a></li>
+                            <li><a href="#" ng-click="vm.downloadFasta()">Fasta</a></li>
                             <li><a href="#" ng-click="vm.downloadExcel()">Excel</a></li>
                         </ul>
                     </div>
