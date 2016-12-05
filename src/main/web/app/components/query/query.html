@@ -1,5 +1,6 @@
 <div class="row">
     <h2 class="page-header">Query</h2>
+    <foo></foo>
     <p>Using this tool you can search the DIPnet database based on any of the FIMS fields by filtering
         the database using the drop down menu. The results of your search can be downloaded as an
         excel spreadsheet (.xsl) or a tab delimited text file (.csv).</p>
@@ -24,11 +25,7 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">Expedition(s)</label>
                     <div class="col-sm-6">
-                        <select multiple
-                                ng-options="expedition.expeditionCode as expedition.expeditionTitle for expedition in vm.expeditions"
-                                ng-model="vm.expeditionCodes"
-                                class="form-control"
-                        ></select>
+                        <typeahead class="typeahead" expeditions="vm.expeditions" selected-expeditions="vm.selectedExpeditions"></typeahead>
                     </div>
                 </div>
 
@@ -39,9 +36,9 @@
                 </div>
                 <div class="form-group row" ng-repeat="filter in vm.filters track by $index">
                     <div class="col-sm-offset-2 col-sm-2">
-                        <select ng-model="filter.filterField"
+                        <select ng-model="filter.field"
                                 ng-change="vm.filters[$index].value=null"
-                                ng-options="filter.filterField as filter.displayName for filter in vm.filterOptions"
+                                ng-options="filter.field as filter.displayName for filter in vm.filterOptions"
                                 class="form-control"
                         ></select>
                     </div>

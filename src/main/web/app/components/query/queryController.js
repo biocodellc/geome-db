@@ -1,4 +1,4 @@
-angular.module('fims.query', [])
+angular.module('fims.query')
 
     .controller('QueryCtrl', ['$http', '$element', 'ExpeditionFactory', 'PROJECT_ID', 'REST_ROOT',
         function ($http, $element, ExpeditionFactory, PROJECT_ID, REST_ROOT) {
@@ -13,7 +13,7 @@ angular.module('fims.query', [])
             vm.filters = [];
             vm._all = null;
             vm.expeditions = [];
-            vm.expeditionCodes = [];
+            vm.selectedExpeditions = [];
             vm.queryResults = null;
             vm.queryInfo = null;
             vm.currentPage = 1;
@@ -72,7 +72,7 @@ angular.module('fims.query', [])
 
             function getQueryPostParams() {
                 var params = {
-                    expeditions: vm.expeditionCodes,
+                    expeditions: vm.selectedExpeditions
                 };
 
                 angular.forEach(vm.filters, function(filter) {
@@ -91,7 +91,10 @@ angular.module('fims.query', [])
             function getExpeditions() {
                 ExpeditionFactory.getExpeditions()
                     .then(function (response) {
-                        angular.extend(vm.expeditions, response.data);
+                        vm.expeditions = [];
+                        angular.forEach(response.data, function(expedition) {
+                            vm.expeditions.push(expedition.expeditionCode);
+                        });
                     }, function () {
                         vm.error = "Failed to load Expeditions.";
                     });
