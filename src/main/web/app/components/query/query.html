@@ -15,9 +15,8 @@
             <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-6">
                     <input type="text" placeholder="Full text search..." ng-model="vm._all" class="form-control"/>
-                    <a class="help-block text-right" href="#" ng-click="vm.moreSearchOptions = !vm.moreSearchOptions">More
-                        search
-                        options</a>
+                    <a class="help-block text-right" href="#" ng-click="vm.moreSearchOptions = !vm.moreSearchOptions">
+                        More search options</a>
                 </div>
             </div>
 
@@ -25,7 +24,8 @@
                 <div class="form-group">
                     <label class="col-sm-2 control-label">Expedition(s)</label>
                     <div class="col-sm-6">
-                        <typeahead class="typeahead" expeditions="vm.expeditions" selected-expeditions="vm.selectedExpeditions"></typeahead>
+                        <typeahead class="typeahead" expeditions="vm.expeditions"
+                                   selected-expeditions="vm.selectedExpeditions"></typeahead>
                     </div>
                 </div>
 
@@ -38,7 +38,7 @@
                     <div class="col-sm-offset-2 col-sm-2">
                         <select ng-model="filter.field"
                                 ng-change="vm.filters[$index].value=null"
-                                ng-options="filter.field as filter.displayName for filter in vm.filterOptions"
+                                ng-options="filter.field as filter.displayName for filter in ::vm.filterOptions"
                                 class="form-control"
                         ></select>
                     </div>
@@ -58,22 +58,22 @@
 
             <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-6">
-                    <button ng-click="vm.queryJson()" class="btn pull-right btn-default"><span
+                    <button ng-click="vm.search()" class="btn pull-right btn-default"><span
                             class="glyphicon glyphicon-search"></span> Search
                     </button>
                 </div>
 
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-primary dropdown-toggle"
-                                data-toggle="dropdown">Download <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a href="#" ng-click="vm.downloadCsv()">CSV</a></li>
-                            <li><a href="#" ng-click="vm.downloadKml()">KML</a></li>
-                            <li><a href="#" ng-click="vm.downloadFasta()">Fasta</a></li>
-                            <li><a href="#" ng-click="vm.downloadExcel()">Excel</a></li>
-                        </ul>
-                    </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary dropdown-toggle"
+                            data-toggle="dropdown">Download <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" ng-click="vm.downloadCsv()">CSV</a></li>
+                        <li><a href="#" ng-click="vm.downloadKml()">KML</a></li>
+                        <li><a href="#" ng-click="vm.downloadFasta()">Fasta</a></li>
+                        <li><a href="#" ng-click="vm.downloadExcel()">Excel</a></li>
+                    </ul>
+                </div>
             </div>
         </form>
 
@@ -89,7 +89,7 @@
             <th ng-repeat="(key, value) in vm.queryResults.content[0]">{{ key }}</th>
             </thead>
             <tbody>
-            <tr ng-repeat="resource in vm.queryResults.content">
+            <tr ng-repeat="resource in vm.queryResults.content track by resource.materialSampleID">
                 <td ng-repeat="(key, value) in resource">{{ value }}</td>
             </tr>
             </tbody>

@@ -265,7 +265,7 @@ th {
     border-top: 0;
 }
 
-.dropdown-menu>.list-group-item {
+.dropdown-menu>ul>.list-group-item {
     border-top: 1px solid #ddd;
     border-left: none;
     border-right: none;

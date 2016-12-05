@@ -24,6 +24,12 @@ angular.module('fims.query')
             vm.downloadCsv = downloadCsv;
             vm.downloadKml = downloadKml;
             vm.downloadFasta = downloadFasta;
+            vm.search = search;
+
+            function search() {
+                vm.currentPage = 1;
+                vm.queryJson();
+            }
 
             function queryJson() {
                 // TODO fix performance issue with 100 results

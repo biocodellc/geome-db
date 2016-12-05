@@ -14,7 +14,7 @@
 <div class="dropdown" ng-class="{open:isVisible}">
     <button type="button" ng-click="isVisible = !isVisible" class="btn btn-primary dropdown-toggle">
         Add Expedition <span class="caret"></span></button>
-    <div ng-show="isVisible" class="dropdown-menu list-group">
+    <div ng-if="isVisible" class="dropdown-menu list-group">
         <div class="input-group">
             <div class="input-group-addon"><span class="glyphicon glyphicon-search"></span></div>
             <input type="text" placeholder="Search ..." ng-model="filterTerm" ng-change="filterExpeditions()" class="form-control"/>
