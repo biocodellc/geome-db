@@ -150,9 +150,9 @@ public class Query extends FimsService {
         ArrayNode results = elasticSearchQuerier.getAllResults();
 
         JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, uploadPath(), DipnetQueryUtils.getJsonFieldTransforms(getMapping()))
-                .latPath(JsonPointer.compile("urn:decimalLatitude"))
-                .longPath(JsonPointer.compile("urn:decimalLongitude"))
-                .namePath(JsonPointer.compile("urn:materialSampleID"))
+                .latPath(DipnetQueryUtils.getLatitudePointer())
+                .longPath(DipnetQueryUtils.getLongitudePointer())
+                .namePath(DipnetQueryUtils.getUniqueKeyPointer())
                 .build();
 
         Response.ResponseBuilder response = Response.ok(jsonWriter.write());

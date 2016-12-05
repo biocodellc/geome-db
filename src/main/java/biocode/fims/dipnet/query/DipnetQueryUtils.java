@@ -124,4 +124,16 @@ public class DipnetQueryUtils {
                 metadataFields
         );
     }
+
+    public static JsonPointer getLongitudePointer() {
+        return JsonPointer.compile("/urn:decimalLongitude");
+    }
+
+    public static JsonPointer getLatitudePointer() {
+        return JsonPointer.compile("/urn:decimalLatitude");
+    }
+
+    public static JsonPointer getUniqueKeyPointer() {
+        return JsonPointer.compile("/urn:materialSampleID");
+    }
 }
