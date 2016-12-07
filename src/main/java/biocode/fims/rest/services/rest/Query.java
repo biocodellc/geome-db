@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
 import biocode.fims.dipnet.query.DipnetQueryUtils;
@@ -10,16 +11,14 @@ import biocode.fims.elasticSearch.query.ElasticSearchQuery;
 import biocode.fims.elasticSearch.query.ElasticSearchQuerier;
 import biocode.fims.fasta.FastaJsonWriter;
 import biocode.fims.fasta.FastaSequenceJsonFieldFilter;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.QueryErrorCode;
+import biocode.fims.fimsExceptions.*;
+import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
 import biocode.fims.query.*;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.OAuthProviderService;
-import biocode.fims.settings.PathManager;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
-import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.lucene.search.join.ScoreMode;
@@ -55,11 +54,13 @@ public class Query extends FimsService {
     private Mapping mapping;
 
     private final Client esClient;
+    private final QueryAuthorizer queryAuthorizer;
 
     @Autowired
-    Query(OAuthProviderService providerService, SettingsManager settingsManager, Client esClient) {
+    Query(OAuthProviderService providerService, SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer) {
         super(providerService, settingsManager);
         this.esClient = esClient;
+        this.queryAuthorizer = queryAuthorizer;
     }
 
     /**
@@ -285,6 +286,10 @@ public class Query extends FimsService {
         }
         if (form.containsKey("expeditions[]")) {
             expeditionCodes.addAll(form.remove("expeditions[]"));
+        }
+
+        if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), expeditionCodes, user)) {
+            throw new ForbiddenRequestException("unauthorized query.");
         }
 
         List<ElasticSearchFilterField> filterFields = DipnetQueryUtils.getAvailableFilters(getMapping());

@@ -1,7 +1,9 @@
 <ul class="form-group list-inline list-unstyled">
     <li class="" ng-repeat="expedition in selectedExpeditions">
+        <!--<div class="btn-group list-item">-->
         <div class="input-group list-item">
             <input type="text" readonly class="form-control" value="{{expedition}}"/>
+            <!--<button type="button" class="btn btn-default">{{expedition}}</button>-->
             <div class="input-group-btn">
                 <button type="button" class="btn btn-default" ng-click="removeExpedition(expedition)">
                     <span class="glyphicon glyphicon-remove"></span>
@@ -17,7 +19,8 @@
     <div ng-if="isVisible" class="dropdown-menu list-group">
         <div class="input-group">
             <div class="input-group-addon"><span class="glyphicon glyphicon-search"></span></div>
-            <input type="text" placeholder="Search ..." ng-model="filterTerm" ng-change="filterExpeditions()" class="form-control"/>
+            <input type="text" placeholder="Search ..." ng-model="filterTerm" ng-change="filterExpeditions()"
+                   class="form-control"/>
         </div>
         <ul class="list-unstyled">
             <li ng-repeat="expedition in filteredExpeditions track by expedition"

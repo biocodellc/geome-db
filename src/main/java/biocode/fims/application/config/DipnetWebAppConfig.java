@@ -1,5 +1,6 @@
 package biocode.fims.application.config;
 
+import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.dipnet.services.DipnetExpeditionService;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.fasta.ESFastaPersistenceManager;
@@ -20,6 +21,7 @@ import java.util.List;
  */
 @Configuration
 @Import({DipnetAppConfig.class, FimsWebAppConfig.class})
+@EnableAspectJAutoProxy
 public class DipnetWebAppConfig {
 
     @Autowired DipnetAppConfig dipnetAppConfig;
@@ -59,6 +61,11 @@ public class DipnetWebAppConfig {
     public Validate validate() throws Exception {
         return new Validate(fimsAppConfig.expeditionService, dipnetExpeditionService, fileManagers(),
                 dipnetAppConfig.fimsMetadataFileManager(), providerService, fimsAppConfig.settingsManager, esIndexer());
+    }
+
+    @Bean
+    public QueryAuthorizer queryAuthorizer() {
+        return new QueryAuthorizer(dipnetAppConfig.projectService, fimsAppConfig.settingsManager);
     }
 
 }

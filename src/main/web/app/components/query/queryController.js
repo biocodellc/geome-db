@@ -33,7 +33,7 @@ angular.module('fims.query')
 
             function queryJson() {
                 // TODO fix performance issue with 100 results
-                $http.post(REST_ROOT + "projects/query/json/?limit=20&page=" + (vm.currentPage - 1), getQueryPostParams())
+                $http.post(REST_ROOT + "projects/query/json/?limit=50&page=" + (vm.currentPage - 1), getQueryPostParams())
                     .then(
                         function (response) {
                             // vm.queryInfo = response.data;

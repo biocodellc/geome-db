@@ -89,7 +89,7 @@
             <th ng-repeat="(key, value) in vm.queryResults.content[0]">{{ key }}</th>
             </thead>
             <tbody>
-            <tr ng-repeat="resource in vm.queryResults.content track by resource.materialSampleID">
+            <tr ng-repeat="resource in vm.queryResults.content track by $index">
                 <td ng-repeat="(key, value) in resource">{{ value }}</td>
             </tr>
             </tbody>

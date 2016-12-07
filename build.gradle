@@ -136,9 +136,6 @@ javascript.source {
         js {
             srcDir "src/main/web/js"
             include "*.js"
-            exclude "all.js"
-            exclude "all.min.js"
-            exclude "allExternalLibs.min.js"
         }
     }
     modules {
