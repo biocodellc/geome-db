@@ -15,6 +15,7 @@ import java.util.List;
 
 /**
  * Helper class for obtaining DIPNet specific Query information
+ *
  * @author RJ Ewing
  */
 public class DipnetQueryUtils {
@@ -38,6 +39,7 @@ public class DipnetQueryUtils {
 
     /**
      * get the list of filterable fields for fastaSequence
+     *
      * @param mapping
      * @return
      */
@@ -111,9 +113,13 @@ public class DipnetQueryUtils {
 
         Entity fastaEntity = mapping.findEntity(FastaFileManager.ENTITY_CONCEPT_ALIAS);
         String sequencePath = FastaFileManager.SEQUENCE_ATTRIBUTE_URI;
+        String uniqueKeyPath = null;
 
         for (Attribute a : fastaEntity.getAttributes()) {
 
+            if (fastaEntity.getUniqueKey().equals(a.getColumn())) {
+                uniqueKeyPath = a.getUri();
+            }
             if (!a.getUri().equals(FastaFileManager.SEQUENCE_ATTRIBUTE_URI)) {
 
                 metadataFields.add(new JsonFieldTransform(
@@ -126,12 +132,16 @@ public class DipnetQueryUtils {
 
         Attribute identifierAttribute = mapping.lookupAttribute(mapping.getDefaultSheetUniqueKey(), mapping.getDefaultSheetName());
 
-        return new FastaSequenceFields(
+        FastaSequenceFields fastaSequenceFields = new FastaSequenceFields(
                 fastaEntity.getConceptAlias(),
                 identifierAttribute.getUri(),
                 sequencePath,
                 metadataFields
         );
+
+        fastaSequenceFields.setUniqueKeyPath(uniqueKeyPath);
+
+        return fastaSequenceFields;
     }
 
     public static JsonPointer getLongitudePointer() {

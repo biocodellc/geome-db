@@ -42,6 +42,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.util.*;
+import java.util.zip.ZipFile;
 
 /**
  * Query interface for Biocode-fims expedition
@@ -205,8 +206,12 @@ public class Query extends FimsService {
 
         Map<String, File> fileMap = new HashMap<>();
         fileMap.put("dipnet-fims-output.csv", metadataFile);
-        fileMap.put("dipnet-fims-output.fasta", fastaFile);
 
+        if (fastaFile.getName().endsWith(".zip")) {
+            fileMap.put("dipnet-fims-output-fasta.zip", fastaFile);
+        } else {
+            fileMap.put("dipnet-fims-output.fasta", fastaFile);
+        }
 
         Response.ResponseBuilder response = Response.ok(FileUtils.zip(fileMap, uploadPath()), "application/zip");
 

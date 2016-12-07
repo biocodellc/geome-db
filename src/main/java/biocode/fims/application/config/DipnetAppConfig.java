@@ -3,7 +3,6 @@ package biocode.fims.application.config;
 import biocode.fims.elasticSearch.ESFimsMetadataPersistenceManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataPersistenceManager;
-import biocode.fims.genbank.GenbankManager;
 import biocode.fims.elasticSearch.TransportClientFactoryBean;
 import biocode.fims.service.ProjectService;
 import org.elasticsearch.client.Client;
@@ -32,11 +31,6 @@ public class DipnetAppConfig {
     ProjectService projectService;
     @Autowired
     Client esClient;
-
-    @Bean
-    public GenbankManager genbankManager() {
-        return new GenbankManager(fimsAppConfig.settingsManager, fimsAppConfig.bcidService);
-    }
 
     @Bean
     @Scope("prototype")
