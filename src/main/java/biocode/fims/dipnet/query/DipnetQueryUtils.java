@@ -1,6 +1,7 @@
 package biocode.fims.dipnet.query;
 
 import biocode.fims.digester.Attribute;
+import biocode.fims.digester.DataType;
 import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
@@ -87,6 +88,14 @@ public class DipnetQueryUtils {
                     )
             );
         }
+
+        fieldTransforms.add(
+                new JsonFieldTransform(
+                        "bcid",
+                        JsonPointer.compile("/bcid"),
+                        DataType.STRING
+                )
+        );
 
         return fieldTransforms;
     }
