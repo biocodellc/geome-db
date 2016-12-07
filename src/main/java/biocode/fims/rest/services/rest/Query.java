@@ -12,6 +12,7 @@ import biocode.fims.elasticSearch.query.ElasticSearchQuerier;
 import biocode.fims.fasta.FastaJsonWriter;
 import biocode.fims.fasta.FastaSequenceJsonFieldFilter;
 import biocode.fims.fimsExceptions.*;
+import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
 import biocode.fims.query.*;
 import biocode.fims.rest.FimsService;
@@ -235,6 +236,9 @@ public class Query extends FimsService {
     public Response queryExcel(
             MultivaluedMap<String, String> form) {
 
+        if (form.containsKey("expeditions") && form.get("expeditions").size() != 1) {
+            throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
+        }
         // Build the query, etc..
         ElasticSearchQuery query = POSTElasticSearchQuery(form);
 
