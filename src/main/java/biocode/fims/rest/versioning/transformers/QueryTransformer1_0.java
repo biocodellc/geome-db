@@ -1,28 +1,44 @@
 package biocode.fims.rest.versioning.transformers;
 
+import biocode.fims.entities.Bcid;
+import biocode.fims.entities.Expedition;
 import biocode.fims.rest.versioning.Transformer;
+import biocode.fims.service.BcidService;
+import biocode.fims.service.ExpeditionService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.LinkedHashMap;
+import java.util.*;
 
 /**
  * class to transform requests to {@link biocode.fims.rest.services.rest.Query} resource methods from
  * {@link biocode.fims.rest.versioning.APIVersion}v1_0 to APIVersion v1_1, and responses from v1_1 to v1_0.
  */
+@Component
 public class QueryTransformer1_0 implements Transformer {
     private final static Logger logger = LoggerFactory.getLogger(QueryTransformer1_0.class);
 
-    @Override
-    public void updateRequestData(LinkedHashMap<String, Object> argMap, String methodName) {
+    @Autowired
+    private BcidService bcidService;
 
+    @Override
+    public void updateRequestData(LinkedHashMap<String, Object> argMap, String methodName, MultivaluedMap<String, String> queryParameters) {
+        try {
+            Method transformMethod = this.getClass().getMethod(methodName + "Request", LinkedHashMap.class, MultivaluedMap.class);
+            transformMethod.invoke(this, argMap, queryParameters);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            logger.debug("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response");
+        }
     }
 
     @Override
@@ -89,5 +105,88 @@ public class QueryTransformer1_0 implements Transformer {
 
 
         return Response.fromResponse(response).entity(v1_0Response).build();
+    }
+
+    public void queryJsonRequest(LinkedHashMap<String, Object> argMap,
+                                 MultivaluedMap<String, String> queryParameters) {
+        transformGETRequest(argMap, queryParameters);
+    }
+
+    public void queryJsonAsPostRequest(LinkedHashMap<String, Object> argMap,
+                                       MultivaluedMap<String, String> queryParameters) {
+        transformPOSTRequest(argMap, queryParameters);
+    }
+
+    public void queryKmlRequest(LinkedHashMap<String, Object> argMap,
+                                MultivaluedMap<String, String> queryParameters) {
+        transformGETRequest(argMap, queryParameters);
+    }
+
+    public void queryKmlAsPostRequest(LinkedHashMap<String, Object> argMap,
+                                       MultivaluedMap<String, String> queryParameters) {
+        transformPOSTRequest(argMap, queryParameters);
+    }
+
+    public void queryExcelRequest(LinkedHashMap<String, Object> argMap,
+                                  MultivaluedMap<String, String> queryParameters) {
+        transformGETRequest(argMap, queryParameters);
+    }
+
+    public void queryExcelAsPostRequest(LinkedHashMap<String, Object> argMap,
+                                      MultivaluedMap<String, String> queryParameters) {
+        transformPOSTRequest(argMap, queryParameters);
+    }
+
+    public void queryCspaceRequest(LinkedHashMap<String, Object> argMap,
+                                   MultivaluedMap<String, String> queryParameters) {
+        transformGETRequest(argMap, queryParameters);
+    }
+
+    public void queryTabRequest(LinkedHashMap<String, Object> argMap,
+                                MultivaluedMap<String, String> queryParameters) {
+        transformGETRequest(argMap, queryParameters);
+    }
+
+    public void queryTabAsPostRequest(LinkedHashMap<String, Object> argMap,
+                                        MultivaluedMap<String, String> queryParameters) {
+        transformPOSTRequest(argMap, queryParameters);
+    }
+
+    private void transformGETRequest(LinkedHashMap<String, Object> argMap,
+                                     MultivaluedMap<String, String> queryParameters) {
+        if (queryParameters.containsKey("project_id")) {
+            argMap.put("projectId", queryParameters.get("project_id").get(0));
+        }
+
+        transformGraphs(argMap, queryParameters.get("graphs"));
+    }
+
+    private void transformPOSTRequest(LinkedHashMap<String, Object> argMap,
+                                      MultivaluedMap<String, String> queryParameters) {
+        MultivaluedMap<String, String> form = (MultivaluedMap<String, String>) argMap.get("form");
+
+        argMap.put("projectId", form.remove("project_id"));
+
+        transformGraphs(argMap, form.get("graphs"));
+    }
+
+    private void transformGraphs(LinkedHashMap<String, Object> argMap, List<String> graphsParam) {
+        if (graphsParam != null && graphsParam.size() > 0) {
+            List<String> graphs = new ArrayList<>();
+
+            Collections.addAll(graphs, graphsParam.get(0).split(","));
+
+            graphs.remove("all");
+
+            List<String> expeditions = (List<String>) argMap.get("expedition");
+
+            if (graphs.size() > 0) {
+                for (Bcid bcid : bcidService.getBcids(graphs)) {
+                    if (bcid.getExpedition() != null) {
+                        expeditions.add(bcid.getExpedition().getExpeditionCode());
+                    }
+                }
+            }
+        }
     }
 }

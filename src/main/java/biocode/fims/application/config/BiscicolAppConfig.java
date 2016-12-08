@@ -1,5 +1,6 @@
 package biocode.fims.application.config;
 
+import biocode.fims.elasticSearch.TransportClientFactoryBean;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataPersistenceManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fuseki.fileManagers.fimsMetadata.FusekiFimsMetadataPersistenceManager;
@@ -7,6 +8,7 @@ import biocode.fims.run.EzidUpdator;
 import biocode.fims.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
+import org.springframework.core.env.Environment;
 
 import java.io.FileNotFoundException;
 
@@ -19,6 +21,8 @@ import java.io.FileNotFoundException;
 @PropertySource(value = "classpath:biocode-fims.props", ignoreResourceNotFound = true)
 @PropertySource("classpath:biscicol-fims.props")
 public class BiscicolAppConfig {
+    @Autowired
+    private Environment env;
     @Autowired
     FimsAppConfig fimsAppConfig;
     @Autowired
@@ -34,5 +38,18 @@ public class BiscicolAppConfig {
     @Bean
     public EzidUpdator ezidUpdator() throws FileNotFoundException {
         return new EzidUpdator(fimsAppConfig.bcidService, fimsAppConfig.settingsManager, fimsAppConfig.ezidUtils());
+    }
+
+    @Bean
+    // This bean handles the creation/destruction of the esClient bean that is autowired
+    public TransportClientFactoryBean transportClientFactoryBean() {
+        TransportClientFactoryBean factoryBean = new TransportClientFactoryBean();
+        factoryBean.setClusterName(env.getProperty("clusterName"));
+        factoryBean.setClientIgnoreClusterName(Boolean.valueOf(env.getProperty("clientIgnoreClusterName")));
+        factoryBean.setClientNodesSamplerInterval(env.getProperty("clientNodesSamplerInterval"));
+        factoryBean.setClientPingTimeout(env.getProperty("clientPingTimeout"));
+        factoryBean.setClientTransportSniff(Boolean.valueOf(env.getProperty("clientTransportSniff")));
+        factoryBean.setClusterNodes(env.getProperty("clusterNodes"));
+        return factoryBean;
     }
 }

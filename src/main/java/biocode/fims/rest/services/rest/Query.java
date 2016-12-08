@@ -5,6 +5,7 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
+import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fuseki.query.FimsFilterCondition;
 import biocode.fims.fuseki.query.FimsQueryBuilder;
@@ -19,10 +20,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -73,6 +73,32 @@ public class Query extends FimsService {
         }
     }
 
+//    /**
+//     * Return JSON for a graph query.
+//     *
+//     * @param graphs indicate a comma-separated list of graphs, or all
+//     * @return
+//     */
+//    @GET
+//    @Path("/json/")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response queryJson(
+//            @QueryParam("graphs") String graphs,
+//            @QueryParam("project_id") Integer project_id,
+//            @QueryParam("filter") String filter) {
+//
+//        FimsQueryBuilder q = GETQueryResult(graphs, project_id, filter);
+//
+//        String response = q.getJSON().toJSONString();
+//
+//        // Return response
+//        if (response == null) {
+//            return Response.status(204).build();
+//        } else {
+//            return Response.ok(response).build();
+//        }
+//    }
+
     /**
      * Return JSON for a graph query.
      *
@@ -83,20 +109,21 @@ public class Query extends FimsService {
     @Path("/json/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryJson(
-            @QueryParam("graphs") String graphs,
-            @QueryParam("project_id") Integer project_id,
+            @QueryParam("expeditions") List<String> expeditions,
+            @QueryParam("projectId") Integer projectId,
             @QueryParam("filter") String filter) {
 
-        FimsQueryBuilder q = GETQueryResult(graphs, project_id, filter);
+//        FimsQueryBuilder q = GETQueryResult(graphs, project_id, filter);
 
-        String response = q.getJSON().toJSONString();
+//        String response = q.getJSON().toJSONString();
 
         // Return response
-        if (response == null) {
-            return Response.status(204).build();
-        } else {
-            return Response.ok(response).build();
-        }
+//        if (response == null) {
+//            return Response.status(204).build();
+//        } else {
+//            return Response.ok(response).build();
+//        }
+        return Response.ok().build();
     }
 
     /**
@@ -143,7 +170,7 @@ public class Query extends FimsService {
     @Path("/kml/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.google-earth.kml+xml")
-    public Response queryKml(
+    public Response queryKmlAsPost(
             MultivaluedMap<String, String> form) {
 
         // Build the query, etc..
@@ -214,7 +241,7 @@ public class Query extends FimsService {
     @POST
     @Path("/tab/")
     @Consumes("application/x-www-form-urlencoded")
-    public Response queryTab(
+    public Response queryTabAsPost(
             MultivaluedMap<String, String> form) {
 
         // Build the query, etc..
@@ -306,7 +333,7 @@ public class Query extends FimsService {
     @Path("/excel/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.ms-excel")
-    public Response queryExcel(
+    public Response queryExcelAsPost(
             MultivaluedMap<String, String> form) {
 
         // Build the query, etc..
@@ -506,25 +533,25 @@ public class Query extends FimsService {
      * @return
      */
     private FimsFilterCondition parsePOSTFilter(String key, String value) {
-        URI uri = null;
+        String uri = null;
 
         if (key == null || key.equals("") || value == null || value.equals(""))
             return null;
 
         // this is a predicate/URI query
         if (key.contains(":")) {
-            try {
-                uri = new URI(key);
-            } catch (URISyntaxException e) {
-                throw new FimsRuntimeException(500, e);
-            }
+                uri = key;
         } else {
             Mapping mapping = new Mapping();
             mapping.addMappingRules(configFile);
             ArrayList<Attribute> attributeArrayList = mapping.getAllAttributes(mapping.getDefaultSheetName());
-            uri = mapping.lookupColumn(key, attributeArrayList);
+            uri = mapping.lookupUriForColumn(key, attributeArrayList);
         }
-        return new FimsFilterCondition(uri, value, FimsFilterCondition.AND);
+        try {
+            return new FimsFilterCondition(new URI(uri), value, FimsFilterCondition.AND);
+        } catch (URISyntaxException e) {
+            throw new FimsRuntimeException(500, e);
+        }
 
     }
 
@@ -540,7 +567,7 @@ public class Query extends FimsService {
         mapping.addMappingRules(configFile);
 
         String delimiter = ":";
-        URI uri = null;
+        String uri = null;
         URLDecoder decoder = new URLDecoder();
 
         if (filter == null)
@@ -568,15 +595,15 @@ public class Query extends FimsService {
 
                 // If the key contains a semicolon, then assume it is a URI
                 if (key.contains(":")) {
-                    uri = new URI(key);
+                    uri = key;
                 }
                 // If there is no semicolon here then assume the user passed in a column name
                 else {
                     ArrayList<Attribute> attributeArrayList = mapping.getAllAttributes(mapping.getDefaultSheetName());
-                    uri = mapping.lookupColumn(key, attributeArrayList);
+                    uri = mapping.lookupUriForColumn(key, attributeArrayList);
                 }
             }
-            return new FimsFilterCondition(uri, value, FimsFilterCondition.AND);
+            return new FimsFilterCondition(new URI(uri), value, FimsFilterCondition.AND);
         } catch (UnsupportedEncodingException e) {
             throw new FimsRuntimeException(500, e);
         } catch (URISyntaxException e) {

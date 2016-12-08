@@ -7,7 +7,7 @@ import biocode.fims.digester.Validation;
 import biocode.fims.entities.User;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.UploadCode;
+import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.fuseki.query.FimsQueryBuilder;
 import biocode.fims.fuseki.triplify.Triplifier;
 import biocode.fims.service.ExpeditionService;
