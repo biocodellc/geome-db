@@ -4,6 +4,7 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
+import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
@@ -87,7 +88,7 @@ public class Validate extends FimsService {
                 Map<String, Object> props = new HashMap<>();
                 props.put("filename", tempFilename);
 
-                fmProps.put("fimsMetadata", props);
+                fmProps.put(FimsMetadataFileManager.NAME, props);
             }
 
             File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
