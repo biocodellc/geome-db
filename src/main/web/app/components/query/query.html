@@ -6,7 +6,7 @@
         excel spreadsheet (.xsl) or a tab delimited text file (.csv).</p>
 
     <div ng-show="vm.error" class="alert alert-error">
-        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        <a href="#" class="close" ng-click="vm.error = null" aria-label="close">&times;</a>
         {{ vm.error }}
     </div>
     <div class="col-sm-12">
