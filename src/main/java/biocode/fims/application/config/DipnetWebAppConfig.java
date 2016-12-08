@@ -21,7 +21,6 @@ import java.util.List;
  */
 @Configuration
 @Import({DipnetAppConfig.class, FimsWebAppConfig.class})
-@EnableAspectJAutoProxy
 public class DipnetWebAppConfig {
 
     @Autowired DipnetAppConfig dipnetAppConfig;

@@ -42,7 +42,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.util.*;
-import java.util.zip.ZipFile;
 
 /**
  * Query interface for Biocode-fims expedition
@@ -66,6 +65,50 @@ public class Query extends FimsService {
     }
 
     /**
+     * accepts an elastic json query request. note that aggregations are not supported, and the json query object needs
+     * to exclude the initial {"query": } that you would send via the elasticsearch rest api
+     * @param page
+     * @param limit
+     * @param esQueryString
+     * @return
+     */
+    @POST
+    @Path("/es")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response queryElasticSearch(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("limit") @DefaultValue("100") int limit,
+            ObjectNode esQueryString) {
+
+        if (!queryAuthorizer.authorizedQuery(Arrays.asList(projectId), esQueryString, user)) {
+            throw new ForbiddenRequestException("unauthorized query");
+        }
+
+        ElasticSearchQuery query = new ElasticSearchQuery(
+                QueryBuilders.wrapperQuery(esQueryString.toString()),
+                new String[]{String.valueOf(projectId)},
+                new String[]{ElasticSearchIndexer.TYPE}
+        );
+
+        return getJsonResults(page, limit, query);
+    }
+
+    private Response getJsonResults(int page, int limit, ElasticSearchQuery query) {
+        Pageable pageable = new PageRequest(page, limit);
+
+        query.pageable(pageable);
+
+        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+
+        Page<ObjectNode> results = elasticSearchQuerier.getPageableResults();
+
+        List<JsonFieldTransform> writerColumns = DipnetQueryUtils.getJsonFieldTransforms(getMapping());
+        Page<ObjectNode> transformedResults = results.map(r -> JsonTransformer.transform(r, writerColumns));
+
+        return Response.ok(transformedResults).build();
+    }
+
+    /**
      * Return JSON for a graph query as POST
      * <p/>
      * filter parameters are of the form:
@@ -82,20 +125,10 @@ public class Query extends FimsService {
             @QueryParam("limit") @DefaultValue("100") int limit,
             MultivaluedMap<String, String> form) {
 
-        Pageable pageable = new PageRequest(page, limit);
-
         // Build the query, etc..
         ElasticSearchQuery query = POSTElasticSearchQuery(form);
-        query.pageable(pageable);
 
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
-
-        Page<ObjectNode> results = elasticSearchQuerier.getPageableResults();
-
-        List<JsonFieldTransform> writerColumns = DipnetQueryUtils.getJsonFieldTransforms(getMapping());
-        Page<ObjectNode> transformedResults = results.map(r -> JsonTransformer.transform(r, writerColumns));
-
-        return Response.ok(transformedResults).build();
+        return getJsonResults(page, limit, query);
     }
 
     /**
@@ -260,7 +293,7 @@ public class Query extends FimsService {
         try {
             justData = new XSSFWorkbook(new FileInputStream(file));
         } catch (IOException e) {
-                logger.error("failed to open excel file", e);
+            logger.error("failed to open excel file", e);
         }
 
         TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), justData);
@@ -325,7 +358,7 @@ public class Query extends FimsService {
 
         List<ElasticSearchFilterField> fastaFilterFields = DipnetQueryUtils.getFastaFilters(getMapping());
 
-        for (Map.Entry<String, List<String>> entry: form.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : form.entrySet()) {
 
             try {
                 ElasticSearchFilterField filterField = lookupFilter(entry.getKey(), fastaFilterFields);
@@ -362,7 +395,7 @@ public class Query extends FimsService {
         // if field doesn't contain a ":", then we assume this is the filter displayName
         boolean isDisplayName = !key.contains(":");
 
-        for (ElasticSearchFilterField filter: filters) {
+        for (ElasticSearchFilterField filter : filters) {
             if (isDisplayName && key.equals(filter.getDisplayName())) {
                 return filter;
             } else if (key.equals(filter.getField())) {
@@ -381,7 +414,7 @@ public class Query extends FimsService {
             boolQueryBuilder.minimumNumberShouldMatch(1);
         }
 
-        for (ElasticSearchFilterCondition filterCondition: filterConditions) {
+        for (ElasticSearchFilterCondition filterCondition : filterConditions) {
 
             if (filterCondition.isNested()) {
                 boolQueryBuilder.must(
