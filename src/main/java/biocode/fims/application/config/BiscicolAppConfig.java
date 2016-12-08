@@ -15,6 +15,9 @@ import java.io.FileNotFoundException;
  */
 @Configuration
 @Import({FimsAppConfig.class})
+// declaring this here allows us to override any properties that are also included in biscicol-fims.props
+@PropertySource(value = "classpath:biocode-fims.props", ignoreResourceNotFound = true)
+@PropertySource("classpath:biscicol-fims.props")
 public class BiscicolAppConfig {
     @Autowired
     FimsAppConfig fimsAppConfig;

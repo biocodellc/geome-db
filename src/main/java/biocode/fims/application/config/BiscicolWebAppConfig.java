@@ -13,7 +13,7 @@ import java.util.List;
  * configuration class for biscicol-fims webapp
  */
 @Configuration
-@Import({BiscicolAppConfig.class})
+@Import({BiscicolAppConfig.class, FimsWebAppConfig.class})
 public class BiscicolWebAppConfig {
 
     @Autowired
