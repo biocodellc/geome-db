@@ -290,3 +290,13 @@ th {
 .alpha-list {
     list-style: upper-alpha;
 }
+
+.text-nowrap {
+    white-space: nowrap;
+}
+
+td.hideOverflow {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 200px;
+}

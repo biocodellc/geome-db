@@ -15,7 +15,10 @@ angular.module('fims.query')
             vm.expeditions = [];
             vm.selectedExpeditions = [];
             vm.queryResults = null;
-            vm.queryInfo = null;
+            vm.queryInfo = {
+                size: 0,
+                totalElements: 0
+            };
             vm.currentPage = 1;
             vm.queryJson = queryJson;
             vm.addFilter = addFilter;
@@ -32,13 +35,10 @@ angular.module('fims.query')
             }
 
             function queryJson() {
-                // TODO fix performance issue with 100 results
                 $http.post(REST_ROOT + "projects/query/json/?limit=50&page=" + (vm.currentPage - 1), getQueryPostParams())
                     .then(
                         function (response) {
-                            // vm.queryInfo = response.data;
-                            vm.queryResults = response.data;
-                            // delete vm.queryInfo.content;
+                            vm.queryResults = transformData(response.data);
                         }, function (response) {
                             if (response.status = -1 && !response.data) {
                                 vm.error = "Timed out waiting for response! Try again later or reduce the number of graphs you are querying. If the problem persists, contact the System Administrator.";
@@ -81,7 +81,7 @@ angular.module('fims.query')
                     expeditions: vm.selectedExpeditions
                 };
 
-                angular.forEach(vm.filters, function(filter) {
+                angular.forEach(vm.filters, function (filter) {
                     if (filter.value) {
                         params[filter.field] = filter.value;
                     }
@@ -98,7 +98,7 @@ angular.module('fims.query')
                 ExpeditionFactory.getExpeditions()
                     .then(function (response) {
                         vm.expeditions = [];
-                        angular.forEach(response.data, function(expedition) {
+                        angular.forEach(response.data, function (expedition) {
                             vm.expeditions.push(expedition.expeditionCode);
                         });
                     }, function () {
@@ -114,6 +114,24 @@ angular.module('fims.query')
                     }, function (response) {
                         vm.error = response.data.error || response.data.usrMessage || "Failed to fetch filter options";
                     })
+            }
+
+            function transformData(data) {
+                vm.queryInfo.size = data.size;
+
+                // elasitc_search will throw an error if we try and retrieve results from 10000 and greater
+                vm.queryInfo.totalElements = data.totalElements > 10000 ? 10000 : data.totalElements;
+                var transformedData = {keys: Object.keys(data.content[0]), data: []};
+
+                angular.forEach(data.content, function (resource) {
+                    var resourceData = [];
+                    angular.forEach(transformedData.keys, function (key) {
+                        resourceData.push(resource[key]);
+                    });
+                    transformedData.data.push(resourceData);
+                });
+
+                return transformedData;
             }
 
             (function init() {
