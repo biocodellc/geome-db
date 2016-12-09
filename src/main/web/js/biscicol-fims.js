@@ -513,9 +513,9 @@ function editExpedition(projectId, expeditionCode, e) {
 
     var buttons = {
         "Update": function () {
-            var public = $("[name='public']")[0].checked;
+            var isPublic = $("[name='public']")[0].checked;
 
-            $.get(biocodeFimsRestRoot + "expeditions/updateStatus/" + projectId + "/" + expeditionCode + "/" + public
+            $.get(biocodeFimsRestRoot + "expeditions/updateStatus/" + projectId + "/" + expeditionCode + "/" + isPublic
             ).done(function () {
                 var b = {
                     "Ok": function () {
@@ -1410,14 +1410,14 @@ function hideUpload() {
 function updateExpeditionPublicStatus(expeditionList) {
     $('#expeditionCode').change(function () {
         var code = $('#expeditionCode').val();
-        var public;
+        var isPublic;
         $.each(expeditionList, function (key, e) {
             if (e.expeditionCode == code) {
-                public = e.public;
+                isPublic = e.public;
                 return false;
             }
         });
-        if (public == 'true') {
+        if (isPublic == 'true') {
             $('#public_status').prop('checked', true);
         } else {
             $('#public_status').prop('checked', false);

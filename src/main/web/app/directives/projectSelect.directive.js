@@ -19,7 +19,7 @@ angular.module('biscicolApp')
         var vm = this;
         vm.isAuthenticated = AuthFactory.isAuthenticated;
         vm.includePublic = !AuthFactory.isAuthenticated;
-        vm.projectId;
+        vm.projectId = null;
         vm.projects = getProjects();
         vm.updateProjects = updateProjects;
         vm.setProject = setProject;
