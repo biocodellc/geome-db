@@ -15,7 +15,7 @@ import org.springframework.core.env.Environment;
  */
 @Configuration
 @ComponentScan(basePackages = {"biocode.fims.dipnet.services"})
-@Import({FimsAppConfig.class})
+@Import({FimsAppConfig.class, ElasticSearchAppConfig.class})
 @ImportResource({
         "classpath:dipnet-data-access-config.xml",
 })
@@ -24,31 +24,17 @@ import org.springframework.core.env.Environment;
 @PropertySource("classpath:dipnet-fims.props")
 public class DipnetAppConfig {
     @Autowired
-    private Environment env;
-    @Autowired
     private FimsAppConfig fimsAppConfig;
     @Autowired
-    ProjectService projectService;
+    ElasticSearchAppConfig esAppConfig;
     @Autowired
-    Client esClient;
+    ProjectService projectService;
 
     @Bean
     @Scope("prototype")
     public FimsMetadataFileManager fimsMetadataFileManager() {
-        FimsMetadataPersistenceManager persistenceManager = new ESFimsMetadataPersistenceManager(esClient);
+        FimsMetadataPersistenceManager persistenceManager = new ESFimsMetadataPersistenceManager(esAppConfig.esClient);
         return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
     }
 
-    @Bean
-    // This bean handles the creation/destruction of the esClient bean that is autowired
-    public TransportClientFactoryBean transportClientFactoryBean() {
-        TransportClientFactoryBean factoryBean = new TransportClientFactoryBean();
-        factoryBean.setClusterName(env.getProperty("clusterName"));
-        factoryBean.setClientIgnoreClusterName(Boolean.valueOf(env.getProperty("clientIgnoreClusterName")));
-        factoryBean.setClientNodesSamplerInterval(env.getProperty("clientNodesSamplerInterval"));
-        factoryBean.setClientPingTimeout(env.getProperty("clientPingTimeout"));
-        factoryBean.setClientTransportSniff(Boolean.valueOf(env.getProperty("clientTransportSniff")));
-        factoryBean.setClusterNodes(env.getProperty("clusterNodes"));
-        return factoryBean;
-    }
 }

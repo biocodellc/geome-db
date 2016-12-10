@@ -1,6 +1,7 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ProjectMinter;
+import biocode.fims.config.ConfigurationFileEsMapper;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.dipnet.query.DipnetQueryUtils;
@@ -11,7 +12,6 @@ import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.rest.FimsService;
 import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
@@ -33,6 +33,7 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
@@ -45,27 +46,23 @@ import java.util.*;
 import java.util.List;
 
 /**
- * REST services dealing with projects
+ * DIPnet REST services dealing with projects
  */
 @Controller
 @Path("projects")
-public class Projects extends FimsService {
+public class ProjectController extends FimsAbstractProjectsController {
 
-    private static Logger logger = LoggerFactory.getLogger(Projects.class);
+    private static Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
-    private final ExpeditionService expeditionService;
-    private final ProjectService projectService;
+    private final Client esClient;
     private final UserService userService;
-    private Client esClient;
 
     @Autowired
-    Projects(ExpeditionService expeditionService, Client esClient,
-             ProjectService projectService, UserService userService,
-             OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(providerService, settingsManager);
-        this.expeditionService = expeditionService;
+    ProjectController(UserService userService, Client esClient,
+                      ProjectService projectService, ExpeditionService expeditionService,
+                      OAuthProviderService providerService, SettingsManager settingsManager) {
+        super(expeditionService, providerService, settingsManager, projectService);
         this.esClient = esClient;
-        this.projectService = projectService;
         this.userService = userService;
     }
 
@@ -776,4 +773,19 @@ public class Projects extends FimsService {
         return Response.ok(expeditionService.getExpedition(expeditionCode, projectId)).build();
     }
 
+
+    @Override
+    @GET
+    @Path("/{projectId}/config/refreshCache")
+    public Response refreshCache(@PathParam("projectId") Integer projectId) {
+        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
+
+        if (esClient != null) {
+            ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
+            JSONObject mapping = ConfigurationFileEsMapper.convert(configFile);
+            indexer.updateMapping(projectId, mapping);
+        }
+
+        return Response.noContent().build();
+    }
 }

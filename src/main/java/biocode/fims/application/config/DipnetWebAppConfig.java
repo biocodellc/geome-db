@@ -12,6 +12,7 @@ import biocode.fims.rest.services.rest.Validate;
 import biocode.fims.service.OAuthProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.List;
  * configuration class for dipnet-fims webapp
  */
 @Configuration
+@EnableScheduling
 @Import({DipnetAppConfig.class, FimsWebAppConfig.class})
 public class DipnetWebAppConfig {
 
@@ -31,7 +33,7 @@ public class DipnetWebAppConfig {
     @Bean
     @Scope("prototype")
     public FastaFileManager fastaFileManager() {
-        FastaPersistenceManager persistenceManager = new ESFastaPersistenceManager(dipnetAppConfig.esClient);
+        FastaPersistenceManager persistenceManager = new ESFastaPersistenceManager(dipnetAppConfig.esAppConfig.esClient);
         return new FastaFileManager(persistenceManager, fimsAppConfig.settingsManager, 
                 fimsAppConfig.bcidService, fimsAppConfig.expeditionService);
     }
@@ -53,7 +55,7 @@ public class DipnetWebAppConfig {
 
     @Bean
     public ElasticSearchIndexer esIndexer() {
-        return new ElasticSearchIndexer(dipnetAppConfig.esClient);
+        return new ElasticSearchIndexer(dipnetAppConfig.esAppConfig.esClient);
     }
 
     @Bean
