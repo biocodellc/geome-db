@@ -16,7 +16,7 @@ import java.io.FileNotFoundException;
  * Configuration class for Biscicol-Fims applications. Including cli and webapps
  */
 @Configuration
-@Import({FimsAppConfig.class})
+@Import({FimsAppConfig.class, ElasticSearchAppConfig.class})
 // declaring this here allows us to override any properties that are also included in biscicol-fims.props
 @PropertySource(value = "classpath:biocode-fims.props", ignoreResourceNotFound = true)
 @PropertySource("classpath:biscicol-fims.props")
@@ -38,18 +38,5 @@ public class BiscicolAppConfig {
     @Bean
     public EzidUpdator ezidUpdator() throws FileNotFoundException {
         return new EzidUpdator(fimsAppConfig.bcidService, fimsAppConfig.settingsManager, fimsAppConfig.ezidUtils());
-    }
-
-    @Bean
-    // This bean handles the creation/destruction of the esClient bean that is autowired
-    public TransportClientFactoryBean transportClientFactoryBean() {
-        TransportClientFactoryBean factoryBean = new TransportClientFactoryBean();
-        factoryBean.setClusterName(env.getProperty("clusterName"));
-        factoryBean.setClientIgnoreClusterName(Boolean.valueOf(env.getProperty("clientIgnoreClusterName")));
-        factoryBean.setClientNodesSamplerInterval(env.getProperty("clientNodesSamplerInterval"));
-        factoryBean.setClientPingTimeout(env.getProperty("clientPingTimeout"));
-        factoryBean.setClientTransportSniff(Boolean.valueOf(env.getProperty("clientTransportSniff")));
-        factoryBean.setClusterNodes(env.getProperty("clusterNodes"));
-        return factoryBean;
     }
 }

@@ -18,7 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * class to transform requests to {@link biocode.fims.rest.services.rest.Validate} resource methods from
+ * class to transform requests to {@link biocode.fims.rest.services.rest.ValidateController} resource methods from
  * {@link biocode.fims.rest.versioning.APIVersion}v1_0 to APIVersion v1_1, and responses from v1_1 to v1_0.
  */
 @Component

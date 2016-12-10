@@ -1,10 +1,8 @@
 package biocode.fims.rest.versioning.transformers;
 
 import biocode.fims.entities.Bcid;
-import biocode.fims.entities.Expedition;
 import biocode.fims.rest.versioning.Transformer;
 import biocode.fims.service.BcidService;
-import biocode.fims.service.ExpeditionService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,7 +19,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * class to transform requests to {@link biocode.fims.rest.services.rest.Query} resource methods from
+ * class to transform requests to {@link biocode.fims.rest.services.rest.QueryController} resource methods from
  * {@link biocode.fims.rest.versioning.APIVersion}v1_0 to APIVersion v1_1, and responses from v1_1 to v1_0.
  */
 @Component

@@ -22,13 +22,13 @@ import javax.ws.rs.core.Response;
  * REST services dealing with user management
  */
 @Path("users")
-public class Users extends FimsService {
+public class UserController extends FimsService {
 
     private final UserService userService;
 
     @Autowired
-    Users(UserService userService,
-          OAuthProviderService providerService, SettingsManager settingsManager) {
+    UserController(UserService userService,
+                   OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
         this.userService = userService;
     }

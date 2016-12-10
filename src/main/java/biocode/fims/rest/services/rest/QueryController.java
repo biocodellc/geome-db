@@ -5,14 +5,12 @@ import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
-import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fuseki.query.FimsFilterCondition;
 import biocode.fims.fuseki.query.FimsQueryBuilder;
 import biocode.fims.rest.FimsService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
-import org.apache.commons.digester3.Digester;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
@@ -20,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.io.*;
@@ -34,13 +31,13 @@ import java.util.*;
  */
 @Controller
 @Path("/projects/query")
-public class Query extends FimsService {
-    private static Logger logger = LoggerFactory.getLogger(Query.class);
+public class QueryController extends FimsService {
+    private static Logger logger = LoggerFactory.getLogger(QueryController.class);
     private File configFile;
     private int projectId;
 
     @Autowired
-    Query(OAuthProviderService providerService, SettingsManager settingsManager) {
+    QueryController(OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
     }
 

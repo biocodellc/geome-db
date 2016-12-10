@@ -1,14 +1,15 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ProjectMinter;
+import biocode.fims.config.ConfigurationFileEsMapper;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
+import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
@@ -17,11 +18,13 @@ import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
+import org.elasticsearch.client.Client;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -35,22 +38,21 @@ import java.util.List;
 /**
  * REST services dealing with projects
  */
+@Controller
 @Path("projects")
-public class Projects extends FimsService {
+public class ProjectController extends FimsAbstractProjectsController {
 
-    private static Logger logger = LoggerFactory.getLogger(Projects.class);
+    private static Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
-    private final ExpeditionService expeditionService;
-    private final ProjectService projectService;
     private final UserService userService;
+    private final Client esClient;
 
     @Autowired
-    Projects(ExpeditionService expeditionService, ProjectService projectService, UserService userService,
-             OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(providerService, settingsManager);
-        this.expeditionService = expeditionService;
-        this.projectService = projectService;
+    ProjectController(ExpeditionService expeditionService, OAuthProviderService providerService, SettingsManager settingsManager,
+                      ProjectService projectService, UserService userService, Client esClient) {
+        super(expeditionService, providerService, settingsManager, projectService);
         this.userService = userService;
+        this.esClient = esClient;
     }
 
     @GET
@@ -660,5 +662,18 @@ public class Projects extends FimsService {
         mapping.addMappingRules(configFile);
 
         return Response.ok("{\"uniqueKey\":\"" + mapping.getDefaultSheetUniqueKey() + "\"}").build();
+    }
+
+    @Override
+    @GET
+    @Path("/{projectId}/config/refreshCache")
+    public Response refreshCache(@PathParam("projectId") Integer projectId) {
+        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
+
+        ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
+        JSONObject mapping = ConfigurationFileEsMapper.convert(configFile);
+        indexer.updateMapping(projectId, mapping);
+
+        return Response.noContent().build();
     }
 }

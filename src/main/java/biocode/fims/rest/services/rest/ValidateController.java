@@ -16,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.simple.JSONObject;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -26,16 +27,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Controller
 @Path("validate")
-public class Validate extends FimsService {
+public class ValidateController extends FimsService {
 
     private final ExpeditionService expeditionService;
     private final List<AuxilaryFileManager> fileManagers;
     private final FimsMetadataFileManager fimsMetadataFileManager;
 
-    public Validate(ExpeditionService expeditionService,
-                    FimsMetadataFileManager fimsMetadataFileManager, List<AuxilaryFileManager> fileManagers,
-                    OAuthProviderService providerService, SettingsManager settingsManager) {
+    public ValidateController(ExpeditionService expeditionService,
+                              FimsMetadataFileManager fimsMetadataFileManager, List<AuxilaryFileManager> fileManagers,
+                              OAuthProviderService providerService, SettingsManager settingsManager) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
         this.fimsMetadataFileManager = fimsMetadataFileManager;

@@ -213,7 +213,7 @@ function populateDivFromService(url, elementID, failMessage) {
 }
 
 function populateProjects() {
-    theUrl = biocodeFimsRestRoot + "projects/list?includePublic=true";
+    theUrl = biocodeFimsRestRoot + "projects?includePublic=true";
     var jqxhr = $.getJSON(theUrl, function (data) {
         var listItems = "";
         listItems += "<option value='0'>Select a project ...</option>";
