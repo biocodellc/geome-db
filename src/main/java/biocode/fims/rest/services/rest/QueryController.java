@@ -48,8 +48,8 @@ import java.util.*;
  */
 @Controller
 @Path("/projects/query")
-public class Query extends FimsService {
-    private static final Logger logger = LoggerFactory.getLogger(Query.class);
+public class QueryController extends FimsService {
+    private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
 
     private static Integer projectId = Integer.parseInt(SettingsManager.getInstance().retrieveValue("projectId"));
     private Mapping mapping;
@@ -58,7 +58,7 @@ public class Query extends FimsService {
     private final QueryAuthorizer queryAuthorizer;
 
     @Autowired
-    Query(OAuthProviderService providerService, SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer) {
+    QueryController(OAuthProviderService providerService, SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer) {
         super(providerService, settingsManager);
         this.esClient = esClient;
         this.queryAuthorizer = queryAuthorizer;

@@ -8,7 +8,7 @@ import biocode.fims.fileManagers.fasta.FastaFileManager;
 import biocode.fims.fileManagers.fasta.FastaPersistenceManager;
 import biocode.fims.fileManagers.fastq.FastqFileManager;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
-import biocode.fims.rest.services.rest.Validate;
+import biocode.fims.rest.services.rest.ValidateController;
 import biocode.fims.service.OAuthProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
@@ -60,8 +60,8 @@ public class DipnetWebAppConfig {
 
     @Bean
     @Scope("prototype")
-    public Validate validate() throws Exception {
-        return new Validate(fimsAppConfig.expeditionService, dipnetExpeditionService, fileManagers(),
+    public ValidateController validate() throws Exception {
+        return new ValidateController(fimsAppConfig.expeditionService, dipnetExpeditionService, fileManagers(),
                 dipnetAppConfig.fimsMetadataFileManager(), providerService, fimsAppConfig.settingsManager, esIndexer());
     }
 

@@ -319,44 +319,6 @@ function resetPassSubmit() {
         });
 }
 
-/* ====== bcidCreator.jsp Functions ======= */
-
-// Populate the SELECT box with resourceTypes from the server
-function getResourceTypesMinusDataset(id) {
-    var url = RestRoot + "resourceTypes/minusDataset/";
-
-    // get JSON from server and loop results
-    var jqxhr = $.getJSON(url, function() {})
-        .done(function(data) {
-            var options = '<option value=0>Select a Concept</option>';
-            $.each(data, function(key, val) {
-                options+='<option value="' + val.resourceType + '">' + val.string + '</option>';
-            });
-            $("#" + id).html(options);
-            if (id == "adminProjects") {
-                $("." + id).html(options);
-            }
-        });
-    return jqxhr;
-}
-
-/** Process submit button for Data Group Creator **/
-function bcidCreatorSubmit() {
-    /* Send the data using post */
-    var posting = $.post(RestRoot + "bcids", $("#bcidForm").serialize())
-        .done(function(data) {
-            var b = {
-                "Ok": function() {
-                    $('#bcidForm')[0].reset();
-                    $(this).dialog("close");
-                }
-            }
-            var msg = "Successfully created the bcid with identifier: " + data.identifier;
-            dialog(msg, "Success creating bcid!", b);
-        }).fail(function(jqxhr) {
-            failError(jqxhr);
-        });
-}
 /* ====== projects.jsp Functions ======= */
 
 // populate the metadata subsection of projects.jsp from REST service
@@ -874,27 +836,6 @@ function list(listName, columnName) {
             showBigMessage(msg);
         }
     });
-}
-
-/* ====== resourceTypes.jsp Functions ======= */
-
-// Populate a table of data showing resourceTypes
-function getResourceTypesTable(a) {
-    var url = RestRoot + "resourceTypes";
-    var jqxhr = $.getJSON(url, function() {})
-        .done(function(data) {
-            var html = "<table><tr><td><b>Name/URI</b></td><td><b>Description</b></td></tr>";
-            $.each(data, function(key, val) {
-                if (!(val.string == "---")) {
-                    html += "<tr><td><a href='" + val.uri + "'>" + val.string + "</a></td>";
-                    html += "<td>" + val.description + "</td></tr>";
-                }
-            })
-            $("#" + a).html(html);
-        })
-        .fail(function(jqxhr) {
-            failError(jqxhr);
-        });
 }
 
 /* ====== query.html Functions ======= */

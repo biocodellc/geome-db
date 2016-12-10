@@ -45,7 +45,7 @@ import java.util.Map;
 
 @Controller
 @Path("validate")
-public class Validate extends FimsService {
+public class ValidateController extends FimsService {
 
     private final ExpeditionService expeditionService;
     private final DipnetExpeditionService dipnetExpeditionService;
@@ -54,9 +54,9 @@ public class Validate extends FimsService {
     private final ElasticSearchIndexer esIndexer;
 
     @Autowired
-    public Validate(ExpeditionService expeditionService, DipnetExpeditionService dipnetExpeditionService,
-                    List<AuxilaryFileManager> fileManagers, FimsMetadataFileManager fimsMetadataFileManager,
-                    OAuthProviderService providerService, SettingsManager settingsManager, ElasticSearchIndexer esIndexer) {
+    public ValidateController(ExpeditionService expeditionService, DipnetExpeditionService dipnetExpeditionService,
+                              List<AuxilaryFileManager> fileManagers, FimsMetadataFileManager fimsMetadataFileManager,
+                              OAuthProviderService providerService, SettingsManager settingsManager, ElasticSearchIndexer esIndexer) {
         super(providerService, settingsManager);
         this.expeditionService = expeditionService;
         this.dipnetExpeditionService = dipnetExpeditionService;

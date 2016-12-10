@@ -9,8 +9,8 @@ import biocode.fims.dipnet.sra.DipnetSraMetadataMapper;
 import biocode.fims.entities.Bcid;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.rest.FimsService;
 import biocode.fims.run.ProcessController;
+import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.sra.*;
@@ -35,24 +35,24 @@ import java.util.Map;
  */
 @Controller
 @Path("expeditions")
-public class Expeditions extends FimsService {
+public class ExpeditionController extends FimsAbstractExpeditionController {
+    private static Logger logger = LoggerFactory.getLogger(ExpeditionController.class);
 
-    private static Logger logger = LoggerFactory.getLogger(ExpeditionRestService.class);
-    private final DipnetExpeditionService expeditionService;
+    private final DipnetExpeditionService dipnetExpeditionService;
     private final FimsMetadataFileManager fimsMetadataFileManager;
 
     @Autowired
-    public Expeditions(DipnetExpeditionService expeditionService, FimsMetadataFileManager fimsMetadataFileManager,
-                       OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(providerService, settingsManager);
-        this.expeditionService = expeditionService;
+    public ExpeditionController(DipnetExpeditionService dipnetExpeditionService, FimsMetadataFileManager fimsMetadataFileManager,
+                                ExpeditionService expeditionService, OAuthProviderService providerService, SettingsManager settingsManager) {
+        super(expeditionService, providerService, settingsManager);
+        this.dipnetExpeditionService = dipnetExpeditionService;
         this.fimsMetadataFileManager = fimsMetadataFileManager;
     }
     @GET
     @Path("/{expeditionId}/sra/files")
     @Produces("application/zip")
     public Response getSraFiles(@PathParam("expeditionId") int expeditionId) {
-        DipnetExpedition expedition = expeditionService.getDipnetExpedition(expeditionId);
+        DipnetExpedition expedition = dipnetExpeditionService.getDipnetExpedition(expeditionId);
 
         if (expedition == null || expedition.getFastqMetadata() == null) {
             throw new BadRequestException("Either the fims metadata and/or fastq metadata do not exist");

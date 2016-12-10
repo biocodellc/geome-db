@@ -2,7 +2,6 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.OAuthProviderService;
@@ -24,15 +23,12 @@ import javax.ws.rs.core.Response;
  */
 @Controller
 @Path("users")
-public class Users extends FimsService {
-
-    private final UserService userService;
+public class UserController extends FimsAbstractUserController {
 
     @Autowired
-    Users(UserService userService,
-          OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(providerService, settingsManager);
-        this.userService = userService;
+    UserController(UserService userService,
+                   OAuthProviderService providerService, SettingsManager settingsManager) {
+        super(userService, providerService, settingsManager);
     }
 
     /**
