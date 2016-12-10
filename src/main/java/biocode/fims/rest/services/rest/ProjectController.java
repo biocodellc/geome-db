@@ -111,7 +111,7 @@ public class ProjectController extends FimsAbstractProjectsController {
 
         ArrayNode filters = new SpringObjectMapper().createArrayNode();
 
-        for (ElasticSearchFilterField f: DipnetQueryUtils.getAvailableFilters(mapping)) {
+        for (ElasticSearchFilterField f : DipnetQueryUtils.getAvailableFilters(mapping)) {
             ObjectNode filter = filters.addObject();
             filter.put("field", f.getField());
             filter.put("displayName", f.getDisplayName());
@@ -690,7 +690,7 @@ public class ProjectController extends FimsAbstractProjectsController {
 
         AggregationBuilder aggsBuilder = AggregationBuilders.terms("expeditions").field("expedition.expeditionCode.keyword")
                 .subAggregation(
-                    AggregationBuilders.nested("fastaSequenceCount", "fastaSequence")
+                        AggregationBuilders.nested("fastaSequenceCount", "fastaSequence")
                 )
                 .order(Terms.Order.term(true))
                 .size(1000);
@@ -703,7 +703,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         Terms terms = response.getAggregations().get("expeditions");
         List<JSONObject> buckets = new ArrayList<>();
 
-        for (Terms.Bucket bucket: terms.getBuckets()) {
+        for (Terms.Bucket bucket : terms.getBuckets()) {
             JSONObject b = new JSONObject();
             b.put("resourceCount", bucket.getDocCount());
             b.put("expeditionCode", bucket.getKey());
@@ -780,11 +780,9 @@ public class ProjectController extends FimsAbstractProjectsController {
     public Response refreshCache(@PathParam("projectId") Integer projectId) {
         File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
 
-        if (esClient != null) {
-            ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
-            JSONObject mapping = ConfigurationFileEsMapper.convert(configFile);
-            indexer.updateMapping(projectId, mapping);
-        }
+        ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
+        JSONObject mapping = ConfigurationFileEsMapper.convert(configFile);
+        indexer.updateMapping(projectId, mapping);
 
         return Response.noContent().build();
     }
