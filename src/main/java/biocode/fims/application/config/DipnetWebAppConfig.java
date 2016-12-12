@@ -10,6 +10,7 @@ import biocode.fims.fileManagers.fastq.FastqFileManager;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.rest.services.rest.ValidateController;
 import biocode.fims.service.OAuthProviderService;
+import org.elasticsearch.client.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -28,12 +29,11 @@ public class DipnetWebAppConfig {
     @Autowired DipnetAppConfig dipnetAppConfig;
     @Autowired FimsAppConfig fimsAppConfig;
     @Autowired DipnetExpeditionService dipnetExpeditionService;
-    @Autowired OAuthProviderService providerService;
 
     @Bean
     @Scope("prototype")
     public FastaFileManager fastaFileManager() {
-        FastaPersistenceManager persistenceManager = new ESFastaPersistenceManager(dipnetAppConfig.esAppConfig.esClient);
+        FastaPersistenceManager persistenceManager = new ESFastaPersistenceManager(dipnetAppConfig.esClient);
         return new FastaFileManager(persistenceManager, fimsAppConfig.settingsManager, 
                 fimsAppConfig.bcidService, fimsAppConfig.expeditionService);
     }
@@ -55,14 +55,14 @@ public class DipnetWebAppConfig {
 
     @Bean
     public ElasticSearchIndexer esIndexer() {
-        return new ElasticSearchIndexer(dipnetAppConfig.esAppConfig.esClient);
+        return new ElasticSearchIndexer(dipnetAppConfig.esClient);
     }
 
     @Bean
     @Scope("prototype")
     public ValidateController validate() throws Exception {
         return new ValidateController(fimsAppConfig.expeditionService, dipnetExpeditionService, fileManagers(),
-                dipnetAppConfig.fimsMetadataFileManager(), providerService, fimsAppConfig.settingsManager, esIndexer());
+                dipnetAppConfig.fimsMetadataFileManager(), fimsAppConfig.settingsManager, esIndexer());
     }
 
     @Bean

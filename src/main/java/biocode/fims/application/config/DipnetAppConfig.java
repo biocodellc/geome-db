@@ -26,14 +26,16 @@ public class DipnetAppConfig {
     @Autowired
     private FimsAppConfig fimsAppConfig;
     @Autowired
-    ElasticSearchAppConfig esAppConfig;
-    @Autowired
     ProjectService projectService;
+    @Autowired
+    Client esClient;
+
+
 
     @Bean
     @Scope("prototype")
     public FimsMetadataFileManager fimsMetadataFileManager() {
-        FimsMetadataPersistenceManager persistenceManager = new ESFimsMetadataPersistenceManager(esAppConfig.esClient);
+        FimsMetadataPersistenceManager persistenceManager = new ESFimsMetadataPersistenceManager(esClient);
         return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
     }
 

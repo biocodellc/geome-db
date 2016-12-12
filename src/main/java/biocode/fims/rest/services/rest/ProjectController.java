@@ -17,7 +17,6 @@ import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
@@ -33,7 +32,6 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
@@ -60,8 +58,8 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Autowired
     ProjectController(UserService userService, Client esClient,
                       ProjectService projectService, ExpeditionService expeditionService,
-                      OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(expeditionService, providerService, settingsManager, projectService);
+                      SettingsManager settingsManager) {
+        super(expeditionService, settingsManager, projectService);
         this.esClient = esClient;
         this.userService = userService;
     }
@@ -431,7 +429,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Path("/{projectId}/metadata")
     public Response listMetadataAsTable(@PathParam("projectId") int projectId) {
         ProjectMinter project = new ProjectMinter();
-        JSONObject metadata = project.getMetadata(projectId, user.getUsername());
+        JSONObject metadata = project.getMetadata(projectId, userContext.getUser().getUsername());
         StringBuilder sb = new StringBuilder();
 
         sb.append("<table>\n");
@@ -474,7 +472,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     public Response listMetadataEditorAsTable(@PathParam("projectId") int projectId) {
         StringBuilder sb = new StringBuilder();
         ProjectMinter project = new ProjectMinter();
-        JSONObject metadata = project.getMetadata(projectId, user.getUsername());
+        JSONObject metadata = project.getMetadata(projectId, userContext.getUser().getUsername());
 
         sb.append("<form id=\"submitForm\" method=\"POST\">\n");
         sb.append("<table>\n");
@@ -523,7 +521,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     public Response listUsersAsTable(@PathParam("projectId") int projectId) {
         ProjectMinter p = new ProjectMinter();
 
-        if (!p.isProjectAdmin(user.getUsername(), projectId)) {
+        if (!p.isProjectAdmin(userContext.getUser().getUsername(), projectId)) {
             // only display system users to project admins
             throw new ForbiddenRequestException("You are not an admin to this project");
         }
@@ -585,7 +583,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Produces(MediaType.TEXT_HTML)
     @Path("/{projectId}/admin/expeditions/")
     public Response listExpeditionsAsTable(@PathParam("projectId") int projectId) {
-        if (!projectService.isProjectAdmin(user, projectId)) {
+        if (!projectService.isProjectAdmin(userContext.getUser(), projectId)) {
             throw new ForbiddenRequestException("You must be this project's admin in order to view its expeditions.");
         }
 

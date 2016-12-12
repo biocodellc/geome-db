@@ -11,7 +11,6 @@ import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.sra.*;
 import biocode.fims.utils.FileUtils;
@@ -43,8 +42,8 @@ public class ExpeditionController extends FimsAbstractExpeditionController {
 
     @Autowired
     public ExpeditionController(DipnetExpeditionService dipnetExpeditionService, FimsMetadataFileManager fimsMetadataFileManager,
-                                ExpeditionService expeditionService, OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(expeditionService, providerService, settingsManager);
+                                ExpeditionService expeditionService, SettingsManager settingsManager) {
+        super(expeditionService, settingsManager);
         this.dipnetExpeditionService = dipnetExpeditionService;
         this.fimsMetadataFileManager = fimsMetadataFileManager;
     }

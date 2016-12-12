@@ -17,7 +17,6 @@ import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
 import biocode.fims.query.*;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -58,8 +57,8 @@ public class QueryController extends FimsService {
     private final QueryAuthorizer queryAuthorizer;
 
     @Autowired
-    QueryController(OAuthProviderService providerService, SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer) {
-        super(providerService, settingsManager);
+    QueryController(SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer) {
+        super(settingsManager);
         this.esClient = esClient;
         this.queryAuthorizer = queryAuthorizer;
     }
@@ -80,7 +79,7 @@ public class QueryController extends FimsService {
             @QueryParam("limit") @DefaultValue("100") int limit,
             ObjectNode esQueryString) {
 
-        if (!queryAuthorizer.authorizedQuery(Arrays.asList(projectId), esQueryString, user)) {
+        if (!queryAuthorizer.authorizedQuery(Arrays.asList(projectId), esQueryString, userContext.getUser())) {
             throw new ForbiddenRequestException("unauthorized query");
         }
 
@@ -330,7 +329,7 @@ public class QueryController extends FimsService {
             expeditionCodes.addAll(form.remove("expeditions[]"));
         }
 
-        if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), expeditionCodes, user)) {
+        if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), expeditionCodes, userContext.getUser())) {
             throw new ForbiddenRequestException("unauthorized query.");
         }
 

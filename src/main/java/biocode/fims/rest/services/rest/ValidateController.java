@@ -56,8 +56,8 @@ public class ValidateController extends FimsService {
     @Autowired
     public ValidateController(ExpeditionService expeditionService, DipnetExpeditionService dipnetExpeditionService,
                               List<AuxilaryFileManager> fileManagers, FimsMetadataFileManager fimsMetadataFileManager,
-                              OAuthProviderService providerService, SettingsManager settingsManager, ElasticSearchIndexer esIndexer) {
-        super(providerService, settingsManager);
+                              SettingsManager settingsManager, ElasticSearchIndexer esIndexer) {
+        super(settingsManager);
         this.expeditionService = expeditionService;
         this.dipnetExpeditionService = dipnetExpeditionService;
         this.fileManagers = fileManagers;
@@ -199,11 +199,11 @@ public class ValidateController extends FimsService {
             processController.setProcess(process);
 
             if (process.validate() && upload) {
-                if (user == null) {
+                if (userContext.getUser() == null) {
                     throw new UnauthorizedRequestException("You must be logged in to upload.");
                 }
 
-                processController.setUserId(user.getUserId());
+                processController.setUserId(userContext.getUser().getUserId());
 
                 // set public status to true in processController if user wants it on
                 if (isPublic) {

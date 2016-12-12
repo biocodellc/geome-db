@@ -4,7 +4,6 @@ import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.EmailUtils;
@@ -26,9 +25,8 @@ import javax.ws.rs.core.Response;
 public class UserController extends FimsAbstractUserController {
 
     @Autowired
-    UserController(UserService userService,
-                   OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(userService, providerService, settingsManager);
+    UserController(UserService userService, SettingsManager settingsManager) {
+        super(userService, settingsManager);
     }
 
     /**
@@ -80,7 +78,7 @@ public class UserController extends FimsAbstractUserController {
     @Path("/profile/listEditorAsTable")
     @Produces(MediaType.TEXT_HTML)
     public Response listProfileEditorAsTable() {
-        return Response.ok(getProfileEditor(user, false)).build();
+        return Response.ok(getProfileEditor(userContext.getUser(), false)).build();
     }
 
     @GET
@@ -158,28 +156,28 @@ public class UserController extends FimsAbstractUserController {
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>First Name:</td>\n");
         sb.append("\t\t<td>");
-        sb.append(user.getFirstName());
+        sb.append(userContext.getUser().getFirstName());
         sb.append("</td>\n");
         sb.append("\t</tr>\n");
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>Last Name:</td>\n");
         sb.append("\t\t<td>");
-        sb.append(user.getLastName());
+        sb.append(userContext.getUser().getLastName());
         sb.append("</td>\n");
         sb.append("\t</tr>\n");
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>Email:</td>\n");
         sb.append("\t\t<td>");
-        sb.append(user.getEmail());
+        sb.append(userContext.getUser().getEmail());
         sb.append("</td>\n");
         sb.append("\t</tr>\n");
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>Institution:</td>\n");
         sb.append("\t\t<td>");
-        sb.append(user.getInstitution());
+        sb.append(userContext.getUser().getInstitution());
         sb.append("</td>\n");
         sb.append("\t</tr>\n");
 
