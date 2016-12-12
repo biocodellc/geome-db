@@ -3,13 +3,16 @@ package biocode.fims.rest.versioning.transformers;
 import biocode.fims.entities.Bcid;
 import biocode.fims.rest.versioning.Transformer;
 import biocode.fims.service.BcidService;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
@@ -19,7 +22,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * class to transform requests to {@link biocode.fims.rest.services.rest.QueryController} resource methods from
+ * class to transform requests to {@link biocode.fims.rest.services.rest.QueryControllerOld} resource methods from
  * {@link biocode.fims.rest.versioning.APIVersion}v1_0 to APIVersion v1_1, and responses from v1_1 to v1_0.
  */
 @Component
@@ -68,34 +71,36 @@ public class QueryTransformer1_0 implements Transformer {
             return response;
         }
 
-        JSONArray entity = null;
+        Page<ObjectNode> entity;
         try {
-            entity = (JSONArray) new JSONParser().parse(String.valueOf(response.getEntity()));
+            entity = (Page<ObjectNode>) new JSONParser().parse(String.valueOf(response.getEntity()));
         } catch (ParseException e) {
             logger.debug("ParseException occurred", e);
             return returnVal;
         }
 
-        JSONObject v1_0Response = new JSONObject();
-        JSONArray headers = new JSONArray();
-        JSONArray data = new JSONArray();
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode v1_0Response = mapper.createObjectNode();
+        ArrayNode headers = mapper.createArrayNode();
+        ArrayNode data = mapper.createArrayNode();
 
-        for (Object obj : entity) {
-            JSONObject resource = (JSONObject) obj;
+        for (ObjectNode resource: entity.getContent()) {
 
             if (headers.size() == 0) {
-                headers.addAll(resource.keySet());
+                resource.fieldNames().forEachRemaining(key -> headers.add(key));
             }
 
-            JSONArray row = new JSONArray();
-            for (Object val : resource.values()) {
-                row.add(val);
+            ArrayNode row = mapper.createArrayNode();
+            for (Iterator<Map.Entry<String, JsonNode>> it = resource.fields(); it.hasNext(); ) {
+                row.add(it.next().getValue().asText());
             }
 
-            JSONObject rowObject = new JSONObject();
-            rowObject.put("row", row);
-
-            data.add(rowObject);
+            data.add(
+                    mapper.createObjectNode().put(
+                            "row",
+                            row
+                    )
+            );
         }
 
         v1_0Response.put("data", data);
@@ -156,12 +161,22 @@ public class QueryTransformer1_0 implements Transformer {
             argMap.put("projectId", queryParameters.get("project_id").get(0));
         }
 
+        if (!queryParameters.containsKey("limit")) {
+            // TODO does this throw an exception if limit is missing?
+            queryParameters.addFirst("limit", "10000");
+        }
+
         transformGraphs(argMap, queryParameters.get("graphs"));
     }
 
     private void transformPOSTRequest(LinkedHashMap<String, Object> argMap,
                                       MultivaluedMap<String, String> queryParameters) {
         MultivaluedMap<String, String> form = (MultivaluedMap<String, String>) argMap.get("form");
+
+        if (!queryParameters.containsKey("limit")) {
+            // TODO does this throw an exception if limit is missing?
+            queryParameters.addFirst("limit", "10000");
+        }
 
         argMap.put("projectId", form.remove("project_id"));
 

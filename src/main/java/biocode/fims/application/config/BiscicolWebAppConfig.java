@@ -1,5 +1,6 @@
 package biocode.fims.application.config;
 
+import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.rest.services.rest.ValidateController;
 import biocode.fims.service.OAuthProviderService;
@@ -30,5 +31,10 @@ public class BiscicolWebAppConfig {
     public ValidateController validate() throws Exception {
         return new ValidateController(biscicolAppConfig.fimsAppConfig.expeditionService, biscicolAppConfig.FimsMetadataFileManager(),
                fileManagers(), biscicolAppConfig.fimsAppConfig.settingsManager);
+    }
+
+    @Bean
+    public QueryAuthorizer queryAuthorizer() {
+        return new QueryAuthorizer(biscicolAppConfig.projectService, biscicolAppConfig.fimsAppConfig.settingsManager);
     }
 }
