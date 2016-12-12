@@ -4,7 +4,6 @@ import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +24,8 @@ public class ExpeditionController extends FimsAbstractExpeditionController {
 
 
     @Autowired
-    public ExpeditionController(ExpeditionService expeditionService, OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(expeditionService, providerService, settingsManager);
+    public ExpeditionController(ExpeditionService expeditionService, SettingsManager settingsManager) {
+        super(expeditionService, settingsManager);
     }
 
     @GET
@@ -80,7 +79,7 @@ public class ExpeditionController extends FimsAbstractExpeditionController {
     public Response listDatasetsAsTable(@PathParam("expeditionId") int expeditionId) {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
 
-        if (!ignoreUser && !expeditionMinter.userOwnsExpedition(user.getUserId(), expeditionId)) {
+        if (!ignoreUser && !expeditionMinter.userOwnsExpedition(userContext.getUser().getUserId(), expeditionId)) {
             throw new ForbiddenRequestException("You must own this expedition in order to view its datasets.");
         }
 
@@ -123,7 +122,7 @@ public class ExpeditionController extends FimsAbstractExpeditionController {
     public Response listMetadataAsTable(@PathParam("expeditionId") int expeditionId) {
         ExpeditionMinter e = new ExpeditionMinter();
 
-        if (!ignoreUser && !e.userOwnsExpedition(user.getUserId(), expeditionId)) {
+        if (!ignoreUser && !e.userOwnsExpedition(userContext.getUser().getUserId(), expeditionId)) {
             throw new ForbiddenRequestException("You must own this expedition in order to view its datasets.");
         }
 

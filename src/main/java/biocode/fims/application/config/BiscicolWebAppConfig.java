@@ -18,8 +18,6 @@ public class BiscicolWebAppConfig {
 
     @Autowired
     private BiscicolAppConfig biscicolAppConfig;
-    @Autowired
-    private OAuthProviderService providerService;
 
     @Bean
     @Scope("prototype")
@@ -31,6 +29,6 @@ public class BiscicolWebAppConfig {
     @Scope("prototype")
     public ValidateController validate() throws Exception {
         return new ValidateController(biscicolAppConfig.fimsAppConfig.expeditionService, biscicolAppConfig.FimsMetadataFileManager(),
-               fileManagers(), providerService, biscicolAppConfig.fimsAppConfig.settingsManager);
+               fileManagers(), biscicolAppConfig.fimsAppConfig.settingsManager);
     }
 }

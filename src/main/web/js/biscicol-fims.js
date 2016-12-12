@@ -1442,7 +1442,7 @@ function getExpeditionCodes() {
         }).fail(function (jqxhr) {
         var msg;
         var title = "Error!";
-        if (jqxhr.status = 401) {
+        if (jqxhr.status == 401) {
             msg = "Please login to load your expeditions.";
             title = "Warning!";
         } else {

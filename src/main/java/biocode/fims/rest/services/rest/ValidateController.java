@@ -9,7 +9,6 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -35,10 +34,9 @@ public class ValidateController extends FimsService {
     private final List<AuxilaryFileManager> fileManagers;
     private final FimsMetadataFileManager fimsMetadataFileManager;
 
-    public ValidateController(ExpeditionService expeditionService,
-                              FimsMetadataFileManager fimsMetadataFileManager, List<AuxilaryFileManager> fileManagers,
-                              OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(providerService, settingsManager);
+    public ValidateController(ExpeditionService expeditionService, FimsMetadataFileManager fimsMetadataFileManager,
+                              List<AuxilaryFileManager> fileManagers, SettingsManager settingsManager) {
+        super(settingsManager);
         this.expeditionService = expeditionService;
         this.fimsMetadataFileManager = fimsMetadataFileManager;
         this.fileManagers = fileManagers;
@@ -105,11 +103,11 @@ public class ValidateController extends FimsService {
             processController.setProcess(process);
 
             if (process.validate() && StringUtils.equalsIgnoreCase(upload, "on")) {
-                if (user == null) {
+                if (userContext.getUser() == null) {
                     throw new UnauthorizedRequestException("You must be logged in to upload.");
                 }
 
-                processController.setUserId(user.getUserId());
+                processController.setUserId(userContext.getUser().getUserId());
 
                 // set public status to true in processController if user wants it on
                 if (StringUtils.equalsIgnoreCase(publicStatus, "on")) {

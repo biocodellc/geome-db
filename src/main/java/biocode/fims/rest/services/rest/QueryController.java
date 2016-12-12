@@ -9,7 +9,6 @@ import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fuseki.query.FimsFilterCondition;
 import biocode.fims.fuseki.query.FimsQueryBuilder;
 import biocode.fims.rest.FimsService;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -37,8 +36,8 @@ public class QueryController extends FimsService {
     private int projectId;
 
     @Autowired
-    QueryController(OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(providerService, settingsManager);
+    QueryController(SettingsManager settingsManager) {
+        super(settingsManager);
     }
 
     /**
@@ -476,8 +475,8 @@ public class QueryController extends FimsService {
     private String[] getAllGraphs(Integer projectId) {
         List<String> graphsList = new ArrayList<String>();
         String username = null;
-        if (user != null) {
-            username = user.getUsername();
+        if (userContext.getUser() != null) {
+            username = userContext.getUser().getUsername();
         }
 
         ProjectMinter project= new ProjectMinter();
