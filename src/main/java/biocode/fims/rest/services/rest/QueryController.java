@@ -507,6 +507,10 @@ public class QueryController extends FimsService {
             expeditionCodes.addAll(form.remove("expeditions[]"));
         }
 
+        if (projectId == null) {
+            throw new BadRequestException("ERROR: incomplete arguments");
+        }
+
         if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), expeditionCodes, userContext.getUser())) {
             throw new ForbiddenRequestException("unauthorized query.");
         }

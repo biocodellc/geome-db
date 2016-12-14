@@ -2,11 +2,16 @@ angular.module('biscicolApp')
 
 .directive('projectSelect', ['$rootScope', function($rootScope) {
     var directive = {
-        restrict: 'A',
+        restrict: 'EA',
         templateUrl: 'app/directives/projectSelect.directive.html',
         controller: 'ProjectSelectCtrl',
         controllerAs: 'projectSelectVm',
-        bindToController: true,
+        scope: {},
+        bindToController: {
+            projectId: "=",
+            selectClasses: '@',
+            publicBtnClasses: '@'
+        },
         link: function($scope, $element, $attributes) {
             $rootScope.$broadcast('projectSelectLoadedEvent');
         }
@@ -19,37 +24,45 @@ angular.module('biscicolApp')
         var vm = this;
         vm.isAuthenticated = AuthFactory.isAuthenticated;
         vm.includePublic = !AuthFactory.isAuthenticated;
+        vm.projects = null;
         vm.projectId = null;
-        vm.projects = getProjects();
-        vm.updateProjects = updateProjects;
+        vm.getProjects = getProjects;
         vm.setProject = setProject;
 
         function getProjects() {
-            var projects = [];
             ProjectFactory.getProjects(vm.includePublic)
                 .then(getProjectsComplete);
-                // .catch(getProjectsFailure);
-            return projects;
 
             function getProjectsComplete(response) {
-                angular.extend(projects, response.data);
+                vm.projects = response.data;
+                // angular.extend(vm.projects, response.data);
             }
         }
 
-        function updateProjects() {
-            vm.projects = getProjects();
-        }
-
-        function setProject() {
+        function setProject(projectId) {
             if (vm.projects.length > 0) {
-                if (!vm.projectId)
-                    vm.projectId = ($location.search()['projectId']) ? $location.search()['projectId'] : "0";
-
-                if (vm.projects.length == 1) {
+                if (projectId) {
+                    vm.projectId = projectId;
+                } else if (!vm.projectId) {
+                    vm.projectId = ($location.search()['projectId']) ? $location.search()['projectId'] : null;
+                } else if (vm.projects.length == 1) {
                     vm.projectId = vm.projects[0].projectId;
                 }
+                $scope.$apply();
             }
         }
+
+        (function() {
+            getProjects();
+        }).call();
+
+        $scope.$watch('projectSelectVm.projects', function(newValue, oldValue) {
+            if (!newValue || newValue === oldValue) return;
+
+            $timeout(function(projectId) {
+                setProject(projectId);
+            }, 0, true, vm.projectId);
+        });
 
         $scope.$watch('projectSelectVm.projectId', function(value) {
             if (value > 0) {

@@ -1,15 +1,18 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ProjectMinter;
+import biocode.fims.biscicol.query.BiscicolQueryUtils;
 import biocode.fims.config.ConfigurationFileEsMapper;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
+import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
@@ -17,6 +20,8 @@ import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.elasticsearch.client.Client;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -96,21 +101,16 @@ public class ProjectController extends FimsAbstractProjectsController {
 
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);
-        ArrayList<Attribute> attributeArrayList = mapping.getAllAttributes(mapping.getDefaultSheetName());
 
-        JSONArray attributes = new JSONArray();
+        ArrayNode filters = new SpringObjectMapper().createArrayNode();
 
-        Iterator it = attributeArrayList.iterator();
-        while (it.hasNext()) {
-            Attribute a = (Attribute) it.next();
-            JSONObject attribute = new JSONObject();
-            attribute.put("column", a.getColumn());
-            attribute.put("uri", a.getUri());
-
-            attributes.add(attribute);
+        for (ElasticSearchFilterField f : BiscicolQueryUtils.getAvailableFilters(mapping)) {
+            ObjectNode filter = filters.addObject();
+            filter.put("field", f.getField());
+            filter.put("displayName", f.getDisplayName());
         }
 
-        return Response.ok(attributes.toJSONString()).build();
+        return Response.ok(filters).build();
     }
 
     @GET
@@ -550,7 +550,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         sb.append("<select name=userId>\n");
         sb.append("\t\t\t<option value=\"0\">Create New User</option>\n");
 
-        for (User user: allUsers) {
+        for (User user : allUsers) {
             sb.append("\t\t\t<option value=\"" + user.getUserId() + "\">" + user.getUsername() + "</option>\n");
         }
 

@@ -22,12 +22,12 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * class to transform requests to {@link biocode.fims.rest.services.rest.QueryControllerOld} resource methods from
+ * class to transform requests to {@link biocode.fims.rest.services.rest.QueryController} resource methods from
  * {@link biocode.fims.rest.versioning.APIVersion}v1_0 to APIVersion v1_1, and responses from v1_1 to v1_0.
  */
 @Component
-public class QueryTransformer1_0 implements Transformer {
-    private final static Logger logger = LoggerFactory.getLogger(QueryTransformer1_0.class);
+public class QueryControllerTransformer1_0 implements Transformer {
+    private final static Logger logger = LoggerFactory.getLogger(QueryControllerTransformer1_0.class);
 
     @Autowired
     private BcidService bcidService;

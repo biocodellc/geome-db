@@ -22,8 +22,8 @@ import java.util.Map;
  * {@link biocode.fims.rest.versioning.APIVersion}v1_0 to APIVersion v1_1, and responses from v1_1 to v1_0.
  */
 @Component
-public class ValidateTransformer1_0 implements Transformer {
-    private final static Logger logger = LoggerFactory.getLogger(ValidateTransformer1_0.class);
+public class ValidateControllerTransformer1_0 implements Transformer {
+    private final static Logger logger = LoggerFactory.getLogger(ValidateControllerTransformer1_0.class);
 
     @Override
     public void updateRequestData(LinkedHashMap<String, Object> argMap, String methodName, MultivaluedMap<String, String> queryParameters) {
