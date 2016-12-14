@@ -8,6 +8,7 @@ import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fuseki.fileManagers.fimsMetadata.FusekiFimsMetadataPersistenceManager;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
@@ -15,7 +16,9 @@ import biocode.fims.service.ProjectService;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
+import biocode.fims.utils.EmailUtils;
 import org.apache.commons.cli.*;
+import org.apache.commons.collections.MapUtils;
 import org.elasticsearch.client.Client;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -23,7 +26,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.File;
-import java.util.List;
+import java.io.SyncFailedException;
+import java.util.*;
 
 /**
  * Tmp script to help with the migration from fuseki to ElasticSearch
@@ -36,6 +40,8 @@ public class BiscicolFusekiToESMigrator {
     private Client esClient;
     private ExpeditionService expeditionService;
     private BcidService bcidService;
+    private Map<Integer, List<String>> failedIndexes = new HashMap<>();
+    private Map<Integer, Integer> totalResources = new HashMap<>();
 
     BiscicolFusekiToESMigrator(ExpeditionService expeditionService, BcidService bcidService, ProjectService projectService, Client esClient) {
         this.expeditionService = expeditionService;
@@ -47,10 +53,9 @@ public class BiscicolFusekiToESMigrator {
     /**
      * create the index and update the mapping
      *  @param projectId
-     * @param outputDirectory
      * @param configFile
      */
-    private void createIndex(int projectId, String outputDirectory, File configFile) {
+    private void createIndex(int projectId, File configFile) {
         JSONObject mapping = ConfigurationFileEsMapper.convert(configFile);
 
         ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
@@ -62,12 +67,23 @@ public class BiscicolFusekiToESMigrator {
         List<Project> projectList = projectService.getProjects(SettingsManager.getInstance().retrieveValue("appRoot"));
 
         for (Project project : projectList) {
-            System.out.println("updating project: " + project.getProjectTitle());
-            File configFile = new ConfigurationFileFetcher(project.getProjectId(), outputDirectory, false).getOutputFile();
+            try {
+                System.out.println("updating project: " + project.getProjectTitle());
+                File configFile = new ConfigurationFileFetcher(project.getProjectId(), outputDirectory, false).getOutputFile();
 
-            createIndex(project.getProjectId(), outputDirectory, configFile);
-            migrate(project.getProjectId(), outputDirectory, configFile);
+                createIndex(project.getProjectId(), configFile);
+                migrate(project.getProjectId(), outputDirectory, configFile);
+            } catch (Exception e) {
+                failedIndexes.computeIfAbsent(project.getProjectId(), k -> Collections.singletonList("all"));
+            }
         }
+
+        if (!failedIndexes.isEmpty()) {
+            System.out.println("Failed to index the following expeditions:");
+            MapUtils.debugPrint(System.out, "FAILED INDEXES:", failedIndexes);
+        }
+
+        MapUtils.debugPrint(System.out, "ProjectId, total_resources_indexed MAP:", totalResources);
     }
 
     private void migrate(int projectId, String outputDirectory, File configFile) {
@@ -80,7 +96,6 @@ public class BiscicolFusekiToESMigrator {
 
         // we need to fetch each Expedition individually as the SheetUniqueKey is only unique on the Expedition level
         for (Expedition expedition : project.getExpeditions()) {
-            int resources = 0;
             FusekiFimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(expeditionService, bcidService);
             FimsMetadataFileManager fimsMetadataFileManager = new FimsMetadataFileManager(
                     persistenceManager, SettingsManager.getInstance(), expeditionService, bcidService);
@@ -94,19 +109,29 @@ public class BiscicolFusekiToESMigrator {
 
             System.out.println("updating expedition: " + expedition.getExpeditionCode());
 
-            JSONArray dataset = fimsMetadataFileManager.index();
+            try {
+                JSONArray dataset = fimsMetadataFileManager.index();
 
-            System.out.println("\nindexing " + resources + " resources ....\n");
+                System.out.println("\nindexing " + dataset.size() + " resources ....\n");
 
-            ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
-            indexer.indexDataset(
-                    project.getProjectId(),
-                    expedition.getExpeditionCode(),
-                    dataset
-            );
-            totalResource += resources;
+                ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
+                indexer.indexDataset(
+                        project.getProjectId(),
+                        expedition.getExpeditionCode(),
+                        dataset
+                );
+                totalResource += dataset.size();
+            } catch (FimsRuntimeException e) {
+                if (!failedIndexes.containsKey(projectId)) {
+                    failedIndexes.put(projectId, new ArrayList<>());
+                }
+
+                failedIndexes.get(projectId).add(expedition.getExpeditionCode());
+                e.printStackTrace();
+            }
         }
         System.out.println("Indexed " + totalResource + " resources");
+        totalResources.put(projectId, totalResource);
     }
 
     public static void main(String[] args) {
