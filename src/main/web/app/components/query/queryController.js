@@ -1,7 +1,7 @@
 angular.module('fims.query')
 
-    .controller('QueryCtrl', ['$http', '$element', 'ExpeditionFactory', 'PROJECT_ID', 'REST_ROOT',
-        function ($http, $element, ExpeditionFactory, PROJECT_ID, REST_ROOT) {
+    .controller('QueryCtrl', ['$http', '$element', 'ExpeditionFactory', 'AuthFactory', 'PROJECT_ID', 'REST_ROOT',
+        function ($http, $element, ExpeditionFactory, AuthFactory, PROJECT_ID, REST_ROOT) {
             var defaultFilter = {
                 field: null,
                 value: null
@@ -61,19 +61,19 @@ angular.module('fims.query')
             }
 
             function downloadExcel() {
-                download(REST_ROOT + "projects/query/excel", getQueryPostParams());
+                download(REST_ROOT + "projects/query/excel?access_token=" + AuthFactory.getAccessToken(), getQueryPostParams());
             }
 
             function downloadKml() {
-                download(REST_ROOT + "projects/query/kml", getQueryPostParams());
+                download(REST_ROOT + "projects/query/kml?access_token=" + AuthFactory.getAccessToken(), getQueryPostParams());
             }
 
             function downloadCsv() {
-                download(REST_ROOT + "projects/query/csv", getQueryPostParams());
+                download(REST_ROOT + "projects/query/csv?access_token=" + AuthFactory.getAccessToken(), getQueryPostParams());
             }
 
             function downloadFasta() {
-                download(REST_ROOT + "projects/query/fasta", getQueryPostParams());
+                download(REST_ROOT + "projects/query/fasta?access_token=" + AuthFactory.getAccessToken(), getQueryPostParams());
             }
 
             function getQueryPostParams() {
