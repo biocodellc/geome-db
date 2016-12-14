@@ -90,7 +90,7 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row sectioncontent">
         <div class="help-block" ng-show="queryVm.queryInfo.totalElements == 10000">Query results are limited to
             10,000.
         </div>
@@ -114,7 +114,8 @@
                 </tr>
                 </tbody>
             </table>
-            <ul uib-pagination total-items="queryVm.queryInfo.totalElements" ng-model="queryVm.currentPage"
+            <ul ng-show="queryVm.queryInfo.totalElements > queryVm.queryInfo.size"
+                uib-pagination total-items="queryVm.queryInfo.totalElements" ng-model="queryVm.currentPage"
                 ng-change="queryVm.queryJson()"
                 max-size="10"
                 force-ellipses="true"

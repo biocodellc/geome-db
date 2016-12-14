@@ -98,6 +98,7 @@ angular.module('fims.query')
             function getExpeditions() {
                 ExpeditionFactory.getExpeditions(vm.projectId)
                     .then(function (response) {
+                        vm.selectedExpeditions = [];
                         vm.expeditions = [];
                         angular.forEach(response.data, function (expedition) {
                             vm.expeditions.push(expedition.expeditionCode);
