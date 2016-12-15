@@ -25,6 +25,7 @@ import org.json.simple.JSONObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.io.File;
 import java.io.SyncFailedException;
 import java.util.*;
@@ -40,8 +41,8 @@ public class BiscicolFusekiToESMigrator {
     private Client esClient;
     private ExpeditionService expeditionService;
     private BcidService bcidService;
-    private Map<Integer, List<String>> failedIndexes = new HashMap<>();
-    private Map<Integer, Integer> totalResources = new HashMap<>();
+    private Map<Integer, List<String>> failedIndexes = new LinkedHashMap<>();
+    private Map<Integer, LinkedHashMap<String, Integer>> totalResources = new LinkedHashMap<>();
 
     BiscicolFusekiToESMigrator(ExpeditionService expeditionService, BcidService bcidService, ProjectService projectService, Client esClient) {
         this.expeditionService = expeditionService;
@@ -52,7 +53,8 @@ public class BiscicolFusekiToESMigrator {
 
     /**
      * create the index and update the mapping
-     *  @param projectId
+     *
+     * @param projectId
      * @param configFile
      */
     private void createIndex(int projectId, File configFile) {
@@ -63,19 +65,21 @@ public class BiscicolFusekiToESMigrator {
 
     }
 
-    public void start(String outputDirectory) {
+    public void start(String outputDirectory, Integer projectId) {
         List<Project> projectList = projectService.getProjects(SettingsManager.getInstance().retrieveValue("appRoot"));
 
         for (Project project : projectList) {
-            try {
-                System.out.println("updating project: " + project.getProjectTitle());
-                File configFile = new ConfigurationFileFetcher(project.getProjectId(), outputDirectory, false).getOutputFile();
+            if (projectId == null || (projectId != null && project.getProjectId() == projectId)) {
+                try {
+                    System.out.println("updating project: " + project.getProjectTitle());
+                    File configFile = new ConfigurationFileFetcher(project.getProjectId(), outputDirectory, false).getOutputFile();
 
-                createIndex(project.getProjectId(), configFile);
-                migrate(project.getProjectId(), outputDirectory, configFile);
-            } catch (Exception e) {
-                failedIndexes.computeIfAbsent(project.getProjectId(), k -> Collections.singletonList("all"));
-                e.printStackTrace();
+                    createIndex(project.getProjectId(), configFile);
+                    migrate(project.getProjectId(), outputDirectory, configFile);
+                } catch (Exception e) {
+                    failedIndexes.computeIfAbsent(project.getProjectId(), k -> Collections.singletonList("all"));
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -95,8 +99,13 @@ public class BiscicolFusekiToESMigrator {
 
         int totalResource = 0;
 
+        List<Expedition> expeditions = new ArrayList<>();
+        expeditions.addAll(project.getExpeditions());
+        expeditions.sort(Comparator.comparing(Expedition::getExpeditionCode).reversed());
+
+
         // we need to fetch each Expedition individually as the SheetUniqueKey is only unique on the Expedition level
-        for (Expedition expedition : project.getExpeditions()) {
+        for (Expedition expedition : expeditions) {
             FusekiFimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(expeditionService, bcidService);
             FimsMetadataFileManager fimsMetadataFileManager = new FimsMetadataFileManager(
                     persistenceManager, SettingsManager.getInstance(), expeditionService, bcidService);
@@ -121,6 +130,9 @@ public class BiscicolFusekiToESMigrator {
                         expedition.getExpeditionCode(),
                         dataset
                 );
+
+                totalResources.computeIfAbsent(projectId, k -> new LinkedHashMap<>());
+                totalResources.get(projectId).put(expedition.getExpeditionCode(), dataset.size());
                 totalResource += dataset.size();
             } catch (FimsRuntimeException e) {
                 if (!failedIndexes.containsKey(projectId)) {
@@ -132,7 +144,8 @@ public class BiscicolFusekiToESMigrator {
             }
         }
         System.out.println("Indexed " + totalResource + " resources");
-        totalResources.put(projectId, totalResource);
+        totalResources.computeIfAbsent(projectId, k -> new LinkedHashMap<>());
+        totalResources.get(projectId).put("project_total", totalResource);
     }
 
     public static void main(String[] args) {
@@ -143,6 +156,7 @@ public class BiscicolFusekiToESMigrator {
         BcidService bcidService = applicationContext.getBean(BcidService.class);
 
         String output_directory = "tripleOutput/";
+        Integer projectId = null;
 
         // Direct output using the standardPrinter subClass of fimsPrinter which send to fimsPrinter.out (for command-line usage)
         FimsPrinter.out = new StandardPrinter();
@@ -156,6 +170,7 @@ public class BiscicolFusekiToESMigrator {
         Options options = new Options();
         options.addOption("h", "help", false, "print this help message and exit");
         options.addOption("o", "output_directory", true, "Output Directory");
+        options.addOption("p", "project", true, "project");
 
         // Create the commands parser and parse the command line arguments.
         try {
@@ -171,10 +186,13 @@ public class BiscicolFusekiToESMigrator {
         if (cl.hasOption("o")) {
             output_directory = cl.getOptionValue("o");
         }
+        if (cl.hasOption("p")) {
+            projectId = Integer.parseInt(cl.getOptionValue("p"));
+        }
 
         BiscicolFusekiToESMigrator dataMigrator = new BiscicolFusekiToESMigrator(expeditionService, bcidService, projectService, esClient);
 
         // also need to run this for dipnet training projectId 1?
-        dataMigrator.start(output_directory);
+        dataMigrator.start(output_directory, projectId);
     }
 }
