@@ -134,7 +134,7 @@ javascript.source {
 
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
-mainClassName = // use startScripts task mainClassName
+mainClassName = "biocode.fims.run.BiscicolFusekiToESMigrator"
 
 project.ext.environment = project.hasProperty('environment') ? project.getProperty('environment') : defaultEnvironment
 
@@ -171,26 +171,13 @@ war {
     }
 }
 
-task startScripts(type: CreateStartScripts, overwrite: true) {
+startScripts {
     subprojects.each { subproject ->
         project.configurations.server.dependencies.addAll(subproject.configurations.server.dependencies)
     }
 
     classpath = files(jar.archivePath, configurations.server, configurations.runtime)
-
-    outputDir = file("${buildDir}/scripts")
-    mainClassName = "biocode.fims.run.BiscicolFusekiToESMigrator"
-    applicationName = project.name
-
-    dependsOn jar
-
-    doLast {
-        println "custom startScripts"
-    }
 }
-
-tasks.installDist.dependsOn("startScripts")
-tasks.distZip.dependsOn("startScripts")
 
 task setProductionEnv << {
     project.ext.environment = "production"
