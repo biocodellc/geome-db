@@ -75,6 +75,7 @@ public class BiscicolFusekiToESMigrator {
                 migrate(project.getProjectId(), outputDirectory, configFile);
             } catch (Exception e) {
                 failedIndexes.computeIfAbsent(project.getProjectId(), k -> Collections.singletonList("all"));
+                e.printStackTrace();
             }
         }
 

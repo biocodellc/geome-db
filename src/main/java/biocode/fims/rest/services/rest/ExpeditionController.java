@@ -7,6 +7,7 @@ import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 /**
  * REST services dealing with expeditions
  */
+@Controller
 @Path("expeditions")
 public class ExpeditionController extends FimsAbstractExpeditionController {
 

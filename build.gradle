@@ -85,6 +85,16 @@ dependencies {
     testCompile "junit:junit-dep:4.10"
 }
 
+distributions {
+    main {
+        contents {
+            into('lib') {
+                from configurations.server
+            }
+        }
+    }
+}
+
 // specify files that require a specific loading order
 ext.externLibsOrdered = ["${projectDir}/src/main/web/js/externalLibs/lodash.js", "${projectDir}/src/main/web/js/externalLibs/papaparse.min.js",
                          "${projectDir}/src/main/web/js/externalLibs/xlsx.min.js", "${projectDir}/src/main/web/js/externalLibs/xlsx-reader.js"]
@@ -124,7 +134,7 @@ javascript.source {
 
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
-mainClassName = "biocode.fims.run.Run"
+mainClassName = // use startScripts task mainClassName
 
 project.ext.environment = project.hasProperty('environment') ? project.getProperty('environment') : defaultEnvironment
 
@@ -160,6 +170,27 @@ war {
         into "/js/"
     }
 }
+
+task startScripts(type: CreateStartScripts, overwrite: true) {
+    subprojects.each { subproject ->
+        project.configurations.server.dependencies.addAll(subproject.configurations.server.dependencies)
+    }
+
+    classpath = files(jar.archivePath, configurations.server, configurations.runtime)
+
+    outputDir = file("${buildDir}/scripts")
+    mainClassName = "biocode.fims.run.BiscicolFusekiToESMigrator"
+    applicationName = project.name
+
+    dependsOn jar
+
+    doLast {
+        println "custom startScripts"
+    }
+}
+
+tasks.installDist.dependsOn("startScripts")
+tasks.distZip.dependsOn("startScripts")
 
 task setProductionEnv << {
     project.ext.environment = "production"
