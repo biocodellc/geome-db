@@ -4,7 +4,7 @@ angular.module('fims.expeditions')
     var vm = this;
 
     angular.element(document).ready(function () {
-        populateExpeditionPage(UserFactory.user.username);
+        populateExpeditionPage(UserFactory.user.username, UserFactory.user.userId);
     });
     
 }]);
