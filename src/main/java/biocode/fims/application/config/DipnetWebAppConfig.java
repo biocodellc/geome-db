@@ -59,13 +59,6 @@ public class DipnetWebAppConfig {
     }
 
     @Bean
-    @Scope("prototype")
-    public ValidateController validate() throws Exception {
-        return new ValidateController(fimsAppConfig.expeditionService, dipnetExpeditionService, fileManagers(),
-                dipnetAppConfig.fimsMetadataFileManager(), fimsAppConfig.settingsManager, esIndexer());
-    }
-
-    @Bean
     public QueryAuthorizer queryAuthorizer() {
         return new QueryAuthorizer(dipnetAppConfig.projectService, fimsAppConfig.settingsManager);
     }

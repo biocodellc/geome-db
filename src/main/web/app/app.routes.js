@@ -41,6 +41,7 @@ angular.module('dipnetApp')
                 url: "/query",
                 templateUrl: "app/components/query/query.html",
                 controller: "QueryCtrl as vm",
+                loginRequired: true
             })
             .state('profile', {
                 url: "/secure/profile?error",

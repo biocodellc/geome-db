@@ -17,6 +17,7 @@ import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
 import biocode.fims.query.*;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
+import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -55,17 +56,21 @@ public class QueryController extends FimsService {
 
     private final Client esClient;
     private final QueryAuthorizer queryAuthorizer;
+    private final ExpeditionService expeditionService;
 
     @Autowired
-    QueryController(SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer) {
+    QueryController(SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer,
+                    ExpeditionService expeditionService) {
         super(settingsManager);
         this.esClient = esClient;
         this.queryAuthorizer = queryAuthorizer;
+        this.expeditionService = expeditionService;
     }
 
     /**
      * accepts an elastic json query request. note that aggregations are not supported, and the json query object needs
      * to exclude the initial {"query": } that you would send via the elasticsearch rest api
+     *
      * @param page
      * @param limit
      * @param esQueryString
@@ -125,9 +130,16 @@ public class QueryController extends FimsService {
             MultivaluedMap<String, String> form) {
 
         // Build the query, etc..
-        ElasticSearchQuery query = POSTElasticSearchQuery(form);
+        try {
+            ElasticSearchQuery query = POSTElasticSearchQuery(form);
+            return getJsonResults(page, limit, query);
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
 
-        return getJsonResults(page, limit, query);
+            throw e;
+        }
     }
 
     /**
@@ -145,21 +157,29 @@ public class QueryController extends FimsService {
     public Response queryCSVAsPOST(
             MultivaluedMap<String, String> form) {
 
-        // Build the query, etc..
-        ElasticSearchQuery query = POSTElasticSearchQuery(form);
+        try {
+            // Build the query, etc..
+            ElasticSearchQuery query = POSTElasticSearchQuery(form);
 
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
-        ArrayNode results = elasticSearchQuerier.getAllResults();
+            ArrayNode results = elasticSearchQuerier.getAllResults();
 
-        JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, DipnetQueryUtils.getJsonFieldTransforms(getMapping()), uploadPath(), ",");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, DipnetQueryUtils.getJsonFieldTransforms(getMapping()), uploadPath(), ",");
 
-        Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
-        response.header("Content-Disposition",
-                "attachment; filename=dipnet-fims-output.csv");
+            response.header("Content-Disposition",
+                    "attachment; filename=dipnet-fims-output.csv");
 
-        return response.build();
+            return response.build();
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
+        }
     }
 
     /**
@@ -177,29 +197,37 @@ public class QueryController extends FimsService {
     public Response queryKml(
             MultivaluedMap<String, String> form) {
 
-        // Build the query, etc..
-        ElasticSearchQuery query = POSTElasticSearchQuery(form);
+        try {
+            // Build the query, etc..
+            ElasticSearchQuery query = POSTElasticSearchQuery(form);
 
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
-        ArrayNode results = elasticSearchQuerier.getAllResults();
+            ArrayNode results = elasticSearchQuerier.getAllResults();
 
-        JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, uploadPath(), DipnetQueryUtils.getJsonFieldTransforms(getMapping()))
-                .latPath(DipnetQueryUtils.getLatitudePointer())
-                .longPath(DipnetQueryUtils.getLongitudePointer())
-                .namePath(DipnetQueryUtils.getUniqueKeyPointer())
-                .build();
+            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, uploadPath(), DipnetQueryUtils.getJsonFieldTransforms(getMapping()))
+                    .latPath(DipnetQueryUtils.getLatitudePointer())
+                    .longPath(DipnetQueryUtils.getLongitudePointer())
+                    .namePath(DipnetQueryUtils.getUniqueKeyPointer())
+                    .build();
 
-        Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
-        response.header("Content-Disposition",
-                "attachment; filename=dipnet-fims-output.kml");
+            response.header("Content-Disposition",
+                    "attachment; filename=dipnet-fims-output.kml");
 
-        // Return response
-        if (response == null) {
-            return Response.status(204).build();
-        } else {
-            return response.build();
+            // Return response
+            if (response == null) {
+                return Response.status(204).build();
+            } else {
+                return response.build();
+            }
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
         }
     }
 
@@ -210,51 +238,59 @@ public class QueryController extends FimsService {
     public Response queryFasta(
             MultivaluedMap<String, String> form) {
 
-        // Build the query, etc..
-        ElasticSearchQuery query = POSTElasticSearchQuery(form);
+        try {
+            // Build the query, etc..
+            ElasticSearchQuery query = POSTElasticSearchQuery(form);
 
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
-        ArrayNode results = elasticSearchQuerier.getAllResults();
+            ArrayNode results = elasticSearchQuerier.getAllResults();
 
-        JsonWriter metadataJsonWriter = new DelimitedTextJsonWriter(
-                results,
-                DipnetQueryUtils.getJsonFieldTransforms(getMapping()),
-                uploadPath(),
-                ","
-        );
+            JsonWriter metadataJsonWriter = new DelimitedTextJsonWriter(
+                    results,
+                    DipnetQueryUtils.getJsonFieldTransforms(getMapping()),
+                    uploadPath(),
+                    ","
+            );
 
-        File metadataFile = metadataJsonWriter.write();
+            File metadataFile = metadataJsonWriter.write();
 
-        List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = getFastaSequenceFilters(form);
+            List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = getFastaSequenceFilters(form);
 
-        JsonWriter fastaJsonWriter = new FastaJsonWriter(
-                results,
-                DipnetQueryUtils.getFastaSequenceFields(getMapping()),
-                uploadPath(),
-                fastaSequenceFilters);
+            JsonWriter fastaJsonWriter = new FastaJsonWriter(
+                    results,
+                    DipnetQueryUtils.getFastaSequenceFields(getMapping()),
+                    uploadPath(),
+                    fastaSequenceFilters);
 
-        File fastaFile = fastaJsonWriter.write();
+            File fastaFile = fastaJsonWriter.write();
 
-        Map<String, File> fileMap = new HashMap<>();
-        fileMap.put("dipnet-fims-output.csv", metadataFile);
+            Map<String, File> fileMap = new HashMap<>();
+            fileMap.put("dipnet-fims-output.csv", metadataFile);
 
-        if (fastaFile.getName().endsWith(".zip")) {
-            fileMap.put("dipnet-fims-output-fasta.zip", fastaFile);
-        } else {
-            fileMap.put("dipnet-fims-output.fasta", fastaFile);
-        }
+            if (fastaFile.getName().endsWith(".zip")) {
+                fileMap.put("dipnet-fims-output-fasta.zip", fastaFile);
+            } else {
+                fileMap.put("dipnet-fims-output.fasta", fastaFile);
+            }
 
-        Response.ResponseBuilder response = Response.ok(FileUtils.zip(fileMap, uploadPath()), "application/zip");
+            Response.ResponseBuilder response = Response.ok(FileUtils.zip(fileMap, uploadPath()), "application/zip");
 
-        response.header("Content-Disposition",
-                "attachment; filename=dipnet-fims-output.zip");
+            response.header("Content-Disposition",
+                    "attachment; filename=dipnet-fims-output.zip");
 
-        // Return response
-        if (response == null) {
-            return Response.status(204).build();
-        } else {
-            return response.build();
+            // Return response
+            if (response == null) {
+                return Response.status(204).build();
+            } else {
+                return response.build();
+            }
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
         }
     }
 
@@ -273,7 +309,7 @@ public class QueryController extends FimsService {
     public Response queryExcel(
             MultivaluedMap<String, String> form) {
 
-        if (form.containsKey("expeditions") && form.get("expeditions").size() != 1) {
+        if (!form.containsKey("expeditions") || form.get("expeditions").size() != 1) {
             throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
         }
         // Build the query, etc..
@@ -343,6 +379,15 @@ public class QueryController extends FimsService {
                     entry.getValue().get(0));
 
             filterConditions.add(filterCondition);
+        }
+
+        // if no expeditions are specified, then we want to only query public expeditions
+        if (expeditionCodes.size() == 0) {
+            expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditionCodes.add(e.getExpeditionCode()));
+
+            if (expeditionCodes.size() == 0) {
+                throw new FimsRuntimeException(QueryErrorCode.NO_RESOURCES, 204);
+            }
         }
 
         return new ElasticSearchQuery(
