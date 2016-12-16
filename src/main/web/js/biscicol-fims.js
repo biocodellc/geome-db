@@ -1248,20 +1248,28 @@ function validatorSubmit() {
 }
 
 // keep looping pollStatus every second until results are returned
+var errCnt = 0;
 function loopStatus(promise) {
-    setTimeout(function () {
-        pollStatus()
-            .done(function (data) {
-                if (promise.state() == "pending") {
-                    if (data.error != null) {
-                        dialog(data.error, "Validation Results");
-                    } else {
-                        dialog(data.status, "Validation Results");
+    console.log("errorCnt: " + errorCnt);
+    if (errorCnt < 5) {
+        setTimeout(function () {
+            pollStatus()
+                .done(function (data) {
+                    if (promise.state() == "pending") {
+                        if (data.error != null && errCnt >= 4) {
+                            dialog(data.error, "Validation Results");
+                            errCnt++;
+                        } else if (data.error != null) {
+                            errCnt++;
+                        } else {
+                            dialog(data.status, "Validation Results");
+                            errCnt = 0;
+                        }
+                        loopStatus(promise);
                     }
-                    loopStatus(promise);
-                }
-            });
-    }, 1000);
+                });
+        }, 1000);
+    }
 }
 
 // poll the server to get the validation/upload status
