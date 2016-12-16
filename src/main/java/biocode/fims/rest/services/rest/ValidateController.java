@@ -1,6 +1,7 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
@@ -15,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.simple.JSONObject;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
@@ -26,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Scope("prototype")
 @Controller
 @Path("validate")
 public class ValidateController extends FimsService {
@@ -33,13 +36,15 @@ public class ValidateController extends FimsService {
     private final ExpeditionService expeditionService;
     private final List<AuxilaryFileManager> fileManagers;
     private final FimsMetadataFileManager fimsMetadataFileManager;
+    private final ElasticSearchIndexer esIndexer;
 
     public ValidateController(ExpeditionService expeditionService, FimsMetadataFileManager fimsMetadataFileManager,
-                              List<AuxilaryFileManager> fileManagers, SettingsManager settingsManager) {
+                              List<AuxilaryFileManager> fileManagers, SettingsManager settingsManager, ElasticSearchIndexer esIndexer) {
         super(settingsManager);
         this.expeditionService = expeditionService;
         this.fimsMetadataFileManager = fimsMetadataFileManager;
         this.fileManagers = fileManagers;
+        this.esIndexer = esIndexer;
     }
 
     /**
@@ -98,6 +103,7 @@ public class ValidateController extends FimsService {
                     .addFileManagers(fileManagers)
                     .addFmProperties(fmProps)
                     .configFile(configFile)
+                    .elasticSearchIndexer(esIndexer)
                     .build();
 
             processController.setProcess(process);

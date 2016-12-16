@@ -1,9 +1,9 @@
 package biocode.fims.application.config;
 
 import biocode.fims.authorizers.QueryAuthorizer;
+import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.rest.services.rest.ValidateController;
-import biocode.fims.service.OAuthProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 
@@ -26,11 +26,10 @@ public class BiscicolWebAppConfig {
         return new ArrayList<>();
     }
 
+    //TODO move to ElasticSearchAppConfig.class
     @Bean
-    @Scope("prototype")
-    public ValidateController validate() throws Exception {
-        return new ValidateController(biscicolAppConfig.fimsAppConfig.expeditionService, biscicolAppConfig.FimsMetadataFileManager(),
-               fileManagers(), biscicolAppConfig.fimsAppConfig.settingsManager);
+    public ElasticSearchIndexer esIndexer() {
+        return new ElasticSearchIndexer(biscicolAppConfig.esClient);
     }
 
     @Bean

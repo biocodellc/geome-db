@@ -22,18 +22,17 @@ public class EzidUpdator {
     private static final Logger logger = LoggerFactory.getLogger(EzidUpdator.class);
     private BcidService bcidService;
     private SettingsManager settingsManager;
-    private final EzidUtils ezidUtils;
 
-    public EzidUpdator(BcidService bcidService, SettingsManager settingsManager, EzidUtils ezidUtils) {
+    public EzidUpdator(BcidService bcidService, SettingsManager settingsManager) {
         this.bcidService = bcidService;
         this.settingsManager = settingsManager;
-        this.ezidUtils = ezidUtils;
     }
 
     /**
      * Update EZID Bcid metadata for this particular ID
      */
     private void updateBcidsEZID(EzidService ezidService, Bcid bcid) throws EzidException {
+        EzidUtils ezidUtils = new EzidUtils(settingsManager);
         // Build the hashmap to pass to ezidService
         // Get creator, using any system defined creator to override the default which is based on user data
         HashMap<String, String> map = ezidUtils.getDcMap(bcid);

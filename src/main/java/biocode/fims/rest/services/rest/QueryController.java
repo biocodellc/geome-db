@@ -18,6 +18,7 @@ import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
 import biocode.fims.query.*;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
+import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -30,6 +31,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +51,7 @@ import java.util.*;
 /**
  * Query interface for Biocode-fims expedition
  */
+@Scope("request")
 @Controller
 @Path("/projects/query")
 public class QueryController extends FimsService {
@@ -60,17 +63,21 @@ public class QueryController extends FimsService {
 
     private final Client esClient;
     private final QueryAuthorizer queryAuthorizer;
+    private final ExpeditionService expeditionService;
 
     @Autowired
-    QueryController(SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer) {
+    QueryController(SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer,
+                    ExpeditionService expeditionService) {
         super(settingsManager);
         this.esClient = esClient;
         this.queryAuthorizer = queryAuthorizer;
+        this.expeditionService = expeditionService;
     }
 
     /**
      * accepts an elastic json query request. note that aggregations are not supported, and the json query object needs
      * to exclude the initial {"query": } that you would send via the elasticsearch rest api
+     *
      * @param page
      * @param limit
      * @param esQueryString
@@ -129,15 +136,22 @@ public class QueryController extends FimsService {
             @QueryParam("limit") @DefaultValue("100") int limit,
             MultivaluedMap<String, String> form) {
 
-        // Build the query, etc..
-        ElasticSearchQuery query = POSTElasticSearchQuery(form);
+        try {
+            // Build the query, etc..
+            ElasticSearchQuery query = POSTElasticSearchQuery(form);
 
-        return getJsonResults(page, limit, query);
+            return getJsonResults(page, limit, query);
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
+        }
     }
 
     /**
      * Return JSON for a graph query.
-     *
      */
     @GET
     @Path("/json/")
@@ -149,9 +163,17 @@ public class QueryController extends FimsService {
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit) {
 
-        ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
+        try {
+            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
 
-        return getJsonResults(page, limit, query);
+            return getJsonResults(page, limit, query);
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
+        }
     }
 
     /**
@@ -169,21 +191,29 @@ public class QueryController extends FimsService {
     public Response queryCSVAsPOST(
             MultivaluedMap<String, String> form) {
 
-        // Build the query, etc..
-        ElasticSearchQuery query = POSTElasticSearchQuery(form);
+        try {
+            // Build the query, etc..
+            ElasticSearchQuery query = POSTElasticSearchQuery(form);
 
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
-        ArrayNode results = elasticSearchQuerier.getAllResults();
+            ArrayNode results = elasticSearchQuerier.getAllResults();
 
-        JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), ",");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), ",");
 
-        Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
-        response.header("Content-Disposition",
-                "attachment; filename=biocode-fims-output.csv");
+            response.header("Content-Disposition",
+                    "attachment; filename=biocode-fims-output.csv");
 
-        return response.build();
+            return response.build();
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
+        }
     }
 
     /**
@@ -203,21 +233,29 @@ public class QueryController extends FimsService {
             @QueryParam("projectId") Integer projectId,
             @QueryParam("filter") String filter) {
 
-        // Build the query, etc..
-        ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
+        try {
+            // Build the query, etc..
+            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
 
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
-        ArrayNode results = elasticSearchQuerier.getAllResults();
+            ArrayNode results = elasticSearchQuerier.getAllResults();
 
-        JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), ",");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), ",");
 
-        Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
-        response.header("Content-Disposition",
-                "attachment; filename=biocode-fims-output.csv");
+            response.header("Content-Disposition",
+                    "attachment; filename=biocode-fims-output.csv");
 
-        return response.build();
+            return response.build();
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
+        }
     }
 
     /**
@@ -235,31 +273,39 @@ public class QueryController extends FimsService {
     public Response queryKml(
             MultivaluedMap<String, String> form) {
 
-        // Build the query, etc..
-        ElasticSearchQuery query = POSTElasticSearchQuery(form);
+        try {
+            // Build the query, etc..
+            ElasticSearchQuery query = POSTElasticSearchQuery(form);
 
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
-        ArrayNode results = elasticSearchQuerier.getAllResults();
+            ArrayNode results = elasticSearchQuerier.getAllResults();
 
-        Mapping mapping = getMapping(projectId);
+            Mapping mapping = getMapping(projectId);
 
-        JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, uploadPath(), BiscicolQueryUtils.getJsonFieldTransforms(mapping))
-                .latPath(BiscicolQueryUtils.getLatitudePointer(mapping))
-                .longPath(BiscicolQueryUtils.getLongitudePointer(mapping))
-                .namePath(BiscicolQueryUtils.getUniqueKeyPointer(mapping))
-                .build();
+            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, uploadPath(), BiscicolQueryUtils.getJsonFieldTransforms(mapping))
+                    .latPath(BiscicolQueryUtils.getLatitudePointer(mapping))
+                    .longPath(BiscicolQueryUtils.getLongitudePointer(mapping))
+                    .namePath(BiscicolQueryUtils.getUniqueKeyPointer(mapping))
+                    .build();
 
-        Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
-        response.header("Content-Disposition",
-                "attachment; filename=biocode-fims-output.kml");
+            response.header("Content-Disposition",
+                    "attachment; filename=biocode-fims-output.kml");
 
-        // Return response
-        if (response == null) {
-            return Response.status(204).build();
-        } else {
-            return response.build();
+            // Return response
+            if (response == null) {
+                return Response.status(204).build();
+            } else {
+                return response.build();
+            }
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
         }
     }
 
@@ -277,31 +323,39 @@ public class QueryController extends FimsService {
             @QueryParam("projectId") Integer projectId,
             @QueryParam("filter") String filter) {
 
-        // Build the query, etc..
-        ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
+        try {
+            // Build the query, etc..
+            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
 
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
-        ArrayNode results = elasticSearchQuerier.getAllResults();
+            ArrayNode results = elasticSearchQuerier.getAllResults();
 
-        Mapping mapping = getMapping(projectId);
+            Mapping mapping = getMapping(projectId);
 
-        JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, uploadPath(), BiscicolQueryUtils.getJsonFieldTransforms(mapping))
-                .latPath(BiscicolQueryUtils.getLatitudePointer(mapping))
-                .longPath(BiscicolQueryUtils.getLongitudePointer(mapping))
-                .namePath(BiscicolQueryUtils.getUniqueKeyPointer(mapping))
-                .build();
+            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, uploadPath(), BiscicolQueryUtils.getJsonFieldTransforms(mapping))
+                    .latPath(BiscicolQueryUtils.getLatitudePointer(mapping))
+                    .longPath(BiscicolQueryUtils.getLongitudePointer(mapping))
+                    .namePath(BiscicolQueryUtils.getUniqueKeyPointer(mapping))
+                    .build();
 
-        Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
-        response.header("Content-Disposition",
-                "attachment; filename=biocode-fims-output.kml");
+            response.header("Content-Disposition",
+                    "attachment; filename=biocode-fims-output.kml");
 
-        // Return response
-        if (response == null) {
-            return Response.status(204).build();
-        } else {
-            return response.build();
+            // Return response
+            if (response == null) {
+                return Response.status(204).build();
+            } else {
+                return response.build();
+            }
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
         }
     }
 
@@ -319,29 +373,37 @@ public class QueryController extends FimsService {
             @QueryParam("projectId") Integer projectId,
             @QueryParam("filter") String filter) {
 
-        // Build the query, etc..
-        ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
+        try {
+            // Build the query, etc..
+            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
 
-        Mapping mapping = getMapping(projectId);
-        Validation validation = new Validation();
-        validation.addValidationRules(configFile, mapping);
+            Mapping mapping = getMapping(projectId);
+            Validation validation = new Validation();
+            validation.addValidationRules(configFile, mapping);
 
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
-        ArrayNode results = elasticSearchQuerier.getAllResults();
+            ArrayNode results = elasticSearchQuerier.getAllResults();
 
-        // TODO implement a CspaceJsonWriter
-        JsonWriter jsonWriter = null;
-        Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+            // TODO implement a CspaceJsonWriter
+            JsonWriter jsonWriter = null;
+            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
-        response.header("Content-Disposition",
-                "attachment; filename=biocode-fims-output.xml");
+            response.header("Content-Disposition",
+                    "attachment; filename=biocode-fims-output.xml");
 
-        // Return response
-        if (response == null) {
-            return Response.status(204).build();
-        } else {
-            return response.build();
+            // Return response
+            if (response == null) {
+                return Response.status(204).build();
+            } else {
+                return response.build();
+            }
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
         }
 
     }
@@ -352,7 +414,6 @@ public class QueryController extends FimsService {
      * filter parameters are of the form:
      * name={URI} value={filter value}
      *
-     *
      * @return
      */
     @POST
@@ -361,21 +422,29 @@ public class QueryController extends FimsService {
     public Response queryTabAsPost(
             MultivaluedMap<String, String> form) {
 
-        // Build the query, etc..
-        ElasticSearchQuery query = POSTElasticSearchQuery(form);
+        try {
+            // Build the query, etc..
+            ElasticSearchQuery query = POSTElasticSearchQuery(form);
 
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
-        ArrayNode results = elasticSearchQuerier.getAllResults();
+            ArrayNode results = elasticSearchQuerier.getAllResults();
 
-        JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), ",");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), ",");
 
-        Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
-        response.header("Content-Disposition",
-                "attachment; filename=biocode-fims-output.txt");
+            response.header("Content-Disposition",
+                    "attachment; filename=biocode-fims-output.txt");
 
-        return response.build();
+            return response.build();
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
+        }
     }
 
     /**
@@ -390,21 +459,29 @@ public class QueryController extends FimsService {
             @QueryParam("projectId") Integer projectId,
             @QueryParam("filter") String filter) {
 
-        // Build the query, etc..
-        ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
+        try {
+            // Build the query, etc..
+            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
 
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
-        ArrayNode results = elasticSearchQuerier.getAllResults();
+            ArrayNode results = elasticSearchQuerier.getAllResults();
 
-        JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), ",");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), ",");
 
-        Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
-        response.header("Content-Disposition",
-                "attachment; filename=biocode-fims-output.txt");
+            response.header("Content-Disposition",
+                    "attachment; filename=biocode-fims-output.txt");
 
-        return response.build();
+            return response.build();
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
+        }
     }
 
     /**
@@ -422,7 +499,7 @@ public class QueryController extends FimsService {
     public Response queryExcel(
             MultivaluedMap<String, String> form) {
 
-        if (form.containsKey("expeditions") && form.get("expeditions").size() != 1) {
+        if (!form.containsKey("expeditions") || form.get("expeditions").size() != 1) {
             throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
         }
         // Build the query, etc..
@@ -476,6 +553,10 @@ public class QueryController extends FimsService {
             @QueryParam("projectId") Integer projectId,
             @QueryParam("filter") String filter) {
 
+        if (expeditions.size() != 1) {
+            throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
+        }
+
         // Build the query, etc..
         ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
 
@@ -527,6 +608,15 @@ public class QueryController extends FimsService {
             filterConditions.add(filterCondition);
         }
 
+        // if no expeditions are specified, then we want to only query public expeditions
+        if (expeditionCodes.size() == 0) {
+            expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditionCodes.add(e.getExpeditionCode()));
+
+            if (expeditionCodes.size() == 0) {
+                throw new FimsRuntimeException(QueryErrorCode.NO_RESOURCES, 204);
+            }
+        }
+
         return new ElasticSearchQuery(
                 getQueryBuilder(filterConditions, expeditionCodes),
                 new String[]{String.valueOf(projectId)},
@@ -552,6 +642,16 @@ public class QueryController extends FimsService {
 
         // Parse the GET filter
         List<ElasticSearchFilterCondition> filterConditions = parseGETFilter(filter, attributes, mapping);
+
+
+        // if no expeditions are specified, then we want to only query public expeditions
+        if (expeditions.size() == 0) {
+            expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditions.add(e.getExpeditionCode()));
+
+            if (expeditions.size() == 0) {
+                throw new FimsRuntimeException(QueryErrorCode.NO_RESOURCES, 204);
+            }
+        }
 
         return new ElasticSearchQuery(
                 getQueryBuilder(filterConditions, expeditions),
