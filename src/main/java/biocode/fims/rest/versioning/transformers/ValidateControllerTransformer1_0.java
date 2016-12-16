@@ -1,31 +1,32 @@
 package biocode.fims.rest.versioning.transformers;
 
 import biocode.fims.rest.versioning.Transformer;
-import biocode.fims.utils.StringGenerator;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * class to transform requests to {@link biocode.fims.rest.services.rest.Validate} resource methods from
+ * class to transform requests to {@link biocode.fims.rest.services.rest.ValidateController} resource methods from
  * {@link biocode.fims.rest.versioning.APIVersion}v1_0 to APIVersion v1_1, and responses from v1_1 to v1_0.
  */
-public class ValidateTransformer1_0 implements Transformer {
-    private final static Logger logger = LoggerFactory.getLogger(ValidateTransformer1_0.class);
+@Component
+public class ValidateControllerTransformer1_0 implements Transformer {
+    private final static Logger logger = LoggerFactory.getLogger(ValidateControllerTransformer1_0.class);
 
     @Override
-    public void updateRequestData(LinkedHashMap<String, Object> argMap, String methodName) {
+    public void updateRequestData(LinkedHashMap<String, Object> argMap, String methodName, MultivaluedMap<String, String> queryParameters) {
 
     }
 

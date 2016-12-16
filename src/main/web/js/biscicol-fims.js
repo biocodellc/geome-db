@@ -213,7 +213,7 @@ function populateDivFromService(url, elementID, failMessage) {
 }
 
 function populateProjects() {
-    theUrl = biocodeFimsRestRoot + "projects/list?includePublic=true";
+    theUrl = biocodeFimsRestRoot + "projects?includePublic=true";
     var jqxhr = $.getJSON(theUrl, function (data) {
         var listItems = "";
         listItems += "<option value='0'>Select a project ...</option>";
@@ -386,12 +386,12 @@ function bcidCreatorSubmit() {
 /* ====== expeditions.html Functions ======= */
 
 // function to populate the expeditions.html page
-function populateExpeditionPage(username) {
+function populateExpeditionPage(username, userId) {
     var jqxhr = listProjects(username, biocodeFimsRestRoot + 'projects/user/list', true
     ).done(function () {
         // attach toggle function to each project
         $(".expand-content").click(function () {
-            loadExpeditions(this.id)
+            loadExpeditions(this.id, userId)
         });
     }).fail(function (jqxhr) {
         $("#sectioncontent").html(jqxhr.responseText);
@@ -399,7 +399,7 @@ function populateExpeditionPage(username) {
 }
 
 // function to load the expeditions.html subsections
-function loadExpeditions(id) {
+function loadExpeditions(id, userId) {
     if ($('.toggle-content#' + id).is(':hidden')) {
         $('.img-arrow', '#' + id).attr("src", appRoot + "images/down-arrow.png");
     } else {
@@ -411,15 +411,15 @@ function loadExpeditions(id) {
         ($(divId).children().length == 0)) {
         populateExpeditionSubsections(divId);
     } else if ($(divId).children().length == 0) {
-        listExpeditions(divId);
+        listExpeditions(divId, userId);
     }
     $('.toggle-content#' + id).slideToggle('slow');
 }
 
 // retrieve the expeditions for a project and display them on the page
-function listExpeditions(divId) {
+function listExpeditions(divId, userId) {
     var projectId = $(divId).data('projectId');
-    var jqxhr = $.getJSON(biocodeFimsRestRoot + 'projects/' + projectId + '/expeditions/')
+    var jqxhr = $.getJSON(biocodeFimsRestRoot + 'users/' + userId + '/projects/' + projectId + '/expeditions/')
         .done(function (data) {
             var html = '';
             var expandTemplate = '<br>\n<a class="expand-content" id="{expedition}-{section}" href="javascript:void(0);">\n'
@@ -513,9 +513,9 @@ function editExpedition(projectId, expeditionCode, e) {
 
     var buttons = {
         "Update": function () {
-            var public = $("[name='public']")[0].checked;
+            var isPublic = $("[name='public']")[0].checked;
 
-            $.get(biocodeFimsRestRoot + "expeditions/updateStatus/" + projectId + "/" + expeditionCode + "/" + public
+            $.get(biocodeFimsRestRoot + "expeditions/updateStatus/" + projectId + "/" + expeditionCode + "/" + isPublic
             ).done(function () {
                 var b = {
                     "Ok": function () {
@@ -1315,7 +1315,7 @@ function checkNAAN(spreadsheetNaan, naan) {
 }
 
 // function to toggle the projectId and expeditionCode inputs of the validation form
-function validationFormToggle() {
+function validationFormToggle(userId) {
     $("#dataset").change(function () {
         // Clear the resultsContainer
         $("#resultsContainer").empty();
@@ -1382,7 +1382,7 @@ function validationFormToggle() {
         // only get expedition codes if a user is logged in
         if (angular.element(document.body).injector().get('AuthFactory').isAuthenticated) {
             $("#expeditionCode").replaceWith("<p id='expeditionCode'>Loading ... </p>");
-            getExpeditionCodes();
+            getExpeditionCodes(userId);
         }
     });
 }
@@ -1410,14 +1410,14 @@ function hideUpload() {
 function updateExpeditionPublicStatus(expeditionList) {
     $('#expeditionCode').change(function () {
         var code = $('#expeditionCode').val();
-        var public;
+        var isPublic;
         $.each(expeditionList, function (key, e) {
             if (e.expeditionCode == code) {
-                public = e.public;
+                isPublic = e.public;
                 return false;
             }
         });
-        if (public == 'true') {
+        if (isPublic == 'true') {
             $('#public_status').prop('checked', true);
         } else {
             $('#public_status').prop('checked', false);
@@ -1426,9 +1426,9 @@ function updateExpeditionPublicStatus(expeditionList) {
 }
 
 // get the expeditions codes a user owns for a project
-function getExpeditionCodes() {
+function getExpeditionCodes(userId) {
     var projectID = $("#projects").val();
-    $.getJSON(biocodeFimsRestRoot + "projects/" + projectID + "/expeditions/")
+    $.getJSON(biocodeFimsRestRoot + "users/" + userId + "/projects/" + projectID + "/expeditions/")
         .done(function (data) {
             var select = "<select name='expeditionCode' id='expeditionCode' style='max-width:199px'>" +
                 "<option value='0'>Create New Expedition</option>";
@@ -1442,7 +1442,7 @@ function getExpeditionCodes() {
         }).fail(function (jqxhr) {
         var msg;
         var title = "Error!";
-        if (jqxhr.status = 401) {
+        if (jqxhr.status == 401) {
             msg = "Please login to load your expeditions.";
             title = "Warning!";
         } else {

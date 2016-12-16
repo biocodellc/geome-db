@@ -1,22 +1,23 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.fileManagers.AuxilaryFileManager;
-import biocode.fims.fileManagers.dataset.DatasetFileManager;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
+import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -27,22 +28,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+@Scope("prototype")
+@Controller
 @Path("validate")
-public class Validate extends FimsService {
+public class ValidateController extends FimsService {
 
     private final ExpeditionService expeditionService;
     private final List<AuxilaryFileManager> fileManagers;
-    private final DatasetFileManager datasetFileManager;
+    private final FimsMetadataFileManager fimsMetadataFileManager;
+    private final ElasticSearchIndexer esIndexer;
 
-    @Autowired
-    Validate(ExpeditionService expeditionService,
-             DatasetFileManager datasetFileManager, List<AuxilaryFileManager> fileManagers,
-             OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(providerService, settingsManager);
+    public ValidateController(ExpeditionService expeditionService, FimsMetadataFileManager fimsMetadataFileManager,
+                              List<AuxilaryFileManager> fileManagers, SettingsManager settingsManager, ElasticSearchIndexer esIndexer) {
+        super(settingsManager);
         this.expeditionService = expeditionService;
-        this.datasetFileManager = datasetFileManager;
+        this.fimsMetadataFileManager = fimsMetadataFileManager;
         this.fileManagers = fileManagers;
+        this.esIndexer = esIndexer;
     }
 
     /**
@@ -51,7 +53,7 @@ public class Validate extends FimsService {
      * @param projectId
      * @param expeditionCode
      * @param upload
-     * @param dataset
+     * @param fimsMetadata
      * @return
      */
     @POST
@@ -61,7 +63,7 @@ public class Validate extends FimsService {
                            @FormDataParam("expeditionCode") String expeditionCode,
                            @FormDataParam("upload") String upload,
                            @FormDataParam("public_status") String publicStatus,
-                           @FormDataParam("dataset") FormDataBodyPart dataset) {
+                           @FormDataParam("dataset") FormDataBodyPart fimsMetadata) {
         Map<String, Map<String, Object>> fmProps = new HashMap<>();
         JSONObject returnValue = new JSONObject();
         boolean closeProcess = true;
@@ -80,37 +82,38 @@ public class Validate extends FimsService {
             // update the status
             processController.appendStatus("Initializing...<br>");
 
-            // save the dataset and/or fasta files
-            if (dataset != null && dataset.getContentDisposition().getFileName() != null) {
-                String datasetFilename = dataset.getContentDisposition().getFileName();
-                processController.appendStatus("\nDataset filename = " + datasetFilename);
+            // save the datasets
+            if (fimsMetadata != null && fimsMetadata.getContentDisposition().getFileName() != null) {
+                String fimeMetadataFilename = fimsMetadata.getContentDisposition().getFileName();
+                processController.appendStatus("\nFims Metadata Dataset filename = " + fimeMetadataFilename);
 
-                InputStream is = dataset.getEntityAs(InputStream.class);
-                String tempFilename = saveFile(is, datasetFilename, "xls");
+                InputStream is = fimsMetadata.getEntityAs(InputStream.class);
+                String tempFilename = saveFile(is, fimeMetadataFilename, "xls");
 
                 Map<String, Object> props = new HashMap<>();
                 props.put("filename", tempFilename);
 
-                fmProps.put("dataset", props);
+                fmProps.put(FimsMetadataFileManager.NAME, props);
             }
 
             File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
 
             // Create the process object --- this is done each time to orient the application
-            Process process = new Process.ProcessBuilder(datasetFileManager, processController)
+            Process process = new Process.ProcessBuilder(fimsMetadataFileManager, processController)
                     .addFileManagers(fileManagers)
                     .addFmProperties(fmProps)
                     .configFile(configFile)
+                    .elasticSearchIndexer(esIndexer)
                     .build();
 
             processController.setProcess(process);
 
             if (process.validate() && StringUtils.equalsIgnoreCase(upload, "on")) {
-                if (user == null) {
+                if (userContext.getUser() == null) {
                     throw new UnauthorizedRequestException("You must be logged in to upload.");
                 }
 
-                processController.setUserId(user.getUserId());
+                processController.setUserId(userContext.getUser().getUserId());
 
                 // set public status to true in processController if user wants it on
                 if (StringUtils.equalsIgnoreCase(publicStatus, "on")) {

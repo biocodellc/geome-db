@@ -8,6 +8,6 @@ angular.module('fims.projects')
     return projectFactory;
 
     function getProjects(includePublic) {
-        return $http.get(REST_ROOT + 'projects/list?includePublic=' + includePublic);
+        return $http.get(REST_ROOT + 'projects?includePublic=' + includePublic);
     }
 }]);

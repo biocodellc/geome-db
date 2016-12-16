@@ -1,12 +1,13 @@
 package biocode.fims.run;
 
+import biocode.fims.application.config.BiscicolAppConfig;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
 import biocode.fims.digester.Validation;
 import biocode.fims.entities.User;
-import biocode.fims.fileManagers.dataset.DatasetFileManager;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.UploadCode;
+import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.fuseki.query.FimsQueryBuilder;
 import biocode.fims.fuseki.triplify.Triplifier;
 import biocode.fims.service.ExpeditionService;
@@ -14,13 +15,11 @@ import biocode.fims.service.UserService;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
-import biocode.fims.utils.SpringApplicationContext;
 import com.hp.hpl.jena.util.FileUtils;
 import org.apache.commons.cli.*;
 import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,25 +28,20 @@ import java.util.Map;
 
 /**
  * Class to upload and triplify via cmd line
- * TODO refactor to remove duplicate code.
  */
 public class Run {
 
-    private final SettingsManager settingsManager;
+    private final boolean ignoreUser;
     private final ExpeditionService expeditionService;
-    private final DatasetFileManager datasetFileManager;
-
+    private final FimsMetadataFileManager FimsMetadataFileManager;
     private ProcessController processController;
 
-    @Autowired
-    public Run(SettingsManager settingsManager, ExpeditionService expeditionService, DatasetFileManager datasetFileManager) {
-        this.settingsManager = settingsManager;
+    public Run(ExpeditionService expeditionService, FimsMetadataFileManager FimsMetadataFileManager,
+               ProcessController processController, boolean ignoreUser) {
         this.expeditionService = expeditionService;
-        this.datasetFileManager = datasetFileManager;
-    }
-
-    private void setProcessController(ProcessController processController) {
+        this.FimsMetadataFileManager = FimsMetadataFileManager;
         this.processController = processController;
+        this.ignoreUser = ignoreUser;
     }
 
     /**
@@ -85,7 +79,7 @@ public class Run {
             processController.setExpeditionTitle(processController.getExpeditionCode() + " spreadsheet");
             try {
                 boolean createExpedition = forceAll;
-                processController.getProcess().upload(createExpedition, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
+                processController.getProcess().upload(createExpedition, ignoreUser, expeditionService);
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode() == UploadCode.EXPEDITION_CREATE) {
                     String message = "\nThe dataset code \"" + processController.getExpeditionCode() + "\" does not exist.  " +
@@ -96,7 +90,7 @@ public class Run {
                     if (!continueOperation)
                         return;
                     else {
-                        processController.getProcess().upload(true, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
+                        processController.getProcess().upload(true, ignoreUser, expeditionService);
                     }
                 } else {
                     throw e;
@@ -130,8 +124,8 @@ public class Run {
             );
 
         }
-        JSONObject sample = (JSONObject) datasetFileManager.getDataset().getSamples().get(0);
-        t.run(processController.getValidation().getSqliteFile(), new ArrayList<String>(sample.keySet()));
+        JSONObject resource = (JSONObject) FimsMetadataFileManager.getDataset().get(0);
+        t.run(processController.getValidation().getSqliteFile(), new ArrayList<String>(resource.keySet()));
         FimsPrinter.out.println("\ttriple output file = " + t.getTripleOutputFile());
         return t.getTripleOutputFile();
     }
@@ -142,18 +136,19 @@ public class Run {
      * @param args
      */
     public static void main(String args[]) throws Exception {
-        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
-        ExpeditionService expeditionService = applicationContext.getBean(ExpeditionService.class);
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(BiscicolAppConfig.class);
         UserService userService = applicationContext.getBean(UserService.class);
-        DatasetFileManager datasetFileManager = applicationContext.getBean(DatasetFileManager.class);
-        Run run = new Run(SettingsManager.getInstance(), expeditionService, datasetFileManager);
+        FimsMetadataFileManager FimsMetadataFileManager = applicationContext.getBean(FimsMetadataFileManager.class);
+        SettingsManager settingsManager = applicationContext.getBean(SettingsManager.class);
+        ExpeditionService expeditionService = applicationContext.getBean(ExpeditionService.class);
+
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
         String username = "";
         String password = "";
         int projectId = 0;
         //System.out.print(defaultOutputDirectory);
 
-        // VersionTransformer configuration :
+        // TEST configuration :
         // -d -t -u -i sampledata/Apogon***.xls
 
         // Direct output using the standardPrinter subClass of fimsPrinter which send to fimsPrinter.out (for command-line usage)
@@ -353,7 +348,7 @@ public class Run {
                 // Run the query, passing in a format and returning the location of the output file
                 switch (cl.getOptionValue("f")) {
                     case "json":
-                        System.out.println(q.writeJSON());
+                        System.out.println(q.getJSON());
                         break;
                     case "cspace":
                         Validation validation = new Validation();
@@ -380,11 +375,14 @@ public class Run {
             else {
                 ProcessController processController = new ProcessController(projectId, dataset_code);
                 processController.setOutputFolder(output_directory);
+
+                boolean ignoreUser = Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser"));
+                Run run = new Run(expeditionService, FimsMetadataFileManager, processController, ignoreUser);
                 Map<String, Map<String, Object>> fmProps = new HashMap<>();
                 Map<String, Object> props = new HashMap<>();
                 props.put("filename", input_file);
 
-                fmProps.put("dataset", props);
+                fmProps.put("fimsMetadata", props);
 
                 // if we only want to triplify and not upload, then we operate in LOCAL mode
                 if (local && triplify) {
@@ -392,13 +390,12 @@ public class Run {
                     processController.appendStatus("Does not construct GUIDs, use Deep Roots, or connect to project-specific configurationFiles");
 
                     // Create the process object --- this is done each time to orient the application
-                    Process process = new Process.ProcessBuilder(datasetFileManager, processController)
+                    Process process = new Process.ProcessBuilder(FimsMetadataFileManager, processController)
                             .addFmProperties(fmProps)
                             .configFile(new File(cl.getOptionValue("configFile")))
                             .build();
 
                     processController.setProcess(process);
-                    run.setProcessController(processController);
 
                     run.runAllLocally(false, false, force, writeTriplesLang);
 
@@ -431,14 +428,14 @@ public class Run {
                     if (cl.hasOption("configFile")) {
                         System.out.println("using local config file = " + cl.getOptionValue("configFile").toString());
                         // Create the process object --- this is done each time to orient the application
-                        process = new Process.ProcessBuilder(datasetFileManager, processController)
+                        process = new Process.ProcessBuilder(FimsMetadataFileManager, processController)
                                 .addFmProperties(fmProps)
                                 .configFile(new File(cl.getOptionValue("configFile")))
                                 .build();
 
                     } else {
                         File configFile = new ConfigurationFileFetcher(projectId, output_directory, false).getOutputFile();
-                        process = new Process.ProcessBuilder(datasetFileManager, processController)
+                        process = new Process.ProcessBuilder(FimsMetadataFileManager, processController)
                                 .addFmProperties(fmProps)
                                 .configFile(configFile)
                                 .build();
@@ -449,7 +446,6 @@ public class Run {
 
                     // Run the processor
                     processController.setProcess(process);
-                    run.setProcessController(processController);
 
                     run.runAllLocally(upload, true, force, writeTriplesLang);
                 }

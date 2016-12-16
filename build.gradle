@@ -13,8 +13,14 @@ buildscript {
     }
 }
 
+plugins {
+    id "com.eriwen.gradle.js" version "2.14.1"
+}
+
+import com.eriwen.gradle.js.tasks.MinifyJsTask
 import org.ajoberstar.grgit.*
 import groovy.io.FileType
+import groovy.json.*
 
 apply plugin: "application"
 apply plugin: "java"
@@ -22,9 +28,10 @@ apply plugin: "war"
 apply plugin: "idea"
 apply plugin: "environments"
 apply plugin: "org.hidetake.ssh"
+apply plugin: "com.eriwen.gradle.js"
 
-targetCompatibility = 1.7
-sourceCompatibility = 1.7
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -78,11 +85,58 @@ dependencies {
     testCompile "junit:junit-dep:4.10"
 }
 
+distributions {
+    main {
+        contents {
+            into('lib') {
+                from configurations.server
+            }
+        }
+    }
+}
+
+// specify files that require a specific loading order
+ext.externLibsOrdered = ["${projectDir}/src/main/web/js/externalLibs/lodash.js", "${projectDir}/src/main/web/js/externalLibs/papaparse.min.js",
+                         "${projectDir}/src/main/web/js/externalLibs/xlsx.min.js", "${projectDir}/src/main/web/js/externalLibs/xlsx-reader.js"]
+javascript.source {
+    externLibs {
+        js {
+            srcDir "src/main/web/js/externalLibs"
+            include "*.js"
+            // exclude any file that is in the externLibsOrdered list
+            exclude {
+                it.file in files(externLibsOrdered).files
+            }
+        }
+    }
+    app {
+        js {
+            srcDir "src/main/web/app"
+            include "**/*.js"
+            exclude "app.js"
+            exclude "app.module.js"
+            exclude "**/module.js"
+        }
+    }
+    js {
+        js {
+            srcDir "src/main/web/js"
+            include "*.js"
+        }
+    }
+    modules {
+        js {
+            srcDir "src/main/web/app"
+            include "**/module.js"
+        }
+    }
+}
+
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
-mainClassName = "biocode.fims.run.Run"
+mainClassName = "biocode.fims.run.BiscicolFusekiToESMigrator"
 
-project.ext.environment = defaultEnvironment
+project.ext.environment = project.hasProperty('environment') ? project.getProperty('environment') : defaultEnvironment
 
 //noinspection GroovyAssignabilityCheck
 clean {
@@ -104,6 +158,25 @@ allprojects {
         if (ext.repo.branch.current.name != "master")
             throw new GradleScriptException(project.name + ' is not on the master branch', null)
     }
+}
+
+war {
+    // exclude the src/main/web/app & src/main/web/js dirs. These files are concatenated and minified in the minifyJs task
+    // and added in the webInf closure
+    exclude("app/**/*.js")
+    exclude("js")
+    webInf {
+        from "${buildDir}/js"
+        into "/js/"
+    }
+}
+
+startScripts {
+    subprojects.each { subproject ->
+        project.configurations.server.dependencies.addAll(subproject.configurations.server.dependencies)
+    }
+
+    classpath = files(jar.archivePath, configurations.server, configurations.runtime)
 }
 
 task setProductionEnv << {
@@ -288,6 +361,15 @@ task fatWar(type: War) {
 
     classpath configurations.server
     classpath configurations.compile
+
+    // exclude the src/main/web/app & src/main/web/js dirs. These files are concatenated and minified in the minifyJs task
+    // and added in the webInf closure
+    exclude("app/**/*.js")
+    exclude("js")
+    webInf {
+        from "${buildDir}/js"
+        into "/js/"
+    }
 }
 
 task deployFimsLocal {
@@ -315,4 +397,143 @@ task ezidUpdate(type: JavaExec) {
 
     main = "biocode.fims.run.EzidUpdator"
 }
+
+combineJs {
+    encoding = "UTF-8"
+    source = files("src/main/web/app/app.module.js", javascript.source.modules.js.files, javascript.source.app.js.files, javascript.source.js.js.files)
+    dest = file("src/main/web/js/all.js")
+}
+
+task jsExternalLibs(type: MinifyJsTask) {
+    source = externLibsOrdered + javascript.source.externLibs.js.files
+    dest = file("${buildDir}/js/allExternalLibs.min.js")
+    sourceMap = file("${buildDir}/js/allExternalLibs.min.map")
+    closure {
+        warningLevel = 'QUIET'
+        compilerOptions.language = "ECMASCRIPT5"
+    }
+
+    doLast { task ->
+        file(dest) << "\n//# sourceMappingURL=allExternalLibs.min.map"
+
+        def sources = []
+
+        task.source.files.each { file ->
+            sources << ".." + file.canonicalPath.minus(projectDir.canonicalPath + "/" + webAppDirName)
+        }
+
+        Map srcMap = new JsonSlurper().parseText(sourceMap.text)
+        srcMap.sources = sources
+        sourceMap.withWriter("UTF-8") { it << new JsonBuilder(srcMap).toPrettyString() }
+    }
+}
+
+task jsApp(type: MinifyJsTask) {
+    source = files("src/main/web/app/app.module.js", javascript.source.modules.js.files, javascript.source.app.js.files, javascript.source.js.js.files)
+    dest = file("${buildDir}/js/all.min.js")
+    sourceMap = file("${buildDir}/js/all.min.map")
+    closure {
+        compilerOptions.language = "ECMASCRIPT5"
+    }
+
+    doLast { task ->
+        file(dest) << "\n//# sourceMappingURL=all.min.map"
+
+        def sources = []
+
+        task.source.files.each { file ->
+            sources << ".." + file.canonicalPath.minus(projectDir.canonicalPath + "/" + webAppDirName)
+        }
+
+        Map srcMap = new JsonSlurper().parseText(sourceMap.text)
+        srcMap.sources = sources
+        sourceMap.withWriter("UTF-8") { it << new JsonBuilder(srcMap).toPrettyString() }
+    }
+}
+
+task minifyJs(overwrite: true) {
+    dependsOn jsExternalLibs
+    dependsOn jsApp
+}
+
+task copyEnvironmentFiles(overwrite: true) {
+    dependsOn copyWebXml
+    dependsOn copyEnvironmentResources
+}
+
+task addProdJsLibs(type: WebJsLibTask,
+        description: 'Modify index.html to include the combined, minified, and compressed js files') {
+    html = file('src/main/web' + '/index.html')
+    environment = 'production'
+}
+
+task addDevJsLibs(type: WebJsLibTask,
+        description: 'Modify the index.html to include all js files') {
+    html = file('src/main/web/index.html')
+    environment = 'local'
+}
+
+class WebJsLibTask extends DefaultTask {
+    final def tag = "<!-- LIBRARY LOADING -->"
+    final def endTag = "<!-- END: LIBRARY LOADING -->"
+
+    @InputFile
+    File html
+
+    @Input
+    String environment
+
+    @OutputFile
+    @Optional
+    File outputHtml
+
+    def environmentToInclude = ['local': DEV_INCLUDE, 'production': PROD_INCLUDE]
+
+    final static def DEV_INCLUDE = """
+<!-- USE individual js files FOR LOCAL DEV -->
+<script src=\"libs/head/1.0.3/head.min.js\" data-headjs-load=\"js/init.js\"></script>
+"""
+    final static def PROD_INCLUDE = """
+<!-- use minified and combined js file FOR PROD -->
+<script src="js/allExternalLibs.min.js"></script>
+<script src="js/all.min.js"></script>
+"""
+
+    @TaskAction
+    def void applyScriptAndStylesheetTags() {
+        if (html.exists()) {
+            def htmlReplacement = html.getText().replaceAll(
+                    "$tag\\p{all}*$endTag",
+                    "$tag${getHtmlReplacement(environment)}$endTag")
+            if (outputHtml == null) outputHtml = html
+            outputHtml.setText(htmlReplacement, 'UTF-8')
+        }
+    }
+
+    def String getHtmlReplacement(String environment) {
+        switch (environment) {
+            case 'local':
+                return getLocalHtml()
+            case 'production':
+                return environmentToInclude['production']
+        }
+    }
+
+    def String getLocalHtml() {
+        String html = "\n"
+
+        project.jsExternalLibs.source.files.each { file ->
+            html += "<script src=\"" + file.canonicalPath.minus(project.projectDir.canonicalPath + "/" + project.webAppDirName + "/") + "\"></script>\n";
+        }
+        project.jsApp.source.files.each { file ->
+            html += "<script src=\"" + file.canonicalPath.minus(project.projectDir.canonicalPath + "/" + project.webAppDirName + "/") + "\"></script>\n";
+        }
+
+        return html
+    }
+}
+
+minifyJs.dependsOn addProdJsLibs
+fatWar.dependsOn minifyJs
+war.dependsOn minifyJs
 

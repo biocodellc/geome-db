@@ -1,27 +1,34 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ProjectMinter;
+import biocode.fims.biscicol.query.BiscicolQueryUtils;
+import biocode.fims.config.ConfigurationFileEsMapper;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
+import biocode.fims.elasticSearch.ElasticSearchIndexer;
+import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.rest.FimsService;
+import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.elasticsearch.client.Client;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -35,22 +42,21 @@ import java.util.List;
 /**
  * REST services dealing with projects
  */
+@Controller
 @Path("projects")
-public class Projects extends FimsService {
+public class ProjectController extends FimsAbstractProjectsController {
 
-    private static Logger logger = LoggerFactory.getLogger(Projects.class);
+    private static Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
-    private final ExpeditionService expeditionService;
-    private final ProjectService projectService;
     private final UserService userService;
+    private final Client esClient;
 
     @Autowired
-    Projects(ExpeditionService expeditionService, ProjectService projectService, UserService userService,
-             OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(providerService, settingsManager);
-        this.expeditionService = expeditionService;
-        this.projectService = projectService;
+    ProjectController(ExpeditionService expeditionService, SettingsManager settingsManager,
+                      ProjectService projectService, UserService userService, Client esClient) {
+        super(expeditionService, settingsManager, projectService);
         this.userService = userService;
+        this.esClient = esClient;
     }
 
     @GET
@@ -95,21 +101,16 @@ public class Projects extends FimsService {
 
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);
-        ArrayList<Attribute> attributeArrayList = mapping.getAllAttributes(mapping.getDefaultSheetName());
 
-        JSONArray attributes = new JSONArray();
+        ArrayNode filters = new SpringObjectMapper().createArrayNode();
 
-        Iterator it = attributeArrayList.iterator();
-        while (it.hasNext()) {
-            Attribute a = (Attribute) it.next();
-            JSONObject attribute = new JSONObject();
-            attribute.put("column", a.getColumn());
-            attribute.put("uri", a.getUri());
-
-            attributes.add(attribute);
+        for (ElasticSearchFilterField f : BiscicolQueryUtils.getAvailableFilters(mapping)) {
+            ObjectNode filter = filters.addObject();
+            filter.put("field", f.getField());
+            filter.put("displayName", f.getDisplayName());
         }
 
-        return Response.ok(attributes.toJSONString()).build();
+        return Response.ok(filters).build();
     }
 
     @GET
@@ -117,7 +118,7 @@ public class Projects extends FimsService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDefinitions(@PathParam("projectId") int projectId,
                                    @PathParam("columnName") String columnName) {
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
         StringBuilder output = new StringBuilder();
 
         Iterator attributes = t.getMapping().getAllAttributes(t.getMapping().getDefaultSheetName()).iterator();
@@ -278,7 +279,7 @@ public class Projects extends FimsService {
     @Path("/{projectId}/attributes")
     @Produces(MediaType.TEXT_HTML)
     public Response getAttributes(@PathParam("projectId") int projectId) {
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
         LinkedList<String> requiredColumns = t.getRequiredColumns("error");
         LinkedList<String> desiredColumns = t.getRequiredColumns("warning");
         // Use TreeMap for natural sorting of groups
@@ -423,7 +424,7 @@ public class Projects extends FimsService {
     @Path("/{projectId}/metadata")
     public Response listMetadataAsTable(@PathParam("projectId") int projectId) {
         ProjectMinter project = new ProjectMinter();
-        JSONObject metadata = project.getMetadata(projectId, user.getUsername());
+        JSONObject metadata = project.getMetadata(projectId, userContext.getUser().getUsername());
         StringBuilder sb = new StringBuilder();
 
         sb.append("<table>\n");
@@ -466,7 +467,7 @@ public class Projects extends FimsService {
     public Response listMetadataEditorAsTable(@PathParam("projectId") int projectId) {
         StringBuilder sb = new StringBuilder();
         ProjectMinter project = new ProjectMinter();
-        JSONObject metadata = project.getMetadata(projectId, user.getUsername());
+        JSONObject metadata = project.getMetadata(projectId, userContext.getUser().getUsername());
 
         sb.append("<form id=\"submitForm\" method=\"POST\">\n");
         sb.append("<table>\n");
@@ -515,7 +516,7 @@ public class Projects extends FimsService {
     public Response listUsersAsTable(@PathParam("projectId") int projectId) {
         ProjectMinter p = new ProjectMinter();
 
-        if (!p.isProjectAdmin(user.getUsername(), projectId)) {
+        if (!p.isProjectAdmin(userContext.getUser().getUsername(), projectId)) {
             // only display system users to project admins
             throw new ForbiddenRequestException("You are not an admin to this project");
         }
@@ -577,7 +578,7 @@ public class Projects extends FimsService {
     @Produces(MediaType.TEXT_HTML)
     @Path("/{projectId}/admin/expeditions/")
     public Response listExpeditionsAsTable(@PathParam("projectId") int projectId) {
-        if (!projectService.isProjectAdmin(user, projectId)) {
+        if (!projectService.isProjectAdmin(userContext.getUser(), projectId)) {
             throw new ForbiddenRequestException("You must be this project's admin in order to view its expeditions.");
         }
 
@@ -632,7 +633,7 @@ public class Projects extends FimsService {
             @FormParam("projectId") Integer projectId) {
 
         // Create the template processor which handles all functions related to the template, reading, generation
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), true);
+        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
 
         // Set the default sheet-name
         String defaultSheetname = t.getMapping().getDefaultSheetName();
@@ -660,5 +661,18 @@ public class Projects extends FimsService {
         mapping.addMappingRules(configFile);
 
         return Response.ok("{\"uniqueKey\":\"" + mapping.getDefaultSheetUniqueKey() + "\"}").build();
+    }
+
+    @Override
+    @GET
+    @Path("/{projectId}/config/refreshCache")
+    public Response refreshCache(@PathParam("projectId") Integer projectId) {
+        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
+
+        ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
+        JSONObject mapping = ConfigurationFileEsMapper.convert(configFile);
+        indexer.updateMapping(projectId, mapping);
+
+        return Response.noContent().build();
     }
 }

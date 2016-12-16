@@ -17,10 +17,9 @@ angular.module('fims.modals')
         function open() {
             modalInstance = $uibModal.open({
                 templateUrl: 'app/components/modals/templates/loadingModal.tpl.html',
+                windowTemplateUrl: 'app/components/modals/templates/loadingModalWindow.tpl.html',
                 size: 'sm',
-                windowClass: 'app-modal-window',
-                backdrop: true,
-
+                backdrop: true
             });
         }
 

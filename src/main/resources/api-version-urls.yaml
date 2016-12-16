@@ -1,0 +1,19 @@
+# This file is used for mapping previous api urls to there current location
+# Note that there is no transformation between versions, and all urls need to map to the current location
+# Ex.
+#  1_0:
+#    - versionUrl: projects/(?<projectId>[^/]+)/lists/fastqMetadata(?<test>/)?
+#      currentUrl: projects/list/${projectId}
+#      namedGroups:
+#        - projectId
+#        - test
+
+versionMap:
+  1_0:
+    - versionUrl: projects/list(/)?
+      currentUrl: projects/
+
+    - versionUrl: projects/(?<projectId>[^/]+)/expeditions(/)?
+      currentUrl: users/projects/${projectId}/expeditions/
+      namedGroups:
+        - projectId
