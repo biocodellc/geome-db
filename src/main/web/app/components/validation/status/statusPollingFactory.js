@@ -40,7 +40,7 @@ angular.module('fims.validation')
                 ResultsDataFactory.showStatus = true;
                 $http.get(REST_ROOT + 'validate/status').then(
                     function (response) {
-                        if (response.data.error && !ResultsDataFactory.validationMessages) {
+                        if (response.data.error && errorCnt >= 4 && !ResultsDataFactory.validationMessages) {
                             ResultsDataFactory.error = response.data.error;
                             errorCnt++;
                             ResultsDataFactory.showOkButton = true;
@@ -48,6 +48,8 @@ angular.module('fims.validation')
                             errorCnt++;
                         } else {
                             ResultsDataFactory.status = response.data.status;
+                            ResultsDataFactory.error = null;
+                            errorCnt = 0;
                         }
 
                         // wait 1 second before polling again
