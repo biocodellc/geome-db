@@ -8,8 +8,8 @@ ElasticSearch installation installation procedure:
 ```ln -s /usr/local/src/elasticsearch-5.0.1/bin/elasticsearch /usr/local/elasticsearch```
  - create elasticsearch user (with nologin priveleges)
  - create /var/run/elasticsearch and assign to elasticsearch user
- - create a configuration directory (e.g. /opt/esconfig/)
- - create a data directory (e.g. /opt/esdata/)
- - move ES configuration files to /opt/esconfig
+ - create a configuration directory (e.g. /opt/es/config/)
+ - create a data directory (e.g. /opt/es/data/)
+ - move ES configuration files to /opt/es/config
  - edit elasticsearch.yml in configuration directory to point to specified data directory
  - create a start/stop daemonizer script in /etc/init.d/ for elasticsearch, running as user elasticsearch and creating pid file in /var/run/elasticsearch
