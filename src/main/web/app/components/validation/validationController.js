@@ -371,7 +371,7 @@ angular.module('fims.validation')
             }
 
             function getExpeditions() {
-                ExpeditionFactory.getExpeditions()
+                ExpeditionFactory.getExpeditionsForUser(true)
                     .then(function (response) {
                         angular.extend(vm.expeditions, response.data);
                     }, function (response, status) {

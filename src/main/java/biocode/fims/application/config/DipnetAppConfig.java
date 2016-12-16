@@ -30,8 +30,6 @@ public class DipnetAppConfig {
     @Autowired
     Client esClient;
 
-
-
     @Bean
     @Scope("prototype")
     public FimsMetadataFileManager fimsMetadataFileManager() {
