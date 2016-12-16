@@ -4,6 +4,7 @@ src/main/web/app/components/auth/clientId.js
 *.props
 *.properties
 !src/main/resources/locale/*.properties
+!src/main/resources/settings-manager.properties
 !src/main/environment/*/log4j.properties
 dist/*
 build/*

@@ -5,7 +5,8 @@ angular.module('fims.validation')
             restrict: 'E',
             require: 'ngModel',
             scope: {
-                change: "&"
+                change: "&",
+                isRequired: "="
             },
             link: function (scope, el, attrs, ngModelCtrl) {
                 scope.inValid = false;
@@ -25,7 +26,7 @@ angular.module('fims.validation')
                 }
 
                 ngModelCtrl.$render = function () {
-                    scope.dataset = ngModelCtrl.$modelValue;
+                    scope.fimsMetadata = ngModelCtrl.$modelValue;
                 };
             },
             templateUrl: 'app/components/validation/fimsData.tpl.html'

@@ -1,7 +1,5 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.rest.FimsService;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,11 +15,11 @@ import javax.ws.rs.core.Response;
  */
 @Controller
 @Path("utils/")
-public class DipnetUtils extends FimsService {
+public class UtilsController extends FimsAbstractUtilsController {
 
     @Autowired
-    DipnetUtils(OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(providerService, settingsManager);
+    UtilsController(SettingsManager settingsManager) {
+        super(settingsManager);
     }
 
     @GET

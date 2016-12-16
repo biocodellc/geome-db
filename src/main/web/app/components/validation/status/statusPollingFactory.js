@@ -33,6 +33,7 @@ angular.module('fims.validation')
              */
             function pollStatus() {
                 // check if UploadisInProgress in case the user is uploading a large file or has a slow connection.
+                console.log("errorCnt: " + errorCnt);
                 if (errorCnt >= 5 && !Upload.isUploadInProgress()) {
                     return stopPolling();
                 }

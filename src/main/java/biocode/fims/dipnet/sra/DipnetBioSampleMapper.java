@@ -113,12 +113,12 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
         bioSampleAttributes.add(modifyBlankAttribute((String) sample.get("identifiedBy")));
 
         StringBuilder latLongSb = new StringBuilder();
-        if (!StringUtils.isBlank((String) sample.get("decimalLat")) &&
-                !StringUtils.isBlank((String) sample.get("decimalLat"))) {
+        if (!StringUtils.isBlank((String) sample.get("decimalLatitude")) &&
+                !StringUtils.isBlank((String) sample.get("decimalLatitude"))) {
 
-            latLongSb.append(sample.get("decimalLat"));
+            latLongSb.append(sample.get("decimalLatitude"));
             latLongSb.append(" ");
-            latLongSb.append(sample.get("decimalLong"));
+            latLongSb.append(sample.get("decimalLongitude"));
         }
         bioSampleAttributes.add(modifyBlankAttribute(latLongSb.toString()));
 

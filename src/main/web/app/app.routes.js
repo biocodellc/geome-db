@@ -42,12 +42,6 @@ angular.module('dipnetApp')
                 templateUrl: "app/components/query/query.html",
                 controller: "QueryCtrl as vm",
             })
-            .state('creator', {
-                url: "/bcidCreator",
-                templateUrl: "app/components/creator/bcidCreator.jsp",
-                controller: "CreatorCtrl as vm",
-                loginRequired: true
-            })
             .state('profile', {
                 url: "/secure/profile?error",
                 templateUrl: "app/components/users/profile.html",
@@ -65,11 +59,6 @@ angular.module('dipnetApp')
                 templateUrl: "app/components/expeditions/expeditions.html",
                 controller: "ExpeditionCtrl as vm",
                 loginRequired: true
-            })
-            .state('resourceTypes', {
-                url: "/resourceTypes",
-                templateUrl: "app/components/creator/resourceTypes.jsp",
-                controller: "ResourceTypesCtrl as vm"
             });
 
         $locationProvider.html5Mode(true);

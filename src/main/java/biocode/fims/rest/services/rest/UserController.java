@@ -2,13 +2,11 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
-import biocode.fims.utils.SendEmail;
+import biocode.fims.utils.EmailUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -24,15 +22,11 @@ import javax.ws.rs.core.Response;
  */
 @Controller
 @Path("users")
-public class Users extends FimsService {
-
-    private final UserService userService;
+public class UserController extends FimsAbstractUserController {
 
     @Autowired
-    Users(UserService userService,
-          OAuthProviderService providerService, SettingsManager settingsManager) {
-        super(providerService, settingsManager);
-        this.userService = userService;
+    UserController(UserService userService, SettingsManager settingsManager) {
+        super(userService, settingsManager);
     }
 
     /**
@@ -59,14 +53,11 @@ public class Users extends FimsService {
                     "Thanks";
 
             // Send an Email that this completed
-            SendEmail sendEmail = new SendEmail(
-                    settingsManager.retrieveValue("mailUser"),
-                    settingsManager.retrieveValue("mailPassword"),
-                    settingsManager.retrieveValue("mailFrom"),
+            EmailUtils.sendEmail(
                     user.getEmail(),
                     "Reset Password Link",
-                    emailBody);
-            sendEmail.start();
+                    emailBody
+            );
         }
 
         return Response.ok("{\"success\":\"A password reset token has be sent to your email.\"}").build();
@@ -87,7 +78,7 @@ public class Users extends FimsService {
     @Path("/profile/listEditorAsTable")
     @Produces(MediaType.TEXT_HTML)
     public Response listProfileEditorAsTable() {
-        return Response.ok(getProfileEditor(user, false)).build();
+        return Response.ok(getProfileEditor(userContext.getUser(), false)).build();
     }
 
     @GET
@@ -165,28 +156,28 @@ public class Users extends FimsService {
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>First Name:</td>\n");
         sb.append("\t\t<td>");
-        sb.append(user.getFirstName());
+        sb.append(userContext.getUser().getFirstName());
         sb.append("</td>\n");
         sb.append("\t</tr>\n");
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>Last Name:</td>\n");
         sb.append("\t\t<td>");
-        sb.append(user.getLastName());
+        sb.append(userContext.getUser().getLastName());
         sb.append("</td>\n");
         sb.append("\t</tr>\n");
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>Email:</td>\n");
         sb.append("\t\t<td>");
-        sb.append(user.getEmail());
+        sb.append(userContext.getUser().getEmail());
         sb.append("</td>\n");
         sb.append("\t</tr>\n");
 
         sb.append("\t<tr>\n");
         sb.append("\t\t<td>Institution:</td>\n");
         sb.append("\t\t<td>");
-        sb.append(user.getInstitution());
+        sb.append(userContext.getUser().getInstitution());
         sb.append("</td>\n");
         sb.append("\t</tr>\n");
 
