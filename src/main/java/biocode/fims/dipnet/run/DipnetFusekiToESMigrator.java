@@ -9,6 +9,7 @@ import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.fileManagers.fasta.FastaFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fuseki.fileManagers.fimsMetadata.FusekiFimsMetadataPersistenceManager;
 import biocode.fims.fuseki.query.elasticSearch.FusekiIndexer;
 import biocode.fims.run.ProcessController;
@@ -19,6 +20,7 @@ import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
 import org.apache.commons.cli.*;
+import org.apache.commons.collections.MapUtils;
 import org.elasticsearch.client.Client;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -26,10 +28,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Tmp script to help with the migration from fuseki to ElasticSearch
- *
+ * <p>
  * This will fetch the data from fuseki, and insert into elasticsearch, replacing the existing
  * <urn:sequence> properties with the new fastaSequence entity objects
  */
@@ -38,6 +44,8 @@ public class DipnetFusekiToESMigrator {
     private Client esClient;
     private ExpeditionService expeditionService;
     private BcidService bcidService;
+    private List<String> failedIndexes = new ArrayList<>();
+    private LinkedHashMap<String, Integer> totalResources = new LinkedHashMap<>();
 
     DipnetFusekiToESMigrator(ExpeditionService expeditionService, BcidService bcidService, ProjectService projectService, Client esClient) {
         this.expeditionService = expeditionService;
@@ -57,62 +65,69 @@ public class DipnetFusekiToESMigrator {
 
         // we need to fetch each Expedition individually as the SheetUniqueKey is only unique on the Expedition level
         for (Expedition expedition : project.getExpeditions()) {
-            int resources = 0;
-            FusekiFimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(expeditionService, bcidService);
-            FimsMetadataFileManager fimsMetadataFileManager = new FimsMetadataFileManager(
-                    persistenceManager, SettingsManager.getInstance(), expeditionService, bcidService);
+            try {
+                FusekiFimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(expeditionService, bcidService);
+                FimsMetadataFileManager fimsMetadataFileManager = new FimsMetadataFileManager(
+                        persistenceManager, SettingsManager.getInstance(), expeditionService, bcidService);
 
 
-            ProcessController processController = new ProcessController(projectId, expedition.getExpeditionCode());
-            processController.setOutputFolder(outputDirectory);
-            processController.setMapping(mapping);
-            fimsMetadataFileManager.setProcessController(processController);
+                ProcessController processController = new ProcessController(projectId, expedition.getExpeditionCode());
+                processController.setOutputFolder(outputDirectory);
+                processController.setMapping(mapping);
+                fimsMetadataFileManager.setProcessController(processController);
 
 
-            System.out.println("updating expedition: " + expedition.getExpeditionCode());
+                System.out.println("updating expedition: " + expedition.getExpeditionCode());
 
-            String[] splitTitle = expedition.getExpeditionTitle().split("_");
-            String marker;
+                String[] splitTitle = expedition.getExpeditionTitle().split("_");
+                String marker;
 
-            // for all original DIPnet data with fasta sequences (none test data) the expedition title was of the format
-            // xxx_marker_xxx
-            if (splitTitle.length < 3) {
-                marker = "UNKNOWN";
-            } else {
-                marker = splitTitle[1];
-            }
-
-            System.out.println("marker: " + marker);
-
-            JSONArray dataset = fimsMetadataFileManager.index();
-
-            for (Object o: dataset) {
-                resources++;
-                JSONObject resource = (JSONObject) o;
-
-                String sequence = (String) resource.remove("urn:sequence");
-
-                if (sequence != null) {
-                    JSONObject fastaSequence = new JSONObject();
-                    fastaSequence.put("urn:sequence", sequence);
-                    fastaSequence.put("urn:marker", marker);
-                    JSONArray fastaSequences = new JSONArray();
-                    fastaSequences.add(fastaSequence);
-                    resource.put(FastaFileManager.ENTITY_CONCEPT_ALIAS, fastaSequences);
+                // for all original DIPnet data with fasta sequences (none test data) the expedition title was of the format
+                // xxx_marker_xxx
+                if (splitTitle.length < 3) {
+                    marker = "UNKNOWN";
+                } else {
+                    marker = splitTitle[1];
                 }
+
+                System.out.println("marker: " + marker);
+
+                JSONArray dataset = fimsMetadataFileManager.index();
+
+                for (Object o : dataset) {
+                    JSONObject resource = (JSONObject) o;
+
+                    String sequence = (String) resource.remove("urn:sequence");
+
+                    if (sequence != null) {
+                        JSONObject fastaSequence = new JSONObject();
+                        fastaSequence.put("urn:sequence", sequence);
+                        fastaSequence.put("urn:marker", marker);
+                        JSONArray fastaSequences = new JSONArray();
+                        fastaSequences.add(fastaSequence);
+                        resource.put(FastaFileManager.ENTITY_CONCEPT_ALIAS, fastaSequences);
+                    }
+                }
+
+                System.out.println("\nindexing " + dataset.size() + " resources ....\n");
+
+                ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
+                indexer.indexDataset(
+                        project.getProjectId(),
+                        expedition.getExpeditionCode(),
+                        dataset
+                );
+                totalResources.put(expedition.getExpeditionCode(), dataset.size());
+                totalResource += dataset.size();
+
+            } catch (Exception e) {
+                failedIndexes.add(expedition.getExpeditionCode());
+                e.printStackTrace();
             }
-
-            System.out.println("\nindexing " + resources + " resources ....\n");
-
-            ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
-            indexer.indexDataset(
-                    project.getProjectId(),
-                    expedition.getExpeditionCode(),
-                    dataset
-            );
-            totalResource += resources;
         }
-        System.out.println("Indexed " + totalResource + " resources");
+        totalResources.put("project_total", totalResource);
+        MapUtils.debugPrint(System.out,"ProjectId, total_resources_indexed MAP:",totalResources);
+        System.out.println(project.getExpeditions().size());
     }
 
     public static void main(String[] args) {

@@ -93,7 +93,6 @@ dependencies {
     provided 'org.eclipse.jetty:jetty-servlet:9.3.3.v20150827'
 
     compile project(":biocode-fims-commons")
-    compile project(":biocode-fims-fuseki")
     compile project(":biocode-fims-sequences")
 
     testCompile "junit:junit-dep:4.10"

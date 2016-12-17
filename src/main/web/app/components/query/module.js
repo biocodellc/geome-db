@@ -1,1 +1,1 @@
-angular.module('fims.query', ['sly']);
+angular.module('fims.query', ['fims.modals', 'sly']);

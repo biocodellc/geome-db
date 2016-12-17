@@ -1,1 +1,1 @@
-angular.module('fims.modals', ['ui.bootstrap']);
+angular.module('fims.modals', ['ui.bootstrap', 'angularSpinner']);
