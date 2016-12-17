@@ -122,24 +122,31 @@ angular.module('fims.query')
             }
 
             function transformData(data) {
-                vm.queryInfo.size = data.size;
+                var transformedData = {keys: [], data: []};
+                if (data) {
+                    vm.queryInfo.size = data.size;
 
-                // elasitc_search will throw an error if we try and retrieve results from 10000 and greater
-                vm.queryInfo.totalElements = data.totalElements > 10000 ? 10000 : data.totalElements;
-                var transformedData = {keys: Object.keys(data.content[0]), data: []};
+                    // elasitc_search will throw an error if we try and retrieve results from 10000 and greater
+                    vm.queryInfo.totalElements = data.totalElements > 10000 ? 10000 : data.totalElements;
 
-                angular.forEach(data.content, function (resource) {
-                    var resourceData = [];
-                    angular.forEach(transformedData.keys, function (key) {
-                        resourceData.push(resource[key]);
-                    });
-                    transformedData.data.push(resourceData);
-                });
+                    if (data.content.length > 0) {
+                        transformedData.keys = Object.keys(data.content[0]);
 
+                        angular.forEach(data.content, function (resource) {
+                            var resourceData = [];
+                            angular.forEach(transformedData.keys, function (key) {
+                                resourceData.push(resource[key]);
+                            });
+                            transformedData.data.push(resourceData);
+                        });
+                    }
+                } else {
+                    vm.queryInfo.totalElements = 0;
+                }
                 return transformedData;
             }
 
-            $scope.$watch("queryVm.projectId", function(value) {
+            $scope.$watch("queryVm.projectId", function (value) {
                 if (value && value > 0) {
                     getExpeditions();
                     getFilterOptions();
