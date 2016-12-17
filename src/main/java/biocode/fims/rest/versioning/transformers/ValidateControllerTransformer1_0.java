@@ -35,8 +35,10 @@ public class ValidateControllerTransformer1_0 implements Transformer {
         try {
             Method transformMethod = this.getClass().getMethod(methodName + "Response", Object.class);
             return transformMethod.invoke(this, returnVal);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            logger.debug("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response");
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            logger.debug("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response\n {}", e);
+        } catch (InvocationTargetException e) {
+            logger.info("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response\n {}", e);
         }
         return returnVal;
     }

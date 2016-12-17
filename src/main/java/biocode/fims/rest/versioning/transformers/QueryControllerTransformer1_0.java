@@ -1,6 +1,7 @@
 package biocode.fims.rest.versioning.transformers;
 
 import biocode.fims.entities.Bcid;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.rest.versioning.Transformer;
 import biocode.fims.service.BcidService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,8 +38,10 @@ public class QueryControllerTransformer1_0 implements Transformer {
         try {
             Method transformMethod = this.getClass().getMethod(methodName + "Request", LinkedHashMap.class, MultivaluedMap.class);
             transformMethod.invoke(this, argMap, queryParameters);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            logger.debug("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response");
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            logger.debug("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response\n {}", e);
+        } catch (InvocationTargetException e) {
+            logger.info("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response\n {}", e);
         }
     }
 
@@ -47,8 +50,10 @@ public class QueryControllerTransformer1_0 implements Transformer {
         try {
             Method transformMethod = this.getClass().getMethod(methodName + "Response", Object.class);
             return transformMethod.invoke(this, returnVal);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            logger.debug("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response");
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            logger.debug("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response\n {}", e);
+        } catch (InvocationTargetException e) {
+            logger.info("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response\n {}", e);
         }
         return returnVal;
     }
@@ -158,12 +163,11 @@ public class QueryControllerTransformer1_0 implements Transformer {
     private void transformGETRequest(LinkedHashMap<String, Object> argMap,
                                      MultivaluedMap<String, String> queryParameters) {
         if (queryParameters.containsKey("project_id")) {
-            argMap.put("projectId", queryParameters.get("project_id").get(0));
+            argMap.put("projectId", Integer.parseInt(queryParameters.get("project_id").get(0)));
         }
 
-        if (!queryParameters.containsKey("limit")) {
-            // TODO does this throw an exception if limit is missing?
-            queryParameters.addFirst("limit", "10000");
+        if (argMap.containsKey("limit")) {
+            argMap.put("limit", Integer.parseInt(queryParameters.getOrDefault("limit", Collections.singletonList("10000")).get(0)));
         }
 
         transformGraphs(argMap, queryParameters.get("graphs"));
@@ -173,9 +177,8 @@ public class QueryControllerTransformer1_0 implements Transformer {
                                       MultivaluedMap<String, String> queryParameters) {
         MultivaluedMap<String, String> form = (MultivaluedMap<String, String>) argMap.get("form");
 
-        if (!queryParameters.containsKey("limit")) {
-            // TODO does this throw an exception if limit is missing?
-            queryParameters.addFirst("limit", "10000");
+        if (argMap.containsKey("limit")) {
+            argMap.put("limit", Integer.parseInt(queryParameters.getOrDefault("limit", Collections.singletonList("10000")).get(0)));
         }
 
         argMap.put("projectId", form.remove("project_id"));
@@ -191,7 +194,7 @@ public class QueryControllerTransformer1_0 implements Transformer {
 
             graphs.remove("all");
 
-            List<String> expeditions = (List<String>) argMap.get("expedition");
+            List<String> expeditions = (List<String>) argMap.get("expeditions");
 
             if (graphs.size() > 0) {
                 for (Bcid bcid : bcidService.getBcids(graphs)) {
