@@ -1250,7 +1250,7 @@ function validatorSubmit() {
 // keep looping pollStatus every second until results are returned
 var errCnt = 0;
 function loopStatus(promise) {
-    console.log("errorCnt: " + errorCnt);
+    console.log("errorCnt: " + errCnt);
     if (errorCnt < 5) {
         setTimeout(function () {
             pollStatus()
