@@ -385,19 +385,11 @@ public class QueryController extends FimsService {
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
-            // TODO implement a CspaceJsonWriter
-            JsonWriter jsonWriter = null;
+            JsonWriter jsonWriter = new CspaceJsonWriter(results, uploadPath(), validation);
             Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
-            response.header("Content-Disposition",
-                    "attachment; filename=biocode-fims-output.xml");
-
             // Return response
-            if (response == null) {
-                return Response.status(204).build();
-            } else {
-                return response.build();
-            }
+            return response.build();
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
                 return Response.noContent().build();

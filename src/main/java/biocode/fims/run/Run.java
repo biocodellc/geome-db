@@ -350,11 +350,6 @@ public class Run {
                     case "json":
                         System.out.println(q.getJSON());
                         break;
-                    case "cspace":
-                        Validation validation = new Validation();
-                        validation.addValidationRules(configFile, mapping);
-                        System.out.println(q.writeCSPACE(validation));
-                        break;
                     case "excel":
                         System.out.println(q.writeExcel(projectId));
                         break;
