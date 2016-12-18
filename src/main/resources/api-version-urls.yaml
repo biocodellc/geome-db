@@ -10,9 +10,6 @@
 
 versionMap:
   1_0:
-    - versionUrl: projects/list(/)?
-      currentUrl: projects/
-
     - versionUrl: projects/(?<projectId>[^/]+)/expeditions(/)?
       currentUrl: users/projects/${projectId}/expeditions/
       namedGroups:

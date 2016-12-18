@@ -31,8 +31,14 @@ angular.module('biscicolApp')
             vm.setProject = setProject;
 
             function getProjects() {
-                ProjectFactory.getProjects(vm.includePublic)
-                    .then(getProjectsComplete);
+                var q;
+                if (vm.includePublic) {
+                    q = ProjectFactory.getProjects();
+                } else {
+                    q = ProjectFactory.getProjectsForUser();
+                }
+
+                q.then(getProjectsComplete);
 
                 function getProjectsComplete(response) {
                     vm.projects = response.data;
