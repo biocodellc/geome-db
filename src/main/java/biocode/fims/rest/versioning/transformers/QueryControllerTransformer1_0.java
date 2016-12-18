@@ -1,8 +1,6 @@
 package biocode.fims.rest.versioning.transformers;
 
 import biocode.fims.entities.Bcid;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.rest.versioning.Transformer;
 import biocode.fims.service.BcidService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,8 +16,6 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -27,36 +23,11 @@ import java.util.*;
  * {@link biocode.fims.rest.versioning.APIVersion}v1_0 to APIVersion v1_1, and responses from v1_1 to v1_0.
  */
 @Component
-public class QueryControllerTransformer1_0 implements Transformer {
+public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
     private final static Logger logger = LoggerFactory.getLogger(QueryControllerTransformer1_0.class);
 
     @Autowired
     private BcidService bcidService;
-
-    @Override
-    public void updateRequestData(LinkedHashMap<String, Object> argMap, String methodName, MultivaluedMap<String, String> queryParameters) {
-        try {
-            Method transformMethod = this.getClass().getMethod(methodName + "Request", LinkedHashMap.class, MultivaluedMap.class);
-            transformMethod.invoke(this, argMap, queryParameters);
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            logger.debug("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response\n {}", e);
-        } catch (InvocationTargetException e) {
-            logger.info("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response\n {}", e);
-        }
-    }
-
-    @Override
-    public Object updateResponseData(Object returnVal, String methodName) {
-        try {
-            Method transformMethod = this.getClass().getMethod(methodName + "Response", Object.class);
-            return transformMethod.invoke(this, returnVal);
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            logger.debug("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response\n {}", e);
-        } catch (InvocationTargetException e) {
-            logger.info("Problem transforming response for class: " + this.getClass() + " and method: " + methodName + "Response\n {}", e);
-        }
-        return returnVal;
-    }
 
     public Object queryJsonResponse(Object returnVal) {
         return transformJsonResponse(returnVal);
