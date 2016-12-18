@@ -80,7 +80,7 @@ public class BiscicolQueryUtils {
 
         for (Attribute a: mapping.getDefaultSheetAttributes()) {
             if (decimalLongDefinedBy.equals(a.getDefined_by())) {
-                return  JsonPointer.compile(a.getUri());
+                return  JsonPointer.compile("/" + a.getUri());
             }
         }
 
@@ -93,7 +93,7 @@ public class BiscicolQueryUtils {
 
         for (Attribute a: mapping.getDefaultSheetAttributes()) {
             if (decimalLatDefinedBy.equals(a.getDefined_by())) {
-                return  JsonPointer.compile(a.getUri());
+                return  JsonPointer.compile("/" + a.getUri());
             }
         }
         return JsonPointer.compile("/urn:decimalLatitude");
@@ -105,6 +105,6 @@ public class BiscicolQueryUtils {
                 mapping.getDefaultSheetName()
         );
 
-        return JsonPointer.compile(a.getUri());
+        return JsonPointer.compile("/" + a.getUri());
     }
 }

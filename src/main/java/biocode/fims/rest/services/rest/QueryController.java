@@ -629,6 +629,8 @@ public class QueryController extends FimsService {
             throw new BadRequestException("ERROR: incomplete arguments");
         }
 
+        this.projectId = projectId;
+
         Mapping mapping = getMapping(projectId);
         List<Attribute> attributes = mapping.getDefaultSheetAttributes();
 
