@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +47,8 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
 
         Page<ObjectNode> entity;
         try {
-            entity = (Page<ObjectNode>) new JSONParser().parse(String.valueOf(response.getEntity()));
-        } catch (ParseException e) {
+            entity = (Page<ObjectNode>) response.getEntity();
+        } catch (ClassCastException e) {
             logger.debug("ParseException occurred", e);
             return returnVal;
         }
@@ -71,12 +69,7 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
                 row.add(it.next().getValue().asText());
             }
 
-            data.add(
-                    mapper.createObjectNode().put(
-                            "row",
-                            row
-                    )
-            );
+            data.addObject().set("row", row);
         }
 
         v1_0Response.put("data", data);

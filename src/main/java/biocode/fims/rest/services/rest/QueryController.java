@@ -679,7 +679,18 @@ public class QueryController extends FimsService {
                 String[] filter = filterString.split("[:](?=[^:]*$)");
 
                 if (filter.length != 2) {
-                    throw new BadRequestException("invalid filterString. couldn't find a key:value for " + filterString);
+                    // This is to maintain backwards compatibility with old fuseki queries. I'm not sure if we want to
+                    // support this in the future. regexp queries are resource intensive
+                    for (ElasticSearchFilterField filterField : BiscicolQueryUtils.getAvailableFilters(getMapping(projectId))) {
+                        filterConditions.add(
+                                new ElasticSearchFilterCondition(
+                                        filterField,
+                                        ".*" + filter[0] + ".*"
+                                ).regexp(true)
+                        );
+                    }
+                    continue;
+//                    throw new BadRequestException("invalid filterString. couldn't find a key:value for " + filterString);
                 }
 
                 String key = filter[0];
@@ -731,7 +742,7 @@ public class QueryController extends FimsService {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
         for (String expedition : expeditionCodes) {
-            boolQueryBuilder.should(QueryBuilders.matchQuery("expedition.expeditionCode", expedition));
+            boolQueryBuilder.should(QueryBuilders.matchQuery("expedition.expeditionCode.keyword", expedition));
             boolQueryBuilder.minimumNumberShouldMatch(1);
         }
 
@@ -744,6 +755,13 @@ public class QueryController extends FimsService {
                                 QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()),
                                 ScoreMode.None)
                 );
+            } else if (filterCondition.isRegexp()) {
+                boolQueryBuilder.should(QueryBuilders.regexpQuery(filterCondition.getField(), filterCondition.getValue()));
+                if (expeditionCodes.isEmpty()) {
+                    boolQueryBuilder.minimumNumberShouldMatch(1);
+                } else {
+                    boolQueryBuilder.minimumNumberShouldMatch(2);
+                }
             } else {
                 boolQueryBuilder.must(QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()));
             }
