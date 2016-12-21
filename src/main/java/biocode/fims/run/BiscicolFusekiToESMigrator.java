@@ -92,6 +92,7 @@ public class BiscicolFusekiToESMigrator {
     }
 
     private void migrate(int projectId, String outputDirectory, File configFile) {
+        try
         Project project = projectService.getProjectWithExpeditions(projectId);
 
         Mapping mapping = new Mapping();
@@ -106,20 +107,20 @@ public class BiscicolFusekiToESMigrator {
 
         // we need to fetch each Expedition individually as the SheetUniqueKey is only unique on the Expedition level
         for (Expedition expedition : expeditions) {
-            FusekiFimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(expeditionService, bcidService);
-            FimsMetadataFileManager fimsMetadataFileManager = new FimsMetadataFileManager(
-                    persistenceManager, SettingsManager.getInstance(), expeditionService, bcidService);
-
-
-            ProcessController processController = new ProcessController(projectId, expedition.getExpeditionCode());
-            processController.setOutputFolder(outputDirectory);
-            processController.setMapping(mapping);
-            fimsMetadataFileManager.setProcessController(processController);
-
-
-            System.out.println("updating expedition: " + expedition.getExpeditionCode());
-
             try {
+                FusekiFimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(expeditionService, bcidService);
+                FimsMetadataFileManager fimsMetadataFileManager = new FimsMetadataFileManager(
+                        persistenceManager, SettingsManager.getInstance(), expeditionService, bcidService);
+
+
+                ProcessController processController = new ProcessController(projectId, expedition.getExpeditionCode());
+                processController.setOutputFolder(outputDirectory);
+                processController.setMapping(mapping);
+                fimsMetadataFileManager.setProcessController(processController);
+
+
+                System.out.println("updating expedition: " + expedition.getExpeditionCode());
+
                 JSONArray dataset = fimsMetadataFileManager.index();
 
                 System.out.println("\nindexing " + dataset.size() + " resources ....\n");
@@ -134,7 +135,7 @@ public class BiscicolFusekiToESMigrator {
                 totalResources.computeIfAbsent(projectId, k -> new LinkedHashMap<>());
                 totalResources.get(projectId).put(expedition.getExpeditionCode(), dataset.size());
                 totalResource += dataset.size();
-            } catch (FimsRuntimeException e) {
+            } catch (Exception e) {
                 if (!failedIndexes.containsKey(projectId)) {
                     failedIndexes.put(projectId, new ArrayList<>());
                 }

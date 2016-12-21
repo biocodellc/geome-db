@@ -1542,7 +1542,7 @@ function loopMessages(level, groupMessage, messageArray) {
     message += "<dt><div id='groupMessage' class='" + level + "'>" + level + ": " + groupMessage + "</div><dt>";
     $.each(messageArray, function (key, val) {
         message += "<dd>" + val + "</dd>";
-    })
+    });
     message += "</dl></div>";
     return message;
 }
