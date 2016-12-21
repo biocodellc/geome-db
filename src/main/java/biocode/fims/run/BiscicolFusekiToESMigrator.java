@@ -8,7 +8,6 @@ import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fuseki.fileManagers.fimsMetadata.FusekiFimsMetadataPersistenceManager;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
@@ -16,18 +15,16 @@ import biocode.fims.service.ProjectService;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
-import biocode.fims.utils.EmailUtils;
 import org.apache.commons.cli.*;
 import org.apache.commons.collections.MapUtils;
 import org.elasticsearch.client.Client;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.io.File;
-import java.io.SyncFailedException;
 import java.util.*;
 
 /**
@@ -43,12 +40,17 @@ public class BiscicolFusekiToESMigrator {
     private BcidService bcidService;
     private Map<Integer, List<String>> failedIndexes = new LinkedHashMap<>();
     private Map<Integer, LinkedHashMap<String, Integer>> totalResources = new LinkedHashMap<>();
+    private MessageSource messageSource;
+    private SettingsManager settingsManager;
 
-    BiscicolFusekiToESMigrator(ExpeditionService expeditionService, BcidService bcidService, ProjectService projectService, Client esClient) {
+    BiscicolFusekiToESMigrator(ExpeditionService expeditionService, BcidService bcidService, ProjectService projectService,
+                               Client esClient, MessageSource messageSource, SettingsManager settingsManager) {
         this.expeditionService = expeditionService;
         this.bcidService = bcidService;
         this.projectService = projectService;
         this.esClient = esClient;
+        this.messageSource = messageSource;
+        this.settingsManager = settingsManager;
     }
 
     /**
@@ -92,7 +94,6 @@ public class BiscicolFusekiToESMigrator {
     }
 
     private void migrate(int projectId, String outputDirectory, File configFile) {
-        try
         Project project = projectService.getProjectWithExpeditions(projectId);
 
         Mapping mapping = new Mapping();
@@ -108,9 +109,9 @@ public class BiscicolFusekiToESMigrator {
         // we need to fetch each Expedition individually as the SheetUniqueKey is only unique on the Expedition level
         for (Expedition expedition : expeditions) {
             try {
-                FusekiFimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(expeditionService, bcidService);
+                FusekiFimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(expeditionService, bcidService, settingsManager);
                 FimsMetadataFileManager fimsMetadataFileManager = new FimsMetadataFileManager(
-                        persistenceManager, SettingsManager.getInstance(), expeditionService, bcidService);
+                        persistenceManager, SettingsManager.getInstance(), expeditionService, bcidService, messageSource);
 
 
                 ProcessController processController = new ProcessController(projectId, expedition.getExpeditionCode());
@@ -155,6 +156,8 @@ public class BiscicolFusekiToESMigrator {
         ProjectService projectService = applicationContext.getBean(ProjectService.class);
         ExpeditionService expeditionService = applicationContext.getBean(ExpeditionService.class);
         BcidService bcidService = applicationContext.getBean(BcidService.class);
+        SettingsManager settingsManager = applicationContext.getBean(SettingsManager.class);
+        MessageSource messageSource = applicationContext.getBean(MessageSource.class);
 
         String output_directory = "tripleOutput/";
         Integer projectId = null;
@@ -191,7 +194,7 @@ public class BiscicolFusekiToESMigrator {
             projectId = Integer.parseInt(cl.getOptionValue("p"));
         }
 
-        BiscicolFusekiToESMigrator dataMigrator = new BiscicolFusekiToESMigrator(expeditionService, bcidService, projectService, esClient);
+        BiscicolFusekiToESMigrator dataMigrator = new BiscicolFusekiToESMigrator(expeditionService, bcidService, projectService, esClient, messageSource, settingsManager);
 
         // also need to run this for dipnet training projectId 1?
         dataMigrator.start(output_directory, projectId);

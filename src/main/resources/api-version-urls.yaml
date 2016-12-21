@@ -15,7 +15,7 @@ versionMap:
       namedGroups:
         - projectId
     - versionUrl: projects/(?<projectId>[^/]+)/getListFields/(?<listName>[^/]+)(/)?
-          currentUrl: projects/${projectId}/config/lists/${listName}/fields
-          namedGroups:
-            - projectId
-            - listname
+      currentUrl: projects/${projectId}/config/lists/${listName}/fields
+      namedGroups:
+        - projectId
+        - listName
