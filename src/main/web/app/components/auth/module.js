@@ -1,1 +1,1 @@
-angular.module('fims.auth', ['fims.users']);
+angular.module('fims.auth', ['fims.users', 'fims.modals']);

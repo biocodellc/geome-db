@@ -1,7 +1,7 @@
 angular.module('fims.auth')
 
-    .controller("LoginCtrl", ['$rootScope', '$scope', '$state', 'AuthFactory', 'UserFactory',
-        function ($rootScope, $scope, $state, AuthFactory, UserFactory) {
+    .controller("LoginCtrl", ['$rootScope', '$scope', '$state', 'AuthFactory', 'UserFactory', 'LoadingModalFactory',
+        function ($rootScope, $scope, $state, AuthFactory, UserFactory, LoadingModalFactory) {
             var vm = this;
             vm.credentials = {
                 username: '',
@@ -10,6 +10,7 @@ angular.module('fims.auth')
             vm.submit = submit;
 
             function submit() {
+                LoadingModalFactory.open();
                 AuthFactory.login(vm.credentials.username, vm.credentials.password)
                     .success(function (data, status, headers, config) {
                         UserFactory.fetchUser()
@@ -34,6 +35,10 @@ angular.module('fims.auth')
                             $scope.error = data.usrMessage;
                         else
                             $scope.error = "Server Error! Status code: " + status;
-                    });
+                    })
+                    .finally(function () {
+                            LoadingModalFactory.close();
+                        }
+                    );
             }
         }]);

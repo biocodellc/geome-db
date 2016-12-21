@@ -1,0 +1,61 @@
+    <hr class="separator"/>
+    <div class="col-sm-8">
+        <div class="form-group" show-errors="{trigger: 'change'}">
+            <label for="fasta" class="col-sm-3 control-label">FASTA Data</label>
+            <div class="col-sm-9">
+                <div class="input-group">
+                    <label class="input-group-btn">
+                        <span class="btn btn-default form-control">Browse &hellip;</span>
+                        <input type="file" style="display:none;" id="fasta" name="fasta"
+                               class="form-control"
+                               ngf-select
+                               ngf-pattern="'.fa,.mpfa,.fna,.fsa,.fas,.fasta'"
+                               ngf-model-invalid="invalidFastaFile"
+                               ng-required="vm.dataTypes.fasta"
+                               ng-model="vm.fastaFile"/>
+                    </label>
+                    <input type="text" class="form-control"
+                           ng-value="vm.fastaFile.name || invalidFastaFile.name" readonly/>
+                </div>
+                <p class="help-block col-sm-offset-3" ng-show="vm.uploadForm.fasta.$error.pattern">
+                    File must have one of the following extensions: .fa, .mpfa, .fna, .fsa, .fas or
+                    .fasta</p>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label for="fastaMarker" class="col-sm-3 control-label">Marker</label>
+            <div class="col-sm-9">
+                <select class="form-control" id="fastaMarker" name="fastaMarker"
+                        ng-model="vm.fastaData.metadata.marker"
+                        ng-required="vm.dataTypes.fasta"
+                        ng-options="marker.value as marker.value for marker in vm.markersList"
+                >
+                    <option value="">-- Select a Marker --</option>
+                </select>
+            </div>
+            <a class="help-link" href="#"
+               uib-popover-template="'app/components/validation/templates/fasta-marker-popover.tpl.html'"
+               popover-placement="bottom">
+                <span class="glyphicon glyphicon-question-sign glyphicon-help"></span>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-sm-4">
+        <ul>
+            <li>The name of your fasta sequences must match the materialsampleIDs in the metadata
+                file
+            </li>
+            <li>You can include multiple taxa in a single fasta/metadata file</li>
+            <li>Each fasta file should only include data from a single marker type (e.g. CO1, CYB,
+                etc)
+            </li>
+            <li>If you have multiple markers for the same taxa you must upload multiple fasta files
+                for a single metadata file.
+            </li>
+            <li>We recommend Fasta files names should follow this format
+                markerabbreviation_usertaxaabbreviation.fa
+            </li>
+        </ul>
+    </div>

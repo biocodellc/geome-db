@@ -29,7 +29,7 @@ angular.module('fims.validation')
                     scope.fimsMetadata = ngModelCtrl.$modelValue;
                 };
             },
-            templateUrl: 'app/components/validation/fimsData.tpl.html'
+            templateUrl: 'app/components/validation/templates/fimsData.tpl.html'
         }
 
     }]);

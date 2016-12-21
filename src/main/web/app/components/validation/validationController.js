@@ -12,7 +12,6 @@ angular.module('fims.validation')
                 instrumentModel: null
             };
             var latestExpeditionCode = null;
-            var createExpeditionCode = null;
             var modalInstance = null;
             var vm = this;
 
@@ -24,8 +23,10 @@ angular.module('fims.validation')
                 fasta: false
             };
             vm.fastqMetadataLists = {};
+            vm.markersList = [];
             vm.fimsMetadata = null;
             vm.fastaFile = null;
+            vm.newExpedition = false;
             vm.fastaData = {};
             vm.fastqFilenames = null;
             vm.fastqMetadata = angular.copy(defaultFastqMetadata);
@@ -72,9 +73,6 @@ angular.module('fims.validation')
             }
 
             function checkDataTypes() {
-                if (!vm.dataTypes.fasta && !vm.dataTypes.fastq) {
-                    vm.dataTypes.fims = true;
-                }
                 if (!vm.dataTypes.fasta) {
                     vm.fasta = false;
                 }
@@ -90,7 +88,7 @@ angular.module('fims.validation')
                 var data = {};
 
                 data.projectId = PROJECT_ID;
-                data.expeditionCode = vm.expeditionCode ? vm.expeditionCode : createExpeditionCode;
+                data.expeditionCode = vm.expeditionCode;
                 data.upload = true;
                 data.public_status = true;
 
@@ -113,28 +111,22 @@ angular.module('fims.validation')
             function upload() {
                 $scope.$broadcast('show-errors-check-validity');
 
+                if (vm.newExpedition) {
+                    checkExpeditionExists()
+                        .finally(function() {
+                            if (!checkCoordinatesVerified() || vm.uploadForm.$invalid) {
+                                return;
+                            }
 
-                if (!checkCoordinatesVerified() || vm.uploadForm.$invalid) {
-                    return;
-                }
-
-                if (!vm.expeditionCode) {
-                    var modalInstance = $uibModal.open({
-                        templateUrl: 'app/components/expeditions/createExpeditionModal.html',
-                        controller: 'CreateExpeditionsModalCtrl',
-                        controllerAs: 'vm',
-                        size: 'md'
-                    });
-
-                    modalInstance.result.then(function (expeditionCode) {
-                        createExpeditionCode = expeditionCode;
-                        submitUpload();
-                        ResultsDataFactory.createExpedition = true;
-                    }, function () {
-                    });
+                            submitUpload();
+                        });
                 } else {
+                    if (!checkCoordinatesVerified() || vm.uploadForm.$invalid) {
+                        return;
+                    }
                     submitUpload();
                 }
+
             }
 
             function submitUpload() {
@@ -146,7 +138,6 @@ angular.module('fims.validation')
                             ResultsDataFactory.validationMessages = response.data.done;
                             ResultsDataFactory.showOkButton = true;
                             ResultsDataFactory.showValidationMessages = true;
-                            createExpeditionCode = null;
                         } else if (response.data.continue) {
                             if (response.data.continue.message == "continue") {
                                 continueUpload();
@@ -160,7 +151,6 @@ angular.module('fims.validation')
                         } else {
                             ResultsDataFactory.error = "Unexpected response from server. Please contact system admin.";
                             ResultsDataFactory.showOkButton = true;
-                            createExpeditionCode = null;
                         }
                     });
             }
@@ -174,7 +164,7 @@ angular.module('fims.validation')
 
             function continueUpload() {
                 StatusPollingFactory.startPolling();
-                return $http.get(REST_ROOT + "validate/continue?createExpedition=" + ResultsDataFactory.createExpedition).then(
+                return $http.get(REST_ROOT + "validate/continue?createExpedition=" + vm.newExpedition).then(
                     function (response) {
                         if (response.data.error) {
                             ResultsDataFactory.error = response.data.error;
@@ -185,7 +175,6 @@ angular.module('fims.validation')
                             ResultsDataFactory.showCancelButton = true;
                             ResultsDataFactory.showStatus = false;
                             ResultsDataFactory.showUploadMessages = true;
-                            ResultsDataFactory.createExpedition = true;
                         } else {
                             ResultsDataFactory.successMessage = response.data.done;
                             modalInstance.close();
@@ -201,9 +190,8 @@ angular.module('fims.validation')
                     })
                     .finally(
                         function () {
-                            if (ResultsDataFactory.createExpedition) {
+                            if (vm.newExpedition) {
                                 getExpeditions();
-                                vm.expeditionCode = createExpeditionCode;
                             }
                             StatusPollingFactory.stopPolling();
                         }
@@ -259,14 +247,6 @@ angular.module('fims.validation')
                 });
 
                 modalInstance.result
-                    .then(
-                        function () {
-                        },
-                        function () {
-                            // if we are here, then the user canceled the upload
-                            createExpeditionCode = null;
-
-                        })
                     .finally(function () {
                             vm.activeTab = 2; // index 2 is the results tab
                             vm.displayResults = true;
@@ -370,17 +350,41 @@ angular.module('fims.validation')
                 }
             }
 
+            function checkExpeditionExists() {
+                return ExpeditionFactory.getExpedition(vm.expeditionCode)
+                    .then(function (response) {
+                        // if we get an expedition, then it already exists
+                        if (response.data) {
+                            vm.uploadForm.newExpeditionCode.$setValidity("exists", false);
+                        } else {
+                            vm.uploadForm.newExpeditionCode.$setValidity("exists", true);
+                        }
+                    });
+            }
+
             function getExpeditions() {
                 ExpeditionFactory.getExpeditionsForUser(true)
                     .then(function (response) {
                         angular.extend(vm.expeditions, response.data);
+                        if (!vm.expeditionCode && vm.expeditions) {
+                            vm.expeditionCode = vm.expeditions[0].expeditionCode;
+                        }
                     }, function (response, status) {
                         FailModalFactory.open("Failed to load datasets", response.data.usrMessage);
                     })
             }
 
+            function getMarkersList() {
+                $http.get(REST_ROOT + "projects/" + PROJECT_ID + "/config/lists/markers/fields")
+                    .then(function (response) {
+                        angular.extend(vm.markersList, response.data);
+                    }, function (response) {
+                        FailModalFactory.open("Failed to load fasta marker list", response.data.usrMessage);
+                    });
+            }
+
             function getFastqMetadataLists() {
-                $http.get(REST_ROOT + "projects/" + PROJECT_ID + "/lists/fastqMetadata")
+                $http.get(REST_ROOT + "projects/" + PROJECT_ID + "/config/lists/fastqMetadata")
                     .then(function (response) {
                         angular.extend(vm.fastqMetadataLists, response.data);
                     }, function (response) {
@@ -396,6 +400,7 @@ angular.module('fims.validation')
                 }
 
                 getFastqMetadataLists();
+                getMarkersList();
             }).call();
 
         }]);

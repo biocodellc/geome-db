@@ -13,7 +13,6 @@ angular.module('fims.templates', [])
             if (jqxhr) {
                 loadingDialog(jqxhr);
             }
-            populateAbstract('#abstract');
             populateConfigs();
 
         });

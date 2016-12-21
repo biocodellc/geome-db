@@ -627,28 +627,6 @@ function populateColumns(targetDivId) {
     }
 }
 
-function populateAbstract(targetDivId) {
-    $(targetDivId).html("Loading ...");
-
-    var projectId = getProjectID();
-
-    theUrl = RestRoot + "projects/" + projectId + "/abstract/";
-
-    var jqxhr = $.ajax( {
-        url: theUrl,
-        async: false,
-        dataType : 'json'
-    }).done(function(data) {
-        $(targetDivId).html(data.abstract +"<p>");
-    }).fail(function(jqXHR,textStatus) {
-        if (textStatus == "timeout") {
-            showMessage ("Timed out waiting for response!");
-        } else {
-            showMessage ("Error completing request!" );
-        }
-    });
-}
-
 var savedConfig;
 function saveTemplateConfig() {
     var message = "<table><tr><td>Configuration Name:</td><td><input type='text' name='configName' /></td></tr></table>";

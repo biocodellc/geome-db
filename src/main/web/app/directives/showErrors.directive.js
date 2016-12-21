@@ -5,7 +5,7 @@
 
     showErrorsModule.directive('showErrors', [
         '$timeout', 'showErrorsConfig', '$interpolate', function ($timeout, showErrorsConfig, $interpolate) {
-            var getShowSuccess, getTrigger, linkFn;
+            var getShowSuccess, getTrigger, checkGroupValidity, linkFn;
             getTrigger = function (options) {
                 var trigger;
                 trigger = showErrorsConfig.trigger;
@@ -22,37 +22,52 @@
                 }
                 return showSuccess;
             };
+            checkGroupValidity = function (inputNames, formCtrl) {
+                var valid = true;
+                // if 1 input in the group is invalid, then mark the group ad $invalid
+                angular.forEach(inputNames, function (inputName) {
+
+                    if (formCtrl[inputName] && formCtrl[inputName].$invalid) {
+                        valid = false;
+                    }
+
+                });
+                return valid;
+            };
             linkFn = function (scope, el, attrs, formCtrl) {
-                var blurred, inputEl, inputName, inputNgEl, options, showSuccess, toggleClasses, trigger;
+                var blurred, inputEl, inputNgEl, options, showSuccess, toggleClasses, trigger;
+                var inputNames = [];
                 blurred = false;
                 options = scope.$eval(attrs.showErrors);
                 showSuccess = getShowSuccess(options);
                 trigger = getTrigger(options);
                 // modified by RJ Ewing to allow multiple inputs under the same show-errors directive
-                inputEls = el[0].querySelectorAll('.form-control[name]');
+                inputEls = el[0].querySelectorAll('.form-control[name], input[type=checkbox]');
                 angular.forEach(inputEls, function (el) {
                     inputEl = el;
 
                     inputNgEl = angular.element(inputEl);
-                    inputName = $interpolate(inputNgEl.attr('name') || '')(scope);
+                    var inputName = $interpolate(inputNgEl.attr('name') || '')(scope);
                     if (!inputName) {
                         throw "show-errors element has no child input elements with a 'name' attribute and a 'form-control' class";
                     }
+
+                    inputNames.push(inputName);
                     inputNgEl.bind(trigger, function () {
                         blurred = true;
-                        return toggleClasses(formCtrl[inputName].$invalid);
+                        return toggleClasses(checkGroupValidity(inputNames, formCtrl));
                     });
                 });
                 scope.$watch(function () {
-                    return formCtrl[inputName] && formCtrl[inputName].$invalid;
-                }, function (invalid) {
+                    return checkGroupValidity(inputNames, formCtrl);
+                }, function (valid) {
                     if (!blurred) {
                         return;
                     }
-                    return toggleClasses(invalid);
+                    return toggleClasses(valid);
                 });
                 scope.$on('show-errors-check-validity', function () {
-                    return toggleClasses(formCtrl[inputName].$invalid);
+                    return toggleClasses(checkGroupValidity(inputNames, formCtrl));
                 });
                 scope.$on('show-errors-reset', function () {
                     return $timeout(function () {
@@ -61,10 +76,10 @@
                         return blurred = false;
                     }, 0, false);
                 });
-                return toggleClasses = function (invalid) {
-                    el.toggleClass('has-error', invalid);
+                return toggleClasses = function (valid) {
+                    el.toggleClass('has-error', !valid);
                     if (showSuccess) {
-                        return el.toggleClass('has-success', !invalid);
+                        return el.toggleClass('has-success', valid);
                     }
                 };
             };

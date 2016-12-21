@@ -175,10 +175,7 @@ allprojects {
 }
 
 war {
-    // exclude the src/main/web/app & src/main/web/js dirs. These files are concatenated and minified in the minifyJs task
-    // and added in the webInf closure
-    exclude("app/**/*.js")
-    exclude("js")
+    // add minifies and concatinated js files
     webInf {
         from "${buildDir}/js"
         into "/js/"

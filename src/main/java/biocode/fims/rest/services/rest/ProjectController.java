@@ -20,6 +20,7 @@ import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.elasticsearch.action.search.SearchResponse;
@@ -715,10 +716,10 @@ public class ProjectController extends FimsAbstractProjectsController {
 
 
     @GET
-    @Path("/{projectId}/lists/fastqMetadata")
+    @Path("/{projectId}/config/lists/fastqMetadata")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFastqMetadataLists(@PathParam("projectId") Integer projectId) {
-        JSONObject response = new JSONObject();
+        ObjectNode response = new SpringObjectMapper().createObjectNode();
 
         File configFile = new ConfigurationFileFetcher(
                 projectId,
@@ -732,30 +733,43 @@ public class ProjectController extends FimsAbstractProjectsController {
         Validation validation = new Validation();
         validation.addValidationRules(configFile, mapping);
 
-        response.put("libraryLayout", getList("libraryLayout", validation));
-        response.put("libraryStrategy", getList("libraryStrategy", validation));
-        response.put("librarySource", getList("librarySource", validation));
-        response.put("librarySelection", getList("librarySelection", validation));
+        response.set("libraryLayout", getList("libraryLayout", validation));
+        response.set("libraryStrategy", getListWithDefinition("libraryStrategy", validation));
+        response.set("librarySource", getListWithDefinition("librarySource", validation));
+        response.set("librarySelection", getListWithDefinition("librarySelection", validation));
 
-        JSONObject platformLists = new JSONObject();
-        java.util.List<String> platforms = getList("platform", validation);
+        ObjectNode platformLists = response.putObject("platform");
+        ArrayNode platforms = getList("platform", validation);
 
-        for (String platform : platforms) {
-            platformLists.put(platform, getList(platform, validation));
-        }
-
-        response.put("platform", platformLists);
+        platforms.forEach(p -> platformLists.set(p.asText(), getList(p.asText(), validation)));
 
         return Response.ok(response).build();
     }
 
-    private java.util.List<String> getList(String listName, Validation validation) {
+    private ArrayNode getList(String listName, Validation validation) {
+        ObjectMapper mapper = new SpringObjectMapper();
         biocode.fims.digester.List list = validation.findList(listName);
-        java.util.List<String> listFields = new ArrayList<>();
+        ArrayNode fields = mapper.createArrayNode();
 
         if (list != null) {
             for (Field f : list.getFields()) {
-                listFields.add(f.getValue());
+                fields.add(f.getValue());
+            }
+        }
+
+        return fields;
+    }
+
+    private ArrayNode getListWithDefinition(String listName, Validation validation) {
+        ObjectMapper mapper = new SpringObjectMapper();
+        ArrayNode listFields = mapper.createArrayNode();
+        biocode.fims.digester.List list = validation.findList(listName);
+
+        if (list != null) {
+            for (Field f : list.getFields()) {
+                listFields.addObject()
+                        .put("value", f.getValue())
+                        .put("definition", f.getDefinition());
             }
         }
 

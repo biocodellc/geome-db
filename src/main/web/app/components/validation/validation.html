@@ -8,12 +8,11 @@
         (in tab delimited text format) while the upload tab will also validate your files and ensure that each
         materialSampleID is accompanied by a fasta/fastq file of the same name.</p>
 
-    <p ng-show="!vm.isAuthenticated"><strong>The Upload option is available only to DIPnet members.</strong> I you are not yet a member visit
+    <p ng-show="!vm.isAuthenticated"><strong>The Upload option is available only to DIPnet members.</strong> I you are
+        not yet a member visit
         <a href="http://diversityindopacific.net">www.diversityindopacific.net</a> to find out how to join.</p>
 
     <div class="col-sm-12">
-        <!-- TODO remove this when we refactor list() function -->
-        <input type="hidden" value="{{ vm.projectId }}" name="projectId" id="project">
         <uib-tabset active="vm.activeTab">
             <uib-tab index="-1" heading="" disable="true" classes="col-sm-offset-1 hidden-tab"></uib-tab>
 
@@ -35,255 +34,115 @@
             <!-- Upload Tab -->
             <uib-tab index="1" heading="Upload" disable="!vm.isAuthenticated">
                 <form role="form" name="vm.uploadForm" class="form-horizontal" novalidate ng-submit="vm.upload()">
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">Data Type</label>
+                    <div class="form-group" show-errors ng-class="{'has-error': vm.newExpedition && !vm.dataTypes.fims}">
+                        <label class="col-sm-2 control-label">Data Type(s)</label>
                         <div class="col-sm-8">
-                            <label class="btn btn-primary" ng-model="vm.dataTypes.fims"
-                                   ng-click="vm.checkDataTypes()"
-                                   uib-btn-checkbox>FIMS</label>
-                            <label class="btn btn-primary" ng-model="vm.dataTypes.fastq"
-                                   ng-click="vm.dataTypes.fasta = false && vm.checkDataTypes()"
-                                   uib-btn-checkbox>FASTQ</label>
-                            <label class="btn btn-primary" ng-model="vm.dataTypes.fasta"
-                                   ng-click="vm.dataTypes.fastq = false && vm.checkDataTypes()"
-                                   uib-btn-checkbox>FASTA</label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-model="vm.dataTypes.fims"
+                                       name="fimsData"
+                                       ng-required="vm.newExpedition || (!vm.dataTypes.fasta && !vm.dataTypes.fastq)"
+                                       ng-click="vm.checkDataTypes()"/>
+                                FIMS Metadata
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-model="vm.dataTypes.fasta"
+                                       name="fastaData"
+                                       ng-required="!vm.dataTypes.fims && !vm.dataTypes.fastq"
+                                       ng-click="vm.dataTypes.fastq = false && vm.checkDataTypes()"/>
+                                Fasta
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" ng-model="vm.dataTypes.fastq"
+                                       name="fastqData"
+                                       ng-required="!vm.dataTypes.fims && !vm.dataTypes.fasta"
+                                       ng-click="vm.dataTypes.fasta = false && vm.checkDataTypes()"/>
+                                Fastq Metadata
+                            </label>
+                            <p class="help-block col-sm-12" style="padding-left:0px;"
+                               ng-show="vm.newExpedition && !vm.dataTypes.fims">
+                                FIMS Metadata is required if you are creating a new expedition.
+                            </p>
                         </div>
                     </div>
 
                     <div class="form-group" show-errors>
                         <label for="expeditionCode" class="col-sm-2 control-label">Expedition Name</label>
-                        <div class="col-sm-6">
-                            <select id="expeditionCode" name="expeditionCode"
-                                    ng-model="vm.expeditionCode"
-                                    ng-options="expedition.expeditionCode as expedition.expeditionTitle for expedition in vm.expeditions"
-                                    class="form-control col-sm-6">
-                                <option value="">-- Create an Expedition --</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <fims-data ng-show="vm.dataTypes.fims" ng-model="vm.fimsMetadata"
-                               is-required="vm.dataTypes.fims"
-                               change="vm.fimsMetadataChange()"></fims-data>
-
-                    <div ng-show="vm.dataTypes.fasta">
-                        <div class="form-group" show-errors="{trigger: 'change'}">
-                            <label for="fasta" class="col-sm-2 control-label">FASTA Data</label>
-                            <div class="col-sm-8">
-                                <div class="input-group">
-                                    <label class="input-group-btn">
-                                        <span class="btn btn-default form-control">Browse &hellip;</span>
-                                        <input type="file" style="display:none;" id="fasta" name="fasta"
-                                               class="form-control"
-                                               ngf-select
-                                               ngf-pattern="'.fa,.mpfa,.fna,.fsa,.fas,.fasta'"
-                                               ngf-model-invalid="invalidFastaFile"
-                                               ng-required="vm.dataTypes.fasta"
-                                               ng-model="vm.fastaFile"/>
-                                    </label>
-                                    <input type="text" class="form-control"
-                                           ng-value="vm.fastaFile.name || invalidFastaFile.name" readonly/>
-                                </div>
-                                <p class="help-block col-sm-offset-2" ng-show="vm.uploadForm.fasta.$error.pattern">
-                                    File must have one of the following extensions: .fa, .mpfa, .fna, .fsa, .fas or
-                                    .fasta</p>
-                            </div>
-                        </div>
-
-                        <div class="form-group" show-errors>
-                            <label for="fastaMarker" class="col-sm-2 control-label">Marker</label>
-                            <div class="col-sm-8">
-                                <input type="text" class="form-control" id="fastaMarker"
-                                       name="marker" ng-model="vm.fastaData.metadata.marker"
-                                       ng-required="vm.dataTypes.fasta"/>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div ng-show="vm.dataTypes.fastq">
-                        <div class="form-group" show-errors="{trigger: 'change'}">
-                            <label for="fastq" class="col-sm-2 control-label">FASTQ Data</label>
-                            <div class="col-sm-8">
-                                <div class="input-group">
-                                    <label class="input-group-btn">
-                                        <span class="btn btn-default form-control">Browse &hellip;</span>
-                                        <input type="file" style="display:none;" id="fastq" name="fastqFilenames"
-                                               class="form-control"
-                                               ngf-select
-                                               ngf-model-invalid="invalidFastqFile"
-                                               ngf-pattern="'.txt'"
-                                               ng-required="vm.dataTypes.fastq"
-                                               ng-model="vm.fastqFilenames"/>
-                                    </label>
-                                    <input type="text" class="form-control"
-                                           ng-value="vm.fastqFilenames.name || invalidFastqFile.name"
-                                           readonly/>
-                                </div>
-                                <p class="help-block">Upload your list of fastq filenames (1 per line) here</p>
-                                <p class="help-block col-sm-offset-2"
-                                   ng-show="vm.uploadForm.fastqFileNames.$error.pattern">
-                                    File must be a .txt file</p>
-                            </div>
-                        </div>
-
-                        <div class="form-group" show-errors="">
-                            <label class="col-sm-2 control-label">Library Layout</label>
-                            <div class="row col-sm-8">
-                                <div class="col-sm-6">
-                                    <div class="input-group">
-                                        <span class="input-group-addon"><input type="radio"
-                                                                               ng-model="vm.fastqMetadata.libraryLayout"
-                                                                               ng-required="vm.dataTypes.fastq && !vm.fastqMetadata.libraryLayout"
-                                                                               name="single"
-                                                                               value="single"/></span>
-                                        <input type="text" class="form-control" value="Single End" name="single"
-                                               style="background-color: #fff;" readonly/>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6">
-                                    <div class="input-group">
-                                        <span class="input-group-addon"><input type="radio"
-                                                                               ng-model="vm.fastqMetadata.libraryLayout"
-                                                                               ng-required="vm.dataTypes.fastq && !vm.fastqMetadata.libraryLayout"
-                                                                               name="paired"
-                                                                               value="paired"/></span>
-                                        <input type="text" class="form-control" value="Paired End" name="paired"
-                                               style="background-color: #fff;" readonly/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group" show-errors>
-                            <label for="libraryStrategy" class="col-sm-2 control-label">Library Strategy</label>
-                            <div class="col-sm-8 pull-left">
-                                <select class="form-control" name="libraryStrategy"
-                                        ng-show="vm.fastqMetadataLists.libraryStrategy"
-                                        ng-model="vm.fastqMetadata.libraryStrategy"
-                                        ng-options="strategy for strategy in vm.fastqMetadataLists.libraryStrategy"
-                                        ng-required="vm.dataTypes.fastq">
-                                    <option value="">-- Select a Library Strategy --</option>
+                        <div class="row col-sm-8">
+                            <div class="col-sm-8" ng-show="!vm.newExpedition">
+                                <select id="expeditionCode" name="expeditionCode"
+                                        ng-model="vm.expeditionCode"
+                                        ng-options="expedition.expeditionCode as expedition.expeditionTitle for expedition in vm.expeditions track by expedition.expeditionId"
+                                        required
+                                        class="form-control col-sm-6">
+                                    <option value="">-- Select an Expedition --</option>
                                 </select>
-                                <input type="text" class="form-control" id="libraryStrategy"
-                                       name="libraryStrategyManual"
-                                       ng-show="!vm.fastqMetadataLists.libraryStrategy"
-                                       ng-model="vm.fastqMetadata.libraryStrategy"
-                                       ng-required="vm.dataTypes.fastq"/>
-                                <p class="help-block">
-                                    For instance if uploading using RADSeq data this is likely to be “WGS”
+                            </div>
+                            <div class="col-sm-8" ng-show="vm.newExpedition">
+                                <input type="text" class="form-control" name="newExpeditionCode"
+                                       ng-model="vm.expeditionCode"
+                                       required ng-pattern=/^[a-zA-Z0-9_-]{4,50}$/ />
+                            </div>
+                            <label class="col-sm-2 checkbox-inline">
+                                <input type="checkbox" name="newExpedition"
+                                       ng-model="vm.newExpedition"
+                                       ng-click="vm.expeditionCode = null"
+                                       value="true"/>
+                                New Expedition?
+                            </label>
+                            <div class="col-sm-12" ng-show="vm.newExpedition">
+                                <p class="help-block ignore-error">
+                                    We recommend that the expedition name be meaningful to the broader community so we
+                                    suggest this format "species/taxa_geographicscope_datatype"
+                                    (e.g., Lutjanuskasmia_frenchpoly_RADseq or Lutjanuskasmia_Hawaii_COI).
+                                </p>
+                                <p class="help-block"
+                                   ng-if="vm.uploadForm.newExpeditionCode.$error.pattern && vm.uploadForm.newExpeditionCode.$touched">
+                                    <b>Expedition
+                                        Name</b> must contain only numbers, letters, or underscores and be 4 to 50
+                                    characters long</p>
+                                <p class="help-block col-sm-12" style="padding-left:0px;"
+                                   ng-show="vm.uploadForm.newExpeditionCode.$error.exists">
+                                    Expedition with that name already exists
                                 </p>
                             </div>
-                            <a href="https://www.ncbi.nlm.nih.gov/books/NBK54984/table/SRA_Glossary_BK.T._spot_descriptor_terms/?report=objectonly"
-                               target="_blank"><span class="glyphicon glyphicon-question-sign glyphicon-help"></span></a>
-                        </div>
-
-                        <div class="form-group" show-errors>
-                            <label for="librarySource" class="col-sm-2 control-label">Library Source</label>
-                            <div class="col-sm-8">
-                                <select class="form-control" name="librarySource"
-                                        ng-show="vm.fastqMetadataLists.librarySource"
-                                        ng-model="vm.fastqMetadata.librarySource"
-                                        ng-options="source for source in vm.fastqMetadataLists.librarySource"
-                                        ng-required="vm.dataTypes.fastq">
-                                    <option value="">-- Select a Library Source --</option>
-                                </select>
-                                <input type="text" class="form-control" id="librarySource"
-                                       name="librarySourceManual"
-                                       ng-show="!vm.fastqMetadataLists.librarySource"
-                                       ng-model="vm.fastqMetadata.librarySource"
-                                       ng-required="vm.dataTypes.fastq"/>
-                            </div>
-                            <a href="https://www.ncbi.nlm.nih.gov/books/NBK299061/table/SRA_Batch_Guide.T.list_of_available_expe/?report=objectonly"
-                               target="_blank"><span class="glyphicon glyphicon-question-sign glyphicon-help"></span></a>
-                        </div>
-
-                        <div class="form-group" show-errors>
-                            <label for="librarySelection" class="col-sm-2 control-label">Library Selection</label>
-                            <div class="col-sm-8">
-                                <select class="form-control" name="librarySelection"
-                                        ng-show="vm.fastqMetadataLists.librarySelection"
-                                        ng-model="vm.fastqMetadata.librarySelection"
-                                        ng-options="selection for selection in vm.fastqMetadataLists.librarySelection"
-                                        ng-required="vm.dataTypes.fastq">
-                                    <option value="">-- Select a Library Selection --</option>
-                                </select>
-                                <input type="text" class="form-control" id="librarySelection"
-                                       ng-show="!vm.fastqMetadataLists.librarySelection"
-                                       name="librarySelectionManual" ng-model="vm.fastqMetadata.librarySelection"
-                                       ng-required="vm.dataTypes.fastq"/>
-                                <p class="help-block">
-                                    For instance if uploading using RADSeq data this is likely to be “Reduced
-                                    Representation”
-                                </p>
-                            </div>
-                            <a href="https://www.ncbi.nlm.nih.gov/books/NBK299061/table/SRA_Batch_Guide.T.list_of_available_expe/?report=objectonly"
-                               target="_blank" class="glyphicon glyphicon-question-sign glyphicon-help"></a>
-                        </div>
-
-                        <div class="form-group" show-errors>
-                            <label for="platform" class="col-sm-2 control-label">Platform</label>
-                            <div class="col-sm-8">
-                                <select class="form-control" name="platform"
-                                        ng-show="vm.fastqMetadataLists.platform"
-                                        ng-model="vm.fastqMetadata.platform"
-                                        ng-options="platform as platform for (platform, list) in vm.fastqMetadataLists.platform"
-                                        ng-required="vm.dataTypes.fastq">
-                                    <option value="">-- Select a Platform --</option>
-                                </select>
-                                <input type="text" class="form-control" id="platform" name="platformManual"
-                                       ng-show="!vm.fastqMetadataLists.platform"
-                                       ng-model="vm.fastqMetadata.platform"
-                                       ng-required="vm.dataTypes.fastq"/>
-                            </div>
-                        </div>
-
-                        <div class="form-group" show-errors>
-                            <label for="instrumentModel" class="col-sm-2 control-label">Instrument Model</label>
-                            <div class="col-sm-8">
-                                <select class="form-control" name="instrumentModel"
-                                        ng-show="vm.fastqMetadataLists.platform[vm.fastqMetadata.platform]"
-                                        ng-model="vm.fastqMetadata.instrumentModel"
-                                        ng-options="instrumentModel for instrumentModel in vm.fastqMetadataLists.platform[vm.fastqMetadata.platform]"
-                                        ng-required="vm.dataTypes.fastq">
-                                    <option value="">-- Select an Instrument Model --</option>
-                                </select>
-                                <input type="text" class="form-control" id="instrumentModel"
-                                       name="instrumentModelManual"
-                                       ng-show="!vm.fastqMetadataLists.platform[vm.fastqMetadata.platform]"
-                                       ng-model="vm.fastqMetadata.instrumentModel"
-                                       ng-required="vm.dataTypes.fastq"/>
-                            </div>
-                        </div>
-
-                        <div class="form-group" show-errors>
-                            <label for="designDescription" class="col-sm-2 control-label">Protocol citation or
-                                website</label>
-                            <div class="col-sm-8">
-                                <input type="text" class="form-control" id="designDescription"
-                                       name="designDescription" ng-model="vm.fastqMetadata.designDescription"
-                                       ng-required="vm.dataTypes.fastq"/>
-                            </div>
                         </div>
                     </div>
 
-                    <div class="col-sm-offset-2" ng-show="vm.verifyDataPoints" ng-class="vm.coordinatesErrorClass">
+
+                    <div ng-show="vm.dataTypes.fims">
+                        <hr class="separator"/>
+                        <fims-data ng-show="vm.dataTypes.fims" ng-model="vm.fimsMetadata"
+                                   is-required="vm.dataTypes.fims"
+                                   change="vm.fimsMetadataChange()"></fims-data>
                         <div class="form-group">
-                            <div class="checkbox">
-                                <label>
-                                    <input type="checkbox" name="coordinatesVerified"
-                                           id="coordinates_verified" ng-model="vm.coordinatesVerified"
-                                           ng-click="vm.checkCoordinatesVerified()"/>
-                                    <span class="control-label">Data points verified on map?&nbsp;&nbsp;</span>
-                                </label>
+                        <div class="col-sm-offset-2" ng-show="vm.verifyDataPoints" ng-class="vm.coordinatesErrorClass">
+                                <div class="col-sm-8 checkbox">
+                                    <label>
+                                        <input type="checkbox" name="coordinatesVerified"
+                                               id="coordinates_verified" ng-model="vm.coordinatesVerified"
+                                               ng-click="vm.checkCoordinatesVerified()"/>
+                                        <span class="control-label">Data points verified on map?&nbsp;&nbsp;</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-sm-1 col-sm-offset-9">
-                        <button type="submit" class="btn btn-default">Upload</button>
-                    </div>
-                </form>
+                    <div class="form-group split-form" ng-show="vm.dataTypes.fasta"
+                         ng-include="'app/components/validation/templates/fastaUpload.tpl.html'"></div>
 
+                    <div class="form-group split-form" ng-show="vm.dataTypes.fastq"
+                         ng-include="'app/components/validation/templates/fastqUpload.tpl.html'"></div>
+
+                    <div class="form-group">
+                        <div class="col-sm-1"
+                             ng-class="{'col-sm-offset-7': vm.dataTypes.fasta || vm.dataTypes.fastq, 'col-sm-offset-9': !(vm.dataTypes.fasta || vm.dataTypes.fastq)}">
+                            <button type="submit" class="btn btn-primary pull-right">Upload</button>
+                        </div>
+                    </div>
+
+
+                </form>
             </uib-tab>
 
             <!-- Results Tab -->

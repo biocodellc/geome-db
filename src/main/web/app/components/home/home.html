@@ -1,111 +1,61 @@
-<div class="row">
-    <h2>
-        Diversity of the Indo-Pacific Network (DIPnet) Field Information Management System (FIMS)
-    </h2>
+<h3 class="h3">
+    Diversity of the Indo-Pacific Network (DIPnet) Field Information Management System (FIMS)
+</h3>
+<div class="row vertical-align">
 
-    <p>
-        A primary goal of DIPnet is to develop a web-based database and infrastructures to aid collaboration and the
-        cross-dissemination of published data. Although Genbank has been an important repository of sequence data, it
-        does not enforce important aspects for population analyses - namely individual genotypes and precise sampling
-        locations and there is no central repository nor set standards for such population genetic data and associated
-        metadata. We use the DIPnet FIMS to manage and validate data for population genetic analysis - namely individual
-        genotypes and precise sampling locations. The following workflow is used for working with metadata and sequence
-        files in the FIMS system:
+    <div class="col-xs-6">
+        <p>
+            DIPnet has developed a web-based database to aid collaboration and the cross-dissemination
+            of published data. Although Genbank is an important repository of sequence data, it does not
+            require the uploading of important metadata associated with individual genotypes such as
+            precise sampling locations and there is no central repository nor set standards for such
+            population genetic data and associated metadata. The DIPnet database is designed to fill this
+            gap.
 
-    </p>
+        </p>
+    </div>
+
+    <div class="col-xs-6">
+        <img id='workflowImage' class="img-responsive center-block" style="max-height: 350px;"
+             src='docs/dipnetWorkflow.png'>
+    </div>
 </div>
 
 <div class="row">
-    <img id='workflowImage' class="img-responsive center-block" style="max-height: 350px;"
-         src='docs/dipnetWorkflow.png'>
-</div>
-
-<div class="row">
-    <h2>Users can upload two types of data</h2>
+    <h3 class="h3">Members can upload two types of data (under "tools" tab)</h3>
     <ol>
-        <li>Published Sanger sequence data and the associated metadata</li>
+        <li>Published <u>Sanger sequence data</u> and the associated metadata (fasta format)</li>
         <li>
-            Metadata associated with next-generation sequence data
+            Metadata associated with <u>next-generation sequence data</u> (fastq format)
             <ul>
                 <li>In the process of uploading the metadata for your next-generation sequence data we create two
-                    files 1) the SRA metadata file and 2) the BioSample datasheet <strong>making uploading your data to
-                    Genbank's Short Read Archive (SRA) database faster and easier</strong>.
+                    files:
                 </li>
+                <ol>
+                    <li>the SRA metadata file</li>
+                    <li>the BioSample datasheet</li>
+                </ol>
+                 
             </ul>
         </li>
     </ol>
-    <small>* Note we are not currently accepting microsatellite datasets</small>
+    <p><strong>This will make uploading your data to Genbank's Short Read Archive (SRA) database faster and easier</strong>.</p>
+    <p><small>* Note we are not currently accepting microsatellite datasets</small></p>
 </div>
 
 <div class="row">
-    <h2>
+    <h3 class="h3">
         What you need to do before upload you data
-    </h2>
+    </h3>
     <ul>
         <li>
-            Generate a template
+            Generate a FIMS template (under “tools” tab) for your metadata
             <ul>
                 <li>
-                    This option allows the user to create an excel file with the appropriate column headers. Each
-                    individual (organism/sample) is entered in a row in the spreadsheet and must have a unique
-                    materialsampleID that is created by the user (your unique sample name). Although there are a lot of
-                    field options, only materialSampleID, principalInvestigator, phylum and EITHER decimalLatitude AND
-                    decimalLongitude OR locality (lat/longs are preferred) are required (and marker for Sanger data).
-                    Thirteen additional fields are recommended, and thus automatically checked in the default template. To
-                    get the most use out of your data please fill in as much of the metadata as possible or that is
-                    relevant.
+                    This option allows the user to create an excel file to store the metadata associated
+                    with each of their samples.
                 </li>
             </ul>
         </li>
-        </ul>
-            <ol class="alpha-list">
-                <li>
-                    Fasta files (Sanger sequence data)
-
-                    <ul>
-                        <li>The name of your fasta sequences must match the materialsampleIDs in the metadata file</li>
-                        <li>You can include multiple taxa in a single fasta/metadata file</li>
-                        <li>Each fasta file should only include data from a single marker type (e.g. CO1, CYB, etc)</li>
-                        <li>If you have multiple markers for the same taxa you must upload multiple fasta files for a
-                            single metadata file
-                        </li>
-                        <li>Fasta files names should follow this format (markerabbreviation_usertaxaabbreviation.fa)
-                        </li>
-                        <li>Marker abbreviations can be found <a ng-click="vm.getMarkersList()">here</a></li>
-                        <li>User taxa abbreviation are user defined and can a taxonomic description</li>
-                    </ul>
-
-                </li>
-
-                <li>
-                    Fastq files (next-generation sequencing)
-
-                    <ul>
-                        <li>The actual fastq sequence files will not be uploaded and stored on the FIMS system. Instead
-                            the metadata file will be uploaded and stored here.
-                        </li>
-                        <li>The metadata file should include one entry for each individual in the dataset.</li>
-                        <li>FIMS will accept single and paired end read data</li>
-                        <li>Each fastq file should contain reads from a single individual</li>
-                        <li>Names of fastq files must match the materialsampleIDs in the metadata file up to the file
-                            extension (e.g., R1.fq.gz, .1.fq, etc)
-                        </li>
-                        <li>For validation purposes a text file of the fastq file names (one name per line and including
-                            the file extension) will be uploaded here. If you are uploading PE data there should be two
-                            file names per sample. This process ensures that required fields are complete, that each
-                            materialsampleID is unique, and that the materialsampleIDs match the fastq file names.
-                        </li>
-                        <li>Once uploaded the FIMS system will produce two files (SRA metadata and BioSample files) for
-                            the user to ease the upload process to NCBI’s Short Read Archive (SRA)
-                        </li>
-                    </ul>
-
-                </li>
-            </ol>
-
-
-        <p>
-            The user will then be directed to the SRA website for file upload.
-        </p>
-
+    </ul>
 </div>
