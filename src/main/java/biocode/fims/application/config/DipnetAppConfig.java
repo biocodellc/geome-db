@@ -7,6 +7,7 @@ import biocode.fims.elasticSearch.TransportClientFactoryBean;
 import biocode.fims.service.ProjectService;
 import org.elasticsearch.client.Client;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 
@@ -29,12 +30,14 @@ public class DipnetAppConfig {
     ProjectService projectService;
     @Autowired
     Client esClient;
+    @Autowired
+    private MessageSource messageSource;
 
     @Bean
     @Scope("prototype")
     public FimsMetadataFileManager fimsMetadataFileManager() {
-        FimsMetadataPersistenceManager persistenceManager = new ESFimsMetadataPersistenceManager(esClient);
-        return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService);
+        FimsMetadataPersistenceManager persistenceManager = new ESFimsMetadataPersistenceManager(esClient, fimsAppConfig.settingsManager);
+        return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService, messageSource);
     }
 
 }
