@@ -1,21 +1,17 @@
+<h3 class="page-header">Generate Template</h3>
 <div class="row">
-    <h2 class="page-header">Generate Template</h2>
-
-    <p>
-        Choose template from dropdown menu
-        <br>
-        or
-        <br>
+    <p class="text-center">
+        Choose template from dropdown menu <strong><em>OR</em></strong>
         Check available column heading below to include in your customized FIMS spreadsheet.
     </p>
 </div>
 
-<div class="row col-sm-12">
+<div class="row col-sm-12" id="template-form">
     <form class="form-inline">
         <input type="hidden" value="{{ vm.projectId }}" id="project">
 
-            <div class="form-group col-sm-10 col-md-6" style="margin-bottom: 15px;">
-                <div class="input-group" style="width:100%">
+        <div class="form-group col-xs-10 col-xs-offset-1 col-md-4 col-md-offset-4" style="margin-bottom: 15px;">
+            <div class="input-group" style="width:100%">
                 <select class="form-control" id="configs" onChange="updateCheckedBoxes();">
                     <option value="0">Default</option>
                 </select>
@@ -24,47 +20,48 @@
                 </div>
             </div>
         </div>
+        <div class="form-group col-md-4 col-md-offset-4">
+            <button type='button' id='excel_button' class="btn btn-primary">Export Excel</button>
+        </div>
     </form>
+    </div>
+
 </div>
 
-<div class="row" style="margin-bottom:20px;">
-    <button type='button' id='excel_button' class="btn btn-primary">Export Excel</button>
-</div>
-
-<div class="row">
+<div class="row col-sm-12">
 
     <div id="templateInfo" style='min-height:200px;'>
 
-        <div style="width: 45%; float:left;border-right: 1px solid gray; ">
-
+        <div class="col-xs-6">
             <div id="cat1"></div>
-
         </div>
 
-
-        <div style="width: 45%; float:left;margin-left:5px;">
-
-            <div>
+        <div class="col-xs-6">
+            <div class="row">
                 <ul>
                     <li>Although there are a lot of field options only four are <u>REQUIRED</u>:
                         <ul class="list-unstyled" style="padding-left: 40px;">
-                            <li class="required">materialSampleID</li>
-                            <li class="required">principalInvestigator</li>
-                            <li class="required">phylum</li>
+                            <li class="red">materialSampleID</li>
+                            <li class="red">principalInvestigator</li>
+                            <li class="red">phylum</li>
                             <li>and either</li>
-                            <li><span class="required">decimalLatitude</span> AND <span class="required">decimalLongitude</span> (preferred)</li>
+                            <li><span class="red">decimalLatitude</span> AND <span class="red">decimalLongitude</span>
+                                (preferred)
+                            </li>
                             <li>or</li>
-                            <li class="required">locality</li>
+                            <li class="red">locality</li>
                         </ul>
                     </li>
                     <li>Thirteen additional fields are recommended, and thus automatically checked in the default
-                        template</li>
+                        template
+                    </li>
                     <li>Each individual (organism/sample) is entered in a row in the spreadsheet and must have a
-                        unique materialsampleID that is created by the user (your unique sample name)</li>
+                        unique materialsampleID that is created by the user (your unique sample name)
+                    </li>
                 </ul>
             </div>
 
-            <h2>Definition</h2>
+            <h3>Definition</h3>
 
             <p>Click on "DEF" next to any of the headings to see the definition of the term.</p>
 
@@ -72,7 +69,5 @@
         </div>
 
     </div>
-
-    <div style="clear:both;"></div>
 
 </div>

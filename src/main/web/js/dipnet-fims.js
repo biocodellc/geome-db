@@ -121,9 +121,9 @@ function listProjects(username, url, expedition) {
     var jqxhr = $.getJSON(url
     ).done(function(data) {
         if (!expedition) {
-            var html = '<h1>Project Manager (' + username + ')</h2>\n';
+            var html = '<h3>Project Manager (' + username + ')</h3>\n';
         } else {
-            var html = '<h1>Expedition Manager (' + username + ')</h2>\n';
+            var html = '<h3>Expedition Manager (' + username + ')</h3>\n';
         }
         var expandTemplate = '<br>\n<a class="expand-content" id="{project}-{section}" href="javascript:void(0);">\n'
             + '\t <img src="' + appRoot + 'images/right-arrow.png" id="arrow" class="img-arrow">{text}'

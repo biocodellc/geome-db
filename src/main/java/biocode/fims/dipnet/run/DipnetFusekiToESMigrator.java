@@ -2,16 +2,13 @@ package biocode.fims.dipnet.run;
 
 import biocode.fims.application.config.DipnetAppConfig;
 import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.fileManagers.fasta.FastaFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fuseki.fileManagers.fimsMetadata.FusekiFimsMetadataPersistenceManager;
-import biocode.fims.fuseki.query.elasticSearch.FusekiIndexer;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ExpeditionService;
@@ -25,13 +22,13 @@ import org.elasticsearch.client.Client;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Tmp script to help with the migration from fuseki to ElasticSearch
@@ -46,12 +43,17 @@ public class DipnetFusekiToESMigrator {
     private BcidService bcidService;
     private List<String> failedIndexes = new ArrayList<>();
     private LinkedHashMap<String, Integer> totalResources = new LinkedHashMap<>();
+    private SettingsManager settingsManager;
+    private MessageSource messageSource;
 
-    DipnetFusekiToESMigrator(ExpeditionService expeditionService, BcidService bcidService, ProjectService projectService, Client esClient) {
+    DipnetFusekiToESMigrator(ExpeditionService expeditionService, BcidService bcidService, ProjectService projectService,
+                             Client esClient, SettingsManager settingsManager, MessageSource messageSource) {
         this.expeditionService = expeditionService;
         this.bcidService = bcidService;
         this.projectService = projectService;
         this.esClient = esClient;
+        this.settingsManager = settingsManager;
+        this.messageSource = messageSource;
     }
 
     public void migrate(int projectId, String outputDirectory) {
@@ -66,9 +68,9 @@ public class DipnetFusekiToESMigrator {
         // we need to fetch each Expedition individually as the SheetUniqueKey is only unique on the Expedition level
         for (Expedition expedition : project.getExpeditions()) {
             try {
-                FusekiFimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(expeditionService, bcidService);
+                FusekiFimsMetadataPersistenceManager persistenceManager = new FusekiFimsMetadataPersistenceManager(expeditionService, bcidService, settingsManager);
                 FimsMetadataFileManager fimsMetadataFileManager = new FimsMetadataFileManager(
-                        persistenceManager, SettingsManager.getInstance(), expeditionService, bcidService);
+                        persistenceManager, SettingsManager.getInstance(), expeditionService, bcidService, messageSource);
 
 
                 ProcessController processController = new ProcessController(projectId, expedition.getExpeditionCode());
@@ -136,6 +138,8 @@ public class DipnetFusekiToESMigrator {
         ProjectService projectService = applicationContext.getBean(ProjectService.class);
         ExpeditionService expeditionService = applicationContext.getBean(ExpeditionService.class);
         BcidService bcidService = applicationContext.getBean(BcidService.class);
+        SettingsManager settingsManager = applicationContext.getBean(SettingsManager.class);
+        MessageSource messageSource = applicationContext.getBean(MessageSource.class);
 
         String output_directory = "tripleOutput/";
 
@@ -167,7 +171,7 @@ public class DipnetFusekiToESMigrator {
             output_directory = cl.getOptionValue("o");
         }
 
-        DipnetFusekiToESMigrator dataMigrator = new DipnetFusekiToESMigrator(expeditionService, bcidService, projectService, esClient);
+        DipnetFusekiToESMigrator dataMigrator = new DipnetFusekiToESMigrator(expeditionService, bcidService, projectService, esClient, settingsManager, messageSource);
 
         // also need to run this for dipnet training projectId 1?
         dataMigrator.migrate(25, output_directory);

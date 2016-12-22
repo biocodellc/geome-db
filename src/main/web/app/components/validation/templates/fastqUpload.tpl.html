@@ -18,8 +18,8 @@
                        ng-value="vm.fastqFilenames.name || invalidFastqFile.name"
                        readonly/>
             </div>
-            <p class="help-block">Upload your list of fastq filenames (1 per line) here</p>
-            <p class="help-block col-sm-offset-3"
+            <p class="small help-block">Upload your list of fastq filenames (1 per line) here</p>
+            <p class="small help-block col-sm-offset-3"
                ng-show="vm.uploadForm.fastqFileNames.$error.pattern">
                 File must be a .txt file</p>
         </div>
@@ -74,7 +74,7 @@
                    ng-show="!vm.fastqMetadataLists.libraryStrategy"
                    ng-model="vm.fastqMetadata.libraryStrategy"
                    ng-required="vm.dataTypes.fastq"/>
-            <p class="help-block">
+            <p class="small help-block">
                 For instance if uploading using RADSeq data this is likely to be “WGS”
             </p>
         </div>
@@ -122,7 +122,7 @@
                    ng-show="!vm.fastqMetadataLists.librarySelection"
                    name="librarySelectionManual" ng-model="vm.fastqMetadata.librarySelection"
                    ng-required="vm.dataTypes.fastq"/>
-            <p class="help-block">
+            <p class="small help-block">
                 For instance if uploading using RADSeq data this is likely to be “Reduced
                 Representation”
             </p>

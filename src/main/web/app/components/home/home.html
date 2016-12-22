@@ -1,61 +1,66 @@
-<h3 class="h3">
-    Diversity of the Indo-Pacific Network (DIPnet) Field Information Management System (FIMS)
-</h3>
-<div class="row vertical-align">
+<div id="home-page">
+    <h3 class="page-header">
+        Diversity of the Indo-Pacific Network (DIPnet) Field Information Management System (FIMS)
+    </h3>
+    <div class="row vertical-align">
 
-    <div class="col-xs-6">
+        <div class="col-xs-6">
+            <p>
+                DIPnet has developed a web-based database to aid collaboration and the cross-dissemination
+                of published data. Although Genbank is an important repository of sequence data, it does not
+                require the uploading of important metadata associated with individual genotypes such as
+                precise sampling locations and there is no central repository nor set standards for such
+                population genetic data and associated metadata. The DIPnet database is designed to fill this
+                gap.
+
+            </p>
+        </div>
+
+        <div class="col-xs-6">
+            <img id='workflowImage' class="img-responsive center-block" style="max-height: 350px;"
+                 src='docs/dipnetWorkflow.png'>
+        </div>
+    </div>
+
+    <div class="page-header">
+        <h3>Members can upload two types of data (under "tools" tab)</h3>
+    </div>
+    <div class="row">
+        <ol>
+            <li>Published <u>Sanger sequence data</u> and the associated metadata (fasta format)</li>
+            <li>
+                Metadata associated with <u>next-generation sequence data</u> (fastq format)
+                <ul>
+                    <li>In the process of uploading the metadata for your next-generation sequence data we create two
+                        files:
+                    </li>
+                    <ol>
+                        <li>the SRA metadata file</li>
+                        <li>the BioSample datasheet</li>
+                    </ol>
+                     
+                </ul>
+            </li>
+        </ol>
+        <p><strong>This will make uploading your data to Genbank's Short Read Archive (SRA) database faster and
+            easier</strong>.</p>
         <p>
-            DIPnet has developed a web-based database to aid collaboration and the cross-dissemination
-            of published data. Although Genbank is an important repository of sequence data, it does not
-            require the uploading of important metadata associated with individual genotypes such as
-            precise sampling locations and there is no central repository nor set standards for such
-            population genetic data and associated metadata. The DIPnet database is designed to fill this
-            gap.
-
+            <small>* Note we are not currently accepting microsatellite datasets</small>
         </p>
     </div>
 
-    <div class="col-xs-6">
-        <img id='workflowImage' class="img-responsive center-block" style="max-height: 350px;"
-             src='docs/dipnetWorkflow.png'>
+    <h3 class="page-header">What you need to do before upload you data</h3>
+    <div class="row">
+        <ul>
+            <li>
+                Generate a FIMS template (under “tools” tab) for your metadata
+                <ul>
+                    <li>
+                        This option allows the user to create an excel file to store the metadata associated
+                        with each of their samples.
+                    </li>
+                </ul>
+            </li>
+        </ul>
     </div>
-</div>
-
-<div class="row">
-    <h3 class="h3">Members can upload two types of data (under "tools" tab)</h3>
-    <ol>
-        <li>Published <u>Sanger sequence data</u> and the associated metadata (fasta format)</li>
-        <li>
-            Metadata associated with <u>next-generation sequence data</u> (fastq format)
-            <ul>
-                <li>In the process of uploading the metadata for your next-generation sequence data we create two
-                    files:
-                </li>
-                <ol>
-                    <li>the SRA metadata file</li>
-                    <li>the BioSample datasheet</li>
-                </ol>
-                 
-            </ul>
-        </li>
-    </ol>
-    <p><strong>This will make uploading your data to Genbank's Short Read Archive (SRA) database faster and easier</strong>.</p>
-    <p><small>* Note we are not currently accepting microsatellite datasets</small></p>
-</div>
-
-<div class="row">
-    <h3 class="h3">
-        What you need to do before upload you data
-    </h3>
-    <ul>
-        <li>
-            Generate a FIMS template (under “tools” tab) for your metadata
-            <ul>
-                <li>
-                    This option allows the user to create an excel file to store the metadata associated
-                    with each of their samples.
-                </li>
-            </ul>
-        </li>
-    </ul>
 </div>

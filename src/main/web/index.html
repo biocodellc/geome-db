@@ -19,16 +19,18 @@
     <link rel="short icon" href="docs/dipnet.ico"/>
 </head>
 <body ng-cloak>
-<header ng-include="'app/partials/header-nav.html'"></header>
-<div class="container-fluid">
-    <div class="alert-container">
-        <div id="alerts"></div>
+<div class="wrapper">
+    <header ng-include="'app/partials/header-nav.html'"></header>
+    <div class="container-fluid">
+        <div class="alert-container">
+            <div id="alerts"></div>
+        </div>
+        <div ng-show="error" class="alert alert-error">{{ error }}</div>
+
+        <div ui-view></div>
+
+        <div id="dialogContainer"></div>
     </div>
-    <div ng-show="error" class="alert alert-error">{{ error }}</div>
-
-    <div ui-view></div>
-
-    <div id="dialogContainer"></div>
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>

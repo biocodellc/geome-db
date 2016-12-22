@@ -1,27 +1,25 @@
-<nav class="navbar navbar-default navbar-static-top" role="navigation">
-    <div class="container-fluid">
+<nav class="navbar navbar-static-top" role="navigation">
+    <div class="container-fluid" ng-controller="NavCtrl as vm">
 
         <!-- Brand and toggle get grouped for better mobile display -->
-        <div ng-controller="NavCtrl as vm">
-            <div class="navbar-header">
 
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                        data-target="#bs-example-navbar-collapse-1">
+                        data-target="#navbar-collapse-1">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
 
-                <a class="navbar-brand" ui-sref="home"><img src='images/dipnet_color_300px.png'
-                                                            height=150><br></a>
-            </div>
+                <a class="navbar-brand" ui-sref="home">
+                    <img src='images/dipnet_logo.jpg'>
+                </a>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav navbar-right" style="margin-top: -15px;">
+            <div class="collapse navbar-collapse" id="navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown">
-                        <a href="#" data-toggle="dropdown" class="dropdown-toggle">Tools<b class="caret"></b></a>
+                        <a href="#" data-toggle="dropdown" class="dropdown-toggle">Tools</a>
                         <ul class="dropdown-menu">
                             <li><a ui-sref="template" class='enabled'>Generate Template</a></li>
                             <li><a ui-sref="validate" class='enabled'>Validate and Load Data</a></li>
@@ -35,11 +33,10 @@
                     </li>
 
                     <li ng-show="!vm.isAuthenticated"><a id="login" ng-click="vm.login()" ui-sref="login">Login</a></li>
-                    <li ng-show="vm.isAuthenticated"><a ui-sref="profile">{{ vm.user.username }}</a></li>
+                    <li ng-show="vm.isAuthenticated"><a id="username" ui-sref="profile">{{ vm.user.username }}</a></li>
                     <li ng-show="vm.isAuthenticated"><a ng-click="vm.logout()" ui-sref="home">Logout</a></li>
                     <li><a href="http://fims.readthedocs.org/en/latest/">Help</a></li>
                 </ul>
             </div><!-- /.navbar-collapse -->
-        </div>
     </div>
 </nav>
