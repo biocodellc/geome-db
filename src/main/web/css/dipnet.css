@@ -450,12 +450,7 @@ th {
     margin-top: 20px;
 }
 
-.glyphicon-help {
-    color: #333;
-    font-size: 16px;
-    padding-top: 9px; /* vertically center glyphicon with input element */
-    margin-left: -7.5px;
-}
+
 
 .alpha-list {
     list-style: upper-alpha;
@@ -475,8 +470,20 @@ td.hideOverflow {
     margin-top: 5px;
 }
 
+.glyphicon-help {
+    color: #333;
+    font-size: 16px;
+    padding-top: 9px; /* vertically center glyphicon with input element */
+}
+
 .help-link {
     position: absolute;
+    margin-left: -7.5px;
+    z-index: 100;
+}
+
+.popover-title {
+    background-color: inherit;
 }
 
 .split-form-group-col {
