@@ -78,7 +78,9 @@
                 For instance if uploading using RADSeq data this is likely to be “WGS”
             </p>
         </div>
-        <a class="help-link" href="#">
+        <a class="help-link" href="#"
+           uib-popover-template="'app/components/validation/templates/fastq-library-strategy-popover.tpl.html'"
+           popover-placement="bottom">
             <span class="glyphicon glyphicon-question-sign glyphicon-help"></span>
         </a>
     </div>
@@ -180,20 +182,26 @@
 
 <div class="col-sm-4">
     <ul>
+        <li class="list-unstyled big"><strong>Instructions:</strong></li>
         <li>FIMS will accept single and paired end read data</li>
+        <li class="list-unstyled big"><strong>Instructions:</strong></li>
         <li>Each fastq file should contain reads from a single individual</li>
+        <li class="list-unstyled big"><strong>Instructions:</strong></li>
         <li>Names of fastq files must match the materialsampleIDs in the metadata file up to the
             file extension (e.g., R1.fq.gz, .1.fq, etc)
         </li>
+        <li class="list-unstyled big"><strong>Instructions:</strong></li>
         <li>The actual fastq sequence files will not be uploaded here and stored on the FIMS
             system. Instead the metadata file will be uploaded and stored here.
         </li>
+        <li class="list-unstyled big"><strong>Instructions:</strong></li>
         <li>For validation purposes a text file of the fastq file names (one name per line and
             including the file extension) will be uploaded here. If you are uploading PE data
             there should be two file names per sample. This process ensures that required fields
             are complete, that each materialsampleID is unique, and that the materialsampleIDs
             match the fastq file names.
         </li>
+        <li class="list-unstyled big"><strong>Instructions:</strong></li>
         <li>Once uploading is complete the FIMS system will produce two files (SRA metadata and
             BioSample attributes files) that will ease the upload process to NCBI’s Short Read
             Archive (SRA)

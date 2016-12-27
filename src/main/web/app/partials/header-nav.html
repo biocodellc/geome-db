@@ -11,7 +11,7 @@
                     <span class="icon-bar"></span>
                 </button>
 
-                <a class="navbar-brand" ui-sref="home">
+                <a class="navbar-brand" href="http://diversityindopacific.net/">
                     <img src='images/dipnet_logo.jpg'>
                 </a>
 
@@ -35,7 +35,13 @@
                     <li ng-show="!vm.isAuthenticated"><a id="login" ng-click="vm.login()" ui-sref="login">Login</a></li>
                     <li ng-show="vm.isAuthenticated"><a id="username" ui-sref="profile">{{ vm.user.username }}</a></li>
                     <li ng-show="vm.isAuthenticated"><a ng-click="vm.logout()" ui-sref="home">Logout</a></li>
-                    <li><a href="http://fims.readthedocs.org/en/latest/">Help</a></li>
+                    <li class="dropdown">
+                        <a href="#" data-toggle="dropdown" class="dropdown-toggle">Help</a>
+                        <ul class="dropdown-menu">
+                            <li><a href="http://diversityindopacific.net/contact-us/">Contact Us</a></li>
+                            <li><a href="http://fims.readthedocs.org/en/latest/">FIMS docs</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div><!-- /.navbar-collapse -->
     </div>

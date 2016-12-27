@@ -130,11 +130,10 @@ public class DipnetQueryUtils {
             }
         }
 
-        Attribute identifierAttribute = mapping.lookupAttribute(mapping.getDefaultSheetUniqueKey(), mapping.getDefaultSheetName());
 
         FastaSequenceFields fastaSequenceFields = new FastaSequenceFields(
                 fastaEntity.getConceptAlias(),
-                identifierAttribute.getUri(),
+                "bcid",
                 sequencePath,
                 metadataFields
         );

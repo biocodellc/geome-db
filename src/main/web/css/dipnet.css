@@ -135,6 +135,11 @@ img {
     color: #c52727;
 }
 
+/** Text size **/
+.big {
+    font-size: 115%;
+}
+
 /** Wrapper **/
 .wrapper {
     background: white;
@@ -586,41 +591,6 @@ td.hideOverflow {
     color: #e0b3b3;
 }
 
-/** Bootstrap Panels */
-/*.panel.panel-default {*/
-    /*border: 0;*/
-    /*margin-bottom: 12px;*/
-/*}*/
-
-/*.panel-heading {*/
-    /*!*font-size: 18px;*!*/
-    /*!*position: relative;*!*/
-    /*!*border: 1px solid #f2f2f4;*!*/
-    /*!*-webkit-box-shadow: 0 0px 10px rgba(0, 0, 0, 0.05) inset, 0 0px 5px rgba(0, 0, 0, 0.05);*!*/
-    /*!*-moz-box-shadow: 0 0px 10px rgba(0, 0, 0, 0.05) inset, 0 0px 5px rgba(0, 0, 0, 0.05);*!*/
-    /*!*box-shadow: 0 0px 10px rgba(0, 0, 0, 0.05) inset, 0 0px 5px rgba(0, 0, 0, 0.05);*!*/
-/*}*/
-/*.panel-heading .accordion-toggle:after {*/
-    /*position: absolute;*/
-    /*display: block;*/
-    /*font-family: FontAwesome;*/
-    /*content: "\f106";*/
-    /*font-size: 14px;*/
-    /*line-height: 1em;*/
-    /*right: 1em;*/
-    /*top: 50%;*/
-    /*margin-top: -0.5em;*/
-/*}*/
-/*.panel-heading .accordion-toggle.collapsed:after {*/
-    /*content: "\f107";*/
-/*}*/
-
-/*.panel-body {*/
-    /*background-color: #f2f2f4;*/
-    /*-webkit-box-shadow: 0 0px 10px rgba(0, 0, 0, 0.05) inset;*/
-    /*-moz-box-shadow: 0 0px 10px rgba(0, 0, 0, 0.05) inset;*/
-    /*box-shadow: 0 0px 10px rgba(0, 0, 0, 0.05) inset;*/
-/*}*/
 
 /** Expedition Typeahead */
 
