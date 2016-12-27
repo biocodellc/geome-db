@@ -11,9 +11,8 @@ import biocode.fims.elasticSearch.query.ElasticSearchFilterCondition;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
 import biocode.fims.elasticSearch.query.ElasticSearchQuerier;
 import biocode.fims.elasticSearch.query.ElasticSearchQuery;
+import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
 import biocode.fims.query.*;
 import biocode.fims.rest.FimsService;
@@ -157,14 +156,14 @@ public class QueryController extends FimsService {
     @Path("/json/")
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryJson(
-            @QueryParam("expeditions") List<String> expeditions,
+            @QueryParam("expeditions") String expeditionsString,
             @QueryParam("projectId") Integer projectId,
             @QueryParam("filter") String filter,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit) {
 
         try {
-            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
+            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditionsString, filter);
 
             return getJsonResults(page, limit, query);
         } catch (FimsRuntimeException e) {
@@ -229,13 +228,13 @@ public class QueryController extends FimsService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("text/csv")
     public Response queryCSV(
-            @QueryParam("expeditions") List<String> expeditions,
+            @QueryParam("expeditions") String expeditionsString,
             @QueryParam("projectId") Integer projectId,
             @QueryParam("filter") String filter) {
 
         try {
             // Build the query, etc..
-            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
+            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditionsString, filter);
 
             ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
@@ -319,13 +318,13 @@ public class QueryController extends FimsService {
     @Path("/kml/")
     @Produces("application/vnd.google-earth.kml+xml")
     public Response queryKml(
-            @QueryParam("expeditions") List<String> expeditions,
+            @QueryParam("expeditions") String expeditionsString,
             @QueryParam("projectId") Integer projectId,
             @QueryParam("filter") String filter) {
 
         try {
             // Build the query, etc..
-            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
+            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditionsString, filter);
 
             ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
@@ -369,13 +368,13 @@ public class QueryController extends FimsService {
     @Path("/cspace/")
     @Produces(MediaType.APPLICATION_XML)
     public Response queryCspace(
-            @QueryParam("expeditions") List<String> expeditions,
+            @QueryParam("expeditions") String expeditionsString,
             @QueryParam("projectId") Integer projectId,
             @QueryParam("filter") String filter) {
 
         try {
             // Build the query, etc..
-            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
+            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditionsString, filter);
 
             Mapping mapping = getMapping(projectId);
             Validation validation = new Validation();
@@ -447,13 +446,13 @@ public class QueryController extends FimsService {
     @GET
     @Path("/tab/")
     public Response queryTab(
-            @QueryParam("expeditions") List<String> expeditions,
+            @QueryParam("expeditions") String expeditionsString,
             @QueryParam("projectId") Integer projectId,
             @QueryParam("filter") String filter) {
 
         try {
             // Build the query, etc..
-            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
+            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditionsString, filter);
 
             ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
@@ -491,7 +490,7 @@ public class QueryController extends FimsService {
     public Response queryExcel(
             MultivaluedMap<String, String> form) {
 
-        if (!form.containsKey("expeditions") || form.get("expeditions").size() != 1) {
+        if (!form.containsKey("expeditionsString") || form.get("expeditionsString").size() != 1) {
             throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
         }
         // Build the query, etc..
@@ -541,16 +540,16 @@ public class QueryController extends FimsService {
     @Path("/excel/")
     @Produces("application/vnd.ms-excel")
     public Response queryExcel(
-            @QueryParam("expeditions") List<String> expeditions,
+            @QueryParam("expeditions") String expeditionsString,
             @QueryParam("projectId") Integer projectId,
             @QueryParam("filter") String filter) {
 
-        if (expeditions.size() != 1) {
+        if (expeditionsString == null || expeditionsString.split(",").length != 1) {
             throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
         }
 
         // Build the query, etc..
-        ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditions, filter);
+        ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditionsString, filter);
 
         ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
 
@@ -573,11 +572,11 @@ public class QueryController extends FimsService {
             projectId = Integer.parseInt(String.valueOf(form.remove("projectId").get(0)));
         }
 
-        if (form.containsKey("expeditions")) {
-            expeditionCodes.addAll(form.remove("expeditions"));
+        if (form.containsKey("expeditionsString")) {
+            expeditionCodes.addAll(form.remove("expeditionsString"));
         }
-        if (form.containsKey("expeditions[]")) {
-            expeditionCodes.addAll(form.remove("expeditions[]"));
+        if (form.containsKey("expeditionsString[]")) {
+            expeditionCodes.addAll(form.remove("expeditionsString[]"));
         }
 
         if (projectId == null) {
@@ -600,7 +599,7 @@ public class QueryController extends FimsService {
             filterConditions.add(filterCondition);
         }
 
-        // if no expeditions are specified, then we want to only query public expeditions
+        // if no expeditionsString are specified, then we want to only query public expeditionsString
         if (expeditionCodes.size() == 0) {
             expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditionCodes.add(e.getExpeditionCode()));
 
@@ -623,7 +622,7 @@ public class QueryController extends FimsService {
      * @param filter
      * @return
      */
-    private ElasticSearchQuery GETElasticSearchQuery(Integer projectId, List<String> expeditions, String filter) {
+    private ElasticSearchQuery GETElasticSearchQuery(Integer projectId, String expeditionsString, String filter) {
         // Make sure projectId is set
         if (projectId == null) {
             throw new BadRequestException("ERROR: incomplete arguments");
@@ -637,21 +636,27 @@ public class QueryController extends FimsService {
         // Parse the GET filter
         List<ElasticSearchFilterCondition> filterConditions = parseGETFilter(filter, attributes, mapping);
 
+        try {
+            List<String> expeditions = expeditionsString == null ? new ArrayList<>() : Arrays.asList(
+                    URLDecoder.decode(expeditionsString, "UTF-8").split(","));
 
-        // if no expeditions are specified, then we want to only query public expeditions
-        if (expeditions.size() == 0) {
-            expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditions.add(e.getExpeditionCode()));
-
+            // if no expeditions are specified, then we want to only query public expeditionsString
             if (expeditions.size() == 0) {
-                throw new FimsRuntimeException(QueryErrorCode.NO_RESOURCES, 204);
+                expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditions.add(e.getExpeditionCode()));
+
+                if (expeditions.size() == 0) {
+                    throw new FimsRuntimeException(QueryErrorCode.NO_RESOURCES, 204);
+                }
             }
+
+            return new ElasticSearchQuery(
+                    getQueryBuilder(filterConditions, expeditions),
+                    new String[]{String.valueOf(projectId)},
+                    new String[]{ElasticSearchIndexer.TYPE});
+
+        } catch (UnsupportedEncodingException e) {
+            throw new biocode.fims.fimsExceptions.ServerErrorException(e);
         }
-
-        return new ElasticSearchQuery(
-                getQueryBuilder(filterConditions, expeditions),
-                new String[]{String.valueOf(projectId)},
-                new String[]{ElasticSearchIndexer.TYPE});
-
     }
 
     /**
@@ -670,9 +675,9 @@ public class QueryController extends FimsService {
 
         List<ElasticSearchFilterField> filterFields = BiscicolQueryUtils.getAvailableFilters(getMapping(projectId));
 
-        String[] filterSplit = filterQueryString.split("&");
-
         try {
+        String[] filterSplit = URLDecoder.decode(filterQueryString, "UTF-8").split(",");
+
             for (String filterString : filterSplit) {
                 // this regex will split on the last ":". This is need since uri's contain ":", but we want the whole
                 // uri as the key
@@ -690,7 +695,6 @@ public class QueryController extends FimsService {
                         );
                     }
                     continue;
-//                    throw new BadRequestException("invalid filterString. couldn't find a key:value for " + filterString);
                 }
 
                 String key = filter[0];
@@ -702,10 +706,10 @@ public class QueryController extends FimsService {
                 // only expect 1 value
                 ElasticSearchFilterCondition filterCondition = new ElasticSearchFilterCondition(
                         lookupFilter(
-                                URLDecoder.decode(key, "UTF8"),
+                                key,
                                 filterFields
                         ),
-                        URLDecoder.decode(filter[1], "UTF8")
+                        filter[1]
                 );
 
                 filterConditions.add(filterCondition);
@@ -740,10 +744,14 @@ public class QueryController extends FimsService {
 
     private QueryBuilder getQueryBuilder(List<ElasticSearchFilterCondition> filterConditions, List<String> expeditionCodes) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        BoolQueryBuilder expeditionQuery = QueryBuilders.boolQuery();
 
-        for (String expedition : expeditionCodes) {
-            boolQueryBuilder.should(QueryBuilders.matchQuery("expedition.expeditionCode.keyword", expedition));
-            boolQueryBuilder.minimumNumberShouldMatch(1);
+        if (expeditionCodes.size() > 0) {
+            for (String expedition : expeditionCodes) {
+                expeditionQuery.should(QueryBuilders.matchQuery("expedition.expeditionCode.keyword", expedition));
+            }
+            expeditionQuery.minimumNumberShouldMatch(1);
+            boolQueryBuilder.must(expeditionQuery);
         }
 
         for (ElasticSearchFilterCondition filterCondition : filterConditions) {
