@@ -723,6 +723,10 @@ public class QueryController extends FimsService {
     }
 
     private ElasticSearchFilterField lookupFilter(String key, List<ElasticSearchFilterField> filters) {
+        if (key == null) {
+            throw new FimsRuntimeException(QueryErrorCode.UNKNOWN_FILTER, "is " + key + " a valid column or uri?", 400, key);
+        }
+
         // _all is a special filter
         if (key.equals("_all")) {
             return BiscicolQueryUtils.get_AllFilter();
@@ -765,11 +769,7 @@ public class QueryController extends FimsService {
                 );
             } else if (filterCondition.isRegexp()) {
                 boolQueryBuilder.should(QueryBuilders.regexpQuery(filterCondition.getField(), filterCondition.getValue()));
-                if (expeditionCodes.isEmpty()) {
-                    boolQueryBuilder.minimumNumberShouldMatch(1);
-                } else {
-                    boolQueryBuilder.minimumNumberShouldMatch(2);
-                }
+                boolQueryBuilder.minimumNumberShouldMatch(1);
             } else {
                 boolQueryBuilder.must(QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()));
             }
