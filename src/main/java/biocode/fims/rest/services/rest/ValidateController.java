@@ -39,10 +39,8 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Scope("prototype")
 @Controller
@@ -91,9 +89,17 @@ public class ValidateController extends FimsService {
                              @FormDataParam("expeditionCode") String expeditionCode,
                              @FormDataParam("fimsMetadata") FormDataBodyPart fimsMetadata,
                              @FormDataParam("fastaData") List<FastaData> fastaDataList,
-                             @FormDataParam("fastaFile") List<FormDataBodyPart> fastaFiles,
                              @FormDataParam("fastqFilenames") FormDataBodyPart fastqFilenames,
                              final FormDataMultiPart multiPart) {
+        // Since angularJS sends arrays as inputName[index] we can't use @FormDataParam annotation to get the list
+        List<FormDataBodyPart> fastaFiles = multiPart.getFields()
+                .entrySet()
+                .stream()
+                .filter(e -> e.getKey().startsWith("fastaFiles"))
+                .map(Map.Entry::getValue)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
         Map<String, Map<String, Object>> fmProps = new HashMap<>();
         JSONObject returnValue = new JSONObject();
         boolean closeProcess = true;

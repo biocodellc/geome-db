@@ -25,9 +25,10 @@ angular.module('fims.validation')
             vm.fastqMetadataLists = {};
             vm.markersList = [];
             vm.fimsMetadata = null;
-            vm.fastaFile = null;
+            vm.fastaFiles = [];
             vm.newExpedition = false;
-            vm.fastaData = {};
+            vm.fastaCnt = [0];
+            vm.fastaData = [];
             vm.fastqFilenames = null;
             vm.fastqMetadata = angular.copy(defaultFastqMetadata);
             vm.expeditonCode = null;
@@ -38,12 +39,22 @@ angular.module('fims.validation')
             vm.coordinatesErrorClass = null;
             vm.showGenbankDownload = false;
             vm.activeTab = 0;
+            vm.addFastaData = addFastaData;
+            vm.removeFastaData = removeFastaData;
             vm.fimsMetadataChange = fimsMetadataChange;
             vm.validate = validate;
             vm.upload = upload;
             vm.checkDataTypes = checkDataTypes;
             vm.checkCoordinatesVerified = checkCoordinatesVerified;
             vm.downloadFastqFiles = downloadFastqFiles;
+
+            function removeFastaData() {
+                vm.fastaCnt.pop();
+            }
+
+            function addFastaData() {
+                vm.fastaCnt.push(vm.fastaCnt.length);
+            }
 
             function downloadFastqFiles() {
                 if (latestExpeditionCode == null) {
@@ -96,9 +107,11 @@ angular.module('fims.validation')
                     data.fimsMetadata = vm.fimsMetadata;
                 }
                 if (vm.dataTypes.fasta) {
-                    data.fastaFile = vm.fastaFile;
-                    vm.fastaData.filename = vm.fastaFile.name;
-                    data.fastaData = Upload.jsonBlob([vm.fastaData]);
+                    data.fastaFiles = vm.fastaFiles;
+                    angular.forEach(vm.fastaData, function(data, index) {
+                        data.filename = vm.fastaFiles[index].name;
+                    });
+                    data.fastaData = Upload.jsonBlob(vm.fastaData);
                 }
                 if (vm.dataTypes.fastq) {
                     data.fastqMetadata = Upload.jsonBlob(vm.fastqMetadata);
@@ -261,8 +274,9 @@ angular.module('fims.validation')
 
             function resetForm() {
                 vm.fimsMetadata = null;
-                vm.fastaFile = null;
-                vm.fastaData = null;
+                vm.fastaFiles = [];
+                vm.fastaData = [];
+                vm.fastaCnt = [0];
                 vm.fastqFilenames = null;
                 angular.copy(defaultFastqMetadata, vm.fastqMetadata);
                 vm.expeditionCode = null;
@@ -366,9 +380,6 @@ angular.module('fims.validation')
                 ExpeditionFactory.getExpeditionsForUser(true)
                     .then(function (response) {
                         angular.extend(vm.expeditions, response.data);
-                        if (!vm.expeditionCode && vm.expeditions) {
-                            vm.expeditionCode = vm.expeditions[0].expeditionCode;
-                        }
                     }, function (response, status) {
                         FailModalFactory.open("Failed to load datasets", response.data.usrMessage);
                     })

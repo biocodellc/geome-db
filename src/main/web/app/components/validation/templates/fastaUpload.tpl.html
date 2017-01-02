@@ -1,23 +1,24 @@
-    <hr class="separator"/>
-    <div class="col-sm-8">
+<hr class="separator"/>
+<div class="col-sm-8">
+    <div ng-repeat="i in vm.fastaCnt track by $index">
         <div class="form-group" show-errors="{trigger: 'change'}">
             <label for="fasta" class="col-sm-3 control-label">FASTA Data</label>
             <div class="col-sm-9">
                 <div class="input-group">
                     <label class="input-group-btn">
                         <span class="btn btn-default form-control">Browse &hellip;</span>
-                        <input type="file" style="display:none;" id="fasta" name="fasta"
+                        <input type="file" style="display:none;" id="fasta" name="fasta_{{$index}}"
                                class="form-control"
                                ngf-select
                                ngf-pattern="'.fa,.mpfa,.fna,.fsa,.fas,.fasta'"
-                               ngf-model-invalid="invalidFastaFile"
+                               ngf-model-invalid="invalidFastaFile_{{$index}}"
                                ng-required="vm.dataTypes.fasta"
-                               ng-model="vm.fastaFile"/>
+                               ng-model="vm.fastaFiles[$index]"/>
                     </label>
                     <input type="text" class="form-control"
-                           ng-value="vm.fastaFile.name || invalidFastaFile.name" readonly/>
+                           ng-value="vm.fastaFiles[$index].name || invalidFastaFile_{{$index}}.name" readonly/>
                 </div>
-                <p class="help-block small col-sm-offset-3" ng-show="vm.uploadForm.fasta.$error.pattern">
+                <p class="help-block small col-sm-offset-3" ng-show="vm.uploadForm.fasta_{{$index}}.$error.pattern">
                     File must have one of the following extensions: .fa, .mpfa, .fna, .fsa, .fas or
                     .fasta</p>
             </div>
@@ -26,8 +27,8 @@
         <div class="form-group" show-errors>
             <label for="fastaMarker" class="col-sm-3 control-label">Marker</label>
             <div class="col-sm-9">
-                <select class="form-control" id="fastaMarker" name="fastaMarker"
-                        ng-model="vm.fastaData.metadata.marker"
+                <select class="form-control" id="fastaMarker" name="fastaMarker_{{$index}}"
+                        ng-model="vm.fastaData[$index].metadata.marker"
                         ng-required="vm.dataTypes.fasta"
                         ng-options="marker.value as marker.value for marker in vm.markersList"
                 >
@@ -40,27 +41,34 @@
                 <span class="glyphicon glyphicon-question-sign glyphicon-help"></span>
             </a>
         </div>
+        <button type="button" class="btn btn-primary btn-sm pull-right" ng-show="$last" ng-click="vm.addFastaData()">
+            <span class="glyphicon glyphicon-plus"></span>
+        </button>
+        <button type="button" class="btn btn-danger btn-sm pull-right" ng-show="$last && vm.fastaCnt.length > 1" ng-click="vm.removeFastaData()">
+            <span class="glyphicon glyphicon-minus"></span>
+        </button>
     </div>
+</div>
 
-    <div class="col-sm-4">
-        <ul>
-            <li class="list-unstyled big"><strong>Instructions:</strong></li>
-            <li>The name of your fasta sequences must match the materialsampleIDs in the metadata
-                file
-            </li>
-            <li class="list-unstyled big"><strong>Instructions:</strong></li>
-            <li>You can include multiple taxa in a single fasta/metadata file</li>
-            <li class="list-unstyled big"><strong>Instructions:</strong></li>
-            <li>Each fasta file should only include data from a single marker type (e.g. CO1, CYB,
-                etc)
-            </li>
-            <li class="list-unstyled big"><strong>Instructions:</strong></li>
-            <li>If you have multiple markers for the same taxa you must upload multiple fasta files
-                for a single metadata file.
-            </li>
-            <li class="list-unstyled big"><strong>Instructions:</strong></li>
-            <li>We recommend Fasta files names should follow this format
-                markerabbreviation_usertaxaabbreviation.fa
-            </li>
-        </ul>
-    </div>
+<div class="col-sm-4">
+    <ul>
+        <li class="list-unstyled big"><strong>Instructions:</strong></li>
+        <li>The name of your fasta sequences must match the materialsampleIDs in the metadata
+            file
+        </li>
+        <li class="list-unstyled big"><strong>Instructions:</strong></li>
+        <li>You can include multiple taxa in a single fasta/metadata file</li>
+        <li class="list-unstyled big"><strong>Instructions:</strong></li>
+        <li>Each fasta file should only include data from a single marker type (e.g. CO1, CYB,
+            etc)
+        </li>
+        <li class="list-unstyled big"><strong>Instructions:</strong></li>
+        <li>If you have multiple markers for the same taxa you must upload multiple fasta files
+            for a single metadata file.
+        </li>
+        <li class="list-unstyled big"><strong>Instructions:</strong></li>
+        <li>We recommend Fasta files names should follow this format
+            markerabbreviation_usertaxaabbreviation.fa
+        </li>
+    </ul>
+</div>
