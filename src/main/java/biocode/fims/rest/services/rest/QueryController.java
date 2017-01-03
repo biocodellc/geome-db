@@ -88,7 +88,14 @@ public class QueryController extends FimsService {
     public Response queryElasticSearch(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
+            @QueryParam("projectId") Integer projectId,
             ObjectNode esQueryString) {
+
+        if (projectId == null) {
+            throw new BadRequestException("projectId query param is required");
+        }
+
+        this.projectId = projectId;
 
         if (!queryAuthorizer.authorizedQuery(Arrays.asList(projectId), esQueryString, userContext.getUser())) {
             throw new ForbiddenRequestException("unauthorized query");
@@ -572,11 +579,11 @@ public class QueryController extends FimsService {
             projectId = Integer.parseInt(String.valueOf(form.remove("projectId").get(0)));
         }
 
-        if (form.containsKey("expeditionsString")) {
-            expeditionCodes.addAll(form.remove("expeditionsString"));
+        if (form.containsKey("expeditions")) {
+            expeditionCodes.addAll(form.remove("expeditions"));
         }
-        if (form.containsKey("expeditionsString[]")) {
-            expeditionCodes.addAll(form.remove("expeditionsString[]"));
+        if (form.containsKey("expeditions[]")) {
+            expeditionCodes.addAll(form.remove("expeditions[]"));
         }
 
         if (projectId == null) {
@@ -684,16 +691,13 @@ public class QueryController extends FimsService {
                 String[] filter = filterString.split("[:](?=[^:]*$)");
 
                 if (filter.length != 2) {
-                    // This is to maintain backwards compatibility with old fuseki queries. I'm not sure if we want to
-                    // support this in the future. regexp queries are resource intensive
-                    for (ElasticSearchFilterField filterField : BiscicolQueryUtils.getAvailableFilters(getMapping(projectId))) {
+                    // This is an _all query
                         filterConditions.add(
                                 new ElasticSearchFilterCondition(
-                                        filterField,
-                                        ".*" + filter[0] + ".*"
-                                ).regexp(true)
+                                        BiscicolQueryUtils.get_AllFilter(),
+                                        filter[0]
+                                )
                         );
-                    }
                     continue;
                 }
 
@@ -767,9 +771,6 @@ public class QueryController extends FimsService {
                                 QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()),
                                 ScoreMode.None)
                 );
-            } else if (filterCondition.isRegexp()) {
-                boolQueryBuilder.should(QueryBuilders.regexpQuery(filterCondition.getField(), filterCondition.getValue()));
-                boolQueryBuilder.minimumNumberShouldMatch(1);
             } else {
                 boolQueryBuilder.must(QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()));
             }
