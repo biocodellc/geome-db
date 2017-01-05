@@ -1,1 +1,1 @@
-This is a working FIMS instance for the [DIPnet](http://biscicol.org/dipnet-fims) project.
+This code drives the [DIPnet FIMS database](http://biscicol.org/dipnet/).
