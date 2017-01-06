@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -134,7 +135,14 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
             argMap.put("limit", Integer.parseInt(queryParameters.getOrDefault("limit", Collections.singletonList("10000")).get(0)));
         }
 
-        transformGraphs(argMap, queryParameters.get("graphs"));
+        List<String> expeditions = null;
+        if (argMap.get("expeditionsString") == null) {
+             expeditions = new ArrayList<>();
+        } else {
+            expeditions = Arrays.asList(((String) argMap.get("expeditionsString")).split(","));
+        }
+        transformGraphs(argMap, queryParameters.get("graphs"), expeditions);
+        argMap.put("expeditionsString", String.join(",", expeditions));
     }
 
     private void transformPOSTRequest(LinkedHashMap<String, Object> argMap,
@@ -147,18 +155,16 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
 
         argMap.put("projectId", form.remove("project_id"));
 
-        transformGraphs(argMap, form.get("graphs"));
+        transformGraphs(argMap, form.get("graphs"), (List<String>) argMap.get("expeditions"));
     }
 
-    private void transformGraphs(LinkedHashMap<String, Object> argMap, List<String> graphsParam) {
+    private void transformGraphs(LinkedHashMap<String, Object> argMap, List<String> graphsParam, List<String> expeditions) {
         if (graphsParam != null && graphsParam.size() > 0) {
             List<String> graphs = new ArrayList<>();
 
             Collections.addAll(graphs, graphsParam.get(0).split(","));
 
             graphs.remove("all");
-
-            List<String> expeditions = (List<String>) argMap.get("expeditions");
 
             if (graphs.size() > 0) {
                 for (Bcid bcid : bcidService.getBcids(graphs)) {
