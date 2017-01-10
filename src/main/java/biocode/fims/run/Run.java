@@ -3,7 +3,6 @@ package biocode.fims.run;
 import biocode.fims.application.config.BiscicolAppConfig;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
-import biocode.fims.digester.Validation;
 import biocode.fims.entities.User;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;

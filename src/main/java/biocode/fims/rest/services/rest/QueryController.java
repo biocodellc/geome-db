@@ -49,6 +49,9 @@ import java.util.*;
 
 /**
  * Query interface for Biocode-fims expedition
+ *
+ * @resourceDescription Query a project's resources. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>
+ * for more detailed information regarding queries.
  */
 @Scope("request")
 @Controller
@@ -74,13 +77,28 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * accepts an elastic json query request. note that aggregations are not supported, and the json query object needs
+     * @summary query using elastic search Query object
+     * @description accepts an elastic json query request. note that aggregations are not supported, and the json query object needs
      * to exclude the initial {"query": } that you would send via the elasticsearch rest api
      *
-     * @param page
-     * @param limit
-     * @param esQueryString
-     * @return
+     * ex.
+     *
+     *     {
+     *         "match": {
+     *             "_all": "ants"
+     *         }
+     *     }
+     *
+     *
+     * @param page  the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
+     *              limit=10, results 21-30 will be returned
+     * @param limit the number of results to return
+     * @param projectId the project to query
+     * @implicitParam esQueryString|string|body|false|||||false|es "Query" json object
+     * @requiredParams projectId
+     * @excludeParams esQueryString
+     *
+     * @responseType org.springframework.data.domain.Page<>
      */
     @POST
     @Path("/es")
@@ -126,12 +144,17 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * Return JSON for a graph query as POST
-     * <p/>
-     * filter parameters are of the form:
-     * name={URI} value={filter value}
+     * @summary Query project resources, returning JSON
      *
-     * @return
+     * @param page  the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
+     *              limit=10, results 21-30 will be returned
+     * @param limit the number of results to return
+     * @implicitParam expeditions|string|form|false|||||true|expeditionCode(s) to filter the query results on
+     * @implicitParam projectId|string|form|true|||||false|projectId to query
+     * @implicitParam filter|string|body|false|||||true|accepts multiple {columnName}={value}
+     * @excludeParams form
+     *
+     * @responseType org.springframework.data.domain.Page<>
      */
     @POST
     @Path("/json/")
@@ -157,7 +180,19 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * Return JSON for a graph query.
+     * @summary Query project resources, returning JSON
+     *
+     * @csvParams expeditionsString,filter
+     *
+     * @param filter , seperated list of {columnName}:{value} filters
+     * @param expeditionsString , seperate list of expeditionCodes to filter results on
+     * @param projectId the project to query
+     * @param page  the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
+     *              limit=10, results 21-30 will be returned
+     * @param limit the number of results to return
+     * @requiredParams projectId
+     *
+     * @responseType org.springframework.data.domain.Page<>
      */
     @GET
     @Path("/json/")
@@ -183,12 +218,14 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * Return CSV for a graph query as POST
-     * <p/>
-     * filter parameters are of the form:
-     * name={URI} value={filter value}
+     * @summary Query project resources, returning a CSV file
      *
-     * @return
+     * @implicitParam expeditions|string|form|false|||||true|expeditionCode(s) to filter the query results on
+     * @implicitParam projectId|string|form|true|||||false|projectId to query
+     * @implicitParam filter|string|body|false|||||true|accepts multiple {columnName}={value}
+     * @excludeParams form
+     *
+     * @responseType java.io.File
      */
     @POST
     @Path("/csv/")
@@ -223,12 +260,16 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * Return CSV for a graph query as POST
-     * <p/>
-     * filter parameters are of the form:
-     * name={URI} value={filter value}
+     * @summary Query project resources, returning CSV file
      *
-     * @return
+     * @csvParams expeditionsString,filter
+     *
+     * @param filter , seperated list of {columnName}:{value} filters
+     * @param expeditionsString , seperate list of expeditionCodes to filter results on
+     * @param projectId the project to query
+     * @requiredParams projectId
+     *
+     * @responseType java.io.File
      */
     @GET
     @Path("/csv/")
@@ -265,12 +306,14 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * Return KML for a graph query using POST
-     * * <p/>
-     * filter parameters are of the form:
-     * name={URI} value={filter value}
+     * @summary Query project resources, returning google earth KML file
      *
-     * @return
+     * @implicitParam expeditions|string|form|false|||||true|expeditionCode(s) to filter the query results on
+     * @implicitParam projectId|string|form|true|||||false|projectId to query
+     * @implicitParam filter|string|body|false|||||true|accepts multiple {columnName}={value}
+     * @excludeParams form
+     *
+     * @responseType java.io.File
      */
     @POST
     @Path("/kml/")
@@ -316,10 +359,16 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * Return KML for a graph query using POST
-     * filter is just a single value to filter the entire dataset
+     * @summary Query project resources, returning google earth KML file
      *
-     * @return
+     * @csvParams expeditionsString,filter
+     *
+     * @param filter , seperated list of {columnName}:{value} filters
+     * @param expeditionsString , seperate list of expeditionCodes to filter results on
+     * @param projectId the project to query
+     * @requiredParams projectId
+     *
+     * @responseType java.io.File
      */
     @GET
     @Path("/kml/")
@@ -366,10 +415,16 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * Return KML for a graph query using POST
-     * filter is just a single value to filter the entire dataset
+     * @summary Query project resources, returning a CSPACE file
      *
-     * @return
+     * @csvParams expeditionsString,filter
+     *
+     * @param filter , seperated list of {columnName}:{value} filters
+     * @param expeditionsString , seperate list of expeditionCodes to filter results on
+     * @param projectId the project to query
+     * @requiredParams projectId
+     *
+     * @responseType java.io.File
      */
     @GET
     @Path("/cspace/")
@@ -407,12 +462,14 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * Return Tab delimited data for a graph query using POST
-     * * <p/>
-     * filter parameters are of the form:
-     * name={URI} value={filter value}
+     * @summary Query project resources, returning a tab deliminated text file
      *
-     * @return
+     * @implicitParam expeditions|string|form|false|||||true|expeditionCode(s) to filter the query results on
+     * @implicitParam projectId|string|form|true|||||false|projectId to query
+     * @implicitParam filter|string|body|false|||||true|accepts multiple {columnName}={value}
+     * @excludeParams form
+     *
+     * @responseType java.io.File
      */
     @POST
     @Path("/tab/")
@@ -446,9 +503,16 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * Return Tab delimited data for a graph query.  The GET query runs a simple FILTER query for any term
+     * @summary Query project resources, returning a tab deliminated file
      *
-     * @return
+     * @csvParams expeditionsString,filter
+     *
+     * @param filter , seperated list of {columnName}:{value} filters
+     * @param expeditionsString , seperate list of expeditionCodes to filter results on
+     * @param projectId the project to query
+     * @requiredParams projectId
+     *
+     * @responseType java.io.File
      */
     @GET
     @Path("/tab/")
@@ -483,12 +547,14 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * Return Excel for a graph query using POST
-     * * <p/>
-     * filter parameters are of the form:
-     * name={URI} value={filter value}
+     * @summary Query project resources, returning a excel workbook
      *
-     * @return
+     * @implicitParam expeditions|string|form|false|||||true|expeditionCode(s) to filter the query results on
+     * @implicitParam projectId|string|form|true|||||false|projectId to query
+     * @implicitParam filter|string|body|false|||||true|accepts multiple {columnName}={value}
+     * @excludeParams form
+     *
+     * @responseType java.io.File
      */
     @POST
     @Path("/excel/")
@@ -539,9 +605,15 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * Return Excel for a graph query.  The GET query runs a simple FILTER query for any term
+     * @summary Query project resources, returning a excel workbook
      *
-     * @return
+     * @csvParams expeditionsString,filter
+     *
+     * @param filter , seperated list of {columnName}:{value} filters
+     * @param expeditionsString , seperate list of expeditionCodes to filter results on
+     * @param projectId the project to query
+     *
+     * @responseType java.io.File
      */
     @GET
     @Path("/excel/")

@@ -39,7 +39,9 @@ repositories {
 
 //noinspection GroovyAssignabilityCheck
 configurations {
+    additionalSources
     server
+    doclet.extendsFrom(server)
 }
 
 // this is necessary for the subprojects.each closure to work correctly when dealing with the server configuration dependencies
@@ -59,6 +61,16 @@ sourceSets {
     test {
         compileClasspath += [configurations.server]
         runtimeClasspath += [configurations.server]
+    }
+    doclet {
+        java {
+            srcDir 'src/main/java'
+            srcDir project(":biocode-fims-commons").file("src/main/java")
+            srcDir project(":biocode-fims-fuseki").file("src/main/java")
+            srcDir "${buildDir}/additional-sources/org/springframework/data/domain"
+            exclude 'biocode/fims/rest/FimsDefaultServlet.java'
+            exclude "jaxb/**"
+        }
     }
 }
 
@@ -81,6 +93,18 @@ dependencies {
     server group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
     compile project(":biocode-fims-commons")
     compile project(":biocode-fims-fuseki")
+
+    doclet(
+//            [group: 'com.tenxerconsulting', name: 'swagger-doclet', version: '1.1.3'],
+            // use custom build as com.tenxerconsulting is no longer being mantained
+            [fileTree(dir: 'swagger', include: ['swagger-doclet-*'])],
+            [group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0.1'],
+            [group: 'io.swagger', name: 'swagger-models', version: '1.5.12'],
+    )
+
+    additionalSources(group: 'org.springframework.data', name: 'spring-data-commons', version: '1.10.1.RELEASE', classifier: 'sources') {
+        transitive = false
+    }
 
     testCompile "junit:junit-dep:4.10"
 }
@@ -135,6 +159,8 @@ javascript.source {
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
 mainClassName = "biocode.fims.run.BiscicolFusekiToESMigrator"
+project.ext.apiVersion = "v1.1"
+project.ext.apiDocsDir = "${projectDir}/src/main/web/apidocs/" + project.ext.apiVersion
 
 project.ext.environment = project.hasProperty('environment') ? project.getProperty('environment') : defaultEnvironment
 
@@ -191,6 +217,35 @@ task setLocalEnv << {
 setProductionEnv.mustRunAfter compileJava
 setDevelopmentEnv.mustRunAfter compileJava
 setLocalEnv.mustRunAfter compileJava
+
+task resolveAdditionalSources(type: Copy) {
+    destinationDir = file("${buildDir}/additional-sources")
+    configurations.additionalSources.files.each { f ->
+        from {zipTree(f)}
+    }
+}
+
+task generateRestApiDocs(type: Javadoc) {
+    source = sourceSets.doclet.allJava
+    destinationDir = reporting.file("rest-api-docs")
+    options.classpath = configurations.doclet.files.asType(List)
+    options.docletpath = configurations.doclet.files.asType(List)
+    options.doclet = "com.tenxerconsulting.swagger.doclet.ServiceDoclet"
+    options.addStringOption("apiVersion", project.ext.apiVersion)
+    options.addStringOption("apiBasePath", "/biocode-fims/rest/" + project.ext.apiVersion)
+    options.addStringOption("host", "")
+    options.addBooleanOption("skipUiFiles", false)
+    options.addStringOption("apiInfoFile", "${projectDir}/swagger/api-info.json")
+
+    doLast {
+        copy {
+            from destinationDir
+            into project.ext.apiDocsDir
+        }
+    }
+}
+
+generateRestApiDocs.dependsOn resolveAdditionalSources
 
 /*
 Delete any resource files in src/main/resources if the file exists in a sub directory
