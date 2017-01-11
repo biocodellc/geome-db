@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
@@ -173,7 +174,9 @@ public class QueryController extends FimsService {
             return getJsonResults(page, limit, query);
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
-                return Response.noContent().build();
+                return Response.ok(
+                        new PageImpl<String>(null, new PageRequest(page, limit), 0)
+                ).build();
             }
 
             throw e;
@@ -211,7 +214,9 @@ public class QueryController extends FimsService {
             return getJsonResults(page, limit, query);
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
-                return Response.noContent().build();
+                return Response.ok(
+                        new PageImpl<String>(null, new PageRequest(page, limit), 0)
+                ).build();
             }
 
             throw e;
@@ -475,6 +480,7 @@ public class QueryController extends FimsService {
     @POST
     @Path("/tab/")
     @Consumes("application/x-www-form-urlencoded")
+    @Produces("text/tsv")
     public Response queryTabAsPost(
             MultivaluedMap<String, String> form) {
 
@@ -486,7 +492,7 @@ public class QueryController extends FimsService {
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
-            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), ",");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), "\t");
 
             Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
@@ -517,6 +523,7 @@ public class QueryController extends FimsService {
      */
     @GET
     @Path("/tab/")
+    @Produces("text/tsv")
     public Response queryTab(
             @QueryParam("expeditions") String expeditionsString,
             @QueryParam("projectId") Integer projectId,
@@ -530,7 +537,7 @@ public class QueryController extends FimsService {
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
-            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), ",");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), "\t");
 
             Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 

@@ -1292,6 +1292,7 @@
         "tags" : [ "Resources" ],
         "summary" : "Query project resources, returning a tab deliminated file",
         "operationId" : "queryTab",
+        "produces" : [ "text/tsv" ],
         "parameters" : [ {
           "name" : "expeditions",
           "in" : "query",
@@ -1334,6 +1335,7 @@
         "summary" : "Query project resources, returning a tab deliminated text file",
         "operationId" : "queryTabAsPost",
         "consumes" : [ "application/x-www-form-urlencoded" ],
+        "produces" : [ "text/tsv" ],
         "parameters" : [ {
           "name" : "expeditions",
           "in" : "formData",
