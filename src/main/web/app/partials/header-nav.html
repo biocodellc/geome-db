@@ -38,7 +38,13 @@
                 <li ng-show="!vm.isAuthenticated"><a id="login" ng-click="vm.login()" ui-sref="login">Login</a></li>
                 <li ng-show="vm.isAuthenticated"><a ui-sref="profile">{{ vm.user.username }}</a></li>
                 <li ng-show="vm.isAuthenticated"><a ng-click="vm.logout()" ui-sref="home">Logout</a></li>
-                <li><a href="http://fims.readthedocs.org/en/latest/">Help</a></li>
+                <li class="dropdown">
+                    <a href="#" data-toggle="dropdown" classs="dropdown-toggle">Help</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/apidocs/v1.1/" target="_self">Api Docs</a></li>
+                        <li><a href="http://fims.readthedocs.org/en/latest/">Help</a></li>
+                    </ul>
+                </li>
             </ul>
         </div><!-- /.navbar-collapse -->
     </div>
