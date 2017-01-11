@@ -1544,7 +1544,7 @@
     },
     "/projects/{projectId}/expeditions" : {
       "get" : {
-        "tags" : [ "Projects" ],
+        "tags" : [ "Expeditions" ],
         "operationId" : "listExpeditions",
         "produces" : [ "application/json" ],
         "responses" : {
@@ -2146,7 +2146,7 @@
     },
     "/users/{userId}/projects" : {
       "get" : {
-        "tags" : [ "Users" ],
+        "tags" : [ "Projects" ],
         "summary" : "Returns a list of projects that a user belongs to",
         "operationId" : "listProjects",
         "produces" : [ "application/json" ],
@@ -2165,7 +2165,7 @@
     },
     "/users/{userId}/projects/{projectId}/expeditions" : {
       "get" : {
-        "tags" : [ "Users" ],
+        "tags" : [ "Expeditions" ],
         "operationId" : "listExpeditions",
         "produces" : [ "application/json" ],
         "parameters" : [ {
