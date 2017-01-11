@@ -19,6 +19,7 @@ import java.util.ArrayList;
 
 /**
  * REST services dealing with expeditions
+ * @resourceTag Expeditions
  */
 @Controller
 @Path("expeditions")

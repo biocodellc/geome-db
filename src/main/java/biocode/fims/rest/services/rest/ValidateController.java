@@ -28,6 +28,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @resourceTag Data
+ * @resourceDescription Validate and load data
+ *
+ */
 @Scope("prototype")
 @Controller
 @Path("validate")

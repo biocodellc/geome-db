@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 
 /**
  * REST services dealing with user management
+ * @resourceTag Users
  */
 @Controller
 @Path("users")

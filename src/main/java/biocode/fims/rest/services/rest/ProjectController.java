@@ -41,6 +41,8 @@ import java.util.List;
 
 /**
  * REST services dealing with projects
+ *
+ * @resourceTag Projects
  */
 @Controller
 @Path("projects")
@@ -508,6 +510,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         return Response.ok(sb.toString()).build();
     }
 
+    @Deprecated
     @GET
     @Authenticated
     @Admin
@@ -572,6 +575,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         return Response.ok(sb.toString()).build();
     }
 
+    @Deprecated
     @GET
     @Authenticated
     @Admin

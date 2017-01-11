@@ -52,6 +52,7 @@ import java.util.*;
  *
  * @resourceDescription Query a project's resources. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>
  * for more detailed information regarding queries.
+ * @resourceTag Resources
  */
 @Scope("request")
 @Controller

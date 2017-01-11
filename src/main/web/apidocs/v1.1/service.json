@@ -8,30 +8,31 @@
   "host" : "",
   "basePath" : "/biocode-fims/rest/v1.1",
   "tags" : [ {
-    "name" : "/authenticationService"
+    "name" : "Authentication"
   }, {
-    "name" : "/bcids"
+    "name" : "Bcids"
   }, {
-    "name" : "/expeditions"
+    "name" : "Expeditions"
   }, {
-    "name" : "/projects"
+    "name" : "Projects"
   }, {
-    "name" : "/projects/query",
+    "name" : "Resources",
     "description" : "Query a project's resources. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>\n for more detailed information regarding queries."
   }, {
-    "name" : "/resourceTypes"
+    "name" : "ResourceTypes"
   }, {
-    "name" : "/users"
+    "name" : "Users"
   }, {
-    "name" : "/utils"
+    "name" : "Utils"
   }, {
-    "name" : "/validate"
+    "name" : "Data",
+    "description" : "Validate and load data"
   } ],
   "schemes" : [ "http" ],
   "paths" : {
     "/authenticationService/login" : {
       "post" : {
-        "tags" : [ "/authenticationService" ],
+        "tags" : [ "Authentication" ],
         "summary" : "Service to log a user into the biocode-fims system",
         "operationId" : "login",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -67,7 +68,7 @@
     },
     "/authenticationService/logout" : {
       "get" : {
-        "tags" : [ "/authenticationService" ],
+        "tags" : [ "Authentication" ],
         "summary" : "Rest service to log a user out of the fims system",
         "operationId" : "logout",
         "produces" : [ "application/json" ],
@@ -83,7 +84,7 @@
     },
     "/authenticationService/oauth/accessToken" : {
       "post" : {
-        "tags" : [ "/authenticationService" ],
+        "tags" : [ "Authentication" ],
         "summary" : "Service for a client app to exchange an oAuth code for an access token",
         "operationId" : "access_token",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -150,7 +151,7 @@
     },
     "/authenticationService/oauth/authorize" : {
       "get" : {
-        "tags" : [ "/authenticationService" ],
+        "tags" : [ "Authentication" ],
         "summary" : "Service for a client app to log a user into the system via oAuth.",
         "operationId" : "authorize",
         "produces" : [ "text/html" ],
@@ -185,7 +186,7 @@
     },
     "/authenticationService/oauth/refresh" : {
       "post" : {
-        "tags" : [ "/authenticationService" ],
+        "tags" : [ "Authentication" ],
         "summary" : "Service for an oAuth client app to exchange a refresh token for a valid access token.",
         "operationId" : "refresh",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -215,7 +216,7 @@
     },
     "/bcids" : {
       "post" : {
-        "tags" : [ "/bcids" ],
+        "tags" : [ "Bcids" ],
         "summary" : "Create a data group",
         "operationId" : "mint",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -277,7 +278,7 @@
     },
     "/bcids/list" : {
       "get" : {
-        "tags" : [ "/bcids" ],
+        "tags" : [ "Bcids" ],
         "summary" : "Return JSON response showing data groups available to this user",
         "operationId" : "bcidList",
         "produces" : [ "application/json" ],
@@ -293,7 +294,7 @@
     },
     "/bcids/metadata/{bcidId}" : {
       "get" : {
-        "tags" : [ "/bcids" ],
+        "tags" : [ "Bcids" ],
         "summary" : "Return a JSON representation of bcids metadata",
         "operationId" : "run",
         "produces" : [ "application/json" ],
@@ -317,7 +318,7 @@
     },
     "/bcids/update" : {
       "post" : {
-        "tags" : [ "/bcids" ],
+        "tags" : [ "Bcids" ],
         "summary" : "Service to update a Bcid's metadata",
         "operationId" : "bcidUpdate",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -372,7 +373,7 @@
     },
     "/expeditions" : {
       "post" : {
-        "tags" : [ "/expeditions" ],
+        "tags" : [ "Expeditions" ],
         "summary" : "Service for a user to mint a new expedition",
         "operationId" : "mint",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -422,7 +423,7 @@
     },
     "/expeditions/admin/list/{projectId}" : {
       "get" : {
-        "tags" : [ "/expeditions" ],
+        "tags" : [ "Expeditions" ],
         "summary" : "Service to retrieve all of the project's expeditions.",
         "description" : "For use by project admin only.",
         "operationId" : "getExpeditions",
@@ -447,7 +448,7 @@
     },
     "/expeditions/admin/updateStatus" : {
       "post" : {
-        "tags" : [ "/expeditions" ],
+        "tags" : [ "Expeditions" ],
         "summary" : "Service to set/unset the public attribute of a set of expeditions specified in a MultivaluedMap\n The expeditionId's are specified simply by their internal expeditionId code",
         "operationId" : "publicExpeditions",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -473,7 +474,7 @@
     },
     "/expeditions/associate" : {
       "post" : {
-        "tags" : [ "/expeditions" ],
+        "tags" : [ "Expeditions" ],
         "operationId" : "associate",
         "consumes" : [ "application/x-www-form-urlencoded" ],
         "produces" : [ "application/json" ],
@@ -509,7 +510,7 @@
     },
     "/expeditions/graphMetadata/{graph}" : {
       "get" : {
-        "tags" : [ "/expeditions" ],
+        "tags" : [ "Expeditions" ],
         "summary" : "Given a graph name, return metadata",
         "operationId" : "getGraphMetadata",
         "produces" : [ "application/json" ],
@@ -532,7 +533,7 @@
     },
     "/expeditions/updateStatus/{projectId}/{expeditionCode}/{publicStatus}" : {
       "get" : {
-        "tags" : [ "/expeditions" ],
+        "tags" : [ "Expeditions" ],
         "summary" : "Service to update a single expedition Bcid",
         "operationId" : "publicExpedition",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -569,7 +570,7 @@
     },
     "/expeditions/validate/{projectId}/{expeditionCode}" : {
       "get" : {
-        "tags" : [ "/expeditions" ],
+        "tags" : [ "Expeditions" ],
         "summary" : "validateExpedition service checks the status of a new expedition code on the server and directing consuming\n applications on whether this user owns the expedition and if it exists within an project or not.",
         "description" : "Responses are error, update, or insert (first term followed by a colon)",
         "operationId" : "validate",
@@ -607,7 +608,7 @@
     },
     "/expeditions/{expeditionId}/datasetsAsTable" : {
       "get" : {
-        "tags" : [ "/expeditions" ],
+        "tags" : [ "Expeditions" ],
         "operationId" : "listDatasetsAsTable",
         "produces" : [ "text/html" ],
         "parameters" : [ {
@@ -630,7 +631,7 @@
     },
     "/expeditions/{expeditionId}/metadataAsTable" : {
       "get" : {
-        "tags" : [ "/expeditions" ],
+        "tags" : [ "Expeditions" ],
         "operationId" : "listMetadataAsTable",
         "produces" : [ "text/html" ],
         "parameters" : [ {
@@ -653,7 +654,7 @@
     },
     "/expeditions/{expeditionId}/resourcesAsTable" : {
       "get" : {
-        "tags" : [ "/expeditions" ],
+        "tags" : [ "Expeditions" ],
         "operationId" : "listResourcesAsTable",
         "produces" : [ "text/html" ],
         "parameters" : [ {
@@ -676,7 +677,7 @@
     },
     "/expeditions/{projectId}/{expeditionCode}/{conceptAlias}" : {
       "get" : {
-        "tags" : [ "/expeditions" ],
+        "tags" : [ "Expeditions" ],
         "summary" : "Given a expedition code and a resource alias, return a BCID",
         "operationId" : "fetchAlias",
         "produces" : [ "application/json" ],
@@ -712,7 +713,7 @@
     },
     "/projects/" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "listProjects",
         "produces" : [ "application/json" ],
         "responses" : {
@@ -730,7 +731,7 @@
     },
     "/projects/admin/list" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "summary" : "Return a json representation to be used for select options of the projects that a user is an admin to",
         "operationId" : "getUserAdminProjects",
         "produces" : [ "application/json" ],
@@ -746,7 +747,7 @@
     },
     "/projects/config/refreshCache" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "refreshAllCache",
         "responses" : {
           "default" : {
@@ -760,7 +761,7 @@
     },
     "/projects/createExcel" : {
       "post" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "createExcel",
         "consumes" : [ "application/x-www-form-urlencoded" ],
         "produces" : [ "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ],
@@ -794,7 +795,7 @@
     },
     "/projects/myDatasets" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "summary" : "Get the users datasets",
         "operationId" : "getDatasets",
         "produces" : [ "application/json" ],
@@ -810,7 +811,7 @@
     },
     "/projects/myGraphs" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "summary" : "Given an project Bcid, get the users latest datasets by expedition",
         "operationId" : "getMyLatestGraphs",
         "produces" : [ "application/json" ],
@@ -826,7 +827,7 @@
     },
     "/projects/query/cspace" : {
       "get" : {
-        "tags" : [ "/projects/query" ],
+        "tags" : [ "Resources" ],
         "summary" : "Query project resources, returning a CSPACE file",
         "operationId" : "queryCspace",
         "produces" : [ "application/xml" ],
@@ -870,7 +871,7 @@
     },
     "/projects/query/csv" : {
       "get" : {
-        "tags" : [ "/projects/query" ],
+        "tags" : [ "Resources" ],
         "summary" : "Query project resources, returning CSV file",
         "operationId" : "queryCSV",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -913,7 +914,7 @@
         }
       },
       "post" : {
-        "tags" : [ "/projects/query" ],
+        "tags" : [ "Resources" ],
         "summary" : "Query project resources, returning a CSV file",
         "operationId" : "queryCSVAsPOST",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -955,7 +956,7 @@
     },
     "/projects/query/es" : {
       "post" : {
-        "tags" : [ "/projects/query" ],
+        "tags" : [ "Resources" ],
         "summary" : "query using elastic search Query object",
         "description" : "accepts an elastic json query request. note that aggregations are not supported, and the json query object needs\n to exclude the initial {\"query\": } that you would send via the elasticsearch rest api\n\n ex.\n\n     {\n         \"match\": {\n             \"_all\": \"ants\"\n         }\n     }",
         "operationId" : "queryElasticSearch",
@@ -1004,7 +1005,7 @@
     },
     "/projects/query/excel" : {
       "get" : {
-        "tags" : [ "/projects/query" ],
+        "tags" : [ "Resources" ],
         "summary" : "Query project resources, returning a excel workbook",
         "operationId" : "queryExcel",
         "produces" : [ "application/vnd.ms-excel" ],
@@ -1046,7 +1047,7 @@
         }
       },
       "post" : {
-        "tags" : [ "/projects/query" ],
+        "tags" : [ "Resources" ],
         "summary" : "Query project resources, returning a excel workbook",
         "operationId" : "queryExcel",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -1088,7 +1089,7 @@
     },
     "/projects/query/json" : {
       "get" : {
-        "tags" : [ "/projects/query" ],
+        "tags" : [ "Resources" ],
         "summary" : "Query project resources, returning JSON",
         "operationId" : "queryJson",
         "produces" : [ "application/json" ],
@@ -1146,7 +1147,7 @@
         }
       },
       "post" : {
-        "tags" : [ "/projects/query" ],
+        "tags" : [ "Resources" ],
         "summary" : "Query project resources, returning JSON",
         "operationId" : "queryJsonAsPOST",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -1204,7 +1205,7 @@
     },
     "/projects/query/kml" : {
       "get" : {
-        "tags" : [ "/projects/query" ],
+        "tags" : [ "Resources" ],
         "summary" : "Query project resources, returning google earth KML file",
         "operationId" : "queryKml",
         "produces" : [ "application/vnd.google-earth.kml+xml" ],
@@ -1246,7 +1247,7 @@
         }
       },
       "post" : {
-        "tags" : [ "/projects/query" ],
+        "tags" : [ "Resources" ],
         "summary" : "Query project resources, returning google earth KML file",
         "operationId" : "queryKml",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -1288,7 +1289,7 @@
     },
     "/projects/query/tab" : {
       "get" : {
-        "tags" : [ "/projects/query" ],
+        "tags" : [ "Resources" ],
         "summary" : "Query project resources, returning a tab deliminated file",
         "operationId" : "queryTab",
         "parameters" : [ {
@@ -1329,7 +1330,7 @@
         }
       },
       "post" : {
-        "tags" : [ "/projects/query" ],
+        "tags" : [ "Resources" ],
         "summary" : "Query project resources, returning a tab deliminated text file",
         "operationId" : "queryTabAsPost",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -1370,7 +1371,7 @@
     },
     "/projects/user/list" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "summary" : "Service used to retrieve a JSON representation of the project's a user is a member of.",
         "operationId" : "getUserProjects",
         "produces" : [ "application/json" ],
@@ -1386,7 +1387,7 @@
     },
     "/projects/{projectId}/abstract" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "getAbstract",
         "produces" : [ "application/json" ],
         "parameters" : [ {
@@ -1409,7 +1410,7 @@
     },
     "/projects/{projectId}/admin/addUser" : {
       "post" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "summary" : "Service used to add a user as a member of a project.",
         "operationId" : "addUser",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -1439,32 +1440,9 @@
         }
       }
     },
-    "/projects/{projectId}/admin/expeditions" : {
-      "get" : {
-        "tags" : [ "/projects" ],
-        "operationId" : "listExpeditionsAsTable",
-        "produces" : [ "text/html" ],
-        "parameters" : [ {
-          "name" : "projectId",
-          "in" : "path",
-          "description" : "",
-          "required" : true,
-          "type" : "integer",
-          "format" : "int32"
-        } ],
-        "responses" : {
-          "default" : {
-            "description" : "",
-            "schema" : {
-              "$ref" : "#/definitions/Response"
-            }
-          }
-        }
-      }
-    },
     "/projects/{projectId}/admin/removeUser/{userId}" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "summary" : "Service used to remove a user as a member of a project.",
         "operationId" : "removeUser",
         "produces" : [ "application/json" ],
@@ -1495,7 +1473,7 @@
     },
     "/projects/{projectId}/attributes" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "getAttributes",
         "produces" : [ "text/html" ],
         "parameters" : [ {
@@ -1518,7 +1496,7 @@
     },
     "/projects/{projectId}/config/lists/{listName}/fields" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "summary" : "Retrieve a list of valid values for a given column",
         "operationId" : "getListFields",
         "produces" : [ "application/json" ],
@@ -1544,7 +1522,7 @@
     },
     "/projects/{projectId}/config/refreshCache" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "refreshCache",
         "parameters" : [ {
           "name" : "projectId",
@@ -1566,7 +1544,7 @@
     },
     "/projects/{projectId}/expeditions" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "listExpeditions",
         "produces" : [ "application/json" ],
         "responses" : {
@@ -1584,7 +1562,7 @@
     },
     "/projects/{projectId}/filterOptions" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "getFilterOptions",
         "produces" : [ "application/json" ],
         "parameters" : [ {
@@ -1607,7 +1585,7 @@
     },
     "/projects/{projectId}/getDefinition/{columnName}" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "getDefinitions",
         "produces" : [ "application/json" ],
         "parameters" : [ {
@@ -1636,7 +1614,7 @@
     },
     "/projects/{projectId}/getLatLongColumns" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "getLatLongColumns",
         "produces" : [ "application/json" ],
         "parameters" : [ {
@@ -1659,7 +1637,7 @@
     },
     "/projects/{projectId}/getTemplateConfig/{configName}" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "summary" : "Service used to get a specific fims template generator configuration",
         "operationId" : "getConfig",
         "produces" : [ "application/json" ],
@@ -1689,7 +1667,7 @@
     },
     "/projects/{projectId}/getTemplateConfigs" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "summary" : "Service used to get the fims template generator configurations for a given project",
         "operationId" : "getTemplateConfigs",
         "produces" : [ "application/json" ],
@@ -1713,7 +1691,7 @@
     },
     "/projects/{projectId}/metadata" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "listMetadataAsTable",
         "produces" : [ "text/html" ],
         "parameters" : [ {
@@ -1736,7 +1714,7 @@
     },
     "/projects/{projectId}/metadata/update" : {
       "post" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "summary" : "Service used for updating a project's configuration.",
         "operationId" : "updateConfig",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -1779,7 +1757,7 @@
     },
     "/projects/{projectId}/metadataEditor" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "listMetadataEditorAsTable",
         "produces" : [ "text/html" ],
         "parameters" : [ {
@@ -1802,7 +1780,7 @@
     },
     "/projects/{projectId}/removeTemplateConfig/{configName}" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "summary" : "Service used to delete a specific fims template generator configuration",
         "operationId" : "removeConfig",
         "produces" : [ "application/json" ],
@@ -1832,7 +1810,7 @@
     },
     "/projects/{projectId}/saveTemplateConfig" : {
       "post" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "summary" : "Service used to save a fims template generator configuration",
         "operationId" : "saveTemplateConfig",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -1873,7 +1851,7 @@
     },
     "/projects/{projectId}/uniqueKey" : {
       "get" : {
-        "tags" : [ "/projects" ],
+        "tags" : [ "Projects" ],
         "operationId" : "getUniqueKey",
         "produces" : [ "application/json" ],
         "parameters" : [ {
@@ -1894,32 +1872,9 @@
         }
       }
     },
-    "/projects/{projectId}/users" : {
-      "get" : {
-        "tags" : [ "/projects" ],
-        "operationId" : "listUsersAsTable",
-        "produces" : [ "text/html" ],
-        "parameters" : [ {
-          "name" : "projectId",
-          "in" : "path",
-          "description" : "",
-          "required" : true,
-          "type" : "integer",
-          "format" : "int32"
-        } ],
-        "responses" : {
-          "default" : {
-            "description" : "",
-            "schema" : {
-              "$ref" : "#/definitions/Response"
-            }
-          }
-        }
-      }
-    },
     "/resourceTypes" : {
       "get" : {
-        "tags" : [ "/resourceTypes" ],
+        "tags" : [ "ResourceTypes" ],
         "summary" : "Get all resourceTypes",
         "operationId" : "resourceTypes",
         "produces" : [ "application/json" ],
@@ -1935,7 +1890,7 @@
     },
     "/resourceTypes/minusDataset" : {
       "get" : {
-        "tags" : [ "/resourceTypes" ],
+        "tags" : [ "ResourceTypes" ],
         "summary" : "get all resourceTypes minus Dataset",
         "operationId" : "jsonSelectOptions",
         "produces" : [ "application/json" ],
@@ -1951,7 +1906,7 @@
     },
     "/users/admin/create" : {
       "post" : {
-        "tags" : [ "/users" ],
+        "tags" : [ "Users" ],
         "summary" : "Service to create a new user.",
         "operationId" : "createUser",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -2012,7 +1967,7 @@
     },
     "/users/admin/createUserForm" : {
       "get" : {
-        "tags" : [ "/users" ],
+        "tags" : [ "Users" ],
         "operationId" : "getCreatUserForm",
         "produces" : [ "text/html" ],
         "responses" : {
@@ -2027,7 +1982,7 @@
     },
     "/users/admin/profile/listEditorAsTable/{user}" : {
       "get" : {
-        "tags" : [ "/users" ],
+        "tags" : [ "Users" ],
         "operationId" : "listAdminProfileEditorAsTable",
         "produces" : [ "text/html" ],
         "parameters" : [ {
@@ -2049,7 +2004,7 @@
     },
     "/users/profile" : {
       "get" : {
-        "tags" : [ "/users" ],
+        "tags" : [ "Users" ],
         "summary" : "Service for oAuth client apps to retrieve a user's profile information.",
         "operationId" : "getUserData",
         "produces" : [ "application/json" ],
@@ -2065,7 +2020,7 @@
     },
     "/users/profile/listAsTable" : {
       "get" : {
-        "tags" : [ "/users" ],
+        "tags" : [ "Users" ],
         "operationId" : "listProfileAsTable",
         "produces" : [ "text/html" ],
         "responses" : {
@@ -2080,7 +2035,7 @@
     },
     "/users/profile/listEditorAsTable" : {
       "get" : {
-        "tags" : [ "/users" ],
+        "tags" : [ "Users" ],
         "operationId" : "listProfileEditorAsTable",
         "produces" : [ "text/html" ],
         "responses" : {
@@ -2095,7 +2050,7 @@
     },
     "/users/profile/update" : {
       "post" : {
-        "tags" : [ "/users" ],
+        "tags" : [ "Users" ],
         "summary" : "Service for a user to update their profile.",
         "operationId" : "updateProfile",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -2161,7 +2116,7 @@
     },
     "/users/resetPassword" : {
       "post" : {
-        "tags" : [ "/users" ],
+        "tags" : [ "Users" ],
         "summary" : "Service for a user to exchange their reset resetToken in order to update their password",
         "operationId" : "resetPassword",
         "consumes" : [ "application/x-www-form-urlencoded" ],
@@ -2191,7 +2146,7 @@
     },
     "/users/{userId}/projects" : {
       "get" : {
-        "tags" : [ "/users" ],
+        "tags" : [ "Users" ],
         "summary" : "Returns a list of projects that a user belongs to",
         "operationId" : "listProjects",
         "produces" : [ "application/json" ],
@@ -2210,7 +2165,7 @@
     },
     "/users/{userId}/projects/{projectId}/expeditions" : {
       "get" : {
-        "tags" : [ "/users" ],
+        "tags" : [ "Users" ],
         "operationId" : "listExpeditions",
         "produces" : [ "application/json" ],
         "parameters" : [ {
@@ -2236,7 +2191,7 @@
     },
     "/users/{user}/sendResetToken" : {
       "get" : {
-        "tags" : [ "/users" ],
+        "tags" : [ "Users" ],
         "summary" : "Rest service to initiate the reset password process",
         "operationId" : "sendResetToken",
         "produces" : [ "application/json" ],
@@ -2259,7 +2214,7 @@
     },
     "/utils/getMapboxToken" : {
       "get" : {
-        "tags" : [ "/utils" ],
+        "tags" : [ "Utils" ],
         "operationId" : "getMapboxToken",
         "produces" : [ "application/json" ],
         "responses" : {
@@ -2274,7 +2229,7 @@
     },
     "/utils/getNAAN" : {
       "get" : {
-        "tags" : [ "/utils" ],
+        "tags" : [ "Utils" ],
         "operationId" : "getNAAN",
         "produces" : [ "application/json" ],
         "responses" : {
@@ -2289,7 +2244,7 @@
     },
     "/validate" : {
       "post" : {
-        "tags" : [ "/validate" ],
+        "tags" : [ "Data" ],
         "summary" : "service to validate a dataset against a project's rules",
         "operationId" : "validate",
         "consumes" : [ "multipart/form-data" ],
@@ -2348,7 +2303,7 @@
     },
     "/validate/continue" : {
       "get" : {
-        "tags" : [ "/validate" ],
+        "tags" : [ "Data" ],
         "summary" : "Service to upload a dataset to an expedition.",
         "description" : "The validate service must be called before this service.",
         "operationId" : "upload",
@@ -2373,7 +2328,7 @@
     },
     "/validate/status" : {
       "get" : {
-        "tags" : [ "/validate" ],
+        "tags" : [ "Data" ],
         "summary" : "Service used for getting the current status of the dataset validation/upload.",
         "operationId" : "status",
         "produces" : [ "application/json;charset=utf-8" ],
