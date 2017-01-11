@@ -454,7 +454,8 @@ public class QueryController extends FimsService {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
         for (String expedition : expeditionCodes) {
-            boolQueryBuilder.should(QueryBuilders.matchQuery("expedition.expeditionCode", expedition));
+            // query the keyword sub-field for an exact match
+            boolQueryBuilder.should(QueryBuilders.matchQuery("expedition.expeditionCode.keyword", expedition));
             boolQueryBuilder.minimumNumberShouldMatch(1);
         }
 
