@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
@@ -135,7 +136,9 @@ public class QueryController extends FimsService {
             return getJsonResults(page, limit, query);
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
-                return Response.noContent().build();
+                return Response.ok(
+                        new PageImpl<String>(null, new PageRequest(page, limit), 0)
+                ).build();
             }
 
             throw e;
@@ -217,11 +220,7 @@ public class QueryController extends FimsService {
                     "attachment; filename=dipnet-fims-output.kml");
 
             // Return response
-            if (response == null) {
-                return Response.status(204).build();
-            } else {
-                return response.build();
-            }
+            return response.build();
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
                 return Response.noContent().build();
