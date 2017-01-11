@@ -70,7 +70,7 @@
                             <div class="col-xs-8" ng-show="!vm.newExpedition">
                                 <select id="expeditionCode" name="expeditionCode"
                                         ng-model="vm.expeditionCode"
-                                        ng-options="expedition.expeditionCode as expedition.expeditionTitle for expedition in vm.expeditions track by expedition.expeditionId"
+                                        ng-options="expedition.expeditionCode as expedition.expeditionTitle for expedition in vm.expeditions | orderBy: 'expeditionTitle' track by expedition.expeditionId"
                                         required
                                         class="form-control col-xs-6">
                                     <option value="">-- Select an Expedition --</option>
@@ -120,7 +120,7 @@
                                         <input type="checkbox" name="coordinatesVerified"
                                                id="coordinates_verified" ng-model="vm.coordinatesVerified"
                                                ng-click="vm.checkCoordinatesVerified()"/>
-                                        <span class="control-label">Data points verified on map?&nbsp;&nbsp;</span>
+                                        <span class="control-label">Please verify sample locations on the map below and then check this box</span>
                                     </label>
                                 </div>
                             </div>
