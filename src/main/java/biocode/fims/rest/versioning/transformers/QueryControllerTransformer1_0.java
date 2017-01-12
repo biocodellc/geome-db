@@ -32,7 +32,7 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
         return transformJsonResponse(returnVal);
     }
 
-    public Object queryJsonAsPOSTResponse(Object returnVal) {
+    public Object queryJsonAsPostResponse(Object returnVal) {
         return transformJsonResponse(returnVal);
     }
 
