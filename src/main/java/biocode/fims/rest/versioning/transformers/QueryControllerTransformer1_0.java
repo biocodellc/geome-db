@@ -141,7 +141,7 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
         } else {
             expeditions = Arrays.asList(((String) argMap.get("expeditionsString")).split(","));
         }
-        transformGraphs(argMap, queryParameters.get("graphs"), expeditions);
+        transformGraphs(queryParameters.get("graphs"), expeditions);
         argMap.put("expeditionsString", String.join(",", expeditions));
     }
 
@@ -153,12 +153,13 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
             argMap.put("limit", Integer.parseInt(queryParameters.getOrDefault("limit", Collections.singletonList("10000")).get(0)));
         }
 
-        argMap.put("projectId", form.remove("project_id"));
+        form.put("projectId", form.remove("project_id"));
+        form.put("expeditions", new LinkedList<>());
 
-        transformGraphs(argMap, form.get("graphs"), (List<String>) argMap.get("expeditions"));
+        transformGraphs(form.remove("graphs"), form.get("expeditions"));
     }
 
-    private void transformGraphs(LinkedHashMap<String, Object> argMap, List<String> graphsParam, List<String> expeditions) {
+    private void transformGraphs(List<String> graphsParam, List<String> expeditions) {
         if (graphsParam != null && graphsParam.size() > 0) {
             List<String> graphs = new ArrayList<>();
 

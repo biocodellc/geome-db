@@ -162,7 +162,7 @@ public class QueryController extends FimsService {
     @Path("/json/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryJsonAsPOST(
+    public Response queryJsonAsPost(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
             MultivaluedMap<String, String> form) {
@@ -237,7 +237,7 @@ public class QueryController extends FimsService {
     @Path("/csv/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("text/csv")
-    public Response queryCSVAsPOST(
+    public Response queryCSVAsPost(
             MultivaluedMap<String, String> form) {
 
         try {
@@ -325,7 +325,7 @@ public class QueryController extends FimsService {
     @Path("/kml/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.google-earth.kml+xml")
-    public Response queryKml(
+    public Response queryKmlAsPost(
             MultivaluedMap<String, String> form) {
 
         try {
@@ -568,7 +568,7 @@ public class QueryController extends FimsService {
     @Path("/excel/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.ms-excel")
-    public Response queryExcel(
+    public Response queryExcelAsPost(
             MultivaluedMap<String, String> form) {
 
         if (!form.containsKey("expeditionsString") || form.get("expeditionsString").size() != 1) {
