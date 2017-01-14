@@ -571,7 +571,7 @@ public class QueryController extends FimsService {
     public Response queryExcelAsPost(
             MultivaluedMap<String, String> form) {
 
-        if (!form.containsKey("expeditionsString") || form.get("expeditionsString").size() != 1) {
+        if (!form.containsKey("expeditions") || form.get("expeditions").size() != 1) {
             throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
         }
         // Build the query, etc..
@@ -725,7 +725,7 @@ public class QueryController extends FimsService {
         List<ElasticSearchFilterCondition> filterConditions = parseGETFilter(filter, attributes, mapping);
 
         try {
-            List<String> expeditions = expeditionsString == null ? new ArrayList<>() : Arrays.asList(
+            List<String> expeditions = (expeditionsString == null || expeditionsString.isEmpty()) ? new ArrayList<>() : Arrays.asList(
                     URLDecoder.decode(expeditionsString, "UTF-8").split(","));
 
             // commenting this out for now until biocode-lims releases a new plugin
