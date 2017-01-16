@@ -671,9 +671,9 @@ public class QueryController extends FimsService {
         }
 
         // commenting this out for now until biocode-lims releases a new plugin
-//        if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), expeditionCodes, userContext.getUser())) {
-//            throw new ForbiddenRequestException("unauthorized query.");
-//        }
+        if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), expeditionCodes, userContext.getUser())) {
+            throw new ForbiddenRequestException("unauthorized query.");
+        }
 
         List<ElasticSearchFilterField> filterFields = BiscicolQueryUtils.getAvailableFilters(getMapping(projectId));
 
@@ -729,9 +729,9 @@ public class QueryController extends FimsService {
                     URLDecoder.decode(expeditionsString, "UTF-8").split(","));
 
             // commenting this out for now until biocode-lims releases a new plugin
-//            if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), expeditions, userContext.getUser())) {
-//                throw new ForbiddenRequestException("unauthorized query.");
-//            }
+            if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), expeditions, userContext.getUser())) {
+                throw new ForbiddenRequestException("unauthorized query.");
+            }
 
             // if no expeditions are specified, then we want to only query public expeditionsString
             if (expeditions.size() == 0) {

@@ -144,7 +144,7 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
 
         List<String> graphs = new ArrayList<>();
         if (queryParameters.containsKey("graphs")) {
-            Collections.addAll(graphs, queryParameters.remove("graphs").get(0).split(","));
+            Collections.addAll(graphs, queryParameters.get("graphs").get(0).split(","));
         }
 
         transformGraphs(graphs, expeditions);
