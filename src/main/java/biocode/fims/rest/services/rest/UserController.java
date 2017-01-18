@@ -65,84 +65,10 @@ public class UserController extends FimsAbstractUserController {
 
     @GET
     @Authenticated
-    @Admin
-    @Path("/admin/profile/listEditorAsTable/{user}")
-    @Produces(MediaType.TEXT_HTML)
-    public Response listAdminProfileEditorAsTable(@PathParam("user") String username) {
-        User user = userService.getUser(username);
-        return Response.ok(getProfileEditor(user, true)).build();
-    }
-
-    @GET
-    @Authenticated
     @Path("/profile/listEditorAsTable")
     @Produces(MediaType.TEXT_HTML)
     public Response listProfileEditorAsTable() {
         return Response.ok(getProfileEditor(userContext.getUser(), false)).build();
-    }
-
-    @GET
-    @Authenticated
-    @Admin
-    @Path("/admin/createUserForm")
-    @Produces(MediaType.TEXT_HTML)
-    public Response getCreatUserForm() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("\t<form id=\"submitForm\" method=\"POST\">\n");
-
-        sb.append("<table>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td>Username</td>\n");
-        sb.append("\t\t\t<td><input type=\"text\" name=\"username\"></td>\n");
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td>First Name</td>\n");
-        sb.append(("\t\t\t<td><input type=\"text\" name=\"firstName\"></td>\n"));
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td>Last Name</td>\n");
-        sb.append(("\t\t\t<td><input type=\"text\" name=\"lastName\"></td>\n"));
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td>Email</td>\n");
-        sb.append(("\t\t\t<td><input type=\"text\" name=\"email\"></td>\n"));
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td>Institution</td>\n");
-        sb.append(("\t\t\t<td><input type=\"text\" name=\"institution\"></td>\n"));
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td>Password</td>\n");
-        sb.append("\t\t\t<td><input class=\"pwcheck\" type=\"password\" name=\"password\" data-indicator=\"pwindicator\"></td>\n");
-        sb.append("\t\t</tr>");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td></td>\n");
-        sb.append("\t\t\t<td><div id=\"pwindicator\"><div class=\"label\"></div></div></td>\n");
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td></td>\n");
-        sb.append("\t\t\t<td><div class=\"error\" align=\"center\"></div></td>\n");
-        sb.append("\t\t</tr>\n");
-
-        sb.append("\t\t<tr>\n");
-        sb.append("\t\t\t<td></td>\n");
-        sb.append("\t\t\t<td><input type=\"button\" id=\"createFormButton\" value=\"Submit\"><input type=\"button\" id=\"createFormCancelButton\" value=\"Cancel\"></td>\n");
-        sb.append("\t\t</tr>\n");
-        sb.append("\t\t<input type=\"hidden\" name=\"projectId\">\n");
-
-        sb.append("</table>\n");
-        sb.append("\t</form>\n");
-
-
-        return Response.ok(sb.toString()).build();
     }
 
     @GET

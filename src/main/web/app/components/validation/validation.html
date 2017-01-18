@@ -146,15 +146,15 @@
 
             <!-- Results Tab -->
             <uib-tab index="2" heading="Results" disable="!vm.displayResults">
+                <div class="col-xs-11 col-xs-offset-1"
+                     ng-include="'app/components/validation/results/results.tpl.html'">
+                </div>
                 <div class="col-xs-11 col-xs-offset-1" ng-show="vm.showGenbankDownload">
                     <button type="button" ng-click="vm.downloadFastqFiles()" class="btn btn-primary">Download Genbank
                         Files
                     </button>
                     <a href="https://submit.ncbi.nlm.nih.gov/subs/sra/" class="btn btn-default">Genbank Submission
                         Portal</a>
-                </div>
-                <div class="col-xs-11 col-xs-offset-1"
-                     ng-include="'app/components/validation/results/results.tpl.html'">
                 </div>
             </uib-tab>
         </uib-tabset>

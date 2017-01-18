@@ -99,7 +99,7 @@ angular.module('fims.query')
             }
 
             function getExpeditions() {
-                ExpeditionFactory.getExpeditions()
+                ExpeditionFactory.getExpeditionsForUser(false)
                     .then(function (response) {
                         vm.expeditions = [];
                         angular.forEach(response.data, function (expedition) {

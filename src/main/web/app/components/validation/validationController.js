@@ -101,7 +101,7 @@ angular.module('fims.validation')
                 data.projectId = PROJECT_ID;
                 data.expeditionCode = vm.expeditionCode;
                 data.upload = true;
-                data.public_status = true;
+                data.public = true;
 
                 if (vm.dataTypes.fims) {
                     data.fimsMetadata = vm.fimsMetadata;
@@ -160,6 +160,9 @@ angular.module('fims.validation')
                                 ResultsDataFactory.showStatus = false;
                                 ResultsDataFactory.showContinueButton = true;
                                 ResultsDataFactory.showCancelButton = true;
+                                if (!angular.equals(vm.fastqMetadata, defaultFastqMetadata)) {
+                                    vm.showGenbankDownload = true;
+                                }
                             }
                         } else {
                             ResultsDataFactory.error = "Unexpected response from server. Please contact system admin.";
@@ -192,7 +195,9 @@ angular.module('fims.validation')
                             ResultsDataFactory.successMessage = response.data.done;
                             modalInstance.close();
                             latestExpeditionCode = vm.expeditionCode;
-                            vm.showGenbankDownload = true;
+                            if (!angular.equals(vm.fastqMetadata, defaultFastqMetadata)) {
+                                vm.showGenbankDownload = true;
+                            }
                             resetForm();
                         }
 

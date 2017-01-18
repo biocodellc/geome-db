@@ -98,16 +98,16 @@ app.controller('NavCtrl', ['$rootScope', '$scope', '$location', '$state', 'AuthF
 
 // register an interceptor to convert objects to a form-data like string for $http data attributes and
 // set the appropriate header
-app.factory('postInterceptor', ['$injector', '$httpParamSerializerJQLike',
-    function ($injector, $httpParamSerializerJQLike) {
+app.factory('postInterceptor', [
+    function () {
         return {
             request: function (config) {
                 // when uploading files with ng-file-upload, the content-type is undefined. The browser
                 // will automatically set it to multipart/form-data if we leave it as undefined
-                if (config.method == "POST" && config.headers['Content-Type'] != undefined) {
+                if (config.method == "POST" && config.headers['Content-Type'] != undefined && !config.keepJson) {
                     config.headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
                     if (config.data instanceof Object)
-                        config.data = $httpParamSerializerJQLike(config.data);
+                        config.data = config.paramSerializer(config.data);
                 }
                 return config;
             }

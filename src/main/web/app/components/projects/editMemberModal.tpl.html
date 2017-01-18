@@ -1,0 +1,26 @@
+<div class="modal-header text-center">
+    <h3 class="modal-title">Editing Member {{vm.user.username}}</h3>
+</div>
+<div class="modal-body">
+    <div class="alert alert-error alert-dismissable alert-small"
+         role="alert" ng-show="vm.error">
+        <button type="button" class="close" aria-label="Close"
+                ng-click="vm.error = null">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <strong>Error!</strong> {{ vm.error }}
+    </div>
+
+
+    <form class="form-horizontal" name="vm.userForm"
+          ng-include="'app/components/projects/userFormFields.tpl.html'">
+    </form>
+</div>
+
+<div class="modal-footer">
+
+    <button class="btn btn-primary" type="button"
+            ng-click="vm.save()">Save
+    </button>
+    <button class="btn btn-default" type="button" ng-click="vm.close()">Cancel</button>
+</div>

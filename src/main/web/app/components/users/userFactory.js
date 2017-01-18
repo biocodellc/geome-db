@@ -9,6 +9,10 @@ angular.module('fims.users')
             removeUser: removeUser,
             setUser: setUser,
             fetchUser: fetchUser,
+            createUser: createUser,
+            getUsers: getUsers,
+            updateUser: updateUser,
+            getUser: getUser
         };
 
         return userFactory;
@@ -30,5 +34,31 @@ angular.module('fims.users')
                     })
             }
             return $q.reject;
+        }
+
+        function getUsers() {
+            return $http.get(REST_ROOT + 'users/');
+        }
+
+        function getUser(username) {
+            return $http.get(REST_ROOT + 'users/' + username);
+        }
+
+        function createUser(user) {
+            return $http({
+                method: 'POST',
+                url: REST_ROOT + 'users/',
+                data: user,
+                keepJson: true
+            });
+        }
+
+        function updateUser(user) {
+            return $http({
+                method: 'PUT',
+                url: REST_ROOT + 'users/' + user.username,
+                data: user,
+                keepJson: true
+            });
         }
     }]);

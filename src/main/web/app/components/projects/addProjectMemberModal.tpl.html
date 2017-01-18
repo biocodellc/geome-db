@@ -1,0 +1,56 @@
+<div class="modal-header text-center">
+    <h3 class="modal-title">Add Project Member</h3>
+</div>
+<div class="modal-body">
+    <div class="alert alert-error alert-dismissable alert-small"
+         role="alert" ng-show="vm.error">
+        <button type="button" class="close" aria-label="Close"
+                ng-click="vm.error = null">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <strong>Error!</strong> {{ vm.error }}
+    </div>
+
+
+    <form class="form-horizontal" name="vm.userForm" ng-show="vm.creatingUser"
+          ng-include="'app/components/projects/userFormFields.tpl.html'">
+        <div class="form-group">
+            <div class="col-xs-4 col-xs-offset-5">
+                <button type="button" class="btn btn-block btn-default btn-sm"
+                        ng-click="vm.creatingUser = false">Add Existing User
+                </button>
+            </div>
+        </div>
+    </form>
+
+
+    <form class="form-horizontal" name="vm.memberForm" ng-show="!vm.creatingUser">
+        <div class="form-group" show-errors>
+            <label for="memberSelect" class="col-xs-3 control-label">Member</label>
+            <div class="col-xs-8">
+                <select name="member" id="memberSelect" class="form-control" required
+                        ng-model="vm.username"
+                        ng-options="user.username as user.username for user in vm.users | orderBy: 'user.username'">
+                    <option value="">-- Select a user --</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-4 col-xs-offset-5">
+                <button type="button" class="btn btn-block btn-default btn-sm"
+                        ng-click="vm.creatingUser = true ">Create User
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button ng-show="vm.creatingUser" class="btn btn-primary" type="button"
+            ng-click="vm.createUser()">Create User
+    </button>
+    <button ng-show="!vm.creatingUser" class="btn btn-primary" type="button"
+            ng-click="vm.addMember()">Add Member
+    </button>
+    <button class="btn btn-default" type="button" ng-click="vm.close()">Cancel</button>
+</div>

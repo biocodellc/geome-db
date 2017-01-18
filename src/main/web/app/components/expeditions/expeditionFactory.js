@@ -6,6 +6,8 @@ angular.module('fims.expeditions')
                 getExpeditionsForUser: getExpeditionsForUser,
                 getExpeditions: getExpeditions,
                 getExpedition: getExpedition,
+                getExpeditionsForAdmin: getExpeditionsForAdmin,
+                updateExpeditions: updateExpeditions,
                 createExpedition: createExpedition
             };
 
@@ -15,7 +17,7 @@ angular.module('fims.expeditions')
                 if (includePrivate == null) {
                     includePrivate = false;
                 }
-                return $http.get(REST_ROOT + 'users/' + UserFactory.user.userId + '/projects/' + PROJECT_ID + '/expeditions?includePrivate=' + includePrivate);
+                return $http.get(REST_ROOT + 'projects/' + PROJECT_ID + '/expeditions?user&includePrivate=' + includePrivate);
             }
 
             function getExpeditions() {
@@ -23,10 +25,23 @@ angular.module('fims.expeditions')
             }
 
             function getExpedition(expeditionCode) {
-                return $http.get(REST_ROOT + 'projects/' + PROJECT_ID + '/expedition/' + expeditionCode);
+                return $http.get(REST_ROOT + 'projects/' + PROJECT_ID + '/expeditions/' + expeditionCode);
             }
 
             function createExpedition(expedition) {
                 return $http.post(REST_ROOT + 'expeditions', expedition);
+            }
+
+            function getExpeditionsForAdmin(projectId) {
+                return $http.get(REST_ROOT + 'projects/' + projectId + '/expeditions?admin');
+            }
+
+            function updateExpeditions(projectId, expeditions) {
+                return $http({
+                    method: 'PUT',
+                    url: REST_ROOT + 'projects/' + projectId + "/expeditions",
+                    data: expeditions,
+                    keepJson: true
+                });
             }
         }]);

@@ -1,0 +1,46 @@
+    <div class="form-group" show-errors ng-show="vm.showUsername">
+        <label for="username" class="col-xs-3 control-label">Username</label>
+        <div class="col-xs-8">
+            <input type="text" name="username" required ng-model="vm.user.username" class="form-control" id="username">
+        </div>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label for="password" class="col-xs-3 control-label">Password</label>
+        <div class="col-xs-8">
+            <input type="password" name="password" ng-required="vm.passwordRequired" ng-model="vm.user.password" class="form-control pwcheck" data-indicator="pwindicator" id="password">
+            <div class="center-block help-block" id="pwindicator">
+                <div class="label"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label for="firstName" class="col-xs-3 control-label">First Name</label>
+        <div class="col-xs-8">
+            <input type="text" name="firstName" required ng-model="vm.user.firstName" class="form-control" id="firstName">
+        </div>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label for="lastName" class="col-xs-3 control-label">Last Name</label>
+        <div class="col-xs-8">
+            <input type="text" name="lastName" required ng-model="vm.user.lastName" class="form-control" id="lastName">
+        </div>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label for="email" class="col-xs-3 control-label">Email</label>
+        <div class="col-xs-8">
+            <input type="email" name="email" required ng-model="vm.user.email"
+                   ng-pattern=/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/ class="form-control" id="email"
+                   placeholder="user@example.com">
+        </div>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label for="institution" class="col-xs-3 control-label">Institution</label>
+        <div class="col-xs-8">
+            <input type="text" name="institution" required ng-model="vm.user.institution" class="form-control" id="institution">
+        </div>
+    </div>
