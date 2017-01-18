@@ -526,9 +526,9 @@ public class ProjectController extends FimsAbstractProjectsController {
 
         JSONObject response = p.getProjectUsers(projectId);
         Project project = projectService.getProjectWithMembers(projectId);
-        Set<User> projectMembers = project.getProjectMembers();
+        List<User> projectMembers = project.getProjectMembers();
 
-        Set<User> allUsers = userService.getUsers();
+        List<User> allUsers = userService.getUsers();
 
         StringBuilder sb = new StringBuilder();
 

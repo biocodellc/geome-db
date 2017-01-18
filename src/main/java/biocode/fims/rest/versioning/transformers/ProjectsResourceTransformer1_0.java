@@ -17,10 +17,10 @@ import java.util.List;
  * {@link biocode.fims.rest.versioning.APIVersion}v1_0 to APIVersion v1_1, and responses from v1_1 to v1_0.
  */
 @Component
-public class ProjectResourceTransformer1_0 extends FimsAbstractTransformer implements Transformer {
-    private final static Logger logger = LoggerFactory.getLogger(ProjectResourceTransformer1_0.class);
+public class ProjectsResourceTransformer1_0 extends FimsAbstractTransformer implements Transformer {
+    private final static Logger logger = LoggerFactory.getLogger(ProjectsResourceTransformer1_0.class);
 
-    public Object fetchListResponse(Object returnVal) {
+    public Object getProjectsResponse(Object returnVal) {
         if (!(returnVal instanceof List)) {
             return returnVal;
         }

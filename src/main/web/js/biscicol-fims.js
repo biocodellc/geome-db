@@ -280,7 +280,7 @@ function dialog(msg, title, buttons) {
 // A short message
 function showMessage(message) {
     $('#alerts').append(
-        '<div class="fims-alert">' +
+        '<div class="fims-alert alert-dismissable">' +
         '<button type="button" class="close" data-dismiss="alert">' +
         '&times;</button>' + message + '</div>');
 }
@@ -297,51 +297,6 @@ function showBigMessage(message) {
 function getProjectID() {
     var e = document.getElementById('projects');
     return e.options[e.selectedIndex].value;
-}
-
-/* ====== reset.jsp Functions ======= */
-
-function resetSubmit() {
-    var jqxhr = $.get(biocodeFimsRestRoot + "users/" + $("#username").val() + "/sendResetToken")
-        .done(function (data) {
-            if (data.success) {
-                var buttons = {
-                    "Ok": function () {
-                        window.location.replace(appRoot);
-                        $(this).dialog("close");
-                    }
-                }
-                dialog(data.success, "Password Reset Sent", buttons);
-                return;
-            } else {
-                failError(null);
-            }
-        }).fail(function (jqxhr) {
-            failError(jqxhr);
-        });
-}
-
-/* ====== resetPass.jsp Functions ======= */
-
-// function to submit the reset password form
-function resetPassSubmit() {
-    var jqxhr = $.post(biocodeFimsRestRoot + "users/resetPassword/", $("#resetForm").serialize())
-        .done(function (data) {
-            if (data.success) {
-                var buttons = {
-                    "Ok": function () {
-                        window.location.replace(appRoot);
-                        $(this).dialog("close");
-                    }
-                }
-                dialog(data.success, "Password Reset", buttons);
-                return;
-            } else {
-                failError(null);
-            }
-        }).fail(function (jqxhr) {
-            failError(jqxhr);
-        });
 }
 
 /* ====== bcidCreator.jsp Functions ======= */
@@ -387,12 +342,12 @@ function bcidCreatorSubmit() {
 /* ====== expeditions.html Functions ======= */
 
 // function to populate the expeditions.html page
-function populateExpeditionPage(username, userId) {
+function populateExpeditionPage(username) {
     var jqxhr = listProjects(username, biocodeFimsRestRoot + 'projects/user/list', true
     ).done(function () {
         // attach toggle function to each project
         $(".expand-content").click(function () {
-            loadExpeditions(this.id, userId)
+            loadExpeditions(this.id)
         });
     }).fail(function (jqxhr) {
         $("#sectioncontent").html(jqxhr.responseText);
@@ -400,7 +355,7 @@ function populateExpeditionPage(username, userId) {
 }
 
 // function to load the expeditions.html subsections
-function loadExpeditions(id, userId) {
+function loadExpeditions(id) {
     if ($('.toggle-content#' + id).is(':hidden')) {
         $('.img-arrow', '#' + id).attr("src", appRoot + "images/down-arrow.png");
     } else {
@@ -412,15 +367,15 @@ function loadExpeditions(id, userId) {
         ($(divId).children().length == 0)) {
         populateExpeditionSubsections(divId);
     } else if ($(divId).children().length == 0) {
-        listExpeditions(divId, userId);
+        listExpeditions(divId);
     }
     $('.toggle-content#' + id).slideToggle('slow');
 }
 
 // retrieve the expeditions for a project and display them on the page
-function listExpeditions(divId, userId) {
+function listExpeditions(divId) {
     var projectId = $(divId).data('projectId');
-    var jqxhr = $.getJSON(biocodeFimsRestRoot + 'users/' + userId + '/projects/' + projectId + '/expeditions/')
+    var jqxhr = $.getJSON(biocodeFimsRestRoot + 'projects/' + projectId + '/expeditions/')
         .done(function (data) {
             var html = '';
             var expandTemplate = '<br>\n<a class="expand-content" id="{expedition}-{section}" href="javascript:void(0);">\n'
@@ -607,230 +562,6 @@ function getProfileEditor(username) {
             profileSubmit('div#listUserProfile');
         });
     });
-}
-
-/* ====== projects.jsp Functions ======= */
-
-// populate the metadata subsection of projects.jsp from REST service
-function populateMetadata(id, projectID) {
-    var jqxhr = populateDivFromService(
-        biocodeFimsRestRoot + 'projects/' + projectID + '/metadata',
-        id,
-        'Unable to load this project\'s metadata from server.'
-    ).done(function () {
-        $("#edit_metadata", id).click(function () {
-            var jqxhr2 = populateDivFromService(
-                biocodeFimsRestRoot + 'projects/' + projectID + '/metadataEditor',
-                id,
-                'Unable to load this project\'s metadata editor.'
-            ).done(function () {
-                $('#metadataSubmit', id).click(function () {
-                    projectMetadataSubmit(projectID, id);
-                });
-            });
-        });
-    });
-    return jqxhr;
-}
-
-// show a confirmation dialog before removing a user from a project
-function confirmRemoveUserDialog(element) {
-    var username = $(element).data('username');
-    var title = "Remove User";
-    var msg = "Are you sure you wish to remove " + username + "?";
-    var buttons = {
-        "Yes": function () {
-            projectRemoveUser(element);
-            $(this).dialog("close");
-        }, "Cancel": function () {
-            $(this).dialog("close");
-        }
-    };
-    dialog(msg, title, buttons);
-}
-
-// populate the users subsection of projects.jsp from REST service
-function populateUsers(id, projectID) {
-    var jqxhr = populateDivFromService(
-        biocodeFimsRestRoot + 'projects/' + projectID + '/users',
-        id,
-        'Unable to load this project\'s users from server.'
-    ).done(function () {
-        $.each($('a#remove_user', id), function (key, e) {
-            $(e).click(function () {
-                confirmRemoveUserDialog(e);
-            });
-        });
-        $.each($('a#edit_profile', id), function (key, e) {
-            $(e).click(function () {
-                var username = $(e).data('username');
-                var divId = 'div#' + $(e).closest('div').attr('id');
-
-                var jqxhr2 = populateDivFromService(
-                    biocodeFimsRestRoot + "users/admin/profile/listEditorAsTable/" + username,
-                    divId,
-                    "error loading profile editor"
-                ).done(function () {
-                    $("#profile_submit", divId).click(function () {
-                        profileSubmit(divId);
-                    })
-                    $("#cancelButton").click(function () {
-                        populateProjectSubsections(divId);
-                    })
-                });
-
-
-            });
-        });
-    });
-    return jqxhr;
-}
-
-// function to populate the subsections of the projects.jsp page. Populates the metadata, expeditions, and users
-// subsections
-function populateProjectSubsections(id) {
-    var projectID = $(id).data('projectId');
-    var jqxhr;
-    if (id.indexOf("metadata") != -1) {
-        // load project metadata table from REST service
-        jqxhr = populateMetadata(id, projectID);
-    } else if (id.indexOf("users") != -1) {
-        // load the project users table from REST service
-        jqxhr = populateUsers(id, projectID);
-    } else {
-        // load the project expeditions table from REST service
-        jqxhr = populateDivFromService(
-            biocodeFimsRestRoot + 'projects/' + projectID + '/admin/expeditions/',
-            id,
-            'Unable to load this project\'s expeditions from server.'
-        ).done(function () {
-            $('#expeditionForm', id).click(function () {
-                expeditionsPublicSubmit(id);
-            });
-        });
-    }
-    return jqxhr;
-}
-
-// function to submit the project's expeditions form. used to update the expedition public attribute.
-function expeditionsPublicSubmit(divId) {
-    var inputs = $('form input[name]', divId);
-    var data = '';
-    inputs.each(function (index, element) {
-        if (element.name == 'projectId') {
-            data += '&projectId=' + element.value;
-            return true;
-        }
-        var expedition = '&' + element.name + '=' + element.checked;
-        data += expedition;
-    });
-    var jqxhr = $.post(biocodeFimsRestRoot + 'expeditions/admin/updateStatus', data.replace('&', '')
-    ).done(function () {
-        populateProjectSubsections(divId);
-    }).fail(function (jqxhr) {
-        $(divId).html(jqxhr.responseText);
-    });
-}
-
-// function to add an existing user to a project or retrieve the create user form.
-function projectUserSubmit(id) {
-    var divId = 'div#' + id + "-users";
-    var projectId = $("input[name='projectId']", divId).val()
-    if ($('select option:selected', divId).val() == 0) {
-        var jqxhr = populateDivFromService(
-            biocodeFimsRestRoot + 'users/admin/createUserForm',
-            divId,
-            'error fetching create user form'
-        ).done(function () {
-            $("input[name=projectId]", divId).val(projectId);
-            $("#createFormButton", divId).click(function () {
-                createUserSubmit(projectId, divId);
-            });
-            $("#createFormCancelButton", divId).click(function () {
-                populateProjectSubsections(divId);
-            });
-        });
-    } else {
-        var jqxhr = $.post(biocodeFimsRestRoot + "projects/" + projectId + "/admin/addUser", $('form', divId).serialize()
-        ).done(function (data) {
-            var jqxhr2 = populateProjectSubsections(divId);
-        }).fail(function (jqxhr) {
-            var jqxhr2 = populateProjectSubsections(divId);
-            $(".error", divId).html($.parseJSON(jqxhr.responseText).usrMessage);
-        });
-    }
-}
-
-// function to submit the create user form.
-function createUserSubmit(projectId, divId) {
-    if ($(".label", "#pwindicator").text() == "weak") {
-        $(".error", divId).html("password too weak");
-    } else {
-        var jqxhr = $.post(biocodeFimsRestRoot + "users/admin/create", $('form', divId).serialize()
-        ).done(function () {
-            populateProjectSubsections(divId);
-        }).fail(function (jqxhr) {
-            $(".error", divId).html($.parseJSON(jqxhr.responseText).usrMessage);
-        });
-    }
-}
-
-// function to remove the user as a member of a project.
-function projectRemoveUser(e) {
-    var userId = $(e).data('userid');
-    var projectId = $(e).closest('table').data('projectid');
-    var divId = 'div#' + $(e).closest('div').attr('id');
-
-    var jqxhr = $.getJSON(biocodeFimsRestRoot + "projects/" + projectId + "/admin/removeUser/" + userId
-    ).done(function (data) {
-        var jqxhr2 = populateProjectSubsections(divId);
-    }).fail(function (jqxhr) {
-        var jqxhr2 = populateProjectSubsections(divId)
-            .done(function () {
-                $(".error", divId).html($.parseJSON(jqxhr.responseText).usrMessage);
-            });
-    });
-}
-
-// function to submit the project metadata editor form
-function projectMetadataSubmit(projectId, divId) {
-    var jqxhr = $.post(biocodeFimsRestRoot + "projects/" + projectId + "/metadata/update", $('form', divId).serialize()
-    ).done(function (data) {
-        populateProjectSubsections(divId);
-    }).fail(function (jqxhr) {
-        $(".error", divId).html($.parseJSON(jqxhr.responseText).usrMessage);
-    });
-}
-
-// function to populate the bcid projects.jsp page
-function populateProjectPage(username) {
-    var jqxhr = listProjects(username, biocodeFimsRestRoot + 'projects/admin/list', false
-    ).done(function () {
-        // attach toggle function to each project
-        $(".expand-content").click(function () {
-            projectToggle(this.id)
-        });
-    });
-}
-
-// function to apply the jquery slideToggle effect.
-function projectToggle(id) {
-    // escape special characters in id field
-    id = id.replace(/([!@#$%^&*()+=\[\]\\';,./{}|":<>?~_-])/g, "\\$1");
-    // store the element value in a field
-    var idElement = $('.toggle-content#' + id);
-    if (idElement.is(':hidden')) {
-        $('.img-arrow', 'a#' + id).attr("src", appRoot + "images/down-arrow.png");
-    } else {
-        $('.img-arrow', 'a#' + id).attr("src", appRoot + "images/right-arrow.png");
-    }
-    // check if we've loaded this section, if not, load from service
-    var divId = 'div#' + id
-    if ((id.indexOf("metadata") != -1 || id.indexOf("users") != -1 || id.indexOf("expeditions") != -1) &&
-        ($(divId).children().length == 0 || $('#submitForm', divId).length !== 0)) {
-        populateProjectSubsections(divId);
-    }
-    $(idElement).slideToggle('slow');
 }
 
 /* ====== templates.html Functions ======= */
@@ -1324,7 +1055,7 @@ function checkNAAN(spreadsheetNaan, naan) {
 }
 
 // function to toggle the projectId and expeditionCode inputs of the validation form
-function validationFormToggle(userId) {
+function validationFormToggle() {
     $("#dataset").change(function () {
         // Clear the resultsContainer
         $("#resultsContainer").empty();
@@ -1391,7 +1122,7 @@ function validationFormToggle(userId) {
         // only get expedition codes if a user is logged in
         if (angular.element(document.body).injector().get('AuthFactory').isAuthenticated) {
             $("#expeditionCode").replaceWith("<p id='expeditionCode'>Loading ... </p>");
-            getExpeditionCodes(userId);
+            getExpeditionCodes();
         }
     });
 }
@@ -1435,9 +1166,9 @@ function updateExpeditionPublicStatus(expeditionList) {
 }
 
 // get the expeditions codes a user owns for a project
-function getExpeditionCodes(userId) {
+function getExpeditionCodes() {
     var projectID = $("#projects").val();
-    $.getJSON(biocodeFimsRestRoot + "users/" + userId + "/projects/" + projectID + "/expeditions/")
+    $.getJSON(biocodeFimsRestRoot + "projects/" + projectID + "/expeditions/")
         .done(function (data) {
             var select = "<select name='expeditionCode' id='expeditionCode' style='max-width:199px'>" +
                 "<option value='0'>Create New Expedition</option>";

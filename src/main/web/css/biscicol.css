@@ -428,3 +428,64 @@ td.hideOverflow {
     overflow: hidden;
     max-width: 200px;
 }
+
+.sub-accordion  .list-group-item {
+    padding-left: 40px;
+}
+
+.panel-login {
+    border-color: #ccc;
+    -webkit-box-shadow: 0px 2px 3px 0px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0px 2px 3px 0px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 2px 3px 0px rgba(0, 0, 0, 0.2);
+    padding-top: 20px;
+    margin-top: 30px; }
+.panel-login .panel-heading {
+    color: #00415d;
+    background-color: #fff;
+    border-color: #fff;
+    text-align: center; }
+.panel-login .panel-heading a {
+    text-decoration: none;
+    color: #666;
+    font-weight: bold;
+    font-size: 15px;
+    -webkit-transition: all 0.1s linear;
+    -moz-transition: all 0.1s linear;
+    transition: all 0.1s linear; }
+.panel-login .panel-heading a .active {
+    color: #029f5b;
+    font-size: 18px; }
+.panel-login .panel-heading hr {
+    margin-top: 10px;
+    margin-bottom: 0px;
+    clear: both;
+    border: 0;
+    height: 1px;
+    background-image: -webkit-linear-gradient(left, transparent, rgba(0, 0, 0, 0.15), transparent);
+    background-image: -moz-linear-gradient(left, transparent, rgba(0, 0, 0, 0.15), transparent);
+    background-image: -ms-linear-gradient(left, transparent, rgba(0, 0, 0, 0.15), transparent);
+    background-image: -o-linear-gradient(left, transparent, rgba(0, 0, 0, 0.15), transparent); }
+
+.btn-login {
+    text-transform: uppercase; }
+
+.forgot-password {
+    text-decoration: underline;
+    color: #888; }
+.forgot-password:hover, .forgot-password:focus {
+    text-decoration: underline;
+    color: #666; }
+
+.pw-label, .pw-weak .label, .pw-good .label, .pw-strong .label {
+    font-size: 100%;
+    display: block; }
+
+.pw-weak .label {
+    color: #b94a48; }
+
+.pw-good .label {
+    color: #3c761e; }
+
+.pw-strong .label {
+    color: #3c761e; }

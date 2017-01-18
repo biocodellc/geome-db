@@ -33,7 +33,7 @@ angular.module('biscicolApp')
             })
             .state('resetPass', {
                 url: "/resetPass",
-                templateUrl: "app/components/users/resetPass.jsp",
+                templateUrl: "app/components/users/resetPass.html",
                 controller: "ResetPassCtrl as vm"
             })
             .state('reset', {

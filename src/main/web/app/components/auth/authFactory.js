@@ -10,10 +10,20 @@ angular.module('fims.auth')
             logout: logout,
             refreshAccessToken: refreshAccessToken,
             isTokenExpired: isTokenExpired,
-            getAccessToken: getAccessToken
+            getAccessToken: getAccessToken,
+            sendResetPasswordToken: sendResetPassswordToken,
+            resetPassword: resetPassword
         };
 
         return authFactory;
+
+        function resetPassword(password, resetToken) {
+            return $http.post(REST_ROOT + "users/resetPassword", {password: password, resetToken: resetToken});
+        }
+
+        function sendResetPassswordToken(username) {
+            return $http.get(REST_ROOT + "users/" + username + "/sendResetToken");
+        }
 
         function checkAuthenticated() {
             return !isTokenExpired() && !angular.isUndefined(getAccessToken());
@@ -31,7 +41,7 @@ angular.module('fims.auth')
 
             return false;
         }
-        
+
         function getAccessToken() {
             var biscicolSessionStorage = JSON.parse($window.sessionStorage.biscicol);
             return biscicolSessionStorage.accessToken;

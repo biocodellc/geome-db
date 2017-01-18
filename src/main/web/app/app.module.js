@@ -10,29 +10,31 @@ var app = angular.module('biscicolApp', [
     'fims.users',
     'fims.lookup',
     'fims.creator',
-    'utils.autofocus'
+    'utils.autofocus',
+    'ui.bootstrap.showErrors',
+    'angularSpinner'
 ]);
 
 var currentUser = {};
-app.run(['$http', 'UserFactory', function($http, UserFactory) {
+app.run(['$http', 'UserFactory', function ($http, UserFactory) {
     UserFactory.setUser(currentUser);
-    $http.defaults.headers.common = { 'Biscicol-App': 'Biscicol-Fims' };
+    $http.defaults.headers.common = {'Biscicol-App': 'Biscicol-Fims'};
 }]);
 
-angular.element(document).ready(function() {
+angular.element(document).ready(function () {
     if (!angular.isDefined(window.sessionStorage.biscicol)) {
         // initialize the biscicol sessionStorage object to not get undefined errors later when
         // JSON.parse($window.sessionStorage.biscicol) is called
         window.sessionStorage.biscicol = JSON.stringify({});
     }
-    
+
     var biscicolSessionStorage = JSON.parse(window.sessionStorage.biscicol);
     var accessToken = biscicolSessionStorage.accessToken;
     if (!isTokenExpired() && accessToken) {
         $.get('/biocode-fims/rest/users/profile?access_token=' + accessToken, function (data) {
             currentUser = data;
             angular.bootstrap(document, ['biscicolApp']);
-        }).fail(function() {
+        }).fail(function () {
             angular.bootstrap(document, ['biscicolApp']);
         });
     } else {
@@ -42,9 +44,9 @@ angular.element(document).ready(function() {
 
 
 app.controller('biscicolCtrl', ['$rootScope', '$scope', '$state', '$location', 'AuthFactory',
-    function($rootScope, $scope, $state, $location, AuthFactory) {
+    function ($rootScope, $scope, $state, $location, AuthFactory) {
         $scope.error = $location.search()['error'];
-        
+
         $rootScope.$on('$stateChangeStart', function (event, next) {
             if (next.loginRequired && !AuthFactory.isAuthenticated) {
                 event.preventDefault();
@@ -54,7 +56,7 @@ app.controller('biscicolCtrl', ['$rootScope', '$scope', '$state', '$location', '
                 $state.go('login');
             }
         });
-}]);
+    }]);
 
 app.controller('NavCtrl', ['$rootScope', '$scope', '$location', '$state', 'AuthFactory', 'UserFactory',
     function ($rootScope, $scope, $location, $state, AuthFactory, UserFactory) {
@@ -69,23 +71,28 @@ app.controller('NavCtrl', ['$rootScope', '$scope', '$location', '$state', 'AuthF
             $rootScope.savedState = $state.current.name;
             $rootScope.savedStateParams = $state.params;
         }
+
         function logout() {
             AuthFactory.logout();
             UserFactory.removeUser();
         }
 
         $scope.$watch(
-            function(){ return AuthFactory.isAuthenticated},
+            function () {
+                return AuthFactory.isAuthenticated
+            },
 
-            function(newVal) {
+            function (newVal) {
                 vm.isAuthenticated = newVal;
             }
         )
 
         $scope.$watch(
-            function(){ return UserFactory.isAdmin},
+            function () {
+                return UserFactory.isAdmin
+            },
 
-            function(newVal) {
+            function (newVal) {
                 vm.isAdmin = newVal;
             }
         )
@@ -93,14 +100,14 @@ app.controller('NavCtrl', ['$rootScope', '$scope', '$location', '$state', 'AuthF
 
 // register an interceptor to convert objects to a form-data like string for $http data attributes and
 // set the appropriate header
-app.factory('postInterceptor', ['$injector', '$httpParamSerializerJQLike',
-    function ($injector, $httpParamSerializerJQLike) {
+app.factory('postInterceptor', [
+    function () {
         return {
             request: function (config) {
-                if (config.method == "POST") {
+                if (config.method == "POST" && !config.keepJson) {
                     config.headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
                     if (config.data instanceof Object)
-                        config.data = $httpParamSerializerJQLike(config.data);
+                        config.data = config.paramSerializer(config.data);
                 }
                 return config;
             }
