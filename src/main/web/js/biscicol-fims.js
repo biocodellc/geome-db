@@ -375,7 +375,7 @@ function loadExpeditions(id) {
 // retrieve the expeditions for a project and display them on the page
 function listExpeditions(divId) {
     var projectId = $(divId).data('projectId');
-    var jqxhr = $.getJSON(biocodeFimsRestRoot + 'projects/' + projectId + '/expeditions/')
+    var jqxhr = $.getJSON(biocodeFimsRestRoot + 'projects/' + projectId + '/expeditions?user&includePrivate=true')
         .done(function (data) {
             var html = '';
             var expandTemplate = '<br>\n<a class="expand-content" id="{expedition}-{section}" href="javascript:void(0);">\n'
@@ -983,7 +983,7 @@ function validatorSubmit() {
 var errCnt = 0;
 function loopStatus(promise) {
     console.log("errorCnt: " + errCnt);
-    if (errorCnt < 5) {
+    if (errCnt < 5) {
         setTimeout(function () {
             pollStatus()
                 .done(function (data) {
@@ -1168,7 +1168,7 @@ function updateExpeditionPublicStatus(expeditionList) {
 // get the expeditions codes a user owns for a project
 function getExpeditionCodes() {
     var projectID = $("#projects").val();
-    $.getJSON(biocodeFimsRestRoot + "projects/" + projectID + "/expeditions/")
+    $.getJSON(biocodeFimsRestRoot + "projects/" + projectID + "/expeditions?user&includePrivate=true")
         .done(function (data) {
             var select = "<select name='expeditionCode' id='expeditionCode' style='max-width:199px'>" +
                 "<option value='0'>Create New Expedition</option>";
