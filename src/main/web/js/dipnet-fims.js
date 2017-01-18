@@ -274,51 +274,6 @@ function getProjectID() {
     return $('#project').val();
 }
 
-/* ====== reset.jsp Functions ======= */
-
-function resetSubmit() {
-    var jqxhr = $.get(RestRoot + "users/" + $("#username").val() + "/sendResetToken")
-        .done(function(data) {
-            if (data.success) {
-                var buttons = {
-                    "Ok": function() {
-                        window.location.replace(appRoot);
-                        $(this).dialog("close");
-                    }
-                }
-                dialog(data.success, "Password Reset Sent", buttons);
-                return;
-            } else {
-                failError(null);
-            }
-        }).fail(function(jqxhr) {
-            failError(jqxhr);
-        });
-}
-
-/* ====== resetPass.jsp Functions ======= */
-
-// function to submit the reset password form
-function resetPassSubmit() {
-    var jqxhr = $.post(RestRoot + "users/resetPassword/", $("#resetForm").serialize())
-        .done(function(data) {
-            if (data.success) {
-                var buttons = {
-                    "Ok": function() {
-                        window.location.replace(appRoot);
-                        $(this).dialog("close");
-                    }
-                }
-                dialog(data.success, "Password Reset", buttons);
-                return;
-            } else {
-                failError(null);
-            }
-        }).fail(function(jqxhr) {
-            failError(jqxhr);
-        });
-}
-
 /* ====== templates.html Functions ======= */
 
 function showTemplateInfo() {

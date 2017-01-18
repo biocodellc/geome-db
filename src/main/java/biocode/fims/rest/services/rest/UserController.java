@@ -42,7 +42,7 @@ public class UserController extends FimsAbstractUserController {
             throw new BadRequestException("User not found.", "username is null");
         }
         User user = userService.generateResetToken(username);
-        if (user != null) {
+        if (user != null && userService.userBelongsToInstanceProject(user)) {
 
             String resetTokenURL = appRoot + "resetPass?resetToken=" +
                     user.getPasswordResetToken();
