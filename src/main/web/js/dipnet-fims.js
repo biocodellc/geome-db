@@ -274,6 +274,73 @@ function getProjectID() {
     return $('#project').val();
 }
 
+/* ====== profile.jsp Functions ======= */
+
+// function to submit the user's profile editor form
+function profileSubmit(divId) {
+    if ($("input.pwcheck", divId).val().length > 0 && $(".label", "#pwindicator").text() == "weak") {
+        $(".error", divId).html("password too weak");
+    } else if ($("input[name='newPassword']").val().length > 0 &&
+        ($("input[name='oldPassword']").length > 0 && $("input[name='oldPassword']").val().length == 0)) {
+        $(".error", divId).html("Old Password field required to change your Password");
+    } else {
+        var postURL = RestRoot + "users/profile/update/";
+        var return_to = getQueryParam("return_to");
+        if (return_to != null) {
+            postURL += "?return_to=" + encodeURIComponent(return_to);
+        }
+        var jqxhr = $.post(postURL, $("form", divId).serialize(), 'json'
+        ).done(function (data) {
+            // if adminAccess == true, an admin updated the user's password, so no need to redirect
+            if (data.adminAccess == true) {
+                populateProjectSubsections(divId);
+            } else {
+                if (data.returnTo) {
+                    $(location).attr("href", data.returnTo);
+                } else {
+                    var jqxhr2 = populateDivFromService(
+                        RestRoot + "users/profile/listAsTable",
+                        "listUserProfile",
+                        "Unable to load this user's profile from the Server")
+                        .done(function () {
+                            $("a", "#profile").click(function () {
+                                getProfileEditor();
+                            });
+                        });
+                }
+            }
+        }).fail(function (jqxhr) {
+            var json = $.parseJSON(jqxhr.responseText);
+            $(".error", divId).html(json.usrMessage);
+        });
+    }
+}
+
+// get profile editor
+function getProfileEditor(username) {
+    var jqxhr = populateDivFromService(
+        RestRoot + "users/profile/listEditorAsTable",
+        "listUserProfile",
+        "Unable to load this user's profile editor from the Server"
+    ).done(function () {
+        $(".error").text(getQueryParam("error"));
+        $("#cancelButton").click(function () {
+            var jqxhr2 = populateDivFromService(
+                RestRoot + "users/profile/listAsTable",
+                "listUserProfile",
+                "Unable to load this user's profile from the Server")
+                .done(function () {
+                    $("a", "#profile").click(function () {
+                        getProfileEditor();
+                    });
+                });
+        });
+        $("#profile_submit").click(function () {
+            profileSubmit('div#listUserProfile');
+        });
+    });
+}
+
 /* ====== templates.html Functions ======= */
 
 function showTemplateInfo() {
