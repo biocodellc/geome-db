@@ -11,7 +11,7 @@
             </thead>
 
             <tbody>
-            <tr ng-repeat="expedition in vm.displayResults">
+            <tr ng-repeat="expedition in vm.displayResults track by expedition.expeditionCode" ng-click="vm.downloadCsv(expedition.expeditionCode)">
                 <td>{{ expedition.expeditionCode}}</td>
                 <td>{{ expedition.resourceCount}}</td>
                 <td>{{ expedition.fastaSequenceCount}}</td>

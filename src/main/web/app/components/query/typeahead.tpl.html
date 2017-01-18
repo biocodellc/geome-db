@@ -23,7 +23,7 @@
                    class="form-control"/>
         </div>
         <ul class="list-unstyled">
-            <li ng-repeat="expedition in filteredExpeditions | orderBy: expedition track by $index"
+            <li ng-repeat="expedition in filteredExpeditions | orderBy: expedition track by expedition"
                 typeahead-item="expedition"
                 class="list-group-item">{{ expedition }}
             </li>

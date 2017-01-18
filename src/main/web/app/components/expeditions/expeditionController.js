@@ -1,7 +1,7 @@
 angular.module('fims.expeditions')
 
-.controller('ExpeditionCtrl', ['$http', 'UserFactory', '$scope', 'LoadingModalFactory', 'FailModalFactory', 'REST_ROOT',
-    function ($http, UserFactory, $scope, LoadingModalFactory, FailModalFactory, REST_ROOT) {
+.controller('ExpeditionCtrl', ['$http', 'UserFactory', '$scope', 'LoadingModalFactory', 'FailModalFactory', 'AuthFactory', 'REST_ROOT',
+    function ($http, UserFactory, $scope, LoadingModalFactory, FailModalFactory, AuthFactory, REST_ROOT) {
         var vm = this;
         vm.totalItems = null;
         vm.itemsPerPage = 100;
@@ -9,7 +9,12 @@ angular.module('fims.expeditions')
         vm.pageChanged = pageChanged;
         vm.results = [];
         vm.displayResults = [];
+        vm.downloadCsv = downloadCsv;
         fetchPage();
+
+        function downloadCsv(expeditionCode) {
+            download(REST_ROOT + "projects/query/csv?access_token=" + AuthFactory.getAccessToken(), {expeditions:[expeditionCode]});
+        }
 
         function pageChanged() {
             vm.displayResults = vm.results.slice((vm.currentPage - 1) * vm.itemsPerPage, vm.currentPage * vm.itemsPerPage);
