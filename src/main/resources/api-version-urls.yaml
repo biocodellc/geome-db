@@ -32,8 +32,3 @@ versionMap:
       currentUrl: projects
       defaultQueryParams:
         admin: true
-  1_1:
-    - versionUrl: projects/admin/list(/)?
-      currentUrl: projects
-      defaultQueryParams:
-        admin: true
