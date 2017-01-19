@@ -683,6 +683,13 @@ td.hideOverflow {
     margin-bottom: 15px;
 }
 
+/** Project Manager rules */
+
+.sub-accordion  .list-group-item {
+    padding-left: 40px;
+}
+
+/** login page rules */
 .panel-login {
     border-color: #ccc;
     -webkit-box-shadow: 0px 2px 3px 0px rgba(0, 0, 0, 0.2);
