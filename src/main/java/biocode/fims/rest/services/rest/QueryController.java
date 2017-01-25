@@ -369,6 +369,7 @@ public class QueryController extends FimsService {
         }
 
         List<ElasticSearchFilterField> filterFields = DipnetQueryUtils.getAvailableFilters(getMapping());
+        filterFields.add(DipnetQueryUtils.get_AllFilter());
 
         for (Map.Entry<String, List<String>> entry : form.entrySet()) {
 

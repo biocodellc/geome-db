@@ -60,7 +60,6 @@ public class DipnetQueryUtils {
         }
 
         filters.addAll(getFastaFilters(mapping));
-        filters.add(get_AllFilter());
         return filters;
     }
 
@@ -94,7 +93,7 @@ public class DipnetQueryUtils {
      *
      * @return
      */
-    private static ElasticSearchFilterField get_AllFilter() {
+    public static ElasticSearchFilterField get_AllFilter() {
         return new ElasticSearchFilterField("_all", null, null);
     }
 
