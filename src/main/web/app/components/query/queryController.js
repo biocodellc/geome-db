@@ -15,6 +15,7 @@ angular.module('fims.query')
             vm.expeditions = [];
             vm.selectedExpeditions = [];
             vm.queryResults = null;
+            vm.tableColumns = ["principalInvestigator", "materialSampleID", "locality", "decimalLatitude", "decimalLongitude", "genus", "species"];
             vm.queryInfo = {
                 size: 0,
                 totalElements: 0
@@ -99,7 +100,7 @@ angular.module('fims.query')
             }
 
             function getExpeditions() {
-                ExpeditionFactory.getExpeditionsForUser(false)
+                ExpeditionFactory.getExpeditions()
                     .then(function (response) {
                         vm.expeditions = [];
                         angular.forEach(response.data, function (expedition) {
@@ -121,7 +122,7 @@ angular.module('fims.query')
             }
 
             function transformData(data) {
-                var transformedData = {keys: [], data: []};
+                var transformedData = [];
                 if (data) {
                     vm.queryInfo.size = data.size;
 
@@ -129,14 +130,13 @@ angular.module('fims.query')
                     vm.queryInfo.totalElements = data.totalElements > 10000 ? 10000 : data.totalElements;
 
                     if (data.content.length > 0) {
-                        transformedData.keys = Object.keys(data.content[0]);
 
                         angular.forEach(data.content, function (resource) {
                             var resourceData = [];
-                            angular.forEach(transformedData.keys, function (key) {
+                            angular.forEach(vm.tableColumns, function (key) {
                                 resourceData.push(resource[key]);
                             });
-                            transformedData.data.push(resourceData);
+                            transformedData.push(resourceData);
                         });
                     }
                 } else {

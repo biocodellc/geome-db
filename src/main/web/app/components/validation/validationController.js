@@ -385,6 +385,11 @@ angular.module('fims.validation')
                 ExpeditionFactory.getExpeditionsForUser(true)
                     .then(function (response) {
                         angular.extend(vm.expeditions, response.data);
+                        if (vm.expeditions.length == 0) {
+                            vm.newExpedition = true;
+                        } else {
+                            vm.newExpedition = false;
+                        }
                     }, function (response, status) {
                         FailModalFactory.open("Failed to load datasets", response.data.usrMessage);
                     })
