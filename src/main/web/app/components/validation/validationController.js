@@ -108,7 +108,7 @@ angular.module('fims.validation')
                 }
                 if (vm.dataTypes.fasta) {
                     data.fastaFiles = vm.fastaFiles;
-                    angular.forEach(vm.fastaData, function(data, index) {
+                    angular.forEach(vm.fastaData, function (data, index) {
                         data.filename = vm.fastaFiles[index].name;
                     });
                     data.fastaData = Upload.jsonBlob(vm.fastaData);
@@ -126,7 +126,7 @@ angular.module('fims.validation')
 
                 if (vm.newExpedition) {
                     checkExpeditionExists()
-                        .finally(function() {
+                        .finally(function () {
                             if (!checkCoordinatesVerified() || vm.uploadForm.$invalid) {
                                 return;
                             }
@@ -224,7 +224,8 @@ angular.module('fims.validation')
                 openResultsModal();
                 return Upload.upload({
                     url: REST_ROOT + "validate",
-                    data: data
+                    data: data,
+                    arrayKey: ''
                 }).then(
                     function (response) {
                         return response;
@@ -266,7 +267,9 @@ angular.module('fims.validation')
 
                 modalInstance.result
                     .finally(function () {
-                            vm.activeTab = 2; // index 2 is the results tab
+                            if (!ResultsDataFactory.error) {
+                                vm.activeTab = 2; // index 2 is the results tab
+                            }
                             vm.displayResults = true;
                             ResultsDataFactory.showStatus = false;
                             ResultsDataFactory.showValidationMessages = true;

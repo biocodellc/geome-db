@@ -89,17 +89,9 @@ public class ValidateController extends FimsService {
                              @FormDataParam("expeditionCode") String expeditionCode,
                              @FormDataParam("fimsMetadata") FormDataBodyPart fimsMetadata,
                              @FormDataParam("fastaData") List<FastaData> fastaDataList,
+                             @FormDataParam("fastaFiles") List<FormDataBodyPart> fastaFiles,
                              @FormDataParam("fastqFilenames") FormDataBodyPart fastqFilenames,
                              final FormDataMultiPart multiPart) {
-        // Since angularJS sends arrays as inputName[index] we can't use @FormDataParam annotation to get the list
-        List<FormDataBodyPart> fastaFiles = multiPart.getFields()
-                .entrySet()
-                .stream()
-                .filter(e -> e.getKey().startsWith("fastaFiles"))
-                .map(Map.Entry::getValue)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-
         Map<String, Map<String, Object>> fmProps = new HashMap<>();
         JSONObject returnValue = new JSONObject();
         boolean closeProcess = true;
