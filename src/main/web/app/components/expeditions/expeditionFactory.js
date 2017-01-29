@@ -8,6 +8,7 @@ angular.module('fims.expeditions')
                 getExpedition: getExpedition,
                 getExpeditionsForAdmin: getExpeditionsForAdmin,
                 updateExpeditions: updateExpeditions,
+                updateExpedition: updateExpedition,
                 createExpedition: createExpedition
             };
 
@@ -41,6 +42,15 @@ angular.module('fims.expeditions')
                     method: 'PUT',
                     url: REST_ROOT + 'projects/' + projectId + "/expeditions",
                     data: expeditions,
+                    keepJson: true
+                });
+            }
+
+            function updateExpedition(projectId, expedition) {
+                return $http({
+                    method: 'PUT',
+                    url: REST_ROOT + 'projects/' + projectId + "/expeditions/" + expedition.expeditionCode,
+                    data: expedition,
                     keepJson: true
                 });
             }

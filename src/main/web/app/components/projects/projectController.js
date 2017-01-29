@@ -41,6 +41,7 @@ angular.module('fims.projects')
             vm.members = [];
             vm.updateProject = updateProject;
             vm.setProject = setProject;
+            vm.editExpedition = editExpedition;
             vm.updateExpeditions = updateExpeditions;
             vm.updateModifiedExpeditions = updateModifiedExpeditions;
             vm.removeMember = removeMember;
@@ -129,6 +130,23 @@ angular.module('fims.projects')
                 vm.project = project;
                 getExpeditions();
                 getMembers();
+            }
+
+            function editExpedition(expedition) {
+                var modalInstance = $uibModal.open({
+                    templateUrl: 'app/components/expeditions/editExpeditionModal.tpl.html',
+                    size: 'md',
+                    controller: 'EditExpeditionModalCtrl',
+                    controllerAs: 'vm',
+                    windowClass: 'app-modal-window',
+                    backdrop: 'static',
+                    resolve: {
+                        expedition: function () {
+                            return expedition;
+                        }
+                    }
+                });
+
             }
 
             function updateExpeditions() {
