@@ -6,7 +6,7 @@ import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
 import biocode.fims.fasta.FastaSequenceFields;
-import biocode.fims.fileManagers.fasta.FastaFileManager;
+import biocode.fims.fasta.fileManagers.FastaFileManager;
 import biocode.fims.query.JsonFieldTransform;
 import com.fasterxml.jackson.core.JsonPointer;
 

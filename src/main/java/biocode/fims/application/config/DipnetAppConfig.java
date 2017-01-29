@@ -15,7 +15,6 @@ import org.springframework.core.env.Environment;
  * Configuration class for and Dipnet-Fims application. Including cli and webapps
  */
 @Configuration
-@ComponentScan(basePackages = {"biocode.fims.dipnet.services"})
 @Import({FimsAppConfig.class, ElasticSearchAppConfig.class})
 @ImportResource({
         "classpath:dipnet-data-access-config.xml",

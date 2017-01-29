@@ -6,7 +6,7 @@ import biocode.fims.digester.Mapping;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
-import biocode.fims.fileManagers.fasta.FastaFileManager;
+import biocode.fims.fasta.fileManagers.FastaFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fuseki.fileManagers.fimsMetadata.FusekiFimsMetadataPersistenceManager;
 import biocode.fims.run.ProcessController;
@@ -16,11 +16,12 @@ import biocode.fims.service.ProjectService;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.cli.*;
 import org.apache.commons.collections.MapUtils;
 import org.elasticsearch.client.Client;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -94,20 +95,20 @@ public class DipnetFusekiToESMigrator {
 
                 System.out.println("marker: " + marker);
 
-                JSONArray dataset = fimsMetadataFileManager.index();
+                ArrayNode dataset = fimsMetadataFileManager.index();
 
-                for (Object o : dataset) {
-                    JSONObject resource = (JSONObject) o;
+                for (JsonNode node: dataset) {
+                    ObjectNode resource = (ObjectNode) node;
 
-                    String sequence = (String) resource.remove("urn:sequence");
+                    String sequence = resource.remove("urn:sequence").asText();
 
                     if (sequence != null) {
-                        JSONObject fastaSequence = new JSONObject();
+                        ObjectNode fastaSequence = dataset.objectNode();
                         fastaSequence.put("urn:sequence", sequence);
                         fastaSequence.put("urn:marker", marker);
-                        JSONArray fastaSequences = new JSONArray();
+
+                        ArrayNode fastaSequences = resource.putArray(FastaFileManager.ENTITY_CONCEPT_ALIAS);
                         fastaSequences.add(fastaSequence);
-                        resource.put(FastaFileManager.ENTITY_CONCEPT_ALIAS, fastaSequences);
                     }
                 }
 

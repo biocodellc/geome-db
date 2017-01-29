@@ -1,12 +1,13 @@
 package biocode.fims.application.config;
 
 import biocode.fims.authorizers.QueryAuthorizer;
-import biocode.fims.dipnet.services.DipnetExpeditionService;
+import biocode.fims.fastq.fileManagers.ESFastqPersistenceManager;
+import biocode.fims.fastq.fileManagers.FastqPersistenceManager;
 import biocode.fims.fileManagers.AuxilaryFileManager;
-import biocode.fims.fileManagers.fasta.ESFastaPersistenceManager;
-import biocode.fims.fileManagers.fasta.FastaFileManager;
-import biocode.fims.fileManagers.fasta.FastaPersistenceManager;
-import biocode.fims.fileManagers.fastq.FastqFileManager;
+import biocode.fims.fasta.fileManagers.ESFastaPersistenceManager;
+import biocode.fims.fasta.fileManagers.FastaFileManager;
+import biocode.fims.fasta.fileManagers.FastaPersistenceManager;
+import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
@@ -25,7 +26,6 @@ public class DipnetWebAppConfig {
 
     @Autowired DipnetAppConfig dipnetAppConfig;
     @Autowired FimsAppConfig fimsAppConfig;
-    @Autowired DipnetExpeditionService dipnetExpeditionService;
 
     @Bean
     @Scope("prototype")
@@ -38,7 +38,8 @@ public class DipnetWebAppConfig {
     @Bean
     @Scope("prototype")
     public FastqFileManager fastqFileManager() {
-        return new FastqFileManager();
+        FastqPersistenceManager persistenceManager = new ESFastqPersistenceManager(dipnetAppConfig.esClient);
+        return new FastqFileManager(persistenceManager);
     }
 
     @Bean

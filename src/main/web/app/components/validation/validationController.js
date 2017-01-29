@@ -50,6 +50,7 @@ angular.module('fims.validation')
 
             function removeFastaData() {
                 vm.fastaCnt.pop();
+                vm.fastaFiles.pop();
             }
 
             function addFastaData() {
@@ -60,17 +61,7 @@ angular.module('fims.validation')
                 if (latestExpeditionCode == null) {
                     return;
                 }
-                $window.location = REST_ROOT + "expeditions/" + getExpeditionId() + "/sra/files";
-            }
-
-            function getExpeditionId() {
-                var expeditionId;
-                vm.expeditions.some(function (expedition) {
-                    if (expedition.expeditionCode == latestExpeditionCode) {
-                        expeditionId = expedition.expeditionId;
-                    }
-                });
-                return expeditionId;
+                $window.location = REST_ROOT + "projects/" + PROJECT_ID + "/expeditions/" + latestExpeditionCode + "/generateSraFiles";
             }
 
             function checkCoordinatesVerified() {
