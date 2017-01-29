@@ -39,7 +39,8 @@ public class DipnetWebAppConfig {
     @Scope("prototype")
     public FastqFileManager fastqFileManager() {
         FastqPersistenceManager persistenceManager = new ESFastqPersistenceManager(dipnetAppConfig.esClient);
-        return new FastqFileManager(persistenceManager);
+        return new FastqFileManager(persistenceManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService,
+                fimsAppConfig.settingsManager);
     }
 
     @Bean
