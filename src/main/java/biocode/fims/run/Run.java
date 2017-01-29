@@ -14,14 +14,13 @@ import biocode.fims.service.UserService;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
+import com.google.common.collect.Lists;
 import com.hp.hpl.jena.util.FileUtils;
 import org.apache.commons.cli.*;
-import org.json.simple.JSONObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -123,8 +122,7 @@ public class Run {
             );
 
         }
-        JSONObject resource = (JSONObject) FimsMetadataFileManager.getDataset().get(0);
-        t.run(processController.getValidation().getSqliteFile(), new ArrayList<String>(resource.keySet()));
+        t.run(processController.getValidation().getSqliteFile(), Lists.newArrayList(FimsMetadataFileManager.getDataset().get(0).fieldNames()));
         FimsPrinter.out.println("\ttriple output file = " + t.getTripleOutputFile());
         return t.getTripleOutputFile();
     }

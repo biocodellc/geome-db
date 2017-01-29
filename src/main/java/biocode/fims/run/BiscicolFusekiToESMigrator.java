@@ -15,10 +15,10 @@ import biocode.fims.service.ProjectService;
 import biocode.fims.settings.FimsPrinter;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.cli.*;
 import org.apache.commons.collections.MapUtils;
 import org.elasticsearch.client.Client;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
@@ -122,7 +122,7 @@ public class BiscicolFusekiToESMigrator {
 
                 System.out.println("updating expedition: " + expedition.getExpeditionCode());
 
-                JSONArray dataset = fimsMetadataFileManager.index();
+                ArrayNode dataset = fimsMetadataFileManager.index();
 
                 System.out.println("\nindexing " + dataset.size() + " resources ....\n");
 

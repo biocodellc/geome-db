@@ -73,8 +73,8 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
             data.addObject().set("row", row);
         }
 
-        v1_0Response.put("data", data);
-        v1_0Response.put("header", headers);
+        v1_0Response.set("data", data);
+        v1_0Response.set("header", headers);
 
 
         return Response.fromResponse(response).entity(v1_0Response).build();
