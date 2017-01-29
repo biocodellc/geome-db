@@ -1,25 +1,43 @@
 <div class="row">
     <h3 class="page-header">Expedition Data</h3>
-    <p class="text-center">In this system we refer to each dataset as an “Expedition” each of which includes the metadata and sequences
+    <p class="text-center">In this system we refer to each dataset as an “Expedition” each of which includes the
+        metadata and sequences
         uploaded from a single dataset.</p>
 
-        <table class="table table-hover table-condensed text-center" ng-show="vm.displayResults.length > 0">
-            <thead>
+    <table class="table table-hover table-condensed text-center" ng-show="vm.displayResults.length > 0">
+        <thead>
             <th>Expedition Title</th>
-            <th># of samples</th>
-            <th># of sequences</th>
-            </thead>
+            <th>Samples</th>
+            <th>Fasta Sequences</th>
+            <th>Fastq Metadata</th>
+            <th></th>
+        </thead>
 
-            <tbody>
-            <tr ng-repeat="expedition in vm.displayResults track by expedition.expeditionCode" ng-click="vm.downloadCsv(expedition.expeditionCode)">
+        <tbody>
+            <tr ng-repeat="expedition in vm.displayResults track by expedition.expeditionCode">
                 <td>{{ expedition.expeditionCode}}</td>
                 <td>{{ expedition.resourceCount}}</td>
                 <td>{{ expedition.fastaSequenceCount}}</td>
+                <td>{{ expedition.fastqMetadataCount}}</td>
+                <td>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary btn-xs dropdown-toggle"
+                                data-toggle="dropdown">Download <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" ng-click="vm.downloadCsv(expedition.expeditionCode)">CSV</a></li>
+                            <li><a href="#" ng-show="expedition.fastaSequenceCount > 0"
+                                   ng-click="vm.downloadFasta(expedition.expeditionCode)">Fasta</a></li>
+                            <li><a href="#" ng-show="expedition.fastqMetadataCount > 0"
+                                   ng-click="vm.downloadFastq(expedition.expeditionCode)">Fastq</a></li>
+                        </ul>
+                    </div>
+                </td>
             </tr>
-            </tbody>
-        </table>
+        </tbody>
+    </table>
 
-        <uib-pagination total-items="vm.totalItems" ng-model="vm.currentPage" ng-change="vm.pageChanged()"
-                        items-per-page="vm.itemsPerPage"></uib-pagination>
+    <uib-pagination total-items="vm.totalItems" ng-model="vm.currentPage" ng-change="vm.pageChanged()"
+                    items-per-page="vm.itemsPerPage"></uib-pagination>
 
 </div>

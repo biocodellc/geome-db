@@ -8,6 +8,7 @@ import biocode.fims.dipnet.sra.DipnetBioSampleMapper;
 import biocode.fims.dipnet.sra.DipnetSraMetadataMapper;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
+import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.fastq.sra.BioSampleAttributesGenerator;
 import biocode.fims.fastq.sra.BioSampleMapper;
 import biocode.fims.fastq.sra.SraMetadataGenerator;
@@ -27,10 +28,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.metrics.valuecount.InternalValueCount;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -477,7 +481,7 @@ public class ProjectController extends FimsAbstractProjectsController {
      */
     @GET
     @Authenticated
-    @Path("/{projectId}/expeditions/datasets/latest")
+    @Path("/{projectId}/expeditions/stats")
     @Produces({MediaType.APPLICATION_JSON})
     public Response listExpeditionsWithLatestDatasets(@PathParam("projectId") Integer projectId) {
         // TODO using terms aggregation may not be accurate, since documents are stored across shards
@@ -489,6 +493,10 @@ public class ProjectController extends FimsAbstractProjectsController {
                 .subAggregation(
                         AggregationBuilders.nested("fastaSequenceCount", "fastaSequence")
                 )
+                .subAggregation(
+                        AggregationBuilders.filter("fastqMetadataCount",
+                                QueryBuilders.existsQuery(FastqFileManager.CONCEPT_ALIAS))
+                )
                 .order(Terms.Order.term(true))
                 .size(1000);
 
@@ -498,13 +506,14 @@ public class ProjectController extends FimsAbstractProjectsController {
                 .addAggregation(aggsBuilder).get();
 
         Terms terms = response.getAggregations().get("expeditions");
-        List<JSONObject> buckets = new ArrayList<>();
+        List<ObjectNode> buckets = new ArrayList<>();
 
         for (Terms.Bucket bucket : terms.getBuckets()) {
-            JSONObject b = new JSONObject();
+            ObjectNode b = new SpringObjectMapper().createObjectNode();
             b.put("resourceCount", bucket.getDocCount());
-            b.put("expeditionCode", bucket.getKey());
+            b.put("expeditionCode", String.valueOf(bucket.getKey()));
             b.put("fastaSequenceCount", ((Nested) bucket.getAggregations().get("fastaSequenceCount")).getDocCount());
+            b.put("fastqMetadataCount", ((InternalFilter) bucket.getAggregations().get("fastqMetadataCount")).getDocCount());
 
             buckets.add(b);
         }

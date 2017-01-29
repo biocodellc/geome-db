@@ -1,7 +1,7 @@
 angular.module('fims.expeditions')
 
-.controller('ExpeditionCtrl', ['$http', 'UserFactory', '$scope', 'LoadingModalFactory', 'FailModalFactory', 'AuthFactory', 'REST_ROOT',
-    function ($http, UserFactory, $scope, LoadingModalFactory, FailModalFactory, AuthFactory, REST_ROOT) {
+.controller('ExpeditionCtrl', ['$http', 'UserFactory', '$scope', '$window', 'LoadingModalFactory', 'FailModalFactory', 'AuthFactory', 'REST_ROOT', 'PROJECT_ID',
+    function ($http, UserFactory, $scope, $window, LoadingModalFactory, FailModalFactory, AuthFactory, REST_ROOT, PROJECT_ID) {
         var vm = this;
         vm.totalItems = null;
         vm.itemsPerPage = 100;
@@ -10,10 +10,19 @@ angular.module('fims.expeditions')
         vm.results = [];
         vm.displayResults = [];
         vm.downloadCsv = downloadCsv;
-        fetchPage();
+        vm.downloadFasta = downloadFasta;
+        vm.downloadFastq = downloadFastq;
 
         function downloadCsv(expeditionCode) {
             download(REST_ROOT + "projects/query/csv?access_token=" + AuthFactory.getAccessToken(), {expeditions:[expeditionCode]});
+        }
+
+        function downloadFastq(expeditionCode) {
+            $window.location = REST_ROOT + "projects/" + PROJECT_ID + "/expeditions/" + expeditionCode + "/generateSraFiles?access_token=" + AuthFactory.getAccessToken();
+        }
+
+        function downloadFasta(expeditionCode) {
+            download(REST_ROOT + "projects/query/fasta?access_token=" + AuthFactory.getAccessToken(), {expeditions:[expeditionCode]});
         }
 
         function pageChanged() {
@@ -23,15 +32,21 @@ angular.module('fims.expeditions')
         function fetchPage() {
             LoadingModalFactory.open();
 
-            $http.get(REST_ROOT + 'projects/25/expeditions/datasets/latest')
+            $http.get(REST_ROOT + 'projects/' + PROJECT_ID + '/expeditions/stats')
                 .then(function(response) {
                     angular.extend(vm.results, response.data);
-                    LoadingModalFactory.close();
                     pageChanged();
                     vm.totalItems = vm.results.length;
                 }, function(response) {
                     FailModalFactory.open(null, response.data.usrMessage)
+                })
+                .finally(function() {
+                    LoadingModalFactory.close();
                 });
         }
 
-    }])
+        (function init() {
+            fetchPage();
+        }).call(this);
+
+    }]);
