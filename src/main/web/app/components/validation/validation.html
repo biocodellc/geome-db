@@ -11,7 +11,7 @@
                     <table class="table">
                         <tr>
                             <td align="right">&nbsp;&nbsp;FIMS Data&nbsp;&nbsp;</td>
-                            <td><input type="file" class="btn btn-default btn-xs" name="dataset" id="dataset" /></td>
+                            <td><input type="file" class="btn btn-default btn-xs" name="fimsMetadata" id="dataset" /></td>
                         </tr>
 
                         <tr class="toggle-content" id="projects_toggle">
@@ -25,7 +25,7 @@
                                 <span ng-show="!vm.isAuthenticated">
                                     <input ng-show="!vm.isAuthenticated" type="checkbox" disabled="disabled" /> (login to upload)
                                 </span>
-                                <input ng-show="vm.isAuthenticated" type="checkbox" id="upload" name="upload" />
+                                <input ng-show="vm.isAuthenticated" type="checkbox" id="upload" name="upload" value="true"/>
                             </td>
                         </tr>
 

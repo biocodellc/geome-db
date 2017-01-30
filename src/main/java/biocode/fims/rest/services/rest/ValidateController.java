@@ -14,6 +14,7 @@ import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.simple.JSONObject;
 import org.springframework.context.annotation.Scope;
@@ -31,7 +32,6 @@ import java.util.Map;
 /**
  * @resourceTag Data
  * @resourceDescription Validate and load data
- *
  */
 @Scope("prototype")
 @Controller
@@ -65,10 +65,11 @@ public class ValidateController extends FimsService {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
     public Response validate(@FormDataParam("projectId") Integer projectId,
-                           @FormDataParam("expeditionCode") String expeditionCode,
-                           @FormDataParam("upload") String upload,
-                           @FormDataParam("public_status") String publicStatus,
-                           @FormDataParam("dataset") FormDataBodyPart fimsMetadata) {
+                             @FormDataParam("expeditionCode") String expeditionCode,
+                             @FormDataParam("upload") boolean upload,
+                             @FormDataParam("public_status") String publicStatus,
+                             @FormDataParam("fimsMetadata") FormDataBodyPart fimsMetadata,
+                             final FormDataMultiPart multiPart) {
         Map<String, Map<String, Object>> fmProps = new HashMap<>();
         JSONObject returnValue = new JSONObject();
         boolean closeProcess = true;
@@ -113,7 +114,7 @@ public class ValidateController extends FimsService {
 
             processController.setProcess(process);
 
-            if (process.validate() && StringUtils.equalsIgnoreCase(upload, "on")) {
+            if (process.validate() && upload) {
                 if (userContext.getUser() == null) {
                     throw new UnauthorizedRequestException("You must be logged in to upload.");
                 }
