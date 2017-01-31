@@ -1,20 +1,23 @@
 #INSERT INTO table (a,b,c) VALUES (1,2,3) 
 #  ON DUPLICATE KEY UPDATE c=c+1; 
 
-DROP TABLE IF EXISTS samplesForIPT;
-CREATE TABLE samplesForIPT ( 
-	materialSampleID varchar(255),
+DROP TABLE IF EXISTS samplesForIPT2;
+CREATE TABLE samplesForIPT2 ( 
+	materialSampleID int,
+	dcterms_references varchar(255),
 	collectionCode varchar(255),
 	associatedMedia text,
 	associatedReferences text,
 	associatedSequences text,
 	associatedTaxa text,
-	basisOfIdentification text,
+	identificationRemarks text,
+	basisOfRecord text,
 	class text,
 	coordinateUncertaintyInMeters text,
 	country text,
-	dayCollected text,
-	dayIdentified text,
+	dateCollected text,
+	dateIdentified text,
+	dynamicProperties text,
 	decimalLatitude text,
 	decimalLongitude text,
 	establishmentMeans text,
@@ -30,7 +33,6 @@ CREATE TABLE samplesForIPT (
 	identifiedBy text,
 	island text,
 	islandGroup text,
-	length text,
 	lifeStage text,
 	locality text,
 	maximumDepthInMeters text,
@@ -38,15 +40,13 @@ CREATE TABLE samplesForIPT (
 	microHabitat text,
 	minimumDepthInMeters text,
 	minimumDistanceAboveSurfaceInMeters text,
-	monthCollected text,
-	monthIdentified text,
 	occurrenceID text,
 	occurrenceRemarks text,
 	ordr text,
 	permitInformation text,
 	phylum text,
 	plateID text,
-	preservative text,
+	preparations text,
 	previousIdentifications text,
 	previousTissueID text,
 	principalInvestigator text,
@@ -61,10 +61,7 @@ CREATE TABLE samplesForIPT (
 	taxonRemarks text,
 	tissueStorageID text,
 	vernacularName text,
-	weight text,
 	wellID text,
 	wormsID text,
-	yearCollected text,
-	yearIdentified text,
-	primary key (collectionCode,materialSampleID)
+	primary key (materialSampleID,dcterms_references)
 );
