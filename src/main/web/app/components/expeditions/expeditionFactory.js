@@ -9,7 +9,8 @@ angular.module('fims.expeditions')
                 getExpeditionsForAdmin: getExpeditionsForAdmin,
                 updateExpeditions: updateExpeditions,
                 updateExpedition: updateExpedition,
-                createExpedition: createExpedition
+                createExpedition: createExpedition,
+                deleteExpedition: deleteExpedition
             };
 
             return expeditionFactory;
@@ -31,6 +32,10 @@ angular.module('fims.expeditions')
 
             function createExpedition(expedition) {
                 return $http.post(REST_ROOT + 'expeditions', expedition);
+            }
+
+            function deleteExpedition(expeditionCode) {
+                return $http.delete(REST_ROOT + 'projects/' + PROJECT_ID + '/expeditions/' + expeditionCode);
             }
 
             function getExpeditionsForAdmin(projectId) {

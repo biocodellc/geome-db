@@ -1,0 +1,13 @@
+<div class="modal-header text-center">
+    <h3 class="modal-title">Warning:</h3>
+</div>
+<div class="modal-body">
+    Are you sure you want to delete expedition: "<strong>{{vm.expeditionCode}}</strong>"?
+    <br>
+    <strong>This can not be undone.</strong>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-danger" type="button" ng-click="vm.ok()">Delete</button>
+    <button class="btn btn-primary" type="button" ng-click="vm.cancel()">Cancel</button>
+</div>
+
