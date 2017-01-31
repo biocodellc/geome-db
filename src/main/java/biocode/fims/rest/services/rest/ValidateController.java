@@ -12,7 +12,6 @@ import biocode.fims.run.ProcessController;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -67,7 +66,7 @@ public class ValidateController extends FimsService {
     public Response validate(@FormDataParam("projectId") Integer projectId,
                              @FormDataParam("expeditionCode") String expeditionCode,
                              @FormDataParam("upload") boolean upload,
-                             @FormDataParam("public_status") String publicStatus,
+                             @FormDataParam("public") @DefaultValue("false") boolean isPublic,
                              @FormDataParam("fimsMetadata") FormDataBodyPart fimsMetadata,
                              final FormDataMultiPart multiPart) {
         Map<String, Map<String, Object>> fmProps = new HashMap<>();
@@ -120,11 +119,7 @@ public class ValidateController extends FimsService {
                 }
 
                 processController.setUserId(userContext.getUser().getUserId());
-
-                // set public status to true in processController if user wants it on
-                if (StringUtils.equalsIgnoreCase(publicStatus, "on")) {
-                    processController.setPublicStatus(true);
-                }
+                processController.setPublicStatus(isPublic);
 
                 // if there were validation warnings and user would like to upload, we need to ask the user to continue
                 if (processController.getHasWarnings()) {

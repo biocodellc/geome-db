@@ -28,6 +28,11 @@ public class ValidateControllerTransformer1_1 extends FimsAbstractTransformer {
             argMap.put("upload", true);
         }
 
+        if (multiPart.getField("public_status") != null &&
+                StringUtils.equalsIgnoreCase(multiPart.getField("public_status").getValue(), "on")) {
+            argMap.put("public", true);
+        }
+
     }
 
 }
