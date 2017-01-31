@@ -15,11 +15,7 @@ import org.springframework.core.env.Environment;
  * Configuration class for and Dipnet-Fims application. Including cli and webapps
  */
 @Configuration
-@ComponentScan(basePackages = {"biocode.fims.dipnet.services"})
 @Import({FimsAppConfig.class, ElasticSearchAppConfig.class})
-@ImportResource({
-        "classpath:dipnet-data-access-config.xml",
-})
 // declaring this here allows us to override any properties that are also included in dipnet-fims.props
 @PropertySource(value = "classpath:biocode-fims.props", ignoreResourceNotFound = true)
 @PropertySource("classpath:dipnet-fims.props")

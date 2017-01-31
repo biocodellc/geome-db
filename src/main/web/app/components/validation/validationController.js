@@ -50,6 +50,7 @@ angular.module('fims.validation')
 
             function removeFastaData() {
                 vm.fastaCnt.pop();
+                vm.fastaFiles.pop();
             }
 
             function addFastaData() {
@@ -60,17 +61,7 @@ angular.module('fims.validation')
                 if (latestExpeditionCode == null) {
                     return;
                 }
-                $window.location = REST_ROOT + "expeditions/" + getExpeditionId() + "/sra/files";
-            }
-
-            function getExpeditionId() {
-                var expeditionId;
-                vm.expeditions.some(function (expedition) {
-                    if (expedition.expeditionCode == latestExpeditionCode) {
-                        expeditionId = expedition.expeditionId;
-                    }
-                });
-                return expeditionId;
+                $window.location = REST_ROOT + "projects/" + PROJECT_ID + "/expeditions/" + latestExpeditionCode + "/generateSraFiles";
             }
 
             function checkCoordinatesVerified() {
@@ -108,7 +99,7 @@ angular.module('fims.validation')
                 }
                 if (vm.dataTypes.fasta) {
                     data.fastaFiles = vm.fastaFiles;
-                    angular.forEach(vm.fastaData, function(data, index) {
+                    angular.forEach(vm.fastaData, function (data, index) {
                         data.filename = vm.fastaFiles[index].name;
                     });
                     data.fastaData = Upload.jsonBlob(vm.fastaData);
@@ -126,7 +117,7 @@ angular.module('fims.validation')
 
                 if (vm.newExpedition) {
                     checkExpeditionExists()
-                        .finally(function() {
+                        .finally(function () {
                             if (!checkCoordinatesVerified() || vm.uploadForm.$invalid) {
                                 return;
                             }
@@ -224,7 +215,8 @@ angular.module('fims.validation')
                 openResultsModal();
                 return Upload.upload({
                     url: REST_ROOT + "validate",
-                    data: data
+                    data: data,
+                    arrayKey: ''
                 }).then(
                     function (response) {
                         return response;
@@ -266,7 +258,9 @@ angular.module('fims.validation')
 
                 modalInstance.result
                     .finally(function () {
-                            vm.activeTab = 2; // index 2 is the results tab
+                            if (!ResultsDataFactory.error) {
+                                vm.activeTab = 2; // index 2 is the results tab
+                            }
                             vm.displayResults = true;
                             ResultsDataFactory.showStatus = false;
                             ResultsDataFactory.showValidationMessages = true;
@@ -385,6 +379,11 @@ angular.module('fims.validation')
                 ExpeditionFactory.getExpeditionsForUser(true)
                     .then(function (response) {
                         angular.extend(vm.expeditions, response.data);
+                        if (vm.expeditions.length == 0) {
+                            vm.newExpedition = true;
+                        } else {
+                            vm.newExpedition = false;
+                        }
                     }, function (response, status) {
                         FailModalFactory.open("Failed to load datasets", response.data.usrMessage);
                     })

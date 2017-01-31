@@ -96,6 +96,7 @@
                                             <th>Username</th>
                                             <th>Expedition Title</th>
                                             <th>Public</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
 
@@ -107,6 +108,9 @@
                                                 <input ng-model="expedition.public" type="checkbox"
                                                        ng-click="pmProjectVm.updateModifiedExpeditions(expedition)"
                                                        ng-disabled="!pmProjectVm.editExpeditions">
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-danger btn-xs" ng-click="pmProjectVm.editExpedition(expedition)">Edit</button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -134,7 +138,7 @@
                                     <div class="col-xs-2 col-xs-offset-5">
                                         <button type="button" class="btn btn-block btn-primary btn-sm"
                                                 ng-show="!pmProjectVm.editExpeditions"
-                                                ng-click="pmProjectVm.editExpeditions = true">Edit
+                                                ng-click="pmProjectVm.editExpeditions = true">Bulk Edit
                                         </button>
                                         <div ng-show="pmProjectVm.editExpeditions">
                                             <button type="submit" class="btn btn-primary btn-sm col-xs-6">Save

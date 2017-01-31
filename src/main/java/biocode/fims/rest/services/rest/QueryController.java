@@ -369,6 +369,7 @@ public class QueryController extends FimsService {
         }
 
         List<ElasticSearchFilterField> filterFields = DipnetQueryUtils.getAvailableFilters(getMapping());
+        filterFields.add(DipnetQueryUtils.get_AllFilter());
 
         for (Map.Entry<String, List<String>> entry : form.entrySet()) {
 
@@ -430,11 +431,6 @@ public class QueryController extends FimsService {
     }
 
     private ElasticSearchFilterField lookupFilter(String key, List<ElasticSearchFilterField> filters) {
-        // _all is a special filter
-        if (key.equals("_all")) {
-            return DipnetQueryUtils.get_AllFilter();
-        }
-
         // if field doesn't contain a ":", then we assume this is the filter displayName
         boolean isDisplayName = !key.contains(":");
 

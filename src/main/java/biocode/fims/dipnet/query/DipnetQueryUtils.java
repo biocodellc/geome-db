@@ -6,11 +6,12 @@ import biocode.fims.digester.Entity;
 import biocode.fims.digester.Mapping;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
 import biocode.fims.fasta.FastaSequenceFields;
-import biocode.fims.fileManagers.fasta.FastaFileManager;
+import biocode.fims.fasta.fileManagers.FastaFileManager;
 import biocode.fims.query.JsonFieldTransform;
 import com.fasterxml.jackson.core.JsonPointer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,6 +20,29 @@ import java.util.List;
  * @author RJ Ewing
  */
 public class DipnetQueryUtils {
+
+    private static final List<String> FILTER_COLUMNS = Arrays.asList(
+            "principalInvestigator",
+            "materialSampleID",
+            "locality",
+            "decimalLatitude",
+            "decimalLongitude",
+            "genus",
+            "species",
+            "country",
+            "lifeStage",
+            "sex",
+            "wormsID",
+            "stateProvince",
+            "island",
+            "preservative",
+            "habitat",
+            "class",
+            "order",
+            "family",
+            "subSpecies",
+            "vernacularName"
+    );
 
     /**
      * get the list of filterable fields to query against
@@ -30,7 +54,9 @@ public class DipnetQueryUtils {
         List<ElasticSearchFilterField> filters = new ArrayList<>();
 
         for (Attribute attribute : mapping.getDefaultSheetAttributes()) {
-            filters.add(new ElasticSearchFilterField(attribute.getUri(), attribute.getColumn(), attribute.getDatatype()));
+            if (FILTER_COLUMNS.contains(attribute.getColumn())) {
+                filters.add(new ElasticSearchFilterField(attribute.getUri(), attribute.getColumn(), attribute.getDatatype()));
+            }
         }
 
         filters.addAll(getFastaFilters(mapping));

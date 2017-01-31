@@ -96,26 +96,28 @@
 
         <table class="table table-condensed table-hover text-nowrap">
             <thead>
-            <th sly-repeat="key in vm.queryResults.keys">{{ key }}</th>
+                <th sly-repeat="column in vm.tableColumns">{{ column }}</th>
             </thead>
             <tbody>
-            <tr sly-repeat="resource in vm.queryResults.data">
-                <td uib-popover="{{value}}"
-                    popover-enable="value.length > 35"
-                    popover-trigger="mouseenter"
-                    ng-class="{hideOverflow: value.length > 35}"
-                    popover-placement="bottom"
-                    popover-append-to-body="true"
-                    sly-repeat="value in resource">{{value}}
-                </td>
-            </tr>
+                <tr sly-repeat="resource in vm.queryResults">
+                    <td uib-popover="{{value}}"
+                        popover-enable="value.length > 35"
+                        popover-trigger="mouseenter"
+                        ng-class="{hideOverflow: value.length > 35}"
+                        popover-placement="bottom"
+                        popover-append-to-body="true"
+                        sly-repeat="value in resource">{{ value }}
+                    </td>
+                </tr>
             </tbody>
         </table>
-        <ul uib-pagination total-items="vm.queryInfo.totalElements" ng-model="vm.currentPage"
-            ng-change="vm.queryJson()"
-            max-size="10"
-            force-ellipses="true"
-            boundary-link-numbers="true"
-            items-per-page="vm.queryInfo.size"></ul>
+        <div class="text-center">
+            <ul uib-pagination total-items="vm.queryInfo.totalElements" ng-model="vm.currentPage"
+                ng-change="vm.queryJson()"
+                max-size="10"
+                force-ellipses="true"
+                boundary-link-numbers="true"
+                items-per-page="vm.queryInfo.size"></ul>
+        </div>
     </div>
 </div>

@@ -1,14 +1,12 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.dipnet.entities.DipnetExpedition;
-import biocode.fims.dipnet.entities.FastqMetadata;
-import biocode.fims.dipnet.services.DipnetExpeditionService;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fasta.FastaData;
+import biocode.fims.fastq.FastqMetadata;
 import biocode.fims.fileManagers.AuxilaryFileManager;
-import biocode.fims.fileManagers.fasta.FastaFileManager;
-import biocode.fims.fileManagers.fastq.FastqFileManager;
+import biocode.fims.fasta.fileManagers.FastaFileManager;
+import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -19,7 +17,6 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.OAuthProviderService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -40,7 +37,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Scope("prototype")
 @Controller
@@ -48,18 +44,16 @@ import java.util.stream.Collectors;
 public class ValidateController extends FimsService {
 
     private final ExpeditionService expeditionService;
-    private final DipnetExpeditionService dipnetExpeditionService;
     private final List<AuxilaryFileManager> fileManagers;
     private final FimsMetadataFileManager fimsMetadataFileManager;
     private final ElasticSearchIndexer esIndexer;
 
     @Autowired
-    public ValidateController(ExpeditionService expeditionService, DipnetExpeditionService dipnetExpeditionService,
+    public ValidateController(ExpeditionService expeditionService,
                               List<AuxilaryFileManager> fileManagers, FimsMetadataFileManager fimsMetadataFileManager,
                               SettingsManager settingsManager, ElasticSearchIndexer esIndexer) {
         super(settingsManager);
         this.expeditionService = expeditionService;
-        this.dipnetExpeditionService = dipnetExpeditionService;
         this.fileManagers = fileManagers;
         this.fimsMetadataFileManager = fimsMetadataFileManager;
         this.esIndexer = esIndexer;
@@ -89,17 +83,9 @@ public class ValidateController extends FimsService {
                              @FormDataParam("expeditionCode") String expeditionCode,
                              @FormDataParam("fimsMetadata") FormDataBodyPart fimsMetadata,
                              @FormDataParam("fastaData") List<FastaData> fastaDataList,
+                             @FormDataParam("fastaFiles") List<FormDataBodyPart> fastaFiles,
                              @FormDataParam("fastqFilenames") FormDataBodyPart fastqFilenames,
                              final FormDataMultiPart multiPart) {
-        // Since angularJS sends arrays as inputName[index] we can't use @FormDataParam annotation to get the list
-        List<FormDataBodyPart> fastaFiles = multiPart.getFields()
-                .entrySet()
-                .stream()
-                .filter(e -> e.getKey().startsWith("fastaFiles"))
-                .map(Map.Entry::getValue)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-
         Map<String, Map<String, Object>> fmProps = new HashMap<>();
         JSONObject returnValue = new JSONObject();
         boolean closeProcess = true;
@@ -160,10 +146,6 @@ public class ValidateController extends FimsService {
                     fastaFileManagerData.add(fastaData);
                 }
 
-                if (!fastaDataList.isEmpty()) {
-                    // TODO throw exception. fastaData found w/o matching fastaFile
-                }
-
                 Map<String, Object> props = new HashMap<>();
                 props.put("fastaData", fastaFileManagerData);
 
@@ -177,18 +159,8 @@ public class ValidateController extends FimsService {
                     props.put("filename", tempFilename);
                 }
 
-
                 if (fastqMetadata != null) {
-                    try {
-                        // hack until we get FastqFileManger.upload working
-                        ObjectMapper mapper = new ObjectMapper();
-                        JSONObject metadata = (JSONObject) new JSONParser().parse(mapper.writeValueAsString(fastqMetadata));
-
-                        processController.setFastqMetadata(metadata);
-                        props.put("metadata", metadata);
-                    } catch (JsonProcessingException | ParseException e) {
-                        throw new ServerErrorException();
-                    }
+                    props.put("metadata", fastqMetadata);
                 }
 
                 fmProps.put(FastqFileManager.NAME, props);
@@ -299,31 +271,6 @@ public class ValidateController extends FimsService {
 
             try {
                 p.upload(createExpedition, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
-
-                // hack until we get FastqFileManger.upload working
-                if (processController.getFastqMetadata() != null) {
-                    try {
-                        ObjectMapper mapper = new ObjectMapper();
-                        FastqMetadata fastqMetadata = mapper.readValue(processController.getFastqMetadata().toJSONString(), FastqMetadata.class);
-
-                        Expedition expedition = expeditionService.getExpedition(processController.getExpeditionCode(), processController.getProjectId());
-                        DipnetExpedition dipnetExpedition = dipnetExpeditionService.getDipnetExpedition(expedition.getExpeditionId());
-
-                        if (dipnetExpedition == null) {
-                            dipnetExpedition = new DipnetExpedition.DipnetExpeditionBuilder(expedition)
-                                    .fastqMetadata(fastqMetadata)
-                                    .build();
-
-                            dipnetExpeditionService.create(dipnetExpedition);
-                        } else {
-                            dipnetExpedition.setFastqMetadata(fastqMetadata);
-                            dipnetExpeditionService.update(dipnetExpedition);
-                        }
-                    } catch (IOException e) {
-                        throw new FimsRuntimeException("Failed to convert FastqMetadata object", 500, e);
-                    }
-                }
-
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode() == UploadCode.EXPEDITION_CREATE) {
                     JSONObject message = new JSONObject();

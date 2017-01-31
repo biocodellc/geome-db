@@ -1,11 +1,13 @@
 package biocode.fims.dipnet.sra;
 
 import biocode.fims.exceptions.SraCode;
+import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.sra.BioSampleMapper;
+import biocode.fims.fastq.sra.BioSampleMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -36,25 +38,20 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
         add("bcid");
     }};
 
-    private final String libraryStrategy;
-    private final Iterator samplesIt;
-    private final String rootBcid;
+    private final Iterator<JsonNode> resourcesIt;
 
+    public DipnetBioSampleMapper(ArrayNode resources) {
 
-    public DipnetBioSampleMapper(JSONArray samples, String libraryStrategy, String rootBcid) {
-        this.libraryStrategy = libraryStrategy;
-        this.rootBcid = rootBcid;
-
-        if (samples == null || samples.size() == 0) {
+        if (resources == null || resources.size() == 0) {
             throw new FimsRuntimeException(SraCode.MISSING_DATASET, 400);
         }
 
-        this.samplesIt = samples.iterator();
+        this.resourcesIt = resources.iterator();
     }
 
     @Override
     public boolean hasNextSample() {
-        return samplesIt.hasNext();
+        return resourcesIt.hasNext();
     }
 
     @Override
@@ -64,69 +61,71 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
 
     @Override
     public List<String> getBioSampleAttributes() {
-        JSONObject sample = (JSONObject) samplesIt.next();
+        ObjectNode sample = (ObjectNode) resourcesIt.next();
         List<String> bioSampleAttributes = new ArrayList<>();
 
-        String organism;
-        String species = (String) sample.get("species");
-        String genus = (String) sample.get("genus");
+        if (sample.has(FastqFileManager.CONCEPT_ALIAS)) {
+            String organism;
+            String species = sample.get("species").asText();
+            String genus = sample.get("genus").asText();
 
-        if (!StringUtils.isBlank(genus)) {
-            organism = genus;
-            if (!StringUtils.isBlank(species)) {
-                organism += " " + species;
+            if (!StringUtils.isBlank(genus)) {
+                organism = genus;
+                if (!StringUtils.isBlank(species)) {
+                    organism += " " + species;
+                }
+            } else {
+                organism = sample.get("phylum").asText();
             }
-        } else {
-            organism = (String) sample.get("phylum");
-        }
 
-        bioSampleAttributes.add((String) sample.get("materialSampleID"));
-        bioSampleAttributes.add(libraryStrategy + "_" + organism.replace(" ", "_"));
-        bioSampleAttributes.add(organism);
-        bioSampleAttributes.add(getCollectionDate(sample));
+            bioSampleAttributes.add(sample.get("materialSampleID").asText());
+            bioSampleAttributes.add(sample.at("/" + FastqFileManager.CONCEPT_ALIAS + "/libraryStrategy").asText() + "_" + organism.replace(" ", "_"));
+            bioSampleAttributes.add(organism);
+            bioSampleAttributes.add(getCollectionDate(sample));
 
-        StringBuilder geoLocSb = new StringBuilder();
-        geoLocSb.append(sample.get("country"));
-        // must start with a country, otherwise sra validation fails
-        if (!StringUtils.isBlank((String) sample.get("locality")) & !StringUtils.isBlank(geoLocSb.toString())){
-            geoLocSb.append(": ");
-            geoLocSb.append(sample.get("locality"));
-        }
-        bioSampleAttributes.add(modifyBlankAttribute(geoLocSb.toString()));
-
-        bioSampleAttributes.add(modifyBlankAttribute((String) sample.get("geneticTissueType")));
-        bioSampleAttributes.add((String) sample.get("principalInvestigator"));
-        bioSampleAttributes.add(modifyBlankAttribute((String) sample.get("recordedBy")));
-
-        StringBuilder depthSb = new StringBuilder();
-        if (!StringUtils.isBlank((String) sample.get("minimumDepthInMeters"))) {
-            depthSb.append(sample.get("minimumDepthInMeters"));
-
-            if (!StringUtils.isBlank((String) sample.get("maximumDepthInMeters"))) {
-                depthSb.append(", ");
-                depthSb.append(sample.get("maximumDepthInMeters"));
+            StringBuilder geoLocSb = new StringBuilder();
+            geoLocSb.append(sample.get("country").asText());
+            // must start with a country, otherwise sra validation fails
+            if (!StringUtils.isBlank(sample.get("locality").asText()) & !StringUtils.isBlank(geoLocSb.toString())) {
+                geoLocSb.append(": ");
+                geoLocSb.append(sample.get("locality").asText());
             }
+            bioSampleAttributes.add(modifyBlankAttribute(geoLocSb.toString()));
+
+            bioSampleAttributes.add(modifyBlankAttribute(sample.get("geneticTissueType").asText()));
+            bioSampleAttributes.add(sample.get("principalInvestigator").asText());
+            bioSampleAttributes.add(modifyBlankAttribute(sample.get("recordedBy").asText()));
+
+            StringBuilder depthSb = new StringBuilder();
+            if (!StringUtils.isBlank(sample.get("minimumDepthInMeters").asText())) {
+                depthSb.append(sample.get("minimumDepthInMeters").asText());
+
+                if (!StringUtils.isBlank(sample.get("maximumDepthInMeters").asText())) {
+                    depthSb.append(", ");
+                    depthSb.append(sample.get("maximumDepthInMeters").asText());
+                }
+            }
+            bioSampleAttributes.add(modifyBlankAttribute(depthSb.toString()));
+
+            bioSampleAttributes.add(modifyBlankAttribute(sample.get("lifeStage").asText()));
+            bioSampleAttributes.add(modifyBlankAttribute(sample.get("identifiedBy").asText()));
+
+            StringBuilder latLongSb = new StringBuilder();
+            if (!StringUtils.isBlank(sample.get("decimalLatitude").asText()) &&
+                    !StringUtils.isBlank(sample.get("decimalLatitude").asText())) {
+
+                latLongSb.append(sample.get("decimalLatitude").asText());
+                latLongSb.append(" ");
+                latLongSb.append(sample.get("decimalLongitude").asText());
+            }
+            bioSampleAttributes.add(modifyBlankAttribute(latLongSb.toString()));
+
+            bioSampleAttributes.add(modifyBlankAttribute(sample.get("sex").asText()));
+            bioSampleAttributes.add(BLANK_ATTRIBUTE);
+            bioSampleAttributes.add(BLANK_ATTRIBUTE);
+            bioSampleAttributes.add(BLANK_ATTRIBUTE);
+            bioSampleAttributes.add(sample.get("bcid").asText());
         }
-        bioSampleAttributes.add(modifyBlankAttribute(depthSb.toString()));
-
-        bioSampleAttributes.add(modifyBlankAttribute((String) sample.get("lifeStage")));
-        bioSampleAttributes.add(modifyBlankAttribute((String) sample.get("identifiedBy")));
-
-        StringBuilder latLongSb = new StringBuilder();
-        if (!StringUtils.isBlank((String) sample.get("decimalLatitude")) &&
-                !StringUtils.isBlank((String) sample.get("decimalLatitude"))) {
-
-            latLongSb.append(sample.get("decimalLatitude"));
-            latLongSb.append(" ");
-            latLongSb.append(sample.get("decimalLongitude"));
-        }
-        bioSampleAttributes.add(modifyBlankAttribute(latLongSb.toString()));
-
-        bioSampleAttributes.add(modifyBlankAttribute((String) sample.get("sex")));
-        bioSampleAttributes.add(BLANK_ATTRIBUTE);
-        bioSampleAttributes.add(BLANK_ATTRIBUTE);
-        bioSampleAttributes.add(BLANK_ATTRIBUTE);
-        bioSampleAttributes.add(rootBcid + sample.get("materialSampleID"));
 
         return bioSampleAttributes;
     }
@@ -139,13 +138,13 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
         return attribute;
     }
 
-    private String getCollectionDate(JSONObject sample) {
+    private String getCollectionDate(ObjectNode sample) {
         StringBuilder collectionDate = new StringBuilder();
 
-        collectionDate.append(sample.get("yearCollected"));
+        collectionDate.append(sample.get("yearCollected").asText());
 
-        String monthCollected = (String) sample.get("monthCollected");
-        String dayCollected = (String) sample.get("dayCollected");
+        String monthCollected = sample.get("monthCollected").asText();
+        String dayCollected = sample.get("dayCollected").asText();
 
         if (!StringUtils.isBlank(monthCollected)) {
             collectionDate.append("-");

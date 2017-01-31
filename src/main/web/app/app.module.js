@@ -9,6 +9,7 @@ var app = angular.module('dipnetApp', [
     'fims.projects',
     'fims.users',
     'fims.home',
+    'fims.filters.html',
     'utils.autofocus',
     'ui.bootstrap.showErrors',
     'angularSpinner'

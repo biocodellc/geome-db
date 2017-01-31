@@ -1,38 +1,45 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.config.ConfigurationFileEsMapper;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.dipnet.query.DipnetQueryUtils;
+import biocode.fims.dipnet.sra.DipnetBioSampleMapper;
+import biocode.fims.dipnet.sra.DipnetSraMetadataMapper;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
-import biocode.fims.entities.Expedition;
-import biocode.fims.entities.Project;
-import biocode.fims.entities.User;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.fastq.fileManagers.FastqFileManager;
+import biocode.fims.fastq.sra.BioSampleAttributesGenerator;
+import biocode.fims.fastq.sra.BioSampleMapper;
+import biocode.fims.fastq.sra.SraMetadataGenerator;
+import biocode.fims.fastq.sra.SraMetadataMapper;
+import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
+import biocode.fims.fimsExceptions.*;
 import biocode.fims.rest.SpringObjectMapper;
-import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.run.ProcessController;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
+import biocode.fims.utils.FileUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.metrics.valuecount.InternalValueCount;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
@@ -47,6 +54,7 @@ import java.util.List;
 /**
  * DIPnet REST services dealing with projects
  */
+@Scope("prototype")
 @Controller
 @Path("projects")
 public class ProjectController extends FimsAbstractProjectsController {
@@ -54,15 +62,15 @@ public class ProjectController extends FimsAbstractProjectsController {
     private static Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
     private final Client esClient;
-    private final UserService userService;
+    private final FimsMetadataFileManager fimsMetadataFileManager;
 
     @Autowired
-    ProjectController(UserService userService, Client esClient,
+    ProjectController(Client esClient, FimsMetadataFileManager fimsMetadataFileManager,
                       ProjectService projectService, ExpeditionService expeditionService,
                       SettingsManager settingsManager) {
         super(expeditionService, settingsManager, projectService);
         this.esClient = esClient;
-        this.userService = userService;
+        this.fimsMetadataFileManager = fimsMetadataFileManager;
     }
 
     @GET
@@ -473,7 +481,7 @@ public class ProjectController extends FimsAbstractProjectsController {
      */
     @GET
     @Authenticated
-    @Path("/{projectId}/expeditions/datasets/latest")
+    @Path("/{projectId}/expeditions/stats")
     @Produces({MediaType.APPLICATION_JSON})
     public Response listExpeditionsWithLatestDatasets(@PathParam("projectId") Integer projectId) {
         // TODO using terms aggregation may not be accurate, since documents are stored across shards
@@ -485,6 +493,10 @@ public class ProjectController extends FimsAbstractProjectsController {
                 .subAggregation(
                         AggregationBuilders.nested("fastaSequenceCount", "fastaSequence")
                 )
+                .subAggregation(
+                        AggregationBuilders.filter("fastqMetadataCount",
+                                QueryBuilders.existsQuery(FastqFileManager.CONCEPT_ALIAS))
+                )
                 .order(Terms.Order.term(true))
                 .size(1000);
 
@@ -494,13 +506,14 @@ public class ProjectController extends FimsAbstractProjectsController {
                 .addAggregation(aggsBuilder).get();
 
         Terms terms = response.getAggregations().get("expeditions");
-        List<JSONObject> buckets = new ArrayList<>();
+        List<ObjectNode> buckets = new ArrayList<>();
 
         for (Terms.Bucket bucket : terms.getBuckets()) {
-            JSONObject b = new JSONObject();
+            ObjectNode b = new SpringObjectMapper().createObjectNode();
             b.put("resourceCount", bucket.getDocCount());
-            b.put("expeditionCode", bucket.getKey());
+            b.put("expeditionCode", String.valueOf(bucket.getKey()));
             b.put("fastaSequenceCount", ((Nested) bucket.getAggregations().get("fastaSequenceCount")).getDocCount());
+            b.put("fastqMetadataCount", ((InternalFilter) bucket.getAggregations().get("fastqMetadataCount")).getDocCount());
 
             buckets.add(b);
         }
@@ -581,5 +594,39 @@ public class ProjectController extends FimsAbstractProjectsController {
         indexer.updateMapping(projectId, mapping);
 
         return Response.noContent().build();
+    }
+
+    @GET
+    @Path("/{projectId}/expeditions/{expeditionCode}/generateSraFiles")
+    @Produces("application/zip")
+    public Response generateSraFiles(@PathParam("projectId") int projectId,
+                                     @PathParam("expeditionCode") String expeditionCode) {
+
+        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+
+        Mapping mapping = new Mapping();
+        mapping.addMappingRules(configFile);
+
+        ProcessController processController = new ProcessController(projectId, expeditionCode);
+        processController.setOutputFolder(uploadPath());
+        processController.setMapping(mapping);
+        fimsMetadataFileManager.setProcessController(processController);
+        ArrayNode dataset = fimsMetadataFileManager.getDataset();
+
+        SraMetadataMapper metadataMapper = new DipnetSraMetadataMapper(dataset);
+        BioSampleMapper bioSampleMapper = new DipnetBioSampleMapper(dataset);
+
+        File bioSampleFile = BioSampleAttributesGenerator.generateFile(bioSampleMapper, uploadPath());
+        File sraMetadataFile = SraMetadataGenerator.generateFile(metadataMapper, uploadPath());
+
+        Map<String, File> fileMap = new HashMap<>();
+        fileMap.put("bioSample-attributes.tsv", bioSampleFile);
+        fileMap.put("sra-attributes.tsv", sraMetadataFile);
+
+        Response.ResponseBuilder response = Response.ok(FileUtils.zip(fileMap, uploadPath()), "application/zip");
+        response.header("Content-Disposition",
+                "attachment; filename=sra-files.zip");
+
+        return response.build();
     }
 }
