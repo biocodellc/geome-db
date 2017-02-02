@@ -58,14 +58,19 @@ app.controller('biscicolCtrl', ['$rootScope', '$scope', '$state', '$location', '
         });
     }]);
 
-app.controller('NavCtrl', ['$rootScope', '$scope', '$location', '$state', 'AuthFactory', 'UserFactory',
-    function ($rootScope, $scope, $location, $state, AuthFactory, UserFactory) {
+app.controller('NavCtrl', ['$rootScope', '$scope', '$location', '$window', '$state', 'AuthFactory', 'UserFactory',
+    function ($rootScope, $scope, $location, $window, $state, AuthFactory, UserFactory) {
         var vm = this;
         vm.isAuthenticated = AuthFactory.isAuthenticated;
         vm.isAdmin = UserFactory.isAdmin;
         vm.user = UserFactory.user;
         vm.logout = logout;
         vm.login = login;
+        vm.apidocs = apidocs;
+
+        function apidocs() {
+            $window.location = "http://biscicol.org/apidocs?url=" + $location.$$absUrl.replace($location.path(), "/apidocs/current/service.json")
+        }
 
         function login() {
             $rootScope.savedState = $state.current.name;

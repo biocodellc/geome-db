@@ -159,8 +159,7 @@ javascript.source {
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
 mainClassName = "biocode.fims.run.BiscicolFusekiToESMigrator"
-project.ext.apiVersion = "v2.0"
-project.ext.apiDocsDir = "${projectDir}/src/main/web/apidocs/" + project.ext.apiVersion
+project.ext.apiVersions = ["v1.1", "v2"]
 
 project.ext.environment = project.hasProperty('environment') ? project.getProperty('environment') : defaultEnvironment
 
@@ -221,26 +220,47 @@ setLocalEnv.mustRunAfter compileJava
 task resolveAdditionalSources(type: Copy) {
     destinationDir = file("${buildDir}/additional-sources")
     configurations.additionalSources.files.each { f ->
-        from {zipTree(f)}
+        from { zipTree(f) }
     }
 }
 
 task generateRestApiDocs(type: Javadoc) {
     source = sourceSets.doclet.allJava
     destinationDir = reporting.file("rest-api-docs")
+    outputs.upToDateWhen {
+        false
+    }
     options.classpath = configurations.doclet.files.asType(List)
     options.docletpath = configurations.doclet.files.asType(List)
     options.doclet = "com.tenxerconsulting.swagger.doclet.ServiceDoclet"
-    options.addStringOption("apiVersion", project.ext.apiVersion)
-    options.addStringOption("apiBasePath", "/biocode-fims/rest/" + project.ext.apiVersion)
+    options.addStringOption("apiVersion", project.ext.apiVersions[-1])
+    options.addStringOption("apiBasePath", "/biocode-fims/rest/" + project.ext.apiVersions[-1])
     options.addStringOption("host", "")
-    options.addBooleanOption("skipUiFiles", false)
+    options.addBooleanOption("skipUiFiles", true)
     options.addStringOption("apiInfoFile", "${projectDir}/swagger/api-info.json")
 
     doLast {
+        def swaggerFile = reporting.file("rest-api-docs/service.json")
+        // add the apiVersions to the swagger file
+        def swagger = new JsonSlurper().parseText(swaggerFile.text)
+        swagger.info.apiVersions = project.ext.apiVersions
+        swaggerFile.write(new JsonBuilder(swagger).toPrettyString(), 'UTF-8')
+
+        def currentDocsDir = "${projectDir}/src/main/web/apidocs/current"
+        def previousDocsDir = "${projectDir}/src/main/web/apidocs/" + project.ext.apiVersions[-2]
+
+        // move current docs to next to previous apiVersion. If the directory already exists, then that means we are
+        // updating the current docs
+        if (!file(previousDocsDir).exists()) {
+            copy {
+                from currentDocsDir
+                into previousDocsDir
+            }
+        }
+
         copy {
             from destinationDir
-            into project.ext.apiDocsDir
+            into currentDocsDir
         }
     }
 }
