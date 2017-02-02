@@ -2,14 +2,17 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
+import biocode.fims.entities.Project;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
+import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.ExpeditionService;
+import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -41,14 +44,17 @@ public class ValidateController extends FimsService {
     private final List<AuxilaryFileManager> fileManagers;
     private final FimsMetadataFileManager fimsMetadataFileManager;
     private final ElasticSearchIndexer esIndexer;
+    private final ProjectService projectService;
 
     public ValidateController(ExpeditionService expeditionService, FimsMetadataFileManager fimsMetadataFileManager,
-                              List<AuxilaryFileManager> fileManagers, SettingsManager settingsManager, ElasticSearchIndexer esIndexer) {
+                              List<AuxilaryFileManager> fileManagers, SettingsManager settingsManager,
+                              ElasticSearchIndexer esIndexer, ProjectService projectService) {
         super(settingsManager);
         this.expeditionService = expeditionService;
         this.fimsMetadataFileManager = fimsMetadataFileManager;
         this.fileManagers = fileManagers;
         this.esIndexer = esIndexer;
+        this.projectService = projectService;
     }
 
     /**
@@ -73,6 +79,12 @@ public class ValidateController extends FimsService {
         JSONObject returnValue = new JSONObject();
         boolean closeProcess = true;
         boolean removeController = true;
+
+        Project project = projectService.getProject(projectId, appRoot);
+
+        if (project == null) {
+            throw new BadRequestException("Project not found");
+        }
 
         // create a new processController
         ProcessController processController = new ProcessController(projectId, expeditionCode);
