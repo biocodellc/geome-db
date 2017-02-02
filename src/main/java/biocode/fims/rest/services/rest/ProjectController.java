@@ -8,6 +8,8 @@ import biocode.fims.dipnet.sra.DipnetBioSampleMapper;
 import biocode.fims.dipnet.sra.DipnetSraMetadataMapper;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
+import biocode.fims.entities.Expedition;
+import biocode.fims.entities.Project;
 import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.fastq.sra.BioSampleAttributesGenerator;
 import biocode.fims.fastq.sra.BioSampleMapper;
@@ -15,6 +17,7 @@ import biocode.fims.fastq.sra.SraMetadataGenerator;
 import biocode.fims.fastq.sra.SraMetadataMapper;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
+import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.ProcessController;
@@ -488,6 +491,16 @@ public class ProjectController extends FimsAbstractProjectsController {
         // possibly need to store the sequence count as a field and them sum that
         // also, aggs can't use pagination, so we are fetching 1000 expeditions. to support pagination, we need to query
         // the expeditionCodes
+        Project project = projectService.getProjectWithExpeditions(projectId);
+
+        if (project == null) {
+            throw new BadRequestException("Project doesn't exist");
+        }
+
+        Map<String, String> expeditionMap = new HashMap<>();
+        for (Expedition expedition: project.getExpeditions()) {
+            expeditionMap.put(expedition.getExpeditionCode(), expedition.getExpeditionTitle());
+        }
 
         AggregationBuilder aggsBuilder = AggregationBuilders.terms("expeditions").field("expedition.expeditionCode.keyword")
                 .subAggregation(
@@ -508,10 +521,12 @@ public class ProjectController extends FimsAbstractProjectsController {
         Terms terms = response.getAggregations().get("expeditions");
         List<ObjectNode> buckets = new ArrayList<>();
 
+
         for (Terms.Bucket bucket : terms.getBuckets()) {
             ObjectNode b = new SpringObjectMapper().createObjectNode();
             b.put("resourceCount", bucket.getDocCount());
             b.put("expeditionCode", String.valueOf(bucket.getKey()));
+            b.put("expeditionTitle", expeditionMap.get(String.valueOf(bucket.getKey())));
             b.put("fastaSequenceCount", ((Nested) bucket.getAggregations().get("fastaSequenceCount")).getDocCount());
             b.put("fastqMetadataCount", ((InternalFilter) bucket.getAggregations().get("fastqMetadataCount")).getDocCount());
 
