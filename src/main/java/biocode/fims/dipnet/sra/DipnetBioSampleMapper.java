@@ -84,7 +84,7 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
             bioSampleAttributes.add(getCollectionDate(sample));
 
             StringBuilder geoLocSb = new StringBuilder();
-            geoLocSb.append(getTextField(sample,"country"));
+            geoLocSb.append(getTextField(sample, "country"));
             // must start with a country, otherwise sra validation fails
             if (!StringUtils.isBlank(getTextField(sample, "locality")) & !StringUtils.isBlank(geoLocSb.toString())) {
                 geoLocSb.append(": ");
@@ -98,7 +98,7 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
 
             StringBuilder depthSb = new StringBuilder();
             if (!StringUtils.isBlank(getTextField(sample, "minimumDepthInMeters"))) {
-                depthSb.append(getTextField(sample,"minimumDepthInMeters"));
+                depthSb.append(getTextField(sample, "minimumDepthInMeters"));
 
                 if (!StringUtils.isBlank(getTextField(sample, "maximumDepthInMeters"))) {
                     depthSb.append(", ");
@@ -110,15 +110,7 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
             bioSampleAttributes.add(modifyBlankAttribute(getTextField(sample, "lifeStage")));
             bioSampleAttributes.add(modifyBlankAttribute(getTextField(sample, "identifiedBy")));
 
-            StringBuilder latLongSb = new StringBuilder();
-            if (!StringUtils.isBlank(getTextField(sample, "decimalLatitude")) &&
-                    !StringUtils.isBlank(getTextField(sample, "decimalLatitude"))) {
-
-                latLongSb.append(getTextField(sample, "decimalLatitude"));
-                latLongSb.append(" ");
-                latLongSb.append(getTextField(sample, "decimalLongitude"));
-            }
-            bioSampleAttributes.add(modifyBlankAttribute(latLongSb.toString()));
+            bioSampleAttributes.add(modifyBlankAttribute(getLatLong(sample)));
 
             bioSampleAttributes.add(modifyBlankAttribute(getTextField(sample, "sex")));
             bioSampleAttributes.add(BLANK_ATTRIBUTE);
@@ -164,5 +156,52 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
             return sample.get(field).asText();
         }
         return "";
+    }
+
+    /**
+     * if both lat and long are present, return a string containing the abs(decimalDegree) + Compass Direction
+     * <p>
+     * ex.
+     * <p>
+     * lat = -8, long = 140 would return "8 S 140 W"
+     *
+     * @param sample
+     * @return
+     */
+    private String getLatLong(ObjectNode sample) {
+        StringBuilder latLongSb = new StringBuilder();
+
+        if (!StringUtils.isBlank(getTextField(sample, "decimalLatitude")) &&
+                !StringUtils.isBlank(getTextField(sample, "decimalLongitude"))) {
+
+            String latText = getTextField(sample, "decimalLatitude");
+            String lngText = getTextField(sample, "decimalLongitude");
+            try {
+                Double lat = Double.parseDouble(latText);
+
+                if (lat < 0) {
+                    latLongSb.append(Math.abs(lat)).append(" S");
+                } else {
+                    latLongSb.append(lat).append(" N");
+                }
+
+                latLongSb.append(" ");
+
+                Double lng = Double.parseDouble(lngText);
+
+                if (lng < 0) {
+                    latLongSb.append(Math.abs(lng)).append(" W");
+                } else {
+                    latLongSb.append(lng).append(" E");
+                }
+            } catch (NumberFormatException e) {
+                latLongSb = new StringBuilder()
+                        .append(latText)
+                        .append(" ")
+                        .append(lngText);
+            }
+        }
+
+        return latLongSb.toString();
     }
 }
