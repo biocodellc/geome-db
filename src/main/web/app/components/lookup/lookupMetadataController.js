@@ -1,8 +1,8 @@
 angular.module('fims.lookup')
 
 
-.controller('LookupMetadataCtrl', ['$state', '$scope', '$http', '$stateParams', 'LookupFactory',
-    function ($state, $scope, $http, $stateParams, LookupFactory) {
+.controller('LookupMetadataCtrl', ['$state', '$scope', '$http', '$stateParams', 'LookupFactory', 'REST_ROOT',
+    function ($state, $scope, $http, $stateParams, LookupFactory, REST_ROOT) {
         var vm = this;
         vm.identifier = LookupFactory.identifier;
         vm.metadata = fetchMetadata();
@@ -10,7 +10,7 @@ angular.module('fims.lookup')
 
         function filterMetadata() {
             var filteredMetadata = {};
-            var metadataToExclude = ['identifier', 'datasets', 'download'];
+            var metadataToExclude = ['identifier', 'datasets', 'download', 'message'];
             angular.forEach(vm.metadata, function(value, key) {
                 if (metadataToExclude.indexOf(key) == -1 && value.value.trim()) {
                     filteredMetadata[key] = value;
@@ -36,6 +36,7 @@ angular.module('fims.lookup')
                             vm.error = data.data.usrMessage;
                         }
                     });
+                metadata.download = REST_ROOT + 'bcids/dataset/' + vm.identifier;
                 return metadata;
             } else {
                 $state.go('lookup');
