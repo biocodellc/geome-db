@@ -354,7 +354,7 @@ public class Run {
                         System.out.println(q.writeTAB());
                         break;
                     case "csv":
-                        System.out.println(q.writeCSV());
+                        System.out.println(q.writeCSV(true));
                         break;
                     case "kml":
                         System.out.println(q.writeKML());

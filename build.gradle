@@ -158,7 +158,7 @@ javascript.source {
 
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
-mainClassName = "biocode.fims.run.BiscicolFusekiToESMigrator"
+mainClassName = "biocode.fims.run.FusekiDataExporter"
 project.ext.apiVersions = ["v1.1", "v2"]
 
 project.ext.environment = project.hasProperty('environment') ? project.getProperty('environment') : defaultEnvironment
