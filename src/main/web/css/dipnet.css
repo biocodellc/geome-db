@@ -747,3 +747,9 @@ td.hideOverflow {
 
 .pw-strong .label {
     color: #3c761e; }
+
+/** Bcid Metadata rules */
+
+.bcid-metadata > tbody > tr > td {
+    text-align: left;
+}

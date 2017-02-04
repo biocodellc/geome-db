@@ -3,6 +3,7 @@ var app = angular.module('dipnetApp', [
     'ui.bootstrap',
     'fims.query',
     'fims.auth',
+    'fims.bcids',
     'fims.templates',
     'fims.expeditions',
     'fims.validation',
