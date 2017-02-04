@@ -3,6 +3,8 @@ angular.module('fims.lookup')
 
 .controller('LookupMetadataCtrl', ['$state', '$scope', '$http', '$stateParams', 'LookupFactory', 'REST_ROOT',
     function ($state, $scope, $http, $stateParams, LookupFactory, REST_ROOT) {
+        var DATASET_TYPE = "http://purl.org/dc/dcmitype/Dataset";
+
         var vm = this;
         vm.identifier = LookupFactory.identifier;
         vm.metadata = fetchMetadata();
@@ -36,7 +38,10 @@ angular.module('fims.lookup')
                             vm.error = data.data.usrMessage;
                         }
                     });
-                metadata.download = REST_ROOT + 'bcids/dataset/' + vm.identifier;
+
+                if (vm.metadata['rdf:type'].value == DATASET_TYPE) {
+                    metadata.download = REST_ROOT + 'bcids/dataset/' + vm.identifier;
+                }
                 return metadata;
             } else {
                 $state.go('lookup');
