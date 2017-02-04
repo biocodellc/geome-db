@@ -1,6 +1,6 @@
 /* ====== General Utility Functions ======= */
 var appRoot = "/";
-var biocodeFimsRestRoot = "/biocode-fims/rest/v2.0/";
+var biocodeFimsRestRoot = "/biocode-fims/rest/v2/";
 
 $.ajaxSetup({
     headers: { 'Biscicol-App': 'Biscicol-Fims' },

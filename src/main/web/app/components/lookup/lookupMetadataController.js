@@ -30,6 +30,9 @@ angular.module('fims.lookup')
                 LookupFactory.fetchMetadata().then(
                     function(data, status, headers, config) {
                         angular.extend(metadata, data.data);
+                        if (vm.metadata['rdf:type'].value == DATASET_TYPE) {
+                            metadata.download = REST_ROOT + 'bcids/dataset/' + vm.identifier;
+                        }
                     },
                     function (data, status, headers, config) {
                         if (status == 404) {
@@ -39,9 +42,7 @@ angular.module('fims.lookup')
                         }
                     });
 
-                if (vm.metadata['rdf:type'].value == DATASET_TYPE) {
-                    metadata.download = REST_ROOT + 'bcids/dataset/' + vm.identifier;
-                }
+
                 return metadata;
             } else {
                 $state.go('lookup');

@@ -20,7 +20,7 @@
     </table>
 
     <p ng-show="vm.metadata.message"><strong>{{ vm.metadata.message }}</strong></p>
-    <table ng-show="vm.metadata.download">
+    <table ng-show="!vm.metadata.message && vm.metadata.download">
         <tr>
             <th>Download:</th>
             <th>
@@ -29,7 +29,7 @@
         </tr>
     </table>
 
-    <table ng-show="vm.metadata.datasets">
+    <table ng-show="!vm.metadata.message && vm.metadata.datasets">
         <tr>
             <th>Date</th>
             <th>Identifier</th>
