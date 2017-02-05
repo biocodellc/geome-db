@@ -15,6 +15,7 @@ outputfile = ''
 rowNum = 1
 reload(sys)
 sys.setdefaultencoding('utf8')
+dynamicValues =[]
 
 
 def main(argv):
@@ -41,38 +42,44 @@ def main(argv):
    	print usage
 	sys.exit(2)
 
-def createDynamicProperties(weight,length):
-    values =[]
+def addDynamicProperty(key,value):
+    global dynamicValues
+    if value is not None:
+        value = value.strip()
+        if value != '':
+            dynamicValues.append('\'' +key + '\':\''+value+'\'');
+
+def createDynamicProperties(weight,length,extractionID,fundingSource,geneticTissueType,microHabitat,permitInformation,previousTissueID,principalInvestigator,sampleOwnerInstitutionCode,substratum,tissueStorageID,wormsID):
+    global dynamicValues
     retValue = ''
 
-    if weight is not None:
-        weight = weight.strip()
-    else: 
-        weight = ''
-    if length is not None:
-        length = length.strip()
-    else:
-        length = ''
+    addDynamicProperty('weightInGrams',weight)
+    addDynamicProperty('lengthInCentimeters',length)
+    addDynamicProperty('extractionId',extractionID)
+    addDynamicProperty('fundingSource',fundingSource)
+    addDynamicProperty('geneticTissueType',geneticTissueType)
+    addDynamicProperty('microHabitat',microHabitat)
+    addDynamicProperty('permitInformation',permitInformation)
+    addDynamicProperty('previousTissueID',previousTissueID)
+    addDynamicProperty('principalInvestigator',principalInvestigator)
+    addDynamicProperty('sampleOwnerInstitutionCode',sampleOwnerInstitutionCode)
+    addDynamicProperty('substratum',substratum)
+    addDynamicProperty('tissueStorageID',tissueStorageID)
+    addDynamicProperty('wormsID',wormsID)
 
-    if (weight != ''):
-        values.append('\'weightInGrams\':\''+weight+'\'')
-    if (length!= ''):
-        values.append('\'lengthInCentimeters\':\''+length+'\'')
-
-    if (len(values) == 0):
+    if (len(dynamicValues) == 0):
         return ''
     else:
         retValue += '{'
         count = 0
-        for s in values:
+        for s in dynamicValues:
             if (count):
                 retValue += ','
             count += 1
-            retValue += values[0]
+            retValue += dynamicValues[0]
         retValue += '}'
 
         return retValue
-
 
 #Friendly method for creating dates
 def createDate(year,month,day):
@@ -104,6 +111,7 @@ def createDate(year,month,day):
 def writeOutput(expeditionCode,csvfile,page,auth):
     global basisOfRecord
     global rowNum
+    global dynamicValues
     #if page == 0:
 #	# the list of fields in this header must match the list of fields in the list, below
 #    	header = [ 'materialSampleID','dcterms_references','expeditionCode', 'associatedMedia', 'associatedReferences', 'associatedSequences', 'associatedTaxa', 'basisOfRecord', 'basisOfIdentification', 'class', 'coordinateUncertaintyInMeters', 'country', 'dateCollected', 'dateIdentified', 'decimalLatitude', 'decimalLongitude', 'dynamicProperties', 'establishmentMeans', 'eventRemarks', 'extractionID', 'family', 'fieldNotes', 'fundingSource', 'geneticTissueType', 'genus', 'georeferenceProtocol', 'habitat', 'identifiedBy', 'island', 'islandGroup', 'lifeStage', 'locality', 'maximumDepthInMeters', 'maximumDistanceAboveSurfaceInMeters', 'microHabitat', 'minimumDepthInMeters', 'minimumDistanceAboveSurfaceInMeters',  'occurrenceID', 'occurrenceRemarks', 'order', 'permitInformation', 'phylum', 'plateID', 'preservative', 'previousIdentifications', 'previousTissueID', 'principalInvestigator', 'recordedBy', 'sampleOwnerInstitutionCode', 'samplingProtocol', 'sequence', 'sex', 'species', 'stateProvince', 'subSpecies', 'substratum', 'taxonRemarks', 'tissueStorageID', 'vernacularName',  'wellID', 'wormsID'  ]
@@ -124,9 +132,71 @@ def writeOutput(expeditionCode,csvfile,page,auth):
     if (nextPage <= totalPages):
 	# loop each row
     	for row in j['content']:
+            # initialize the dynamicValues array
+            dynamicValues = []
 	    # construct a list so we can use the csv file writer
 	    try:
-                list = [ rowNum, row['bcid'], expeditionCode, row['associatedMedia'], row['associatedReferences'], row['associatedSequences'], row['associatedTaxa'], row['basisOfIdentification'], basisOfRecord, row['class'], row['coordinateUncertaintyInMeters'], row['country'], createDate(row['yearCollected'],row['monthCollected'],row['dayCollected']),createDate(row['yearIdentified'],row['monthIdentified'],row['dayIdentified']), createDynamicProperties(row['weight'],row['length']),"%.6f" %float(row['decimalLatitude']), "%.6f" %float(row['decimalLongitude']), row['establishmentMeans'], row['eventRemarks'], row['extractionID'], row['family'], row['fieldNotes'], row['fundingSource'], row['geneticTissueType'], row['genus'], row['georeferenceProtocol'], row['habitat'], row['identifiedBy'], row['island'], row['islandGroup'], row['lifeStage'], row['locality'], row['maximumDepthInMeters'], row['maximumDistanceAboveSurfaceInMeters'], row['microHabitat'], row['minimumDepthInMeters'], row['minimumDistanceAboveSurfaceInMeters'], row['occurrenceID'], row['occurrenceRemarks'], row['order'], row['permitInformation'], row['phylum'], row['plateID'], row['preservative'], row['previousIdentifications'], row['previousTissueID'], row['principalInvestigator'], row['recordedBy'], row['sampleOwnerInstitutionCode'], row['samplingProtocol'], row['sex'], row['species'], row['stateProvince'], row['subSpecies'], row['substratum'], row['taxonRemarks'], row['tissueStorageID'], row['vernacularName'], row['wellID'], row['wormsID']  ]	
+                list = [rowNum, 
+                        row['bcid'],   
+                        expeditionCode, 
+                        row['associatedMedia'], 
+                        row['associatedReferences'], 
+                        row['associatedSequences'], 
+                        row['associatedTaxa'], 
+                        row['basisOfIdentification'], 
+                        basisOfRecord, 
+                        row['class'], 
+                        row['coordinateUncertaintyInMeters'], 
+                        row['country'], 
+                        createDate(row['yearCollected'], row['monthCollected'], row['dayCollected']),
+                        createDate(row['yearIdentified'], row['monthIdentified'], row['dayIdentified']), 
+                        createDynamicProperties(
+                            row['weight'],
+                            row['length'],
+                            row['extractionID'], 
+                            row['fundingSource'], 
+                            row['geneticTissueType'], 
+                            row['microHabitat'], 
+                            row['permitInformation'], 
+                            row['previousTissueID'], 
+                            row['principalInvestigator'], 
+                            row['sampleOwnerInstitutionCode'], 
+                            row['substratum'], 
+                            row['tissueStorageID'], 
+                            row['wormsID'] ) ,
+                        "%.6f" %float(row['decimalLatitude']), 
+                        "%.6f" %float(row['decimalLongitude']), 
+                        row['establishmentMeans'], 
+                        row['eventRemarks'], 
+                        row['family'], 
+                        row['fieldNotes'], 
+                        row['genus'], 
+                        row['georeferenceProtocol'], 
+                        row['habitat'], 
+                        row['identifiedBy'], 
+                        row['island'], 
+                        row['islandGroup'], 
+                        row['lifeStage'], 
+                        row['locality'], 
+                        row['maximumDepthInMeters'], 
+                        row['maximumDistanceAboveSurfaceInMeters'], 
+                        row['minimumDepthInMeters'], 
+                        row['minimumDistanceAboveSurfaceInMeters'], 
+                        row['occurrenceID'], 
+                        row['occurrenceRemarks'], 
+                        row['order'], 
+                        row['phylum'], 
+                        row['preservative'], 
+                        row['previousIdentifications'], 
+                        row['recordedBy'], 
+                        row['samplingProtocol'], 
+                        row['sex'], 
+                        row['species'], 
+                        row['stateProvince'], 
+                        row['subSpecies'], 
+                        row['taxonRemarks'], 
+                        row['vernacularName']
+                        ]	
             	csvfile.writerow(list)
                 rowNum = rowNum + 1
 	    except ValueError:

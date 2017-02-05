@@ -1,8 +1,8 @@
 #INSERT INTO table (a,b,c) VALUES (1,2,3) 
 #  ON DUPLICATE KEY UPDATE c=c+1; 
 
-DROP TABLE IF EXISTS samplesForIPT2;
-CREATE TABLE samplesForIPT2 ( 
+DROP TABLE IF EXISTS samplesForIPT;
+CREATE TABLE samplesForIPT ( 
 	materialSampleID int,
 	dcterms_references varchar(255),
 	collectionCode varchar(255),
@@ -22,11 +22,8 @@ CREATE TABLE samplesForIPT2 (
 	decimalLongitude text,
 	establishmentMeans text,
 	eventRemarks text,
-	extractionID text,
 	family text,
 	fieldNotes text,
-	fundingSource text,
-	geneticTissueType text,
 	genus text,
 	georeferenceProtocol text,
 	habitat text,
@@ -37,31 +34,22 @@ CREATE TABLE samplesForIPT2 (
 	locality text,
 	maximumDepthInMeters text,
 	maximumDistanceAboveSurfaceInMeters text,
-	microHabitat text,
 	minimumDepthInMeters text,
 	minimumDistanceAboveSurfaceInMeters text,
 	occurrenceID text,
 	occurrenceRemarks text,
 	ordr text,
-	permitInformation text,
 	phylum text,
-	plateID text,
 	preparations text,
 	previousIdentifications text,
-	previousTissueID text,
 	principalInvestigator text,
 	recordedBy text,
-	sampleOwnerInstitutionCode text,
 	samplingProtocol text,
 	sex text,
 	species text,
 	stateProvince text,
 	subSpecies text,
-	substratum text,
 	taxonRemarks text,
-	tissueStorageID text,
 	vernacularName text,
-	wellID text,
-	wormsID text,
 	primary key (materialSampleID,dcterms_references)
 );
