@@ -75,8 +75,8 @@ def createDynamicProperties(weight,length,extractionID,fundingSource,geneticTiss
         for s in dynamicValues:
             if (count):
                 retValue += ','
+            retValue += dynamicValues[count]
             count += 1
-            retValue += dynamicValues[0]
         retValue += '}'
 
         return retValue

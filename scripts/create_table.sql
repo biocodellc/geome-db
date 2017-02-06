@@ -42,7 +42,6 @@ CREATE TABLE samplesForIPT (
 	phylum text,
 	preparations text,
 	previousIdentifications text,
-	principalInvestigator text,
 	recordedBy text,
 	samplingProtocol text,
 	sex text,
