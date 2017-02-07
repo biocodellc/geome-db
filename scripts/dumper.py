@@ -8,6 +8,9 @@ import os
 import getopt
 from pprint import pprint
 
+# script for setting up Darwin Core Archive for DIPNet data
+# Run this script and generates CSV output file which can then
+# be called using the mysql "LOAD DATA INFILE ..." function
 basisOfRecord = 'PreservedSpecimen'
 username = ''
 password = ''
@@ -17,7 +20,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 dynamicValues =[]
 
-
+# run program with arguments
 def main(argv):
    global username 
    global password
@@ -42,6 +45,7 @@ def main(argv):
    	print usage
 	sys.exit(2)
 
+# add an individual dynamic property, ensuring there is data and formatting JSON
 def addDynamicProperty(key,value):
     global dynamicValues
     if value is not None:
@@ -49,7 +53,8 @@ def addDynamicProperty(key,value):
         if value != '':
             dynamicValues.append('\'' +key + '\':\''+value+'\'');
 
-def createDynamicProperties(weight,length,extractionID,fundingSource,geneticTissueType,microHabitat,permitInformation,previousTissueID,principalInvestigator,sampleOwnerInstitutionCode,substratum,tissueStorageID,wormsID):
+# construct the dynamic properties elements, which are fields of interest but not directly mapped to darwin core terms
+def createDynamicProperties(weight,length,extractionID,fundingSource,geneticTissueType,microHabitat,permitInformation,previousTissueID,principalInvestigator,substratum,tissueStorageID,wormsID):
     global dynamicValues
     retValue = ''
 
@@ -62,7 +67,6 @@ def createDynamicProperties(weight,length,extractionID,fundingSource,geneticTiss
     addDynamicProperty('permitInformation',permitInformation)
     addDynamicProperty('previousTissueID',previousTissueID)
     addDynamicProperty('principalInvestigator',principalInvestigator)
-    addDynamicProperty('sampleOwnerInstitutionCode',sampleOwnerInstitutionCode)
     addDynamicProperty('substratum',substratum)
     addDynamicProperty('tissueStorageID',tissueStorageID)
     addDynamicProperty('wormsID',wormsID)
@@ -81,7 +85,7 @@ def createDynamicProperties(weight,length,extractionID,fundingSource,geneticTiss
 
         return retValue
 
-#Friendly method for creating dates
+# Create darwin core compliant date fields
 def createDate(year,month,day):
     if year is not None:
         year = year.strip()
@@ -107,15 +111,11 @@ def createDate(year,month,day):
         return year+'-'+month+'-'+day
 
 
-# Function for writing expeditionCode output
+# write output for each expedition
 def writeOutput(expeditionCode,csvfile,page,auth):
     global basisOfRecord
     global rowNum
     global dynamicValues
-    #if page == 0:
-#	# the list of fields in this header must match the list of fields in the list, below
-#    	header = [ 'materialSampleID','dcterms_references','expeditionCode', 'associatedMedia', 'associatedReferences', 'associatedSequences', 'associatedTaxa', 'basisOfRecord', 'basisOfIdentification', 'class', 'coordinateUncertaintyInMeters', 'country', 'dateCollected', 'dateIdentified', 'decimalLatitude', 'decimalLongitude', 'dynamicProperties', 'establishmentMeans', 'eventRemarks', 'extractionID', 'family', 'fieldNotes', 'fundingSource', 'geneticTissueType', 'genus', 'georeferenceProtocol', 'habitat', 'identifiedBy', 'island', 'islandGroup', 'lifeStage', 'locality', 'maximumDepthInMeters', 'maximumDistanceAboveSurfaceInMeters', 'microHabitat', 'minimumDepthInMeters', 'minimumDistanceAboveSurfaceInMeters',  'occurrenceID', 'occurrenceRemarks', 'order', 'permitInformation', 'phylum', 'plateID', 'preservative', 'previousIdentifications', 'previousTissueID', 'principalInvestigator', 'recordedBy', 'sampleOwnerInstitutionCode', 'samplingProtocol', 'sequence', 'sex', 'species', 'stateProvince', 'subSpecies', 'substratum', 'taxonRemarks', 'tissueStorageID', 'vernacularName',  'wellID', 'wormsID'  ]
-#       csvfile.writerow(header)
     nextPage = page + 1
     url = "http://biscicol.org/dipnet/rest/v1.1/projects/query/json/?limit=10&page="+str(page)
     payload = {'expeditions':expeditionCode}
@@ -136,20 +136,25 @@ def writeOutput(expeditionCode,csvfile,page,auth):
             dynamicValues = []
 	    # construct a list so we can use the csv file writer
 	    try:
-                list = [rowNum, 
-                        row['bcid'],   
-                        expeditionCode, 
+                list = [
+                        row['bcid'],  # occurrenceID 
+                        row['bcid'],  # materialSampleID 
+                        expeditionCode, # collectionCode
                         row['associatedMedia'], 
                         row['associatedReferences'], 
                         row['associatedSequences'], 
                         row['associatedTaxa'], 
-                        row['basisOfIdentification'], 
-                        basisOfRecord, 
+                        row['basisOfIdentification'], # identificationRemarks
+                        basisOfRecord, # basisOfRecord
+                        row['materialSampleID'],  # catalogNumber 
                         row['class'], 
                         row['coordinateUncertaintyInMeters'], 
                         row['country'], 
-                        createDate(row['yearCollected'], row['monthCollected'], row['dayCollected']),
-                        createDate(row['yearIdentified'], row['monthIdentified'], row['dayIdentified']), 
+                        createDate(row['yearCollected'], row['monthCollected'], row['dayCollected']), # dateCollected
+                        row['yearCollected'], # year
+                        row['monthCollected'], # month
+                        row['dayCollected'], # day
+                        createDate(row['yearIdentified'], row['monthIdentified'], row['dayIdentified']), #dateIdentified
                         createDynamicProperties(
                             row['weight'],
                             row['length'],
@@ -160,10 +165,9 @@ def writeOutput(expeditionCode,csvfile,page,auth):
                             row['permitInformation'], 
                             row['previousTissueID'], 
                             row['principalInvestigator'], 
-                            row['sampleOwnerInstitutionCode'], 
                             row['substratum'], 
                             row['tissueStorageID'], 
-                            row['wormsID'] ) ,
+                            row['wormsID'] ) ,  #dynamicProperties
                         "%.6f" %float(row['decimalLatitude']), 
                         "%.6f" %float(row['decimalLongitude']), 
                         row['establishmentMeans'], 
@@ -174,7 +178,8 @@ def writeOutput(expeditionCode,csvfile,page,auth):
                         row['georeferenceProtocol'], 
                         row['habitat'], 
                         row['identifiedBy'], 
-                        row['island'], 
+                        row['sampleOwnerInstitutionCode'], # institutionCode
+                        row['island'],
                         row['islandGroup'], 
                         row['lifeStage'], 
                         row['locality'], 
@@ -182,7 +187,6 @@ def writeOutput(expeditionCode,csvfile,page,auth):
                         row['maximumDistanceAboveSurfaceInMeters'], 
                         row['minimumDepthInMeters'], 
                         row['minimumDistanceAboveSurfaceInMeters'], 
-                        row['occurrenceID'], 
                         row['occurrenceRemarks'], 
                         row['order'], 
                         row['phylum'], 
@@ -207,13 +211,11 @@ def writeOutput(expeditionCode,csvfile,page,auth):
 if __name__ == "__main__":
    main(sys.argv[1:])
 
-# Authenticate
+# set URL login endpoint
 url = 'http://biscicol.org/dipnet/rest/v1.1/authenticationService/login'
 payload = {'username': username, 'password': password}
+# authenticate
 auth = requests.post(url, data=payload )
-
-#expeditionCode = "acaach_CyB_JD"
-#outputFilename = "output.csv" 
 
 # truncate file (opening the file with w+ mode truncates the file)
 f = open(outputfile, "w+")
@@ -222,13 +224,13 @@ f.close()
 # open file as csv file for writing
 csvWriter =  csv.writer(open(outputfile, "wb+"))
 
-# Return Graphs
+# get a list of expeditions for this project
 url = 'http://biscicol.org/dipnet/rest/v1.1/projects/25/graphs'
 r = requests.get(url, cookies=auth.cookies)
 
-# Loop expeditions
+# loop expeditions data and write to specified output file
 for expedition in r.json():
-    # Get Expedition Code
+    # get expedition code, excluding anything the word test
     if not ("TEST") in expedition["expeditionCode"]:
     	print "processing " + expedition["expeditionCode"]
     	writeOutput(expedition["expeditionCode"], csvWriter, 0, auth)
