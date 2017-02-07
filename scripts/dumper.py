@@ -54,7 +54,7 @@ def addDynamicProperty(key,value):
             dynamicValues.append('\'' +key + '\':\''+value+'\'');
 
 # construct the dynamic properties elements, which are fields of interest but not directly mapped to darwin core terms
-def createDynamicProperties(weight,length,extractionID,fundingSource,geneticTissueType,microHabitat,permitInformation,previousTissueID,principalInvestigator,substratum,tissueStorageID,wormsID):
+def createDynamicProperties(weight,length,extractionID,fundingSource,geneticTissueType,microHabitat,permitInformation,previousTissueID,principalInvestigator,substratum,tissueStorageID,wormsID,bcid):
     global dynamicValues
     retValue = ''
 
@@ -70,6 +70,7 @@ def createDynamicProperties(weight,length,extractionID,fundingSource,geneticTiss
     addDynamicProperty('substratum',substratum)
     addDynamicProperty('tissueStorageID',tissueStorageID)
     addDynamicProperty('wormsID',wormsID)
+    addDynamicProperty('bcid',bcid)
 
     if (len(dynamicValues) == 0):
         return ''
@@ -137,8 +138,8 @@ def writeOutput(expeditionCode,csvfile,page,auth):
 	    # construct a list so we can use the csv file writer
 	    try:
                 list = [
-                        row['bcid'],  # occurrenceID 
-                        row['bcid'],  # materialSampleID 
+                        'http://n2t.net/'+row['bcid'], # occurrenceID 
+                        'http://n2t.net/'+row['bcid'], # materialSampleID 
                         expeditionCode, # collectionCode
                         row['associatedMedia'], 
                         row['associatedReferences'], 
@@ -167,7 +168,8 @@ def writeOutput(expeditionCode,csvfile,page,auth):
                             row['principalInvestigator'], 
                             row['substratum'], 
                             row['tissueStorageID'], 
-                            row['wormsID'] ) ,  #dynamicProperties
+                            row['wormsID'],
+                            row['bcid']) ,  #dynamicProperties
                         "%.6f" %float(row['decimalLatitude']), 
                         "%.6f" %float(row['decimalLongitude']), 
                         row['establishmentMeans'], 
