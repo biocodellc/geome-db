@@ -22,6 +22,11 @@ angular.module('dipnetApp')
                 templateUrl: "app/components/validation/validation.html",
                 controller: "ValidationCtrl as vm"
             })
+            .state('bcidMetadata', {
+                url: "/bcids/metadata/*ark",
+                templateUrl: "app/components/bcids/metadata.html",
+                controller: "MetadataCtrl as vm"
+            })
             .state('resetPass', {
                 url: "/resetPass",
                 templateUrl: "app/components/users/resetPass.html",
@@ -36,7 +41,6 @@ angular.module('dipnetApp')
                 url: "/query",
                 templateUrl: "app/components/query/query.html",
                 controller: "QueryCtrl as vm",
-                loginRequired: true
             })
             .state('profile', {
                 url: "/secure/profile?error",

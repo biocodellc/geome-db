@@ -18,7 +18,7 @@ angular.module('fims.validation')
             vm.projectId = PROJECT_ID;
             vm.isAuthenticated = AuthFactory.isAuthenticated;
             vm.dataTypes = {
-                fims: true,
+                fims: false,
                 fastq: false,
                 fasta: false
             };

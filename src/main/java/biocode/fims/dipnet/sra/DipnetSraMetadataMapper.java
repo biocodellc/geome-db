@@ -26,10 +26,6 @@ public class DipnetSraMetadataMapper extends AbstractSraMetadataMapper {
 
     public DipnetSraMetadataMapper(ArrayNode resources) {
 
-//        if (fastqMetadata == null) {
-//            throw new FimsRuntimeException(SraCode.MISSING_FASTQ_METADATA, 400);
-//        }
-
         if (resources == null || resources.size() == 0) {
             throw new FimsRuntimeException(SraCode.MISSING_DATASET, 400);
         }
@@ -73,6 +69,7 @@ public class DipnetSraMetadataMapper extends AbstractSraMetadataMapper {
                 title = fastqMetadata.getLibraryStrategy() + "_" + sample.get("phylum").asText();
             }
 
+            metadata.add(sampleId);
             metadata.add(sampleId);
             metadata.add(title);
             metadata.add(fastqMetadata.getLibraryStrategy());
