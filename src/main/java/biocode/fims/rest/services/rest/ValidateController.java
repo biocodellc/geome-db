@@ -1,7 +1,6 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.entities.Expedition;
 import biocode.fims.entities.Project;
 import biocode.fims.fasta.FastaData;
 import biocode.fims.fastq.FastqMetadata;
@@ -11,7 +10,6 @@ import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.ServerErrorException;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.rest.FimsService;
@@ -21,13 +19,9 @@ import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.*;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
@@ -36,7 +30,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
@@ -103,7 +96,7 @@ public class ValidateController extends FimsService {
 
         // create a new processController
         ProcessController processController = new ProcessController(projectId, expeditionCode);
-        processController.setOutputFolder(uploadPath());
+        processController.setOutputFolder(defaultOutputDirectory());
 
         // place the processController in the session here so that we can track the status of the validation process
         // by calling biocode.fims.rest/validate/status
@@ -176,7 +169,7 @@ public class ValidateController extends FimsService {
                 fmProps.put(FastqFileManager.NAME, props);
             }
 
-            File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+            File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
 
             // Create the process object --- this is done each time to orient the application
             Process process = new Process.ProcessBuilder(fimsMetadataFileManager, processController)

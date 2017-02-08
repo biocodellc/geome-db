@@ -168,7 +168,7 @@ public class QueryController extends FimsService {
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
-            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, DipnetQueryUtils.getJsonFieldTransforms(getMapping()), uploadPath(), ",");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, DipnetQueryUtils.getJsonFieldTransforms(getMapping()), defaultOutputDirectory(), ",");
 
             Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
@@ -208,7 +208,7 @@ public class QueryController extends FimsService {
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
-            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, uploadPath(), DipnetQueryUtils.getJsonFieldTransforms(getMapping()))
+            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, defaultOutputDirectory(), DipnetQueryUtils.getJsonFieldTransforms(getMapping()))
                     .latPath(DipnetQueryUtils.getLatitudePointer())
                     .longPath(DipnetQueryUtils.getLongitudePointer())
                     .namePath(DipnetQueryUtils.getUniqueKeyPointer())
@@ -248,7 +248,7 @@ public class QueryController extends FimsService {
             JsonWriter metadataJsonWriter = new DelimitedTextJsonWriter(
                     results,
                     DipnetQueryUtils.getJsonFieldTransforms(getMapping()),
-                    uploadPath(),
+                    defaultOutputDirectory(),
                     ","
             );
 
@@ -259,7 +259,7 @@ public class QueryController extends FimsService {
             JsonWriter fastaJsonWriter = new FastaJsonWriter(
                     results,
                     DipnetQueryUtils.getFastaSequenceFields(getMapping()),
-                    uploadPath(),
+                    defaultOutputDirectory(),
                     fastaSequenceFilters);
 
             File fastaFile = fastaJsonWriter.write();
@@ -273,7 +273,7 @@ public class QueryController extends FimsService {
                 fileMap.put("dipnet-fims-output.fasta", fastaFile);
             }
 
-            Response.ResponseBuilder response = Response.ok(FileUtils.zip(fileMap, uploadPath()), "application/zip");
+            Response.ResponseBuilder response = Response.ok(FileUtils.zip(fileMap, defaultOutputDirectory()), "application/zip");
 
             response.header("Content-Disposition",
                     "attachment; filename=dipnet-fims-output.zip");
@@ -318,7 +318,7 @@ public class QueryController extends FimsService {
 
         ArrayNode results = elasticSearchQuerier.getAllResults();
 
-        JsonWriter jsonWriter = new ExcelJsonWriter(results, DipnetQueryUtils.getJsonFieldTransforms(getMapping()), getMapping().getDefaultSheetName(), uploadPath());
+        JsonWriter jsonWriter = new ExcelJsonWriter(results, DipnetQueryUtils.getJsonFieldTransforms(getMapping()), getMapping().getDefaultSheetName(), defaultOutputDirectory());
 
         File file = jsonWriter.write();
 
@@ -330,8 +330,8 @@ public class QueryController extends FimsService {
             logger.error("failed to open excel file", e);
         }
 
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), justData);
-        file = t.createExcelFileFromExistingSources("Samples", uploadPath());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData);
+        file = t.createExcelFileFromExistingSources("Samples", defaultOutputDirectory());
         Response.ResponseBuilder response = Response.ok(file);
 
         response.header("Content-Disposition",
@@ -476,7 +476,7 @@ public class QueryController extends FimsService {
             return mapping;
         }
 
-        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+        File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
 
         mapping = new Mapping();
         mapping.addMappingRules(configFile);
