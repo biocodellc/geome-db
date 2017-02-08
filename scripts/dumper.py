@@ -8,6 +8,9 @@ import os
 import getopt
 from pprint import pprint
 
+# script for setting up Darwin Core Archive for DIPNet data
+# Run this script and generates CSV output file which can then
+# be called using the mysql "LOAD DATA INFILE ..." function
 basisOfRecord = 'PreservedSpecimen'
 username = ''
 password = ''
@@ -15,8 +18,9 @@ outputfile = ''
 rowNum = 1
 reload(sys)
 sys.setdefaultencoding('utf8')
+dynamicValues =[]
 
-
+# run program with arguments
 def main(argv):
    global username 
    global password
@@ -41,40 +45,48 @@ def main(argv):
    	print usage
 	sys.exit(2)
 
-def createDynamicProperties(weight,length):
-    values =[]
+# add an individual dynamic property, ensuring there is data and formatting JSON
+def addDynamicProperty(key,value):
+    global dynamicValues
+    if value is not None:
+        value = value.strip()
+        if value != '':
+            dynamicValues.append('\'' +key + '\':\''+value+'\'');
+
+# construct the dynamic properties elements, which are fields of interest but not directly mapped to darwin core terms
+def createDynamicProperties(weight,length,extractionID,fundingSource,geneticTissueType,microHabitat,permitInformation,previousTissueID,principalInvestigator,substratum,tissueStorageID,wormsID,bcid):
+    global dynamicValues
     retValue = ''
 
-    if weight is not None:
-        weight = weight.strip()
-    else: 
-        weight = ''
-    if length is not None:
-        length = length.strip()
-    else:
-        length = ''
+    addDynamicProperty('weightInGrams',weight)
+    addDynamicProperty('lengthInCentimeters',length)
+    addDynamicProperty('extractionId',extractionID)
+    addDynamicProperty('fundingSource',fundingSource)
+    addDynamicProperty('geneticTissueType',geneticTissueType)
+    addDynamicProperty('microHabitat',microHabitat)
+    addDynamicProperty('permitInformation',permitInformation)
+    addDynamicProperty('previousTissueID',previousTissueID)
+    addDynamicProperty('principalInvestigator',principalInvestigator)
+    addDynamicProperty('substratum',substratum)
+    addDynamicProperty('tissueStorageID',tissueStorageID)
+    addDynamicProperty('wormsID',wormsID)
+    addDynamicProperty('bcid',bcid)
 
-    if (weight != ''):
-        values.append('\'weightInGrams\':\''+weight+'\'')
-    if (length!= ''):
-        values.append('\'lengthInCentimeters\':\''+length+'\'')
-
-    if (len(values) == 0):
+    if (len(dynamicValues) == 0):
         return ''
     else:
         retValue += '{'
         count = 0
-        for s in values:
+        for s in dynamicValues:
             if (count):
                 retValue += ','
+            retValue += dynamicValues[count]
             count += 1
-            retValue += values[0]
         retValue += '}'
 
         return retValue
 
-
-#Friendly method for creating dates
+# Create darwin core compliant date fields
 def createDate(year,month,day):
     if year is not None:
         year = year.strip()
@@ -100,14 +112,11 @@ def createDate(year,month,day):
         return year+'-'+month+'-'+day
 
 
-# Function for writing expeditionCode output
+# write output for each expedition
 def writeOutput(expeditionCode,csvfile,page,auth):
     global basisOfRecord
     global rowNum
-    #if page == 0:
-#	# the list of fields in this header must match the list of fields in the list, below
-#    	header = [ 'materialSampleID','dcterms_references','expeditionCode', 'associatedMedia', 'associatedReferences', 'associatedSequences', 'associatedTaxa', 'basisOfRecord', 'basisOfIdentification', 'class', 'coordinateUncertaintyInMeters', 'country', 'dateCollected', 'dateIdentified', 'decimalLatitude', 'decimalLongitude', 'dynamicProperties', 'establishmentMeans', 'eventRemarks', 'extractionID', 'family', 'fieldNotes', 'fundingSource', 'geneticTissueType', 'genus', 'georeferenceProtocol', 'habitat', 'identifiedBy', 'island', 'islandGroup', 'lifeStage', 'locality', 'maximumDepthInMeters', 'maximumDistanceAboveSurfaceInMeters', 'microHabitat', 'minimumDepthInMeters', 'minimumDistanceAboveSurfaceInMeters',  'occurrenceID', 'occurrenceRemarks', 'order', 'permitInformation', 'phylum', 'plateID', 'preservative', 'previousIdentifications', 'previousTissueID', 'principalInvestigator', 'recordedBy', 'sampleOwnerInstitutionCode', 'samplingProtocol', 'sequence', 'sex', 'species', 'stateProvince', 'subSpecies', 'substratum', 'taxonRemarks', 'tissueStorageID', 'vernacularName',  'wellID', 'wormsID'  ]
-#       csvfile.writerow(header)
+    global dynamicValues
     nextPage = page + 1
     url = "http://biscicol.org/dipnet/rest/v1.1/projects/query/json/?limit=10&page="+str(page)
     payload = {'expeditions':expeditionCode}
@@ -124,9 +133,76 @@ def writeOutput(expeditionCode,csvfile,page,auth):
     if (nextPage <= totalPages):
 	# loop each row
     	for row in j['content']:
+            # initialize the dynamicValues array
+            dynamicValues = []
 	    # construct a list so we can use the csv file writer
 	    try:
-                list = [ rowNum, row['bcid'], expeditionCode, row['associatedMedia'], row['associatedReferences'], row['associatedSequences'], row['associatedTaxa'], row['basisOfIdentification'], basisOfRecord, row['class'], row['coordinateUncertaintyInMeters'], row['country'], createDate(row['yearCollected'],row['monthCollected'],row['dayCollected']),createDate(row['yearIdentified'],row['monthIdentified'],row['dayIdentified']), createDynamicProperties(row['weight'],row['length']),"%.6f" %float(row['decimalLatitude']), "%.6f" %float(row['decimalLongitude']), row['establishmentMeans'], row['eventRemarks'], row['extractionID'], row['family'], row['fieldNotes'], row['fundingSource'], row['geneticTissueType'], row['genus'], row['georeferenceProtocol'], row['habitat'], row['identifiedBy'], row['island'], row['islandGroup'], row['lifeStage'], row['locality'], row['maximumDepthInMeters'], row['maximumDistanceAboveSurfaceInMeters'], row['microHabitat'], row['minimumDepthInMeters'], row['minimumDistanceAboveSurfaceInMeters'], row['occurrenceID'], row['occurrenceRemarks'], row['order'], row['permitInformation'], row['phylum'], row['plateID'], row['preservative'], row['previousIdentifications'], row['previousTissueID'], row['principalInvestigator'], row['recordedBy'], row['sampleOwnerInstitutionCode'], row['samplingProtocol'], row['sex'], row['species'], row['stateProvince'], row['subSpecies'], row['substratum'], row['taxonRemarks'], row['tissueStorageID'], row['vernacularName'], row['wellID'], row['wormsID']  ]	
+                list = [
+                        'http://n2t.net/'+row['bcid'], # occurrenceID 
+                        'http://n2t.net/'+row['bcid'], # materialSampleID 
+                        expeditionCode, # collectionCode
+                        row['associatedMedia'], 
+                        row['associatedReferences'], 
+                        row['associatedSequences'], 
+                        row['associatedTaxa'], 
+                        row['basisOfIdentification'], # identificationRemarks
+                        basisOfRecord, # basisOfRecord
+                        row['materialSampleID'],  # catalogNumber 
+                        row['class'], 
+                        row['coordinateUncertaintyInMeters'], 
+                        row['country'], 
+                        createDate(row['yearCollected'], row['monthCollected'], row['dayCollected']), # dateCollected
+                        row['yearCollected'], # year
+                        row['monthCollected'], # month
+                        row['dayCollected'], # day
+                        createDate(row['yearIdentified'], row['monthIdentified'], row['dayIdentified']), #dateIdentified
+                        createDynamicProperties(
+                            row['weight'],
+                            row['length'],
+                            row['extractionID'], 
+                            row['fundingSource'], 
+                            row['geneticTissueType'], 
+                            row['microHabitat'], 
+                            row['permitInformation'], 
+                            row['previousTissueID'], 
+                            row['principalInvestigator'], 
+                            row['substratum'], 
+                            row['tissueStorageID'], 
+                            row['wormsID'],
+                            row['bcid']) ,  #dynamicProperties
+                        "%.6f" %float(row['decimalLatitude']), 
+                        "%.6f" %float(row['decimalLongitude']), 
+                        row['establishmentMeans'], 
+                        row['eventRemarks'], 
+                        row['family'], 
+                        row['fieldNotes'], 
+                        row['genus'], 
+                        row['georeferenceProtocol'], 
+                        row['habitat'], 
+                        row['identifiedBy'], 
+                        row['sampleOwnerInstitutionCode'], # institutionCode
+                        row['island'],
+                        row['islandGroup'], 
+                        row['lifeStage'], 
+                        row['locality'], 
+                        row['maximumDepthInMeters'], 
+                        row['maximumDistanceAboveSurfaceInMeters'], 
+                        row['minimumDepthInMeters'], 
+                        row['minimumDistanceAboveSurfaceInMeters'], 
+                        row['occurrenceRemarks'], 
+                        row['order'], 
+                        row['phylum'], 
+                        row['preservative'], 
+                        row['previousIdentifications'], 
+                        row['recordedBy'], 
+                        row['samplingProtocol'], 
+                        row['sex'], 
+                        row['species'], 
+                        row['stateProvince'], 
+                        row['subSpecies'], 
+                        row['taxonRemarks'], 
+                        row['vernacularName']
+                        ]	
             	csvfile.writerow(list)
                 rowNum = rowNum + 1
 	    except ValueError:
@@ -137,13 +213,11 @@ def writeOutput(expeditionCode,csvfile,page,auth):
 if __name__ == "__main__":
    main(sys.argv[1:])
 
-# Authenticate
+# set URL login endpoint
 url = 'http://biscicol.org/dipnet/rest/v1.1/authenticationService/login'
 payload = {'username': username, 'password': password}
+# authenticate
 auth = requests.post(url, data=payload )
-
-#expeditionCode = "acaach_CyB_JD"
-#outputFilename = "output.csv" 
 
 # truncate file (opening the file with w+ mode truncates the file)
 f = open(outputfile, "w+")
@@ -152,13 +226,13 @@ f.close()
 # open file as csv file for writing
 csvWriter =  csv.writer(open(outputfile, "wb+"))
 
-# Return Graphs
+# get a list of expeditions for this project
 url = 'http://biscicol.org/dipnet/rest/v1.1/projects/25/graphs'
 r = requests.get(url, cookies=auth.cookies)
 
-# Loop expeditions
+# loop expeditions data and write to specified output file
 for expedition in r.json():
-    # Get Expedition Code
+    # get expedition code, excluding anything the word test
     if not ("TEST") in expedition["expeditionCode"]:
     	print "processing " + expedition["expeditionCode"]
     	writeOutput(expedition["expeditionCode"], csvWriter, 0, auth)
