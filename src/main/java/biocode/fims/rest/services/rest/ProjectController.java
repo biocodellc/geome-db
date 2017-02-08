@@ -37,7 +37,6 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.metrics.valuecount.InternalValueCount;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
+import javax.servlet.ServletContext;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -61,6 +62,9 @@ import java.util.List;
 @Controller
 @Path("projects")
 public class ProjectController extends FimsAbstractProjectsController {
+
+    @Context
+    private ServletContext context;
 
     private static Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
@@ -498,7 +502,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         }
 
         Map<String, String> expeditionMap = new HashMap<>();
-        for (Expedition expedition: project.getExpeditions()) {
+        for (Expedition expedition : project.getExpeditions()) {
             expeditionMap.put(expedition.getExpeditionCode(), expedition.getExpeditionTitle());
         }
 
@@ -636,7 +640,8 @@ public class ProjectController extends FimsAbstractProjectsController {
 
         Map<String, File> fileMap = new HashMap<>();
         fileMap.put("bioSample-attributes.tsv", bioSampleFile);
-        fileMap.put("sra-attributes.tsv", sraMetadataFile);
+        fileMap.put("sra-metadata.tsv", sraMetadataFile);
+        fileMap.put("sra-step-by-step-instructions.pdf", new File(context.getRealPath("docs/sra-step-by-step-instructions.pdf")));
 
         Response.ResponseBuilder response = Response.ok(FileUtils.zip(fileMap, uploadPath()), "application/zip");
         response.header("Content-Disposition",
