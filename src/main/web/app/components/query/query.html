@@ -82,6 +82,7 @@
                         <li><a href="#" ng-click="vm.downloadCsv()">CSV</a></li>
                         <li><a href="#" ng-click="vm.downloadKml()">KML</a></li>
                         <li><a href="#" ng-click="vm.downloadFasta()">Fasta</a></li>
+                        <li><a href="#" ng-click="vm.downloadFastq()">Fastq</a></li>
                         <li><a href="#" ng-show="vm.selectedExpeditions.length === 1" ng-click="vm.downloadExcel()">Excel
                             Template</a></li>
                     </ul>
@@ -103,13 +104,13 @@
             </thead>
             <tbody>
                 <tr sly-repeat="resource in vm.queryResults">
-                    <td uib-popover="{{value}}"
+                    <td uib-popover-html="value | trusted_html"
                         popover-enable="value.length > 35"
                         popover-trigger="mouseenter"
                         ng-class="{hideOverflow: value.length > 35}"
                         popover-placement="bottom"
                         popover-append-to-body="true"
-                        sly-repeat="value in resource">{{ value }}
+                        sly-repeat="value in resource" ng-bind-html="value | trusted_html">
                     </td>
                 </tr>
             </tbody>

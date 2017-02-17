@@ -7,6 +7,7 @@ import biocode.fims.digester.Mapping;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
 import biocode.fims.fasta.FastaSequenceFields;
 import biocode.fims.fasta.fileManagers.FastaFileManager;
+import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.query.JsonFieldTransform;
 import com.fasterxml.jackson.core.JsonPointer;
 
@@ -179,5 +180,97 @@ public class DipnetQueryUtils {
 
     public static JsonPointer getUniqueKeyPointer() {
         return JsonPointer.compile("/urn:materialSampleID");
+    }
+
+    public static List<JsonFieldTransform> getFastqJsonFieldTransforms(Mapping mapping) {
+        List<JsonFieldTransform> jsonFieldTransforms = getJsonFieldTransforms(mapping);
+
+        jsonFieldTransforms.add(
+                new JsonFieldTransform(
+                        "fastqLibraryStrategy",
+                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/libraryStrategy"),
+                        DataType.STRING
+                )
+        );
+        jsonFieldTransforms.add(
+                new JsonFieldTransform(
+                        "fastqLibrarySource",
+                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/librarySource"),
+                        DataType.STRING
+                )
+        );
+        jsonFieldTransforms.add(
+                new JsonFieldTransform(
+                        "fastqLibrarySelection",
+                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/librarySelection"),
+                        DataType.STRING
+                )
+        );
+        jsonFieldTransforms.add(
+                new JsonFieldTransform(
+                        "fastqLibraryLayout",
+                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/libraryLayout"),
+                        DataType.STRING
+                )
+        );
+        jsonFieldTransforms.add(
+                new JsonFieldTransform(
+                        "fastqPlatform",
+                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/platform"),
+                        DataType.STRING
+                )
+        );
+        jsonFieldTransforms.add(
+                new JsonFieldTransform(
+                        "fastqInstrumentModel",
+                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/instrumentModel"),
+                        DataType.STRING
+                )
+        );
+        jsonFieldTransforms.add(
+                new JsonFieldTransform(
+                        "fastqDesignDescription",
+                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/designDescription"),
+                        DataType.STRING
+                )
+        );
+        jsonFieldTransforms.add(
+                new JsonFieldTransform(
+                        "bioSample Accession",
+                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/bioSample/accession"),
+                        DataType.STRING
+                )
+        );
+        jsonFieldTransforms.add(
+                new JsonFieldTransform(
+                        "bioProject Accession",
+                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/bioSample/bioProjectAccession"),
+                        DataType.STRING
+                )
+        );
+        jsonFieldTransforms.add(
+                new JsonFieldTransform(
+                        "Experiment Accession",
+                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/bioSample/experiment/experimentAccession"),
+                        DataType.STRING
+                )
+        );
+        jsonFieldTransforms.add(
+                new JsonFieldTransform(
+                        "Study Accession",
+                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/bioSample/experiment/studyAccession"),
+                        DataType.STRING
+                )
+        );
+        jsonFieldTransforms.add(
+                // currently only getting the 1st Run Accession
+                new JsonFieldTransform(
+                        "Run Accessions",
+                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/bioSample/experiment/runAccessions/0"),
+                        DataType.STRING
+                )
+        );
+
+        return jsonFieldTransforms;
     }
 }

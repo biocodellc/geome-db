@@ -11,6 +11,7 @@ import biocode.fims.elasticSearch.query.ElasticSearchQuery;
 import biocode.fims.elasticSearch.query.ElasticSearchQuerier;
 import biocode.fims.fasta.FastaJsonWriter;
 import biocode.fims.fasta.FastaSequenceJsonFieldFilter;
+import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
@@ -20,6 +21,7 @@ import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
+import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.lucene.search.join.ScoreMode;
@@ -108,6 +110,9 @@ public class QueryController extends FimsService {
         Page<ObjectNode> results = elasticSearchQuerier.getPageableResults();
 
         List<JsonFieldTransform> writerColumns = DipnetQueryUtils.getJsonFieldTransforms(getMapping());
+        writerColumns.add(
+                new JsonFieldTransform("fastqMetadata", JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS), null)
+        );
         Page<ObjectNode> transformedResults = results.map(r -> JsonTransformer.transform(r, writerColumns));
 
         return Response.ok(transformedResults).build();
@@ -284,6 +289,44 @@ public class QueryController extends FimsService {
             } else {
                 return response.build();
             }
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
+        }
+    }
+
+    @POST
+    @Path("/fastq/")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces("application/zip")
+    public Response queryFastq(
+            MultivaluedMap<String, String> form) {
+
+        try {
+            // Build the query, etc..
+            ElasticSearchQuery query = POSTElasticSearchQuery(form);
+
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+
+            ArrayNode results = elasticSearchQuerier.getAllResults();
+
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(
+                    results,
+                    DipnetQueryUtils.getFastqJsonFieldTransforms(getMapping()),
+                    defaultOutputDirectory(),
+                    ","
+            );
+
+            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+
+            response.header("Content-Disposition",
+                    "attachment; filename=dipnet-fims-output-including-fastq-metadata.csv");
+
+            // Return response
+            return response.build();
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
                 return Response.noContent().build();
