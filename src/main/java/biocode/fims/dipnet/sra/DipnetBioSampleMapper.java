@@ -3,7 +3,7 @@ package biocode.fims.dipnet.sra;
 import biocode.fims.exceptions.SraCode;
 import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fastq.sra.BioSampleMapper;
+import biocode.fims.ncbi.sra.submission.BioSampleMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;

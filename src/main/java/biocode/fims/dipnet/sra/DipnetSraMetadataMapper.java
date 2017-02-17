@@ -4,7 +4,7 @@ import biocode.fims.exceptions.SraCode;
 import biocode.fims.fastq.FastqMetadata;
 import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fastq.sra.AbstractSraMetadataMapper;
+import biocode.fims.ncbi.sra.submission.AbstractSraMetadataMapper;
 import biocode.fims.rest.SpringObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
