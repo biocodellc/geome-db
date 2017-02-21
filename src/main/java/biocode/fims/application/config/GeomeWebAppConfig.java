@@ -17,20 +17,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * configuration class for dipnet-fims webapp
+ * configuration class for geome-fims webapp
  */
 @Configuration
 @EnableScheduling
-@Import({DipnetAppConfig.class, FimsWebAppConfig.class})
-public class DipnetWebAppConfig {
+@Import({GeomeAppConfig.class, FimsWebAppConfig.class})
+public class GeomeWebAppConfig {
 
-    @Autowired DipnetAppConfig dipnetAppConfig;
+    @Autowired
+    GeomeAppConfig geomeAppConfig;
     @Autowired FimsAppConfig fimsAppConfig;
 
     @Bean
     @Scope("prototype")
     public FastaFileManager fastaFileManager() {
-        FastaPersistenceManager persistenceManager = new ESFastaPersistenceManager(dipnetAppConfig.esClient);
+        FastaPersistenceManager persistenceManager = new ESFastaPersistenceManager(geomeAppConfig.esClient);
         return new FastaFileManager(persistenceManager, fimsAppConfig.settingsManager, 
                 fimsAppConfig.bcidService, fimsAppConfig.expeditionService);
     }
@@ -38,7 +39,7 @@ public class DipnetWebAppConfig {
     @Bean
     @Scope("prototype")
     public FastqFileManager fastqFileManager() {
-        FastqPersistenceManager persistenceManager = new ESFastqPersistenceManager(dipnetAppConfig.esClient);
+        FastqPersistenceManager persistenceManager = new ESFastqPersistenceManager(geomeAppConfig.esClient);
         return new FastqFileManager(persistenceManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService,
                 fimsAppConfig.settingsManager);
     }
@@ -54,12 +55,12 @@ public class DipnetWebAppConfig {
 
     @Bean
     public ElasticSearchIndexer esIndexer() {
-        return new ElasticSearchIndexer(dipnetAppConfig.esClient);
+        return new ElasticSearchIndexer(geomeAppConfig.esClient);
     }
 
     @Bean
     public QueryAuthorizer queryAuthorizer() {
-        return new QueryAuthorizer(dipnetAppConfig.projectService, fimsAppConfig.settingsManager);
+        return new QueryAuthorizer(geomeAppConfig.projectService, fimsAppConfig.settingsManager);
     }
 
 }

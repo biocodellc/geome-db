@@ -3,7 +3,7 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
-import biocode.fims.dipnet.query.DipnetQueryUtils;
+import biocode.fims.geome.query.GeomeQueryUtils;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterCondition;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
@@ -109,7 +109,7 @@ public class QueryController extends FimsService {
 
         Page<ObjectNode> results = elasticSearchQuerier.getPageableResults();
 
-        List<JsonFieldTransform> writerColumns = DipnetQueryUtils.getJsonFieldTransforms(getMapping());
+        List<JsonFieldTransform> writerColumns = GeomeQueryUtils.getJsonFieldTransforms(getMapping());
         writerColumns.add(
                 new JsonFieldTransform("fastqMetadata", JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS), null)
         );
@@ -173,12 +173,12 @@ public class QueryController extends FimsService {
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
-            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, DipnetQueryUtils.getJsonFieldTransforms(getMapping()), defaultOutputDirectory(), ",");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, GeomeQueryUtils.getJsonFieldTransforms(getMapping()), defaultOutputDirectory(), ",");
 
             Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
             response.header("Content-Disposition",
-                    "attachment; filename=dipnet-fims-output.csv");
+                    "attachment; filename=geome-fims-output.csv");
 
             return response.build();
         } catch (FimsRuntimeException e) {
@@ -213,16 +213,16 @@ public class QueryController extends FimsService {
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
-            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, defaultOutputDirectory(), DipnetQueryUtils.getJsonFieldTransforms(getMapping()))
-                    .latPath(DipnetQueryUtils.getLatitudePointer())
-                    .longPath(DipnetQueryUtils.getLongitudePointer())
-                    .namePath(DipnetQueryUtils.getUniqueKeyPointer())
+            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, defaultOutputDirectory(), GeomeQueryUtils.getJsonFieldTransforms(getMapping()))
+                    .latPath(GeomeQueryUtils.getLatitudePointer())
+                    .longPath(GeomeQueryUtils.getLongitudePointer())
+                    .namePath(GeomeQueryUtils.getUniqueKeyPointer())
                     .build();
 
             Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
             response.header("Content-Disposition",
-                    "attachment; filename=dipnet-fims-output.kml");
+                    "attachment; filename=geome-fims-output.kml");
 
             // Return response
             return response.build();
@@ -252,7 +252,7 @@ public class QueryController extends FimsService {
 
             JsonWriter metadataJsonWriter = new DelimitedTextJsonWriter(
                     results,
-                    DipnetQueryUtils.getJsonFieldTransforms(getMapping()),
+                    GeomeQueryUtils.getJsonFieldTransforms(getMapping()),
                     defaultOutputDirectory(),
                     ","
             );
@@ -263,25 +263,25 @@ public class QueryController extends FimsService {
 
             JsonWriter fastaJsonWriter = new FastaJsonWriter(
                     results,
-                    DipnetQueryUtils.getFastaSequenceFields(getMapping()),
+                    GeomeQueryUtils.getFastaSequenceFields(getMapping()),
                     defaultOutputDirectory(),
                     fastaSequenceFilters);
 
             File fastaFile = fastaJsonWriter.write();
 
             Map<String, File> fileMap = new HashMap<>();
-            fileMap.put("dipnet-fims-output.csv", metadataFile);
+            fileMap.put("geome-db-output.csv", metadataFile);
 
             if (fastaFile.getName().endsWith(".zip")) {
-                fileMap.put("dipnet-fims-output-fasta.zip", fastaFile);
+                fileMap.put("geome-db-output-fasta.zip", fastaFile);
             } else {
-                fileMap.put("dipnet-fims-output.fasta", fastaFile);
+                fileMap.put("geome-db-output.fasta", fastaFile);
             }
 
             Response.ResponseBuilder response = Response.ok(FileUtils.zip(fileMap, defaultOutputDirectory()), "application/zip");
 
             response.header("Content-Disposition",
-                    "attachment; filename=dipnet-fims-output.zip");
+                    "attachment; filename=geome-fims-output.zip");
 
             // Return response
             if (response == null) {
@@ -315,7 +315,7 @@ public class QueryController extends FimsService {
 
             JsonWriter jsonWriter = new DelimitedTextJsonWriter(
                     results,
-                    DipnetQueryUtils.getFastqJsonFieldTransforms(getMapping()),
+                    GeomeQueryUtils.getFastqJsonFieldTransforms(getMapping()),
                     defaultOutputDirectory(),
                     ","
             );
@@ -323,7 +323,7 @@ public class QueryController extends FimsService {
             Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
             response.header("Content-Disposition",
-                    "attachment; filename=dipnet-fims-output-including-fastq-metadata.csv");
+                    "attachment; filename=geome-fims-output-including-fastq-metadata.csv");
 
             // Return response
             return response.build();
@@ -361,7 +361,7 @@ public class QueryController extends FimsService {
 
         ArrayNode results = elasticSearchQuerier.getAllResults();
 
-        JsonWriter jsonWriter = new ExcelJsonWriter(results, DipnetQueryUtils.getJsonFieldTransforms(getMapping()), getMapping().getDefaultSheetName(), defaultOutputDirectory());
+        JsonWriter jsonWriter = new ExcelJsonWriter(results, GeomeQueryUtils.getJsonFieldTransforms(getMapping()), getMapping().getDefaultSheetName(), defaultOutputDirectory());
 
         File file = jsonWriter.write();
 
@@ -378,7 +378,7 @@ public class QueryController extends FimsService {
         Response.ResponseBuilder response = Response.ok(file);
 
         response.header("Content-Disposition",
-                "attachment; filename=dipnet-fims-output.xlsx");
+                "attachment; filename=geome-fims-output.xlsx");
 
         // Return response
         if (response == null) {
@@ -411,8 +411,8 @@ public class QueryController extends FimsService {
             throw new ForbiddenRequestException("unauthorized query.");
         }
 
-        List<ElasticSearchFilterField> filterFields = DipnetQueryUtils.getAvailableFilters(getMapping());
-        filterFields.add(DipnetQueryUtils.get_AllFilter());
+        List<ElasticSearchFilterField> filterFields = GeomeQueryUtils.getAvailableFilters(getMapping());
+        filterFields.add(GeomeQueryUtils.get_AllFilter());
 
         for (Map.Entry<String, List<String>> entry : form.entrySet()) {
 
@@ -443,7 +443,7 @@ public class QueryController extends FimsService {
     private List<FastaSequenceJsonFieldFilter> getFastaSequenceFilters(MultivaluedMap<String, String> form) {
         List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = new ArrayList<>();
 
-        List<ElasticSearchFilterField> fastaFilterFields = DipnetQueryUtils.getFastaFilters(getMapping());
+        List<ElasticSearchFilterField> fastaFilterFields = GeomeQueryUtils.getFastaFilters(getMapping());
 
         for (Map.Entry<String, List<String>> entry : form.entrySet()) {
 

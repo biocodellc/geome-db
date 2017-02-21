@@ -1,4 +1,4 @@
-Process for Submitting DIPNet data to Genbank
+Process for Submitting GeOMe data to Genbank
 
 Current Status
 #################################
@@ -28,7 +28,7 @@ Step 2: Submitting to Genbank SRA
 Step 3: GENBANK LINKER (FIMS INTEGRATION)
 #################################
 
-* This step runs automatically.  Daily polling of dipnet Bioproject data from Genbank from FIMS end looking for ARK keys in the specimen_voucher qualifier field and updating the graph w/ the accession number.
+* This step runs automatically.  Daily polling of GeOMe Bioproject data from Genbank from FIMS end looking for ARK keys in the specimen_voucher qualifier field and updating the graph w/ the accession number.
 
 Possible Tools and process to use for submitting legacy data to Genbank.
 #################################

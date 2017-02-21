@@ -1,4 +1,4 @@
-package biocode.fims.dipnet.sra;
+package biocode.fims.geome.sra;
 
 import biocode.fims.exceptions.SraCode;
 import biocode.fims.fastq.FastqMetadata;
@@ -18,13 +18,13 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class that maps dipnet project attributes to sra metadata
+ * Class that maps geome project attributes to sra metadata
  */
-public class DipnetSraMetadataMapper extends AbstractSraMetadataMapper {
+public class GeomeSraMetadataMapper extends AbstractSraMetadataMapper {
 
     private final Iterator<JsonNode> resourcesIt;
 
-    public DipnetSraMetadataMapper(ArrayNode resources) {
+    public GeomeSraMetadataMapper(ArrayNode resources) {
 
         if (resources == null || resources.size() == 0) {
             throw new FimsRuntimeException(SraCode.MISSING_DATASET, 400);

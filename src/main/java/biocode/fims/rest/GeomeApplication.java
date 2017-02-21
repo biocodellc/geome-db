@@ -3,11 +3,11 @@ package biocode.fims.rest;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 /**
- * * Jersey Application for Dipnet REST Services
+ * * Jersey Application for GeOMe REST Services
  */
-public class DipnetApplication extends FimsApplication {
+public class GeomeApplication extends FimsApplication {
 
-    public DipnetApplication() {
+    public GeomeApplication() {
         super();
         packages("biocode.fims.rest.services.rest");
         register(MultiPartFeature.class);

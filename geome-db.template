@@ -1,4 +1,4 @@
-###########  dipnet-fims settings  ##########
+###########  geome-db-fims settings  ##########
 
 projectId = biscicol_project_id
 
@@ -10,18 +10,19 @@ mapboxAccessToken = your_token
 
 ###########  biocode-fims-commons settings  ##########
 
-
-# the path to the wadl stylesheet
-wadlPath = /wadl.xsl
-
-# the webapp directory to use for caching config file, and storing templates for download
-uploadDir = tripleOutput
+## elasticSearch ##
+clusterName = elasticsearch
+clusterNodes = 127.0.0.1:9300
+clientIgnoreClusterName = false
+clientNodesSamplerInterval = 5s
+clientPingTimeout = 5s
+clientTransportSniff = true
 
 # the naan to use for the bcid rootIdentifier
 naan = 99999
 
 # the url where the webapp is deployed
-appRoot = http://www.biscicol.org/dipnet
+appRoot = http://www.geome-db.org/
 
 # ignoreUser defaults to false. If set to true then application does not run check to see if userId is unique
 # for a particular dataset.  That is, it allows users besides the dataset creator to load data to this dataset

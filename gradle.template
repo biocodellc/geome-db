@@ -1,6 +1,3 @@
-grettyPort = 8080
-grettyPath = /dipnet
-
 defaultEnvironment = local
 
 remoteWarDirectory =

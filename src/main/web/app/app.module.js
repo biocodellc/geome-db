@@ -1,4 +1,4 @@
-var app = angular.module('dipnetApp', [
+var app = angular.module('geomeApp', [
     'ui.router',
     'ui.bootstrap',
     'fims.query',
@@ -22,28 +22,28 @@ app.run(['UserFactory', function (UserFactory) {
 }]);
 
 angular.element(document).ready(function () {
-    if (!angular.isDefined(window.sessionStorage.dipnet)) {
+    if (!angular.isDefined(window.sessionStorage.geome)) {
         // initialize the biscicol sessionStorage object to not get undefined errors later when
-        // JSON.parse($window.sessionStorage.dipnet) is called
-        window.sessionStorage.dipnet = JSON.stringify({});
+        // JSON.parse($window.sessionStorage.geome) is called
+        window.sessionStorage.geome = JSON.stringify({});
     }
 
-    var dipnetSessionStorage = JSON.parse(window.sessionStorage.dipnet);
-    var accessToken = dipnetSessionStorage.accessToken;
+    var geomeSessionStorage = JSON.parse(window.sessionStorage.geome);
+    var accessToken = geomeSessionStorage.accessToken;
     if (!isTokenExpired() && accessToken) {
-        $.get('/dipnet/rest/users/profile?access_token=' + accessToken, function (data) {
+        $.get('/rest/users/profile?access_token=' + accessToken, function (data) {
             currentUser = data;
-            angular.bootstrap(document, ['dipnetApp']);
+            angular.bootstrap(document, ['geomeApp']);
         }).fail(function () {
-            angular.bootstrap(document, ['dipnetApp']);
+            angular.bootstrap(document, ['geomeApp']);
         });
     } else {
-        angular.bootstrap(document, ['dipnetApp']);
+        angular.bootstrap(document, ['geomeApp']);
     }
 });
 
 
-app.controller('dipnetCtrl', ['$rootScope', '$scope', '$state', '$location', 'AuthFactory',
+app.controller('geomeCtrl', ['$rootScope', '$scope', '$state', '$location', 'AuthFactory',
     function ($rootScope, $scope, $state, $location, AuthFactory) {
         $scope.error = $location.search()['error'];
 

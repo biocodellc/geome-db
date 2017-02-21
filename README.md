@@ -1,1 +1,1 @@
-This code drives the [DIPnet FIMS database](http://biscicol.org/dipnet/).
+This code drives the [GeOMe database](http://geome-db.org/).

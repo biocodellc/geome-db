@@ -1,4 +1,4 @@
-package biocode.fims.dipnet.repositories;
+package biocode.fims.geome.repositories;
 
 import biocode.fims.elasticSearch.EsResourceRepository;
 import biocode.fims.entities.Resource;
@@ -11,11 +11,11 @@ import java.util.List;
 /**
  * @author rjewing
  */
-public class DipnetResourceRepository extends EsResourceRepository implements FastqMetadataRepository, ResourceRepository {
+public class GeomeResourceRepository extends EsResourceRepository implements FastqMetadataRepository, ResourceRepository {
 
     private final FastqMetadataRepository fastqMetadataRepository;
 
-    public DipnetResourceRepository(Client esClient, FastqMetadataRepository fastqMetadataRepository) {
+    public GeomeResourceRepository(Client esClient, FastqMetadataRepository fastqMetadataRepository) {
         super(esClient);
         this.fastqMetadataRepository = fastqMetadataRepository;
     }

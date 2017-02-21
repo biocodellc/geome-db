@@ -1,6 +1,6 @@
 package biocode.fims.application.config;
 
-import biocode.fims.dipnet.repositories.DipnetResourceRepository;
+import biocode.fims.geome.repositories.GeomeResourceRepository;
 import biocode.fims.fastq.EsFastqMetadataRepository;
 import biocode.fims.elasticSearch.ESFimsMetadataPersistenceManager;
 import biocode.fims.fastq.FastqMetadataRepository;
@@ -20,14 +20,14 @@ import org.springframework.context.annotation.*;
 import javax.ws.rs.client.ClientBuilder;
 
 /**
- * Configuration class for and Dipnet-Fims application. Including cli and webapps
+ * Configuration class for and GeOMe-db-Fims application. Including cli and webapps
  */
 @Configuration
 @Import({FimsAppConfig.class, ElasticSearchAppConfig.class})
-// declaring this here allows us to override any properties that are also included in dipnet-fims.props
+// declaring this here allows us to override any properties that are also included in geome-db.props
 @PropertySource(value = "classpath:biocode-fims.props", ignoreResourceNotFound = true)
-@PropertySource("classpath:dipnet-fims.props")
-public class DipnetAppConfig {
+@PropertySource("classpath:geome-db.props")
+public class GeomeAppConfig {
     @Autowired
     private FimsAppConfig fimsAppConfig;
     @Autowired
@@ -50,8 +50,8 @@ public class DipnetAppConfig {
     }
 
     @Bean
-    public DipnetResourceRepository dipnetResourceRepository() {
-        return new DipnetResourceRepository(esClient, fastqMetadataRepository());
+    public GeomeResourceRepository geomeResourceRepository() {
+        return new GeomeResourceRepository(esClient, fastqMetadataRepository());
     }
     @Bean
     public BioSampleRepository bioSampleRepository() {
@@ -62,7 +62,7 @@ public class DipnetAppConfig {
 
     @Bean
     public SraAccessionHarvester sraAccessionHarvester() {
-        return new SraAccessionHarvester(dipnetResourceRepository(), bioSampleRepository(), projectService, fimsAppConfig.settingsManager);
+        return new SraAccessionHarvester(geomeResourceRepository(), bioSampleRepository(), projectService, fimsAppConfig.settingsManager);
     }
 
 }

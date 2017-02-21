@@ -8,7 +8,7 @@ import os
 import getopt
 from pprint import pprint
 
-# script for setting up Darwin Core Archive for DIPNet data
+# script for setting up Darwin Core Archive for GeOMe data
 # Run this script and generates CSV output file which can then
 # be called using the mysql "LOAD DATA INFILE ..." function
 basisOfRecord = 'PreservedSpecimen'
@@ -118,7 +118,7 @@ def writeOutput(expeditionCode,csvfile,page,auth):
     global rowNum
     global dynamicValues
     nextPage = page + 1
-    url = "http://biscicol.org/dipnet/rest/v1.1/projects/query/json/?limit=10&page="+str(page)
+    url = "http://geome-db.org/rest/v1.1/projects/query/json/?limit=10&page="+str(page)
     payload = {'expeditions':expeditionCode}
     response = requests.post(url, data=payload, cookies=auth.cookies)
     response.encoding = 'utf8'
@@ -214,7 +214,7 @@ if __name__ == "__main__":
    main(sys.argv[1:])
 
 # set URL login endpoint
-url = 'http://biscicol.org/dipnet/rest/v1.1/authenticationService/login'
+url = 'http://geome-db.org/rest/v1.1/authenticationService/login'
 payload = {'username': username, 'password': password}
 # authenticate
 auth = requests.post(url, data=payload )
@@ -227,7 +227,7 @@ f.close()
 csvWriter =  csv.writer(open(outputfile, "wb+"))
 
 # get a list of expeditions for this project
-url = 'http://biscicol.org/dipnet/rest/v1.1/projects/25/graphs'
+url = 'http://geome-db.org/rest/v1.1/projects/25/graphs'
 r = requests.get(url, cookies=auth.cookies)
 
 # loop expeditions data and write to specified output file

@@ -11,7 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- * Dipnet-Fims utility services
+ * geome utility services
  */
 @Controller
 @Path("utils/")

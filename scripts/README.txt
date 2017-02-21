@@ -1,4 +1,4 @@
-#Contained here is a script for dumping data from DIPNet and loading into a mysql table,
+#Contained here is a script for dumping data from GeOMe and loading into a mysql table,
 #which an installed IPT can reference
 
 # create the table -- first time only

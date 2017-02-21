@@ -47,7 +47,7 @@ public class UserController extends FimsAbstractUserController {
             String resetTokenURL = appRoot + "resetPass?resetToken=" +
                     user.getPasswordResetToken();
 
-            String emailBody = "You requested a password reset for your Dipnet-Fims account.\n\n" +
+            String emailBody = "You requested a password reset for your GeOMe-db account.\n\n" +
                     "Use the following link within the next 24 hrs to reset your password.\n\n" +
                     resetTokenURL + "\n\n" +
                     "Thanks";

@@ -1,4 +1,4 @@
-rootProject.name = 'dipnet-fims'
+rootProject.name = 'geome-db'
 
 include ":biocode-fims-commons"
 include ":biocode-fims-fuseki"

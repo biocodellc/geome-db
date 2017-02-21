@@ -1,4 +1,4 @@
-angular.module('dipnetApp')
+angular.module('geomeApp')
 
 .config(['$stateProvider', '$urlRouterProvider', '$urlMatcherFactoryProvider', '$locationProvider',
     function ($stateProvider, $urlRouterProvider, $urlMatcherFactoryProvider, $locationProvider) {

@@ -150,7 +150,7 @@ javascript.source {
 webAppDirName = "src/main/web"
 libsDirName = "../dist"
 
-mainClassName = "biocode.fims.dipnet.run.DipnetFusekiToESMigrator"
+mainClassName = ""
 project.ext.environment = project.hasProperty('environment') ? project.getProperty('environment') : defaultEnvironment
 
 //noinspection GroovyAssignabilityCheck
@@ -313,7 +313,7 @@ task updateDependencies {
     }
 }
 
-ext.remoteDeploy = { workingDir, remoteLibsDir, remoteWarDir ->
+ext.remoteDeploy = { workingDir, remoteLibsDir, remoteWarDir, remoteWarName ->
     ssh.run {
         session(remotes.biscicol) {
             // Cleanup to begin
@@ -327,12 +327,10 @@ ext.remoteDeploy = { workingDir, remoteLibsDir, remoteWarDir ->
             // Remove the old war file
             execute "/bin/rm " + workingDir + war.archiveName
             // Need to remove the war file itself-- we instead just copy it into /tmp for safekeeping in case next step fails
-            execute "/bin/mv " + remoteWarDir + "dipnet.war" + " /tmp/dipnet.deployed.war.backup"
-            // Need to execute zip command from the working Directory in order to get relative paths correct
-            execute "cd " + workingDir + ";/usr/bin/zip -r " + remoteWarDir + "dipnet.war " + " ."
+            execute "/bin/rm -fr " + remoteWarDir + remoteWarName
+            execute "cd " + workingDir + ";/usr/bin/zip -r " + remoteWarDir + remoteWarName + " ."
             // Cleanup
             execute "/bin/rm -rf " + workingDir
-            execute "/bin/rm /tmp/dipnet.deployed.war.backup"
         }
     }
 }
@@ -346,8 +344,8 @@ task deployFims {
     dependsOn war
 
     doLast {
-        def workingDir = "/tmp/dipnetProd/"
-        remoteDeploy(workingDir, remoteLibsDirectory, remoteWarDirectory)
+        def workingDir = "/tmp/geomeProd/"
+        remoteDeploy(workingDir, remoteLibsDirectory, remoteWarDirectory, "root-www.geome-db.org.war")
     }
 }
 
@@ -359,14 +357,14 @@ task deployFimsDev {
     dependsOn war
 
     doLast {
-        def workingDir = "/tmp/dipnetDev/"
-        remoteDeploy(workingDir, remoteDevLibsDirectory, remoteWarDevDirectory)
+        def workingDir = "/tmp/geomeDev/"
+        remoteDeploy(workingDir, remoteDevLibsDirectory, remoteWarDevDirectory, "root-www.geome-db.org.war")
 
     }
 }
 
 task fatWar(type: War) {
-    archiveName = "dipnet-fims-fat.war"
+    archiveName = "geome-db-fat.war"
 
     subprojects.each { subproject ->
         project.configurations.server.dependencies.addAll(subproject.configurations.server.dependencies)
@@ -386,7 +384,7 @@ task fatWar(type: War) {
 }
 
 task deployFimsLocal {
-    description = 'local dipnet fims deployment'
+    description = 'local geOMe db fims deployment'
 
     dependsOn setLocalEnv
     dependsOn fatWar
@@ -396,7 +394,7 @@ task deployFimsLocal {
             from fatWar.destinationDir
             into localWarDirectory
             include fatWar.archiveName
-            rename fatWar.archiveName, "dipnet.war"
+            rename fatWar.archiveName, "root.war"
         }
     }
 }

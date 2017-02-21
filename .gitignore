@@ -1,4 +1,3 @@
-src/main/web/app/components/auth/clientId.js
 .idea/*
 *.iml
 *.props
@@ -6,11 +5,10 @@ src/main/web/app/components/auth/clientId.js
 !src/main/resources/locale/*.properties
 !src/main/resources/settings-manager.properties
 !src/main/environment/*/log4j.properties
-dist/*
-build/*
-classes/*
-javadocs/*
-javadocs/
+dist
+build
+classes
+javadocs
 tripleOutput/
 .gradle
 jetty-env.xml

@@ -3,9 +3,9 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.config.ConfigurationFileEsMapper;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
-import biocode.fims.dipnet.query.DipnetQueryUtils;
-import biocode.fims.dipnet.sra.DipnetBioSampleMapper;
-import biocode.fims.dipnet.sra.DipnetSraMetadataMapper;
+import biocode.fims.geome.query.GeomeQueryUtils;
+import biocode.fims.geome.sra.GeomeBioSampleMapper;
+import biocode.fims.geome.sra.GeomeSraMetadataMapper;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
 import biocode.fims.entities.Expedition;
@@ -56,7 +56,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * DIPnet REST services dealing with projects
+ * geome REST services dealing with projects
  */
 @Scope("prototype")
 @Controller
@@ -125,7 +125,7 @@ public class ProjectController extends FimsAbstractProjectsController {
 
         ArrayNode filters = new SpringObjectMapper().createArrayNode();
 
-        for (ElasticSearchFilterField f : DipnetQueryUtils.getAvailableFilters(mapping)) {
+        for (ElasticSearchFilterField f : GeomeQueryUtils.getAvailableFilters(mapping)) {
             ObjectNode filter = filters.addObject();
             filter.put("field", f.getField());
             filter.put("displayName", f.getDisplayName());
@@ -632,8 +632,8 @@ public class ProjectController extends FimsAbstractProjectsController {
         fimsMetadataFileManager.setProcessController(processController);
         ArrayNode dataset = fimsMetadataFileManager.getDataset();
 
-        SraMetadataMapper metadataMapper = new DipnetSraMetadataMapper(dataset);
-        BioSampleMapper bioSampleMapper = new DipnetBioSampleMapper(dataset);
+        SraMetadataMapper metadataMapper = new GeomeSraMetadataMapper(dataset);
+        BioSampleMapper bioSampleMapper = new GeomeBioSampleMapper(dataset);
 
         File bioSampleFile = BioSampleAttributesGenerator.generateFile(bioSampleMapper, defaultOutputDirectory());
         File sraMetadataFile = SraMetadataGenerator.generateFile(metadataMapper, defaultOutputDirectory());

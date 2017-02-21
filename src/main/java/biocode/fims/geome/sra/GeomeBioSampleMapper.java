@@ -1,4 +1,4 @@
-package biocode.fims.dipnet.sra;
+package biocode.fims.geome.sra;
 
 import biocode.fims.exceptions.SraCode;
 import biocode.fims.fastq.fileManagers.FastqFileManager;
@@ -14,9 +14,9 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class that maps dipnet project attributes to sra BioSample attributes
+ * Class that maps geome project attributes to sra BioSample attributes
  */
-public class DipnetBioSampleMapper implements BioSampleMapper {
+public class GeomeBioSampleMapper implements BioSampleMapper {
     private static final String BLANK_ATTRIBUTE = "missing";
     private static final List<String> BIOSAMPLE_HEADERS = new ArrayList<String>() {{
         add("sample_name");
@@ -40,7 +40,7 @@ public class DipnetBioSampleMapper implements BioSampleMapper {
 
     private final Iterator<JsonNode> resourcesIt;
 
-    public DipnetBioSampleMapper(ArrayNode resources) {
+    public GeomeBioSampleMapper(ArrayNode resources) {
 
         if (resources == null || resources.size() == 0) {
             throw new FimsRuntimeException(SraCode.MISSING_DATASET, 400);

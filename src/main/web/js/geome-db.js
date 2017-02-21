@@ -1,12 +1,12 @@
 /* ====== General Utility Functions ======= */
-var appRoot = "/dipnet/";
-var RestRoot = "/dipnet/rest/v1/";
+var appRoot = "/";
+var RestRoot = "/rest/v1/";
 
 $.ajaxSetup({
     beforeSend: function(jqxhr, config) {
         jqxhr.config = config;
-        var dipnetSessionStorage = JSON.parse(window.sessionStorage.dipnet);
-        var accessToken = dipnetSessionStorage.accessToken;
+        var geomeSessionStorage = JSON.parse(window.sessionStorage.geome);
+        var accessToken = geomeSessionStorage.accessToken;
         if (accessToken && config.url.indexOf("access_token") == -1) {
             if (config.url.indexOf('?') > -1) {
                 config.url += "&access_token=" + accessToken;
@@ -42,8 +42,8 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
     // yet still resolve
     jqXHR.fail(function() {
         var args = Array.prototype.slice.call(arguments);
-        var dipnetSessionStorage = JSON.parse(window.sessionStorage.dipnet);
-        var refreshToken = dipnetSessionStorage.refreshToken;
+        var geomeSessionStorage = JSON.parse(window.sessionStorage.geome);
+        var refreshToken = geomeSessionStorage.refreshToken;
         if ((jqXHR.status === 401 || (jqXHR.status === 400 && jqXHR.responseJSON.usrMessage == "invalid_grant"))
                 && !isTokenExpired() && refreshToken) {
             $.ajax({
@@ -55,7 +55,7 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
                     refresh_token: refreshToken
                 }),
                 error: function() {
-                    window.sessionStorage.dipnet = JSON.stringify({});
+                    window.sessionStorage.geome = JSON.stringify({});
 
                     // reject with the original 401 data
                     dfd.rejectWith(jqXHR, args);
@@ -64,13 +64,13 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
                         window.location = appRoot + "login";
                 },
                 success: function(data) {
-                    var dipnetSessionStorage = {
+                    var geomeSessionStorage = {
                         accessToken: data.access_token,
                         refreshToken: data.refresh_token,
                         oAuthTimestamp: new Date().getTime()
                     };
 
-                    window.sessionStorage.dipnet = JSON.stringify(dipnetSessionStorage);
+                    window.sessionStorage.geome = JSON.stringify(geomeSessionStorage);
 
                     // retry with a copied originalOpts with refreshRequest.
                     var newOpts = $.extend({}, originalOpts, {
@@ -92,8 +92,8 @@ $.ajaxPrefilter(function(opts, originalOpts, jqXHR) {
 });
 
 function isTokenExpired() {
-    var dipnetSessionStorage = JSON.parse(window.sessionStorage.dipnet);
-    var oAuthTimestamp = dipnetSessionStorage.oAuthTimestamp;
+    var geomeSessionStorage = JSON.parse(window.sessionStorage.geome);
+    var oAuthTimestamp = geomeSessionStorage.oAuthTimestamp;
     var now = new Date().getTime();
 
     if (now - oAuthTimestamp > 1000 * 60 * 60 * 4)

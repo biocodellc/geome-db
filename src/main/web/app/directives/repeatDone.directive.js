@@ -1,4 +1,4 @@
-angular.module('dipnetApp')
+angular.module('geomeApp')
 
     .directive('repeatDone', function () {
         return function (scope, element, attrs) {

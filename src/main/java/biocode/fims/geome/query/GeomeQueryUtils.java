@@ -1,4 +1,4 @@
-package biocode.fims.dipnet.query;
+package biocode.fims.geome.query;
 
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.DataType;
@@ -16,11 +16,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Helper class for obtaining DIPNet specific Query information
+ * Helper class for obtaining GeOMe specific Query information
  *
  * @author RJ Ewing
  */
-public class DipnetQueryUtils {
+public class GeomeQueryUtils {
 
     private static final List<String> FILTER_COLUMNS = Arrays.asList(
             "principalInvestigator",

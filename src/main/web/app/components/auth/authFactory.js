@@ -30,8 +30,8 @@ angular.module('fims.auth')
             }
 
             function isTokenExpired() {
-                var dipnetSessionStorage = JSON.parse($window.sessionStorage.dipnet);
-                var oAuthTimestamp = dipnetSessionStorage.oAuthTimestamp;
+                var geomeSessionStorage = JSON.parse($window.sessionStorage.geome);
+                var oAuthTimestamp = geomeSessionStorage.oAuthTimestamp;
                 var now = new Date().getTime();
 
                 if (now - oAuthTimestamp > oAuth.USER_LOGIN_EXPIRATION) {
@@ -43,8 +43,8 @@ angular.module('fims.auth')
             }
 
             function getAccessToken() {
-                var dipnetSessionStorage = JSON.parse($window.sessionStorage.dipnet);
-                return dipnetSessionStorage.accessToken;
+                var geomeSessionStorage = JSON.parse($window.sessionStorage.geome);
+                return geomeSessionStorage.accessToken;
             }
 
             function login(username, password) {
@@ -72,14 +72,14 @@ angular.module('fims.auth')
             }
 
             function logout() {
-                $window.sessionStorage.dipnet = JSON.stringify({});
+                $window.sessionStorage.geome = JSON.stringify({});
                 if (authFactory)
                     authFactory.isAuthenticated = false;
             }
 
             function refreshAccessToken() {
-                var dipnetSessionStorage = JSON.parse($window.sessionStorage.dipnet);
-                var refreshToken = dipnetSessionStorage.refreshToken;
+                var geomeSessionStorage = JSON.parse($window.sessionStorage.geome);
+                var refreshToken = geomeSessionStorage.refreshToken;
                 if (checkAuthenticated() && !triedToRefresh && !angular.isUndefined(refreshToken)) {
                     var config = {
                         method: 'POST',
@@ -105,12 +105,12 @@ angular.module('fims.auth')
             }
 
             function setOAuthTokens(accessToken, refreshToken) {
-                var dipnetSessionStorage = {
+                var geomeSessionStorage = {
                     accessToken: accessToken,
                     refreshToken: refreshToken,
                     oAuthTimestamp: new Date().getTime()
                 };
 
-                $window.sessionStorage.dipnet = JSON.stringify(dipnetSessionStorage);
+                $window.sessionStorage.geome = JSON.stringify(geomeSessionStorage);
             }
         }]);
