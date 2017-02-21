@@ -59,11 +59,11 @@ angular.module('geomeApp')
                 templateUrl: "app/components/expeditions/expeditions.html",
                 controller: "ExpeditionCtrl as vm",
                 loginRequired: true
+            })
+            .state('notFound', {
+                url: '*path',
+                templateUrl: "app/partials/page-not-found.html"
             });
 
         $locationProvider.html5Mode(true);
-
-        // For any unmatched url, redirect to /
-        $urlRouterProvider.otherwise("/");
-
 }]);
