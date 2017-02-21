@@ -512,8 +512,13 @@ td.hideOverflow {
 .vertical-align > [class*=" col-"] {
     display: flex;
     align-items: center;     /* Align the flex-items vertically */
-    justify-content: center; /* Optional, to align inner flex-items
-                              horizontally within the column  */
+    justify-content: center; /* Optional, to align inner flex-items horizontally within the column  */
+    flex-flow: row wrap;
+}
+
+.vertical-align > [class^="col-"] > *,
+.vertical-align > [class*=" col-"] > * {
+    width: 100%;
 }
 
 /** Bootstrap Btn **/

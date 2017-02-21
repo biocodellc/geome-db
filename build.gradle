@@ -358,7 +358,7 @@ task deployFimsDev {
 
     doLast {
         def workingDir = "/tmp/geomeDev/"
-        remoteDeploy(workingDir, remoteDevLibsDirectory, remoteWarDevDirectory, "root-www.geome-db.org.war")
+        remoteDeploy(workingDir, remoteDevLibsDirectory, remoteWarDevDirectory, "root-www.dev.geome-db.org.war")
 
     }
 }
