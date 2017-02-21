@@ -70,7 +70,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         JSONObject response = new JSONObject();
 
         try {
-            File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+            File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
 
             Mapping mapping = new Mapping();
             mapping.addMappingRules(configFile);
@@ -99,7 +99,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Path("/{projectId}/filterOptions")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFilterOptions(@PathParam("projectId") int projectId) {
-        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+        File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
 
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);
@@ -120,7 +120,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDefinitions(@PathParam("projectId") int projectId,
                                    @PathParam("columnName") String columnName) {
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
         StringBuilder output = new StringBuilder();
 
         Iterator attributes = t.getMapping().getAllAttributes(t.getMapping().getDefaultSheetName()).iterator();
@@ -281,7 +281,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Path("/{projectId}/attributes")
     @Produces(MediaType.TEXT_HTML)
     public Response getAttributes(@PathParam("projectId") int projectId) {
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
         LinkedList<String> requiredColumns = t.getRequiredColumns("error");
         LinkedList<String> desiredColumns = t.getRequiredColumns("warning");
         // Use TreeMap for natural sorting of groups
@@ -637,12 +637,12 @@ public class ProjectController extends FimsAbstractProjectsController {
             @FormParam("projectId") Integer projectId) {
 
         // Create the template processor which handles all functions related to the template, reading, generation
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
 
         // Set the default sheet-name
         String defaultSheetname = t.getMapping().getDefaultSheetName();
 
-        File file = t.createExcelFile(defaultSheetname, uploadPath(), fields);
+        File file = t.createExcelFile(defaultSheetname, defaultOutputDirectory(), fields);
 
         // Catch a null file and return 204
         if (file == null)
@@ -659,7 +659,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Path("/{projectId}/uniqueKey")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUniqueKey(@PathParam("projectId") Integer projectId) {
-        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+        File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
 
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);
@@ -671,7 +671,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     @GET
     @Path("/{projectId}/config/refreshCache")
     public Response refreshCache(@PathParam("projectId") Integer projectId) {
-        File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
+        File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), false).getOutputFile();
 
         ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
         JSONObject mapping = ConfigurationFileEsMapper.convert(configFile);

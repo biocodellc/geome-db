@@ -78,12 +78,13 @@ angular.module('biscicolApp')
                 url: "/resourceTypes",
                 templateUrl: "app/components/creator/resourceTypes.jsp",
                 controller: "ResourceTypesCtrl as vm"
+            })
+            .state('notFound', {
+                url: '*path',
+                templateUrl: "app/partials/page-not-found.html"
             });
 
         $locationProvider.html5Mode(true);
-
-        // For any unmatched url, redirect to /
-        // $urlRouterProvider.otherwise("/");
 
         // redirect all legacy route
         $urlRouterProvider

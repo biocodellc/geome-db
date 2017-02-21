@@ -388,9 +388,9 @@ ext.remoteDeploy = { workingDir, remoteLibsDir, remoteWarDir ->
             // Remove the old war file
             execute "/bin/rm " + workingDir + war.archiveName
             // Need to remove the war file itself-- we instead just copy it into /tmp for safekeeping in case next step fails
-            execute "/bin/rm -fr " + remoteWarDir + "root.war"
+            execute "/bin/rm -fr " + remoteWarDir + "biscicol.war"
             // Need to execute zip command from the working Directory in order to get relative paths correct
-            execute "cd " + workingDir + ";/usr/bin/zip -r " + remoteWarDir + "root.war " + " ."
+            execute "cd " + workingDir + ";/usr/bin/zip -r " + remoteWarDir + "biscicol.war " + " ."
             // Cleanup
             execute "/bin/rm -rf " + workingDir
         }
@@ -456,7 +456,7 @@ task deployFimsLocal {
             from fatWar.destinationDir
             into localWarDirectory
             include fatWar.archiveName
-            rename fatWar.archiveName, "root.war"
+            rename fatWar.archiveName, "biscicol.war"
         }
     }
 }

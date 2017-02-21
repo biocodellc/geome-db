@@ -248,7 +248,7 @@ public class QueryController extends FimsService {
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
-            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), ",");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), defaultOutputDirectory(), ",");
 
             Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
@@ -294,7 +294,7 @@ public class QueryController extends FimsService {
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
-            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), ",");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), defaultOutputDirectory(), ",");
 
             Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
@@ -338,7 +338,7 @@ public class QueryController extends FimsService {
 
             Mapping mapping = getMapping(projectId);
 
-            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, uploadPath(), BiscicolQueryUtils.getJsonFieldTransforms(mapping))
+            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, defaultOutputDirectory(), BiscicolQueryUtils.getJsonFieldTransforms(mapping))
                     .latPath(BiscicolQueryUtils.getLatitudePointer(mapping))
                     .longPath(BiscicolQueryUtils.getLongitudePointer(mapping))
                     .namePath(BiscicolQueryUtils.getUniqueKeyPointer(mapping))
@@ -394,7 +394,7 @@ public class QueryController extends FimsService {
 
             Mapping mapping = getMapping(projectId);
 
-            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, uploadPath(), BiscicolQueryUtils.getJsonFieldTransforms(mapping))
+            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, defaultOutputDirectory(), BiscicolQueryUtils.getJsonFieldTransforms(mapping))
                     .latPath(BiscicolQueryUtils.getLatitudePointer(mapping))
                     .longPath(BiscicolQueryUtils.getLongitudePointer(mapping))
                     .namePath(BiscicolQueryUtils.getUniqueKeyPointer(mapping))
@@ -452,7 +452,7 @@ public class QueryController extends FimsService {
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
-            JsonWriter jsonWriter = new CspaceJsonWriter(results, uploadPath(), validation);
+            JsonWriter jsonWriter = new CspaceJsonWriter(results, defaultOutputDirectory(), validation);
             Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
             // Return response
@@ -492,7 +492,7 @@ public class QueryController extends FimsService {
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
-            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), "\t");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), defaultOutputDirectory(), "\t");
 
             Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
@@ -537,7 +537,7 @@ public class QueryController extends FimsService {
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
-            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), uploadPath(), "\t");
+            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), defaultOutputDirectory(), "\t");
 
             Response.ResponseBuilder response = Response.ok(jsonWriter.write());
 
@@ -585,7 +585,7 @@ public class QueryController extends FimsService {
     }
 
     private Response writeExcelResponse(ArrayNode results) {
-        JsonWriter jsonWriter = new ExcelJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), getMapping(projectId).getDefaultSheetName(), uploadPath());
+        JsonWriter jsonWriter = new ExcelJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), getMapping(projectId).getDefaultSheetName(), defaultOutputDirectory());
 
         File file = jsonWriter.write();
 
@@ -597,8 +597,8 @@ public class QueryController extends FimsService {
             logger.error("failed to open excel file", e);
         }
 
-        TemplateProcessor t = new TemplateProcessor(projectId, uploadPath(), justData);
-        file = t.createExcelFileFromExistingSources("Samples", uploadPath());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData);
+        file = t.createExcelFileFromExistingSources("Samples", defaultOutputDirectory());
         Response.ResponseBuilder response = Response.ok(file);
 
         response.header("Content-Disposition",
@@ -871,7 +871,7 @@ public class QueryController extends FimsService {
         }
 
         if (configFile == null) {
-            configFile = new ConfigurationFileFetcher(projectId, uploadPath(), true).getOutputFile();
+            configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
         }
 
         mapping = new Mapping();

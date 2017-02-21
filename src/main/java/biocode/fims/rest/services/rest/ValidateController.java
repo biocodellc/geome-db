@@ -88,7 +88,7 @@ public class ValidateController extends FimsService {
 
         // create a new processController
         ProcessController processController = new ProcessController(projectId, expeditionCode);
-        processController.setOutputFolder(uploadPath());
+        processController.setOutputFolder(defaultOutputDirectory());
 
         // place the processController in the session here so that we can track the status of the validation process
         // by calling biocode.fims.rest/validate/status
@@ -113,7 +113,7 @@ public class ValidateController extends FimsService {
                 fmProps.put(FimsMetadataFileManager.NAME, props);
             }
 
-            File configFile = new ConfigurationFileFetcher(projectId, uploadPath(), false).getOutputFile();
+            File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), false).getOutputFile();
 
             // Create the process object --- this is done each time to orient the application
             Process process = new Process.ProcessBuilder(fimsMetadataFileManager, processController)
