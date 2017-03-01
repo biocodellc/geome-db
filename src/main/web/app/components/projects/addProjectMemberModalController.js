@@ -10,7 +10,7 @@ angular.module('fims.projects')
             vm.username = null;
             vm.creatingUser = false;
             vm.passwordRequired = true;
-            vm.showUsername = false;
+            vm.showUsername = true;
 
             vm.addMember = addMember;
             vm.createUser = createUser;
