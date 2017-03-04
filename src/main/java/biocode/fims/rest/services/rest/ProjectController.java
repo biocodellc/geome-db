@@ -353,7 +353,7 @@ public class ProjectController extends FimsAbstractProjectsController {
 
                 // Fetch any existing content for this key
                 if (group == null || group.equals("")) {
-                    group = "Available Columns";
+                    group = "Default Columns";
                 }
                 StringBuilder existing = groups.get(group);
 
