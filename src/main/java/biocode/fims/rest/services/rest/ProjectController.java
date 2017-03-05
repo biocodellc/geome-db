@@ -296,6 +296,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         return output.toString();
     }
 
+    // TODO refactor this to return json
     @GET
     @Path("/{projectId}/attributes")
     @Produces(MediaType.TEXT_HTML)
@@ -305,6 +306,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         LinkedList<String> desiredColumns = t.getRequiredColumns("warning");
         // Use TreeMap for natural sorting of groups
         Map<String, StringBuilder> groups = new TreeMap<String, StringBuilder>();
+        String defaultGroupName = "Default Columns";
 
         //StringBuilder output = new StringBuilder();
         // A list of names we've already added
@@ -353,7 +355,7 @@ public class ProjectController extends FimsAbstractProjectsController {
 
                 // Fetch any existing content for this key
                 if (group == null || group.equals("")) {
-                    group = "Default Columns";
+                    group = defaultGroupName;
                 }
                 StringBuilder existing = groups.get(group);
 
@@ -378,7 +380,6 @@ public class ProjectController extends FimsAbstractProjectsController {
         }
 
         // Iterate through any defined groups, which makes the template processor easier to navigate
-        Iterator it = groups.entrySet().iterator();
         StringBuilder output = new StringBuilder();
         output.append("<a href='#' id='select_all'>Select ALL</a> | ");
         output.append("<a href='#' id='select_none'>Select NONE</a> | ");
@@ -398,10 +399,32 @@ public class ProjectController extends FimsAbstractProjectsController {
                 "});" +
                 "</script>");
 
-        int count = 0;
+        // super hacky, but print the default group first
+        StringBuilder defaultGroup = groups.remove(defaultGroupName);
+        String groupName = defaultGroupName;
+
+        // Anchors cannot have spaces in the name so we replace them with underscores
+        String massagedGroupName = groupName.replaceAll(" ", "_");
+        if (!defaultGroup.toString().equals("")) {
+            output.append("<div class=\"panel panel-default\">");
+            output.append("<div class=\"panel-heading\"> " +
+                    "<h4 class=\"panel-title\"> " +
+                    "<a class=\"accordion-toggle\" data-toggle=\"collapse\" data-parent=\"#accordion\" href=\"#" + massagedGroupName + "\">" + groupName + "</a> " +
+                    "</h4> " +
+                    "</div>");
+            // Make the first element open initially
+            output.append("<div id=\"" + massagedGroupName + "\" class=\"panel-collapse collapse in");
+            output.append("\">\n" +
+                    "                <div class=\"panel-body\">\n" +
+                    "                    <div id=\"" + massagedGroupName + "\" class=\"panel-collapse collapse in\">");
+            output.append(defaultGroup.toString());
+            output.append("\n</div></div></div></div>");
+        }
+
+
+        Iterator it = groups.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            String groupName;
 
             try {
                 groupName = pairs.getKey().toString();
@@ -413,7 +436,7 @@ public class ProjectController extends FimsAbstractProjectsController {
             }
 
             // Anchors cannot have spaces in the name so we replace them with underscores
-            String massagedGroupName = groupName.replaceAll(" ", "_");
+            massagedGroupName = groupName.replaceAll(" ", "_");
             if (!pairs.getValue().toString().equals("")) {
                 output.append("<div class=\"panel panel-default\">");
                 output.append("<div class=\"panel-heading\"> " +
@@ -422,10 +445,6 @@ public class ProjectController extends FimsAbstractProjectsController {
                         "</h4> " +
                         "</div>");
                 output.append("<div id=\"" + massagedGroupName + "\" class=\"panel-collapse collapse");
-                // Make the first element open initially
-                if (count == 0) {
-                    output.append(" in");
-                }
                 output.append("\">\n" +
                         "                <div class=\"panel-body\">\n" +
                         "                    <div id=\"" + massagedGroupName + "\" class=\"panel-collapse collapse in\">");
@@ -434,7 +453,6 @@ public class ProjectController extends FimsAbstractProjectsController {
             }
 
             it.remove(); // avoids a ConcurrentModificationException
-            count++;
         }
         return Response.ok(output.toString()).build();
     }
