@@ -128,6 +128,7 @@ javascript.source {
             srcDir "src/main/web/app"
             include "**/*.js"
             exclude "app.js"
+            exclude "app.constants.js.template"
             exclude "app.module.js"
             exclude "**/module.js"
         }
@@ -429,7 +430,34 @@ task jsExternalLibs(type: MinifyJsTask) {
     }
 }
 
+// add properties from geome-db.props to the app.constants.js file
+task setupAddConstants() {
+    doLast {
+        def template = file('src/main/web/app/app.constants.js.template')
+        def constants = file('src/main/web/app/app.constants.js')
+        def props = new Properties()
+        file('src/main/resources/geome-db.props').withInputStream { props.load(it) }
+
+
+        if (template.exists()) {
+            def constantsReplacement = template.getText()
+                    .replaceAll(
+                    /\{projectId}/,
+                    props.getProperty('projectId')
+            )
+                    .replaceAll(
+                    /\{mapboxToken}/,
+                    props.getProperty('mapboxAccessToken')
+            )
+
+            constants.setText(constantsReplacement, 'UTF-8')
+        }
+    }
+}
+
 task jsApp(type: MinifyJsTask) {
+    dependsOn setupAddConstants
+
     source = files("src/main/web/app/app.module.js", javascript.source.modules.js.files, javascript.source.app.js.files, javascript.source.js.js.files)
     dest = file("${buildDir}/js/all.min.js")
     sourceMap = file("${buildDir}/js/all.min.map")
