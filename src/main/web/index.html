@@ -6,37 +6,17 @@
 
     <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/leaflet.css"/>
+    <link rel="stylesheet" type="text/css" href="css/MarkerCluster.Default.css"/>
+    <link rel="stylesheet" type="text/css" href="css/MarkerCluster.css"/>
     <link rel="stylesheet" type="text/css" href="css/alerts.css"/>
     <link rel="stylesheet" type="text/css" href="css/geome.css"/>
-
-    <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.css' rel='stylesheet'/>
-    <link href='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css'
-          rel='stylesheet'/>
-    <link href='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css'
-          rel='stylesheet'/>
-
 
     <link rel="short icon" href="docs/geome.ico"/>
 </head>
 <body ng-cloak>
-    <div class="wrapper">
-        <header ng-include="'app/partials/header-nav.html'"></header>
-        <div class="container-fluid">
-            <div class="alert-container">
-                <div id="alerts"></div>
-            </div>
-            <div ng-show="error" class="alert alert-error alert-dismissable" ng-click="error=null" role="alert">
-                <button type="button" class="close" aria-label="Close">
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                </button>
-                {{ error }}
-            </div>
 
-            <div ui-view></div>
-
-            <div id="dialogContainer"></div>
-        </div>
-    </div>
+    <div ui-view></div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
     <script
@@ -49,13 +29,73 @@
             crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 
-    <script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.js'></script>
-    <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
-
     <!-- LIBRARY LOADING -->
-<!-- use minified and combined js file FOR PROD -->
-<script src="js/allExternalLibs.min.js"></script>
-<script src="js/all.min.js"></script>
+<script src="js/externalLibs/lodash.js"></script>
+<script src="js/externalLibs/papaparse.min.js"></script>
+<script src="js/externalLibs/xlsx.min.js"></script>
+<script src="js/externalLibs/xlsx-reader.js"></script>
+<script src="js/externalLibs/angular-ui-router.min.js"></script>
+<script src="js/externalLibs/leaflet.js"></script>
+<script src="js/externalLibs/leaflet.markercluster.js"></script>
+<script src="js/externalLibs/leaflet.spin.min.js"></script>
+<script src="js/externalLibs/ng-file-upload-all.min.js"></script>
+<script src="js/externalLibs/pwstrength.min.js"></script>
+<script src="js/externalLibs/scalyr.js"></script>
+<script src="js/externalLibs/spin.min.js"></script>
+<script src="js/externalLibs/ui-bootstrap-tpls-1.3.2.min.js"></script>
+<script src="app/app.module.js"></script>
+<script src="app/components/auth/module.js"></script>
+<script src="app/components/bcids/module.js"></script>
+<script src="app/components/expeditions/module.js"></script>
+<script src="app/components/header/module.js"></script>
+<script src="app/components/home/module.js"></script>
+<script src="app/components/modals/module.js"></script>
+<script src="app/components/projects/module.js"></script>
+<script src="app/components/query/module.js"></script>
+<script src="app/components/users/module.js"></script>
+<script src="app/components/validation/module.js"></script>
+<script src="app/app.constants.js"></script>
+<script src="app/app.routes.js"></script>
+<script src="app/components/auth/auth.constants.js"></script>
+<script src="app/components/auth/authFactory.js"></script>
+<script src="app/components/auth/authInterceptorFactory.js"></script>
+<script src="app/components/auth/clientId.js"></script>
+<script src="app/components/auth/loginController.js"></script>
+<script src="app/components/bcids/metadataController.js"></script>
+<script src="app/components/expeditions/deleteExpeditionConformationModalController.js"></script>
+<script src="app/components/expeditions/editExpeditionModalController.js"></script>
+<script src="app/components/expeditions/expeditionController.js"></script>
+<script src="app/components/expeditions/expeditionCreationModalController.js"></script>
+<script src="app/components/expeditions/expeditionFactory.js"></script>
+<script src="app/components/header/headerController.js"></script>
+<script src="app/components/home/homeController.js"></script>
+<script src="app/components/home/listModalController.js"></script>
+<script src="app/components/modals/failModalFactory.js"></script>
+<script src="app/components/modals/loadingModalFactory.js"></script>
+<script src="app/components/projects/addProjectMemberModalController.js"></script>
+<script src="app/components/projects/editMemberModalController.js"></script>
+<script src="app/components/projects/projectController.js"></script>
+<script src="app/components/projects/projectFactory.js"></script>
+<script src="app/components/projects/removeMemberConformationModalController.js"></script>
+<script src="app/components/query/queryController.js"></script>
+<script src="app/components/query/typeahead.directive.js"></script>
+<script src="app/components/templates/templateController.js"></script>
+<script src="app/components/users/resetPassController.js"></script>
+<script src="app/components/users/userController.js"></script>
+<script src="app/components/users/userFactory.js"></script>
+<script src="app/components/validation/fimsData.directive.js"></script>
+<script src="app/components/validation/results/resultsController.js"></script>
+<script src="app/components/validation/results/resultsModalController.js"></script>
+<script src="app/components/validation/status/statusPollingFactory.js"></script>
+<script src="app/components/validation/validationController.js"></script>
+<script src="app/directives/angular-spinner.min.js"></script>
+<script src="app/directives/autofocus.directive.js"></script>
+<script src="app/directives/repeatDone.directive.js"></script>
+<script src="app/directives/showErrors.directive.js"></script>
+<script src="app/filters/html.filter.js"></script>
+<script src="js/biocode-fims-mapping.js"></script>
+<script src="js/BrowserDetect.js"></script>
+<script src="js/geome-db.js"></script>
 <!-- END: LIBRARY LOADING -->
 
 </body>

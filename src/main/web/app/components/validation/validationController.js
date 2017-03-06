@@ -1,7 +1,7 @@
 angular.module('fims.validation')
 
-    .controller('ValidationCtrl', ['$scope', '$q', '$http', '$window', '$uibModal', 'Upload', 'AuthFactory', 'ExpeditionFactory', 'FailModalFactory', 'ResultsDataFactory', 'StatusPollingFactory', 'PROJECT_ID', 'REST_ROOT',
-        function ($scope, $q, $http, $window, $uibModal, Upload, AuthFactory, ExpeditionFactory, FailModalFactory, ResultsDataFactory, StatusPollingFactory, PROJECT_ID, REST_ROOT) {
+    .controller('ValidationCtrl', ['$scope', '$q', '$http', '$window', '$uibModal', 'Upload', 'AuthFactory', 'ExpeditionFactory', 'FailModalFactory', 'ResultsDataFactory', 'StatusPollingFactory', 'PROJECT_ID', 'REST_ROOT', 'MAPBOX_TOKEN',
+        function ($scope, $q, $http, $window, $uibModal, Upload, AuthFactory, ExpeditionFactory, FailModalFactory, ResultsDataFactory, StatusPollingFactory, PROJECT_ID, REST_ROOT, MAPBOX_TOKEN) {
             var defaultFastqMetadata = {
                 libraryLayout: null,
                 libraryStrategy: null,
@@ -300,7 +300,7 @@ angular.module('fims.validation')
                             }
                         });
 
-                    generateMap('map', PROJECT_ID, vm.fimsMetadata).then(
+                    generateMap('map', PROJECT_ID, vm.fimsMetadata, MAPBOX_TOKEN).then(
                         function () {
                             vm.verifyDataPoints = true;
                         }, function () {

@@ -8,6 +8,7 @@ angular.module('fims.query')
             };
             var vm = this;
             vm.error = null;
+            vm.showSidebar = true; // move to another controller?
             vm.moreSearchOptions = false;
             vm.filterOptions = [];
             vm.filters = [];
@@ -172,4 +173,126 @@ angular.module('fims.query')
                 getFilterOptions();
             }).call(this);
 
-        }]);
+        }])
+
+    .controller('searchMapCtrl', ['$scope', '$timeout', 'MAPBOX_TOKEN',
+        function ($scope, $timeout, MAPBOX_TOKEN) {
+            var LATITUDE_COLUMN = 'decimalLatitude';
+            var LONGITUDE_COLUMN = 'decimalLongitude';
+            // var map = null;
+            var markers = [];
+            var clusterLayer = null;
+
+            var vm = this;
+            vm.map = null;
+            vm.error = null;
+
+            function getMarkers() {
+                DataFactory.queryJson({"criterion": []})
+                    .then(
+                        function (response) {
+                            addDeploymentsToMap(response.data);
+                        }, function (response) {
+                            vm.error = response.data.error || response.data.usrMessage || "Error loading deployments!";
+                            vm.map.spin(false);
+                        }
+                    )
+            }
+
+            (function createMap(accessToken) {
+                vm.map = L.map('queryMap', {
+                    center: [0, 0],
+                    zoom: 2
+                });
+                L.tileLayer('https://api.mapbox.com/v4/mapbox.outdoors/{z}/{x}/{y}.png?access_token={access_token}',
+                    {access_token: MAPBOX_TOKEN})
+                    .addTo(vm.map);
+            }).call(this);
+
+            function addDeploymentsToMap(deployments) {
+                angular.forEach(deployments, function (deployment) {
+                    var lat = deployment[LATITUDE_COLUMN];
+                    var lng = deployment[LONGITUDE_COLUMN];
+                    // var lng = L.Util.wrapNum(deployment[LONGITUDE_COLUMN], [0,360], true);
+
+                    var deploymentMarker = L.marker([lat, lng]);
+                    var deploymentUrl = '/deployments/' + deployment.expeditionId + '/' + deployment.deploymentId;
+                    var expeditionUrl = '/projects/' + deployment.expeditionId;
+                    deploymentMarker.bindPopup(
+                        "ProjectID: <a href='" + expeditionUrl + "'>" + deployment.expeditionId + "</a>" +
+                        "<br>DeploymentID: <a href='" + deploymentUrl + "'>" + deployment.deploymentId + "</a>"
+                    );
+
+                    markers.push(deploymentMarker);
+                });
+
+                clusterLayer = L.markerClusterGroup()
+                    .addLayers(markers);
+                var bounds = clusterLayer.getBounds();
+
+
+                vm.map
+                    .addLayer(clusterLayer)
+                    .fitBounds(bounds)
+                    .setMinZoom(1)
+                    .spin(false);
+
+                vm.map.on('move', updateMarkers);
+
+                vm.map.on('dragstart', function () {
+                    centerLng = vm.map.getCenter().lng;
+                    // the following is how leaflet internally calculates the max bounds. Leaflet doesn't provide a way
+                    // to bound only the latitude, so we do that here. We set the lng to be bound 2x greater the the center
+                    // and is recalculated upon every dragstart event, which should essentially keep the lng unbound
+                    nwCorner = [90, centerLng - 720];
+                    seCorner = [-90, centerLng + 720];
+
+                    vm.map.setMaxBounds([nwCorner, seCorner]);
+                });
+
+            }
+
+            function updateMarkers() {
+                centerLng = vm.map.getCenter().lng;
+                updatedMarkers = [];
+                originalMarkers = [];
+                clusterLayer.eachLayer(function (m) {
+                    latlng = m.getLatLng();
+                    if (latlng.lng < centerLng) {
+                        // marker is W of center
+                        if ((centerLng - 180) > latlng.lng) {
+                            mCopy = L.marker([latlng.lat, latlng.lng + 360]);
+                            mCopy.bindPopup(m.getPopup());
+                            updatedMarkers.push(mCopy);
+                            originalMarkers.push(m);
+                        }
+                    } else {
+                        // marker is E of center
+                        if ((centerLng + 180) < latlng.lng) {
+                            mCopy = L.marker([latlng.lat, latlng.lng - 360]);
+                            mCopy.bindPopup(m.getPopup());
+                            updatedMarkers.push(mCopy);
+                            originalMarkers.push(m);
+                        }
+                    }
+                });
+                clusterLayer.removeLayers(originalMarkers);
+                clusterLayer.addLayers(updatedMarkers);
+            }
+
+            $scope.$watch('vm.showSidebar', function () {
+                // wrap in $timeout to wait until the view has rendered
+                $timeout(function () {
+                    vm.map.invalidateSize();
+                }, 0);
+            });
+            // $scope.$watch(function () {
+            //     return DataFactory.ready
+            // }, function (ready) {
+            //     if (ready) {
+            // getAccessToken();
+            // getMarkers();
+            // }
+            // });
+        }
+    ]);

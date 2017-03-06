@@ -1,26 +1,6 @@
-<div class="row">
-    <h3 class="page-header">Query</h3>
-    <p>Data is subject to our data usage policy found
-        <a target="_blank" href="http://diversityindopacific.net/data-usage-agreement/">here</a></p>
-
-    <p>Using this tool you can search the GeOMe database. You can filter your results by expedition and on any of the
-        FIMS fields by clicking "More search options". The results of your search can be downloaded as a comma delimited
-        text file (.csv), Google Earth kml file. The Fasta download option will download a zip file containing the Fims
-        Metadata and a fasta files containing any associated fastaSequences in your query results. If you are querying
-        only
-        1 expedition, then you can also download the results as and Excel spreadsheet template (.xlsx).
-
-    </p>
-    <p>
-        <em>Note:</em> Although you can filter your results on the fastaSequence.marker and/or fastaSequence.sequence
-        fields, those fields will only appear in the results when you click the "Fasta" download option.
-    </p>
-
-    <div ng-show="vm.error" class="alert alert-error">
-        <a href="#" class="close" ng-click="vm.error = null" aria-label="close">&times;</a>
-        {{ vm.error }}
-    </div>
-    <div class="col-sm-12">
+<!--<div class="row">-->
+<div class="query-page fill-screen">
+    <div id="query-sidebar slide-left" ng-show="vm.showSidebar" class="sidebar">
         <form method="POST" class="form-horizontal" name="queryForm">
 
             <div class="form-group" style="margin-bottom: 0px">
@@ -89,8 +69,51 @@
                 </div>
             </div>
         </form>
-
     </div>
+
+    <div class="query-content">
+        <button class="sidebar-toggle btn btn-default" ng-click="vm.showSidebar = !vm.showSidebar"><span
+                class="glyphicon"
+                ng-class="{'glyphicon-chevron-left': vm.showSidebar, 'glyphicon-chevron-right': !vm.showSidebar}"></span>
+        </button>
+        <!-- map -->
+        <div class="search-map" ng-controller="searchMapCtrl as searchVm">
+            <div class="col-sm-12 alert alert-danger alert-dismissable" role="alert" ng-show="searchVm.error">
+                <button type="button" class="close" aria-label="Close"
+                        ng-click="searchVm.error = null">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                </button>
+                <strong>Error! </strong>{{ searchVm.error }}
+            </div>
+            <div class="angular-leaflet-map" id="queryMap"></div>
+        </div>
+    </div>
+</div>
+<!--<h3 class="page-header">Query</h3>-->
+<!--<p>Data is subject to our data usage policy found-->
+<!--<a target="_blank" href="http://diversityindopacific.net/data-usage-agreement/">here</a></p>-->
+
+<!--<p>Using this tool you can search the GeOMe database. You can filter your results by expedition and on any of the-->
+<!--FIMS fields by clicking "More search options". The results of your search can be downloaded as a comma delimited-->
+<!--text file (.csv), Google Earth kml file. The Fasta download option will download a zip file containing the Fims-->
+<!--Metadata and a fasta files containing any associated fastaSequences in your query results. If you are querying-->
+<!--only-->
+<!--1 expedition, then you can also download the results as and Excel spreadsheet template (.xlsx).-->
+
+<!--</p>-->
+<!--<p>-->
+<!--<em>Note:</em> Although you can filter your results on the fastaSequence.marker and/or fastaSequence.sequence-->
+<!--fields, those fields will only appear in the results when you click the "Fasta" download option.-->
+<!--</p>-->
+
+<!--<div ng-show="vm.error" class="alert alert-error">-->
+<!--<a href="#" class="close" ng-click="vm.error = null" aria-label="close">&times;</a>-->
+<!--{{ vm.error }}-->
+<!--</div>-->
+<!--<div class="col-sm-12">-->
+
+
+<!--</div>-->
 </div>
 
 <div class="row">
