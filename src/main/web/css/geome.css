@@ -597,11 +597,9 @@ td.hideOverflow {
 
 /** Expedition Typeahead */
 
-.typeahead>.form-group.list-inline {
-    margin-left: -5px;
-}
-.list-item>.form-control {
-    width: auto;
+.typeahead>.form-group.list-inline>li {
+    /*margin-left: -5px;*/
+    padding-right: 0;
 }
 
 .list-item>.form-control[readonly] {
@@ -616,10 +614,6 @@ td.hideOverflow {
     box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
 }
 
-.list-item>.input-group-btn {
-    width: auto;
-}
-
 .typeahead > .dropdown > .dropdown-menu {
     padding: 0px;
 }
@@ -631,10 +625,6 @@ td.hideOverflow {
     border-radius: 0px;
 }
 
-.dropdown-menu.list-group>.input-group {
-    /*margin-top: -5px;*/
-    /*margin-bottom: 10px;*/
-}
 
 .dropdown-menu.list-group>.input-group>.input-group-addon {
     border-left: 0;
@@ -658,8 +648,19 @@ td.hideOverflow {
     line-height: 24px;
     cursor: pointer;
 }
+.dropdown-menu>ul>.list-group-item.disabled {
+    cursor: default;
+    color: #eee;
+}
 
-.dropdown-menu > ul > .list-group-item:hover, .dropdown-menu > ul > .list-group-item:focus {
+.dropdown-menu > ul > .list-group-item.disabled:hover, .dropdown-menu > ul > .list-group-item.disabled:focus {
+    background-color: inherit;
+    background-image: inherit;
+    color: #eee;
+}
+
+/*.dropdown-menu > ul > .list-group-item:hover, .dropdown-menu > ul > .list-group-item:focus {*/
+.dropdown-menu > ul > .list-group-item.active, .dropdown-menu > ul > .list-group-item.active {
     text-decoration: none;
     color: white;
     background-color: #1c1c1c;
@@ -757,112 +758,7 @@ td.hideOverflow {
 }
 
 /** fullPage **/
-/*.full-page {*/
-    /*background: white;*/
-    /*border: 1px solid white;*/
-    /*border-color: rgba(255, 255, 255, 0.5);*/
-    /*!*position: relative;*!*/
-    /*!*position: absolute;*!*/
-    /*!*top: 0;*!*/
-    /*!*bottom: 0;*!*/
-    /*!*left: 0;*!*/
-    /*!*right: 0;*!*/
 
-/*}*/
-/*.full-page-header {*/
-    /*width: 90%;*/
-    /*max-width: 1250px;*/
-    /*margin: 40px auto 0;*/
-    /*position: relative; //*/
-/*}*/
-
-/*.full-page-content {*/
-    /*width: 100%;*/
-    /*height: 100%;*/
-    /*margin-top: 5px;*/
-    /*!*margin-top: 40px;*!*/
-    /*padding: 0;*/
-    /*!*padding: 5px;*!*/
-    /*position: relative;*/
-/*}*/
-
-/*!*!*.full-page-header-bottom {*!*!*/
-    /*!*!*width: 100%;*!*!*/
-/*!*!*}*!*!*/
-
-/*.full-page-header-bottom-border:after {*/
-    /*!*max-width: 100%;*!*/
-    /*bottom: 0;*/
-    /*!* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#dedede+0,f7f7f7+50,f7f7f7+100,fcfff5+100 *!*/
-    /*background: #dedede; !* Old browsers *!*/
-    /*background: -moz-linear-gradient(top,  #dedede 0%, #f7f7f7 50%, #f7f7f7 100%, #fcfff5 100%); !* FF3.6-15 *!*/
-    /*background: -webkit-linear-gradient(top,  #dedede 0%,#f7f7f7 50%,#f7f7f7 100%,#fcfff5 100%); !* Chrome10-25,Safari5.1-6 *!*/
-    /*background: linear-gradient(to bottom,  #dedede 0%,#f7f7f7 50%,#f7f7f7 100%,#fcfff5 100%); !* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ *!*/
-    /*filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dedede', endColorstr='#fcfff5',GradientType=0 ); !* IE6-9 *!*/
-    /*content: "";*/
-    /*width: 100%;*/
-    /*height: 3px;*/
-    /*background-repeat: no-repeat;*/
-    /*background-size: 100% 3px;*/
-    /*z-index: 100;*/
-    /*display: block;*/
-/*}*/
-
-/*!** query page **!*/
-/*.fill-screen {*/
-    /*background: white;*/
-    /*position: absolute;*/
-    /*top: 138px; !*header, border, & margin*!*/
-    /*!*top: 0px;*!*/
-    /*bottom: 0;*/
-    /*left: 0;*/
-    /*right: 0;*/
-/*}*/
-
-/*.query-page {*/
-    /*overflow-x: hidden;*/
-    /*padding-left: 0;*/
-    /*-webkit-transition: all 0.5s ease;*/
-    /*-moz-transition: all 0.5s ease;*/
-    /*-o-transition: all 0.5s ease;*/
-    /*transition: all 0.5s ease;*/
-/*}*/
-
-/*.query-content,*/
-/*.search-map,*/
-/*#queryMap {*/
-    /*height: 100%;*/
-/*}*/
-
-/*.query-content {*/
-    /*padding-right: 5px;*/
-    /*padding-bottom: 5px;*/
-/*}*/
-
-/*.sidebar {*/
-    /*max-width: 500px;*/
-    /*width: 25%;*/
-    /*height: 100%;*/
-    /*padding-top: 30px;*/
-/*}*/
-
-/*.sidebar-toggle {*/
-    /*border-left: none;*/
-    /*top: 50%;*/
-    /*bottom: 50%;*/
-    /*z-index: 1000;*/
-/*}*/
-
-/*.closed {*/
-    /*max-width: 0;*/
-/*}*/
-
-/* == flexbox layout */
-/*body, html,*/
-/*body > *, html > * {*/
-    /*height: 100%;*/
-    /*width: 100%;*/
-/*}*/
 
 .full-page {
     position: absolute;
@@ -873,6 +769,13 @@ td.hideOverflow {
     background: #fff;
     border: 1px solid white;
     border-color: rgba(255, 255, 255, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.full-page-content > * {
+    flex: 1;
+    width: 100%;
 }
 
 .full-page-header {
@@ -900,11 +803,6 @@ td.hideOverflow {
     display: block;
 }
 
-.full-page {
-    display: flex;
-    flex-direction: column;
-}
-
 .full-page-content {
     flex: 1;
     width: 100%;
@@ -913,34 +811,52 @@ td.hideOverflow {
     overflow: hidden;
 }
 
+/* query page */
 .query-page {
     display: flex;
     height: 100%;
 }
 
 .sidebar {
-    min-width: 425px;
+    min-width: 500px;
     flex: 1 1;
-    margin-top: 40px;
+    padding-top: 20px;
+    overflow-y: auto;
 }
 
-.query-content {
-    flex: 3 1;
-    display: flex;
+.sidebar a label {
+    cursor: pointer;
 }
 
-.search-map {
+.sidebar a > .control-label {
     width: 100%;
 }
 
-.angular-leaflet-map {
-    width: 100%;
-    height: 100%;
+.dwc-terms .form-control {
+    margin-bottom: 6px;
 }
 
-.full-page-content > * {
-    flex: 1;
+.dwc-terms span.control-label {
+    float: left;
+    margin-top: 7px;
+    display: inline-block;
+}
+
+.expedition-filter .dropdown-menu {
     width: 100%;
+}
+
+.sidebar .checkbox-inline {
+    margin-right: 10px;
+}
+
+.sidebar .checkbox-inline+.checkbox-inline {
+    margin-top: 0;
+    margin-left: 0;
+}
+
+.sidebar .form-group {
+    margin-bottom: 10px;
 }
 
 .sidebar-toggle {
@@ -954,6 +870,86 @@ td.hideOverflow {
     z-index: 1000;
 }
 
+.scrollable-menu {
+    height: auto;
+    max-height: 200px;
+    overflow-x: hidden;
+}
+
 .sidebar-toggle:focus {
     outline: none;
+}
+
+.query-content {
+    flex: 2 1;
+    display: flex;
+    position: relative;
+}
+
+.search-map {
+    width: 100%;
+}
+
+.angular-leaflet-map {
+    width: 100%;
+    height: 100%;
+}
+
+.query-view-toggle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin-top: 10px;
+    margin-right: 10px;
+    z-index: 1000;
+}
+
+.query-view-toggle .btn-group {
+    border: 2px solid rgba(0,0,0,0.2);
+    background-clip: padding-box;
+    box-shadow: none;
+    border-radius: 4px;
+}
+
+.query-view-toggle .btn-group > .btn {
+    font-weight: 700;
+}
+
+.query-view-toggle .btn-group > .dropdown-menu {
+    left: auto;
+    right: 0;
+    min-width: 120px;
+    text-align: center;
+}
+
+.checkbox-inline input {
+    cursor: pointer;
+}
+
+#marker-query {
+    margin-top: 5px;
+}
+
+#marker-query .control-label {
+    margin-top: 7px;
+}
+
+.filters {
+    padding-left: 15px;
+}
+
+.sidebar .typeahead .dropdown {
+    margin-left: 15px;
+}
+
+.filter-remove-btn {
+    margin-top: 4px;
+}
+
+.column-filters-header {
+    margin-bottom: 10px;
+}
+
+.column-filter {
+    margin-bottom: 5px;
 }

@@ -23,14 +23,9 @@ import java.util.List;
 public class GeomeQueryUtils {
 
     private static final List<String> FILTER_COLUMNS = Arrays.asList(
-            "principalInvestigator",
             "materialSampleID",
-            "locality",
             "decimalLatitude",
             "decimalLongitude",
-            "genus",
-            "species",
-            "country",
             "lifeStage",
             "sex",
             "wormsID",

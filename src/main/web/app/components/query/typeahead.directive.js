@@ -35,7 +35,9 @@ angular.module('fims.query')
                     };
 
                     this.selectActive = function () {
-                        this.select($scope.active);
+                        if ($scope.filteredExpeditions.length > 0 && $scope.filterTerm.length > 0 && $scope.active) {
+                            this.select($scope.active);
+                        }
                     };
 
                     this.select = function (expedition) {
@@ -92,9 +94,17 @@ angular.module('fims.query')
                                 scope.isVisible = false;
                             });
                         }
+
+                        if (e.keyCode === 8 && scope.filterTerm.length == 0) {
+                            scope.$apply(function() {scope.isVisible = false});
+                        }
                     });
 
                     element.bind('keydown', function (e) {
+                        if (!scope.isVisible) {
+                            scope.isVisible = true;
+                        }
+
                         if (e.keyCode === 9 || e.keyCode === 13 || e.keyCode === 27) {
                             e.preventDefault();
                         }

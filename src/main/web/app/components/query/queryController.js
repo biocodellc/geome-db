@@ -9,9 +9,16 @@ angular.module('fims.query')
             var vm = this;
             vm.error = null;
             vm.showSidebar = true; // move to another controller?
-            vm.moreSearchOptions = false;
+            vm.moreSearchOptions = true; //TODO make this false when done
+            vm.showSequences = true;
+            vm.showHas = true;
+            vm.showDWC = true;
+            vm.showExpeditions = true;
+            vm.showFilters = true;
             vm.filterOptions = [];
             vm.filters = [];
+            vm.markers = [];
+            vm.marker = null;
             vm._all = null;
             vm.expeditions = [];
             vm.selectedExpeditions = [];
@@ -117,6 +124,15 @@ angular.module('fims.query')
                     });
             }
 
+            function getMarkersList() {
+                $http.get(REST_ROOT + "projects/" + PROJECT_ID + "/config/lists/markers/fields")
+                    .then(function (response) {
+                        angular.extend(vm.markers, response.data);
+                    }, function (response) {
+                        FailModalFactory.open("Failed to load fasta marker list", response.data.usrMessage);
+                    });
+            }
+
             function getFilterOptions() {
                 $http.get(REST_ROOT + "projects/" + PROJECT_ID + "/filterOptions")
                     .then(function (response) {
@@ -171,6 +187,7 @@ angular.module('fims.query')
             (function init() {
                 getExpeditions();
                 getFilterOptions();
+                getMarkersList();
             }).call(this);
 
         }])
