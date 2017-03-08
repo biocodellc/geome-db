@@ -1,3 +1,4 @@
+//noinspection JSUnresolvedFunction
 angular.module('fims.auth')
 
     .factory('AuthFactory', ['$http', '$q', '$rootScope', '$window', 'oAuth', 'REST_ROOT', 'APP_ROOT',

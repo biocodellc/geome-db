@@ -1,0 +1,42 @@
+<div ng-controller="QueryTableController as queryTableVm">
+    <div class="help-block" ng-show="!queryTableVm.queryResults.isSet">Click <strong>Search</strong> on sidebar to
+        display query results
+    </div>
+
+    <div ng-show="queryTableVm.queryResults.isSet">
+        <div class="help-block" ng-show="queryTableVm.queryResults.totalElements == 10000">Query results are
+            limited to 10,000. Either narrow your search or download the results to view everything.
+        </div>
+
+        <table class="table table-condensed table-hover text-nowrap">
+            <thead>
+                <tr class="text-capitalize">
+                    <th sly-repeat="column in queryTableVm.tableColumns">{{ column }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr sly-repeat="resource in queryTableVm.tableData">
+                    <td uib-popover-html="value | trusted_html"
+                        popover-enable="value.length > 35"
+                        popover-trigger="mouseenter"
+                        ng-class="{hideOverflow: value.length > 35}"
+                        popover-placement="bottom"
+                        popover-append-to-body="true"
+                        sly-repeat="value in resource" ng-bind-html="value | trusted_html">
+                    </td>
+                </tr>
+                <tr ng-show="queryTableVm.queryResults.totalElements == 0" class="h4">
+                    <td class="text-primary" colspan="100">No Samples Found</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="text-center" ng-show="queryTableVm.queryResults.totalElements > 0">
+            <ul uib-pagination total-items="queryTableVm.queryResults.totalElements" ng-model="queryTableVm.currentPage"
+                ng-change="queryTableVm.updatePage()"
+                max-size="10"
+                force-ellipses="true"
+                boundary-link-numbers="true"
+                items-per-page="queryTableVm.pageSize"></ul>
+        </div>
+    </div>
+</div>

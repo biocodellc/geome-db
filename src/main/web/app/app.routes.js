@@ -54,7 +54,7 @@ angular.module('geomeApp')
             .state('query', {
                 url: "/query",
                 templateUrl: "app/components/query/query.html",
-                controller: "QueryCtrl as vm",
+                controller: "QueryController as vm",
                 parent: "fullPage"
             })
             .state('profile', {

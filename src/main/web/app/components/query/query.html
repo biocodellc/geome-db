@@ -1,169 +1,33 @@
-<!--<div class="row">-->
 <div class="query-page fill-screen">
-    <div id="query-sidebar slide-left" ng-show="vm.showSidebar" class="sidebar">
-        <div class="col-xs-12">
-            <form method="POST" class="" name="queryForm">
 
-                <div class="form-group" style="margin-bottom: 0px">
-                    <input type="text" placeholder="Full text search..." ng-model="vm._all" class="form-control"/>
-                    <a class="help-block text-right" href="#"
-                       ng-click="vm.moreSearchOptions = !vm.moreSearchOptions">
-                        More search options</a>
-                </div>
+    <!-- sidebar-->
+    <div ng-show="vm.showSidebar" ng-include="'app/components/query/queryForm.html'" class="sidebar"></div>
 
-                <div ng-show="vm.moreSearchOptions">
-                    <div class="form-group">
-                        <a href="#" ng-click="vm.showHas = !vm.showHas">
-                            <label class="control-label">Has ...</label>
-                        </a>
-                        <div class="filters" ng-show="vm.showHas">
-                            <label class="checkbox-inline">
-                                <input type="checkbox"
-                                       name="hasPermitInformation">
-                                PermitInformation
-                            </label>
-                            <label class="checkbox-inline">
-                                <input type="checkbox"
-                                       name="hasCoordinateUncertaintyInMeters">
-                                CoordinateUncertaintyInMeters
-                            </label>
-                            <label class="checkbox-inline">
-                                <input type="checkbox"
-                                       name="hasDepthInformation">
-                                Depth Information
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <a href="#" ng-click="vm.showSequences = !vm.showSequences">
-                            <label class="control-label">Sequences</label>
-                        </a>
-                        <div class="filters" ng-show="vm.showSequences">
-                            <label class="checkbox-inline">
-                                <input type="checkbox"
-                                       name="hasSequence">
-                                hasSequence
-                            </label>
-                            <label class="checkbox-inline">
-                                <input type="checkbox"
-                                       name="hasSraAccessions">
-                                hasSraAccessions
-                            </label>
-                            <div class="row" id="marker-query">
-                                <div class="col-xs-2">
-                                    <label class="control-label small">marker</label>
-                                </div>
-                                <div class="col-xs-6">
-                                    <select ng-model="vm.marker"
-                                            ng-options="marker.value for marker in vm.markers"
-                                            class="form-control input-sm"
-                                    ></select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group dwc-terms">
-                        <a href="#" ng-click="vm.showDWC = !vm.showDWC">
-                            <label class="control-label">Darwin Core Terms</label>
-                        </a>
-                        <div class="row filters" ng-show="vm.showDWC">
-                            <div class="col-xs-6">
-                                <input class="form-control input-sm" type="text" placeholder="Genus"/>
-                                <input class="form-control input-sm" type="text" placeholder="Locality"/>
-                            </div>
-                            <div class="col-xs-6">
-                                <input class="form-control input-sm" type="text" placeholder="Species"/>
-                                <input class="form-control input-sm" type="text" placeholder="Country"/>
-                            </div>
-                            <div class="col-xs-12">
-                                <input class="form-control input-sm" type="text" placeholder="Principal Investigator"/>
-                            </div>
-                            <div class="col-xs-12">
-                                <span class="control-label">yearCollected</span>
-                                <div class="col-xs-4">
-                                    <input type="text" placeholder="YYYY" class="form-control input-sm"/>
-                                </div>
-                                <span class="control-label">to</span>
-                                <div class="col-xs-4">
-                                    <input type="text" placeholder="YYYY" class="form-control input-sm"/>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="form-group expedition-filter">
-                        <a href="#" ng-click="vm.showExpeditions = !vm.showExpeditions">
-                            <label class="control-label">Expeditions</label>
-                        </a>
-                        <typeahead ng-show="vm.showExpeditions" class="typeahead" expeditions="vm.expeditions"
-                                   selected-expeditions="vm.selectedExpeditions"></typeahead>
-                    </div>
-
-                    <div class="form-group row">
-                        <div class="column-filters-header clearfix">
-                            <div class="col-xs-4">
-                                <a href="#" ng-click="vm.showFilters = !vm.showFilters">
-                                    <label class="control-label">Column Filters</label>
-                                </a>
-                            </div>
-                            <div class="col-xs-4">
-                                <button type="button" class="center-block btn btn-default btn-xs"
-                                        ng-show="vm.showFilters"
-                                        ng-click="vm.addFilter()">
-                                    <span class="glyphicon glyphicon-plus small"></span> Add Filter
-                                </button>
-                            </div>
-                            <div class="col-xs-4"></div>
-                        </div>
-
-                        <div class="col-xs-12 filters column-filter" ng-show="vm.showFilters"
-                             ng-repeat="filter in vm.filters track by $index">
-                            <div class="col-xs-5">
-                                <select ng-model="filter.field"
-                                        ng-change="vm.filters[$index].value=null"
-                                        ng-options="filter.field as filter.displayName for filter in ::vm.filterOptions"
-                                        class="form-control input-sm"
-                                ></select>
-                            </div>
-                            <div class="col-xs-1 text-center"><span>=</span></div>
-                            <div class="col-xs-5">
-                                <input type="text" class="form-control input-sm" ng-model="filter.value"/>
-                            </div>
-                            <button type="button" class="btn btn-danger btn-xs filter-remove-btn"
-                                    ng-click="vm.removeFilter($index)">
-                                <span class="glyphicon glyphicon-remove"></span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <button ng-click="vm.search()" class="btn pull-right btn-primary"><span
-                            class="glyphicon glyphicon-search"></span> Search
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="query-content">
-        <!-- sidebar toggle -->
-        <button class="sidebar-toggle btn btn-default" ng-click="vm.showSidebar = !vm.showSidebar"><span
-                class="glyphicon"
+    <!-- sidebar toggle -->
+    <div class="sidebar-toggle">
+        <button class="btn btn-default" ng-click="vm.showSidebar = !vm.showSidebar"><span
+                class="glyphicon" uib-tooltip="{{ vm.sidebarToggleToolTip }}" tooltip-placement="right"
                 ng-class="{'glyphicon-chevron-left': vm.showSidebar, 'glyphicon-chevron-right': !vm.showSidebar}"></span>
         </button>
+    </div>
 
-        <!-- view toggles-->
+    <!-- main content-->
+    <div class="query-content" ng-class="{'query-content-map': vm.showMap}">
+
         <div class="query-view-toggle">
+            <!-- view toggles-->
             <div class="btn-group btn-group-sm">
-                <button type="button" class="disabled btn btn-default">Map</button>
-                <button type="button" class="btn btn-default">Table</button>
+                <button type="button" ng-click="vm.showMap = true" ng-class="{'disabled': vm.showMap}"
+                        class="btn btn-default">Map
+                </button>
+                <button type="button" ng-click="vm.showMap = false" ng-class="{'disabled': !vm.showMap}"
+                        class="btn btn-default">Table
+                </button>
             </div>
 
-            <div class="btn-group btn-group-sm">
-                <button type="button" class="btn btn-default dropdown-toggle"
+            <!-- download menu -->
+            <div ng-show="vm.queryResults.isSet" class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-primary dropdown-toggle"
                         data-toggle="dropdown">Download <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
@@ -178,16 +42,12 @@
         </div>
 
         <!-- map -->
-        <div class="search-map" ng-controller="searchMapCtrl as searchVm">
-            <div class="col-sm-12 alert alert-danger alert-dismissable" role="alert" ng-show="searchVm.error">
-                <button type="button" class="close" aria-label="Close"
-                        ng-click="searchVm.error = null">
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                </button>
-                <strong>Error! </strong>{{ searchVm.error }}
-            </div>
-            <div class="angular-leaflet-map" id="queryMap"></div>
-        </div>
+        <div class="query-map" ng-show="vm.showMap" ng-include="'app/components/query/queryMap.html'"></div>
+
+        <!-- table -->
+        <div ng-show="!vm.showMap" class="query-table" ng-class="{'full-page-query-table': !vm.showSidebar}"
+             ng-include="'app/components/query/queryTable.html'"></div>
+
     </div>
 </div>
 <!--<h3 class="page-header">Query</h3>-->
@@ -217,35 +77,4 @@
 <!--</div>-->
 </div>
 
-<div class="row">
-    <div class="help-block" ng-show="vm.queryInfo.totalElements == 10000">Query results are limited to 10,000.</div>
-    <div class="panel panel-default" ng-show="vm.queryResults" style="overflow: auto">
-        <span ng-show="vm.queryInfo.totalElements == 0">No Samples found.</span>
 
-        <table class="table table-condensed table-hover text-nowrap">
-            <thead>
-                <th sly-repeat="column in vm.tableColumns">{{ column }}</th>
-            </thead>
-            <tbody>
-                <tr sly-repeat="resource in vm.queryResults">
-                    <td uib-popover-html="value | trusted_html"
-                        popover-enable="value.length > 35"
-                        popover-trigger="mouseenter"
-                        ng-class="{hideOverflow: value.length > 35}"
-                        popover-placement="bottom"
-                        popover-append-to-body="true"
-                        sly-repeat="value in resource" ng-bind-html="value | trusted_html">
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="text-center">
-            <ul uib-pagination total-items="vm.queryInfo.totalElements" ng-model="vm.currentPage"
-                ng-change="vm.queryJson()"
-                max-size="10"
-                force-ellipses="true"
-                boundary-link-numbers="true"
-                items-per-page="vm.queryInfo.size"></ul>
-        </div>
-    </div>
-</div>

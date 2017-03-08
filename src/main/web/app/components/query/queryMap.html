@@ -1,0 +1,10 @@
+<div class="query-map" ng-controller="QueryMapController as queryMapVm">
+    <div class="col-sm-12 alert alert-danger alert-dismissable" role="alert" ng-show="queryMapVm.error">
+        <button type="button" class="close" aria-label="Close"
+                ng-click="queryMapVm.error = null">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+        <strong>Error! </strong>{{ queryMapVm.error }}
+    </div>
+    <div class="angular-leaflet-map" id="queryMap"></div>
+</div>

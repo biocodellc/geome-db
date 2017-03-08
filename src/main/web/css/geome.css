@@ -822,6 +822,7 @@ td.hideOverflow {
     flex: 1 1;
     padding-top: 20px;
     overflow-y: auto;
+    border-right: 1px solid #ccc;
 }
 
 .sidebar a label {
@@ -860,14 +861,30 @@ td.hideOverflow {
 }
 
 .sidebar-toggle {
-    margin: auto;
-    width: 40px;
+    position: relative;
+}
+.sidebar-toggle > button {
+    position: absolute;
+    top: 50%;
     height: 40px;
-    margin-right: -40px;
+    margin-top: -20px;
     margin-left: -1px;
+    width: 40px;
     border-left: 1px solid #fff;
     border-radius: 0 6px 6px 0;
-    z-index: 1000;
+    z-index: 1001;
+}
+
+.sidebar-toggle > button:focus,
+.sidebar-toggle > button:active,
+.sidebar-toggle > button:hover {
+    background-color: #fff;
+    border-color: #ccc;
+    border-left: 1px solid #fff;
+}
+
+.sidebar-toggle > button:focus {
+    outline: none;
 }
 
 .scrollable-menu {
@@ -876,38 +893,36 @@ td.hideOverflow {
     overflow-x: hidden;
 }
 
-.sidebar-toggle:focus {
-    outline: none;
-}
-
 .query-content {
     flex: 2 1;
+    overflow-x: auto;
+}
+
+.query-content-map {
     display: flex;
     position: relative;
 }
 
-.search-map {
-    width: 100%;
+.query-content-map .query-view-toggle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1000;
 }
 
+.query-map,
 .angular-leaflet-map {
     width: 100%;
     height: 100%;
 }
 
 .query-view-toggle {
-    position: absolute;
-    right: 0;
-    top: 0;
-    margin-top: 10px;
-    margin-right: 10px;
-    z-index: 1000;
+    margin: 10px;
+    text-align: right;
 }
 
 .query-view-toggle .btn-group {
-    border: 2px solid rgba(0,0,0,0.2);
-    background-clip: padding-box;
-    box-shadow: none;
+    border: 1px solid rgba(0,0,0,0.2);
     border-radius: 4px;
 }
 
@@ -952,4 +967,13 @@ td.hideOverflow {
 
 .column-filter {
     margin-bottom: 5px;
+}
+
+.query-table {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.full-page-query-table {
+    margin-left: 40px;
 }

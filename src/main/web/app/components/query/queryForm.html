@@ -1,0 +1,139 @@
+<div class="col-xs-12" ng-controller="QueryFormController as queryFormVm">
+    <form method="POST" class="" name="queryForm">
+
+        <div class="form-group" style="margin-bottom: 0">
+            <input type="text" placeholder="Full text search..." ng-model="queryFormVm.params._all" class="form-control"/>
+            <a class="help-block text-right" href="#"
+               ng-click="queryFormVm.moreSearchOptions = !queryFormVm.moreSearchOptions">
+                More search options</a>
+        </div>
+
+        <div ng-show="queryFormVm.moreSearchOptions">
+            <!--<div class="form-group">-->
+                <!--<a href="#" ng-click="queryFormVm.showHas = !queryFormVm.showHas">-->
+                    <!--<label class="control-label">Has ...</label>-->
+                <!--</a>-->
+                <!--<div class="filters" ng-show="queryFormVm.showHas">-->
+                    <!--<label class="checkbox-inline">-->
+                        <!--<input type="checkbox"-->
+                               <!--name="hasPermitInformation">-->
+                        <!--PermitInformation-->
+                    <!--</label>-->
+                    <!--<label class="checkbox-inline">-->
+                        <!--<input type="checkbox"-->
+                               <!--name="hasCoordinateUncertaintyInMeters">-->
+                        <!--CoordinateUncertaintyInMeters-->
+                    <!--</label>-->
+                    <!--<label class="checkbox-inline">-->
+                        <!--<input type="checkbox"-->
+                               <!--name="hasDepthInformation">-->
+                        <!--Depth Information-->
+                    <!--</label>-->
+                <!--</div>-->
+            <!--</div>-->
+
+            <div class="form-group">
+                <a href="#" ng-click="queryFormVm.showSequences = !queryFormVm.showSequences">
+                    <label class="control-label">Sequences</label>
+                </a>
+                <div class="filters" ng-show="queryFormVm.showSequences">
+                    <label class="checkbox-inline">
+                        <input type="checkbox"
+                               name="hasSraAccessions">
+                        has SRA Accession Numbers
+                    </label>
+                    <div class="row" id="marker-query">
+                        <div class="col-xs-2">
+                            <label class="control-label small">marker</label>
+                        </div>
+                        <div class="col-xs-6">
+                            <select ng-model="queryFormVm.params.marker"
+                                    ng-options="::marker.value for marker in ::queryFormVm.markers"
+                                    class="form-control input-sm"
+                            ></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group dwc-terms">
+                <a href="#" ng-click="queryFormVm.showDWC = !queryFormVm.showDWC">
+                    <label class="control-label">Darwin Core Terms</label>
+                </a>
+                <div class="row filters" ng-show="queryFormVm.showDWC">
+                    <div class="col-xs-6">
+                        <input class="form-control input-sm" type="text" placeholder="Order"/>
+                        <input class="form-control input-sm" type="text" placeholder="Genus"/>
+                        <input class="form-control input-sm" type="text" placeholder="Locality"/>
+                    </div>
+                    <div class="col-xs-6">
+                        <input class="form-control input-sm" type="text" placeholder="Family"/>
+                        <input class="form-control input-sm" type="text" placeholder="Species"/>
+                        <input class="form-control input-sm" type="text" placeholder="Country"/>
+                    </div>
+                    <div class="col-xs-12">
+                        <span class="control-label">yearCollected</span>
+                        <div class="col-xs-4">
+                            <input type="text" placeholder="YYYY" class="form-control input-sm"/>
+                        </div>
+                        <span class="control-label">to</span>
+                        <div class="col-xs-4">
+                            <input type="text" placeholder="YYYY" class="form-control input-sm"/>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="form-group expedition-filter">
+                <a href="#" ng-click="queryFormVm.showExpeditions = !queryFormVm.showExpeditions">
+                    <label class="control-label">Expeditions</label>
+                </a>
+                <typeahead ng-show="queryFormVm.showExpeditions" class="typeahead" expeditions="queryFormVm.expeditions"
+                           selected-expeditions="queryFormVm.params.selectedExpeditions"></typeahead>
+            </div>
+
+            <div class="form-group row">
+                <div class="column-filters-header clearfix">
+                    <div class="col-xs-4">
+                        <a href="#" ng-click="queryFormVm.showFilters = !queryFormVm.showFilters">
+                            <label class="control-label">Column Filters</label>
+                        </a>
+                    </div>
+                    <div class="col-xs-4">
+                        <button type="button" class="center-block btn btn-default btn-xs"
+                                ng-show="queryFormVm.showFilters"
+                                ng-click="queryFormVm.addFilter()">
+                            <span class="glyphicon glyphicon-plus small"></span> Add Filter
+                        </button>
+                    </div>
+                    <div class="col-xs-4"></div>
+                </div>
+
+                <div class="col-xs-12 filters column-filter" ng-show="queryFormVm.showFilters"
+                     ng-repeat="filter in queryFormVm.params.filters track by $index">
+                    <div class="col-xs-5">
+                        <select ng-model="filter.field"
+                                ng-change="queryFormVm.params.filters[$index].value=null"
+                                ng-options="::filter.field as ::filter.displayName for filter in ::queryFormVm.filterOptions track by filter.field"
+                                class="form-control input-sm"
+                        ></select>
+                    </div>
+                    <div class="col-xs-1 text-center"><span>=</span></div>
+                    <div class="col-xs-5">
+                        <input type="text" class="form-control input-sm" ng-model="filter.value"/>
+                    </div>
+                    <button type="button" class="btn btn-danger btn-xs filter-remove-btn"
+                            ng-click="queryFormVm.removeFilter($index)">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <button ng-click="queryFormVm.queryJson()" class="btn pull-right btn-primary"><span
+                    class="glyphicon glyphicon-search"></span> Search
+            </button>
+        </div>
+    </form>
+</div>
