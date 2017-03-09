@@ -759,7 +759,6 @@ td.hideOverflow {
 
 /** fullPage **/
 
-
 .full-page {
     position: absolute;
     top: 0;
@@ -773,17 +772,23 @@ td.hideOverflow {
     flex-direction: column;
 }
 
-.full-page-content > * {
-    flex: 1;
-    width: 100%;
-}
-
 .full-page-header {
     width: 90%;
     max-width: 1250px;
-    margin: 40px auto 0;
-    display: block;
-    position: relative;
+    margin: 0 auto;
+}
+
+.full-page-header .navbar {
+    min-height: 78px;
+}
+.full-page-header .navbar-brand {
+    padding-top: 3px;
+    padding-bottom: 0;
+}
+
+.full-page-header .navbar .nav > li > a {
+    padding-top: 26px;
+    padding-bottom: 26px;
 }
 
 .full-page-header-bottom-border:after {
@@ -805,16 +810,18 @@ td.hideOverflow {
 
 .full-page-content {
     flex: 1;
+    display: flex;
+    flex-flow: column;
     width: 100%;
     padding: 0;
-    margin-top: 5px;
+    margin-top: 0;
     overflow: hidden;
 }
 
 /* query page */
 .query-page {
+    flex: 1;
     display: flex;
-    height: 100%;
 }
 
 .sidebar {
@@ -898,21 +905,8 @@ td.hideOverflow {
     overflow-x: auto;
 }
 
-.query-content-map {
-    display: flex;
-    position: relative;
-}
-
-.query-content-map .query-view-toggle {
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: 1000;
-}
-
 .query-map,
 .angular-leaflet-map {
-    width: 100%;
     height: 100%;
 }
 
