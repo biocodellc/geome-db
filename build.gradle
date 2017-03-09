@@ -131,6 +131,7 @@ javascript.source {
             exclude "app.constants.js.template"
             exclude "app.module.js"
             exclude "**/module.js"
+            exclude "**/*.module.js"
         }
     }
     js {
@@ -143,6 +144,7 @@ javascript.source {
         js {
             srcDir "src/main/web/app"
             include "**/module.js"
+            include "**/*.module.js"
         }
     }
 }
