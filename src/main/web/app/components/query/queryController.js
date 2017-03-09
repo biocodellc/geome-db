@@ -4,11 +4,11 @@
     angular.module('fims.query')
         .controller('QueryController', QueryController);
 
-    QueryController.$inject = ['$scope', 'queryService', 'queryParams', 'queryResults'];
+    QueryController.$inject = ['$scope', 'queryService', 'queryParams', 'queryResults', 'alerts'];
 
-    function QueryController($scope, queryService, queryParams, queryResults) {
+    function QueryController($scope, queryService, queryParams, queryResults, alerts) {
         var vm = this;
-        vm.error = null;
+        vm.alerts = alerts;
         vm.queryResults = queryResults;
 
         vm.showSidebar = true;

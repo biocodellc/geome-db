@@ -824,6 +824,35 @@ td.hideOverflow {
     display: flex;
 }
 
+.query-bar {
+    background-color: rgba(96, 134, 152, 0.6);
+}
+
+.query-bar .actions {
+    padding: 10px 15px;
+}
+
+.query-bar .alerts .alert {
+    margin-bottom: 0;
+    padding: 8px 20px;
+    text-align: center;
+}
+.query-bar .alerts .alert-dismissable {
+    padding-right: 35px;
+}
+
+.query-bar .alerts .alert-info {
+    border-color: #DBBE62;
+    background-color: rgba(243, 212, 106, 0.9);
+}
+
+.query-bar .alerts .alert-info .close {
+    color: #5d4d06;
+}
+.query-bar .alerts .alert-info > a {
+    color: #03A9F4;
+}
+
 .sidebar {
     min-width: 500px;
     flex: 1 1;
@@ -903,32 +932,53 @@ td.hideOverflow {
 .query-content {
     flex: 2 1;
     overflow-x: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .query-map,
 .angular-leaflet-map {
-    height: 100%;
+    display: flex;
+    flex: 1 1;
 }
 
-.query-view-toggle {
-    margin: 10px;
-    text-align: right;
-}
-
-.query-view-toggle .btn-group {
-    border: 1px solid rgba(0,0,0,0.2);
-    border-radius: 4px;
-}
-
-.query-view-toggle .btn-group > .btn {
+.query-bar .btn {
     font-weight: 700;
 }
 
-.query-view-toggle .btn-group > .dropdown-menu {
-    left: auto;
-    right: 0;
+.query-view-toggle > .btn.disabled {
+    background-color: #03A9F4;
+    color: #fdfdfd;
+    border-color: #0394dc;
+    opacity: 1;
+}
+
+.download-btn {
+    margin-right: 15px;
+}
+
+.download-btn > .btn {
+    background-image: none;
+    background-color: #4CAF50;
+    border-color: #4A974C;
+    color: #fdfdfd;
+}
+
+.download-btn > .btn:active,
+.download-btn > .btn:focus,
+.download-btn > .btn:visited,
+.download-btn > .btn:hover {
+    background-color: #4A974C;
+}
+
+.download-btn > .dropdown-menu {
     min-width: 120px;
     text-align: center;
+}
+
+.query-view-toggle > .btn:focus,
+.query-view-toggle > .btn:active {
+    outline: none;
 }
 
 .checkbox-inline input {

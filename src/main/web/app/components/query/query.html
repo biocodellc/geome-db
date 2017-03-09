@@ -1,5 +1,54 @@
-<div class="query-page fill-screen">
+<div class="query-bar">
 
+    <!-- alerts -->
+    <div class="alerts row">
+        <div class="col-xs-12">
+            <div class="alert alert-info alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                Data is subject to our data usage policy found
+                <a target="_blank" href="http://diversityindopacific.net/data-usage-agreement/">here</a>
+            </div>
+
+            <div ng-repeat="alert in vm.alerts.getAlerts()" class="alert alert-{{alert.level}} alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert" ng-click="vm.alerts.remove(alert)" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                {{ alert.msg }}
+            </div>
+        </div>
+    </div>
+
+    <div class="actions clearfix">
+        <!-- query view toggle -->
+        <div class="btn-group btn-group-sm pull-right query-view-toggle">
+            <button type="button" ng-click="vm.showMap = true" ng-class="{'disabled': vm.showMap}"
+                    class="btn btn-default">Map
+            </button>
+            <button type="button" ng-click="vm.showMap = false" ng-class="{'disabled': !vm.showMap}"
+                    class="btn btn-default">Table
+            </button>
+        </div>
+
+        <!-- download menu -->
+        <div ng-show="vm.queryResults.isSet" class="btn-group btn-group-sm pull-right download-btn">
+            <button type="button" class="btn dropdown-toggle"
+                    data-toggle="dropdown">Download <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="#" ng-click="vm.downloadCsv()">CSV</a></li>
+                <li><a href="#" ng-click="vm.downloadKml()">KML</a></li>
+                <li><a href="#" ng-click="vm.downloadFasta()">Fasta</a></li>
+                <li><a href="#" ng-click="vm.downloadFastq()">Fastq</a></li>
+                <li><a href="#" ng-show="vm.selectedExpeditions.length === 1" ng-click="vm.downloadExcel()">Excel
+                    Template</a></li>
+            </ul>
+        </div>
+    </div>
+
+
+</div>
+
+<div class="query-page fill-screen">
     <!-- sidebar-->
     <div ng-show="vm.showSidebar" ng-include="'app/components/query/queryForm.html'" class="sidebar"></div>
 
@@ -12,34 +61,7 @@
     </div>
 
     <!-- main content-->
-    <div class="query-content" ng-class="{'query-content-map': vm.showMap}">
-
-        <div class="query-view-toggle">
-            <!-- view toggles-->
-            <div class="btn-group btn-group-sm">
-                <button type="button" ng-click="vm.showMap = true" ng-class="{'disabled': vm.showMap}"
-                        class="btn btn-default">Map
-                </button>
-                <button type="button" ng-click="vm.showMap = false" ng-class="{'disabled': !vm.showMap}"
-                        class="btn btn-default">Table
-                </button>
-            </div>
-
-            <!-- download menu -->
-            <div ng-show="vm.queryResults.isSet" class="btn-group btn-group-sm">
-                <button type="button" class="btn btn-primary dropdown-toggle"
-                        data-toggle="dropdown">Download <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a href="#" ng-click="vm.downloadCsv()">CSV</a></li>
-                    <li><a href="#" ng-click="vm.downloadKml()">KML</a></li>
-                    <li><a href="#" ng-click="vm.downloadFasta()">Fasta</a></li>
-                    <li><a href="#" ng-click="vm.downloadFastq()">Fastq</a></li>
-                    <li><a href="#" ng-show="vm.selectedExpeditions.length === 1" ng-click="vm.downloadExcel()">Excel
-                        Template</a></li>
-                </ul>
-            </div>
-        </div>
+    <div class="query-content">
 
         <!-- map -->
         <div class="query-map" ng-show="vm.showMap" ng-include="'app/components/query/queryMap.html'"></div>
@@ -66,15 +88,4 @@
 <!--<em>Note:</em> Although you can filter your results on the fastaSequence.marker and/or fastaSequence.sequence-->
 <!--fields, those fields will only appear in the results when you click the "Fasta" download option.-->
 <!--</p>-->
-
-<!--<div ng-show="vm.error" class="alert alert-error">-->
-<!--<a href="#" class="close" ng-click="vm.error = null" aria-label="close">&times;</a>-->
-<!--{{ vm.error }}-->
-<!--</div>-->
-<!--<div class="col-sm-12">-->
-
-
-<!--</div>-->
-</div>
-
 
