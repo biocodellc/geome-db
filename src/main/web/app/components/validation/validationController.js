@@ -1,7 +1,7 @@
 angular.module('fims.validation')
 
-    .controller('ValidationCtrl', ['$scope', '$q', '$http', '$window', '$uibModal', 'Upload', 'AuthFactory', 'ExpeditionFactory', 'FailModalFactory', 'ResultsDataFactory', 'StatusPollingFactory', 'PROJECT_ID', 'REST_ROOT', 'MAPBOX_TOKEN',
-        function ($scope, $q, $http, $window, $uibModal, Upload, AuthFactory, ExpeditionFactory, FailModalFactory, ResultsDataFactory, StatusPollingFactory, PROJECT_ID, REST_ROOT, MAPBOX_TOKEN) {
+    .controller('ValidationCtrl', ['$scope', '$q', '$http', '$window', '$uibModal', 'Upload', 'projectConfigService', 'AuthFactory', 'ExpeditionFactory', 'FailModalFactory', 'ResultsDataFactory', 'StatusPollingFactory', 'PROJECT_ID', 'REST_ROOT', 'MAPBOX_TOKEN',
+        function ($scope, $q, $http, $window, $uibModal, Upload, projectConfigService, AuthFactory, ExpeditionFactory, FailModalFactory, ResultsDataFactory, StatusPollingFactory, PROJECT_ID, REST_ROOT, MAPBOX_TOKEN) {
             var defaultFastqMetadata = {
                 libraryLayout: null,
                 libraryStrategy: null,
@@ -390,7 +390,7 @@ angular.module('fims.validation')
             }
 
             function getMarkersList() {
-                $http.get(REST_ROOT + "projects/" + PROJECT_ID + "/config/lists/markers/fields")
+                projectConfigService.getList("markers")
                     .then(function (response) {
                         angular.extend(vm.markersList, response.data);
                     }, function (response) {

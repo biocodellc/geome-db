@@ -4,9 +4,9 @@
     angular.module('fims.query')
         .controller('QueryFormController', QueryFormController);
 
-    QueryFormController.$inject = ['$http', 'queryParams', 'queryService', 'queryResults', 'ExpeditionFactory', 'REST_ROOT', 'PROJECT_ID'];
+    QueryFormController.$inject = ['queryParams', 'queryService', 'queryResults', 'projectConfigService', 'ExpeditionFactory'];
 
-    function QueryFormController($http, queryParams, queryService, queryResults, ExpeditionFactory, REST_ROOT, PROJECT_ID) {
+    function QueryFormController(queryParams, queryService, queryResults, projectConfigService, ExpeditionFactory) {
         var defaultFilter = {
             field: null,
             value: null
@@ -89,7 +89,7 @@
         }
 
         function getMarkersList() {
-            $http.get(REST_ROOT + "projects/" + PROJECT_ID + "/config/lists/markers/fields")
+            projectConfigService.getList("markers")
                 .then(getMarkersListSuccess)
                 .catch(getMarkersListFailure);
 
@@ -103,7 +103,7 @@
         }
 
         function getFilterOptions() {
-            $http.get(REST_ROOT + "projects/" + PROJECT_ID + "/filterOptions")
+            projectConfigService.getFilterOptions()
                 .then(getFilterOptionsSuccess)
                 .catch(getFilterOptionsFailure);
 
