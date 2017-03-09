@@ -50,7 +50,7 @@
 
         }
 
-        $scope.$watch('queryMapVm.queryResults.data', function () {
+        $scope.$watch('vm.queryResults.data', function () {
             map.setMarkers(queryResults.data, generatePopupContent);
         });
 

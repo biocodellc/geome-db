@@ -836,7 +836,12 @@ td.hideOverflow {
     margin-bottom: 0;
     padding: 8px 20px;
     text-align: center;
+    border-radius: 0;
 }
+.query-bar .alerts .alert:not(:first-child) {
+    border-top: none;
+}
+
 .query-bar .alerts .alert-dismissable {
     padding-right: 35px;
 }
@@ -1015,8 +1020,10 @@ td.hideOverflow {
 .query-table {
     margin-left: 10px;
     margin-right: 10px;
+    margin-top: 15px;
 }
 
 .full-page-query-table {
     margin-left: 40px;
+    margin-right: 40px;
 }
