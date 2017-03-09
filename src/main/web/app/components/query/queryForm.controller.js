@@ -63,8 +63,7 @@
                 queryResults.update(data);
             }
 
-            function queryJsonFailed(response) {
-                vm.error = response.data.error || response.data.usrMessage || "Server Error!";
+            function queryJsonFailed() {
                 vm.queryResults.isSet = false;
             }
 
@@ -72,8 +71,7 @@
 
         function getExpeditions() {
             ExpeditionFactory.getExpeditions()
-                .then(getExpeditionSuccess)
-                .catch(getExpeditionsFailure);
+                .then(getExpeditionSuccess);
 
 
             function getExpeditionSuccess(response) {
@@ -82,39 +80,26 @@
                     vm.expeditions.push(expedition.expeditionCode);
                 });
             }
-
-            function getExpeditionsFailure() {
-                vm.error = "Failed to load Expeditions.";
-            }
         }
 
         function getMarkersList() {
             projectConfigService.getList("markers")
-                .then(getMarkersListSuccess)
-                .catch(getMarkersListFailure);
+                .then(getMarkersListSuccess);
 
             function getMarkersListSuccess(response) {
                 angular.extend(vm.markers, response.data);
             }
 
-            function getMarkersListFailure(response) {
-                FailModalFactory.open("Failed to load fasta marker list", response.data.usrMessage);
-            }
         }
 
         function getFilterOptions() {
             projectConfigService.getFilterOptions()
-                .then(getFilterOptionsSuccess)
-                .catch(getFilterOptionsFailure);
+                .then(getFilterOptionsSuccess);
 
             function getFilterOptionsSuccess(response) {
                 vm.filterOptions = response.data;
 
                 addFilter();
-            }
-
-            function getFilterOptionsFailure(response) {
-                vm.error = response.data.error || response.data.usrMessage || "Failed to fetch filter options";
             }
         }
     }

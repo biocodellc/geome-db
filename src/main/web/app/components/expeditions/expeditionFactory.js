@@ -1,7 +1,7 @@
 angular.module('fims.expeditions')
 
-    .factory('ExpeditionFactory', ['$http', 'UserFactory', 'REST_ROOT', 'PROJECT_ID',
-        function ($http, UserFactory, REST_ROOT, PROJECT_ID) {
+    .factory('ExpeditionFactory', ['$http', 'UserFactory', 'exception', 'REST_ROOT', 'PROJECT_ID',
+        function ($http, UserFactory, exception, REST_ROOT, PROJECT_ID) {
             var expeditionFactory = {
                 getExpeditionsForUser: getExpeditionsForUser,
                 getExpeditions: getExpeditions,
@@ -23,7 +23,8 @@ angular.module('fims.expeditions')
             }
 
             function getExpeditions() {
-                return $http.get(REST_ROOT + 'projects/' + PROJECT_ID + '/expeditions');
+                return $http.get(REST_ROOT + 'projects/' + PROJECT_ID + '/expeditions')
+                    .catch(exception.catcher("Failed to load Expeditions."));
             }
 
             function getExpedition(expeditionCode) {

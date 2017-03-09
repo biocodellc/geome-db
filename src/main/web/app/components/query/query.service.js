@@ -4,9 +4,9 @@
     angular.module('fims.query')
         .factory('queryService', queryService);
 
-    queryService.$inject = ['$http', 'AuthFactory', 'REST_ROOT'];
+    queryService.$inject = ['$http', 'AuthFactory', 'exception', 'alerts', 'REST_ROOT'];
 
-    function queryService($http, AuthFactory, REST_ROOT) {
+    function queryService($http, AuthFactory, exception, alerts, REST_ROOT) {
 
         var queryService = {
             queryJson: queryJson,
@@ -21,7 +21,8 @@
 
         function queryJson(params, page, limit) {
             return $http.post(REST_ROOT + "projects/query/json/?limit=" + limit + "&page=" + page, params)
-                .then(queryJsonComplete);
+                .then(queryJsonComplete)
+                .catch(exception.catcher("Failed loading query results!"));
 
             function queryJsonComplete(response) {
                 var results = {
@@ -33,8 +34,17 @@
                 if (response.data) {
                     results.size = response.data.size;
 
-                    // elasitc_search will throw an error if we try and retrieve results from 10000 and greater
-                    results.totalElements = response.data.totalElements > 10000 ? 10000 : response.data.totalElements;
+                    if (response.data.totalElements > 10000) {
+                        // elasitc_search will throw an error if we try and retrieve results from 10000 and greater
+                        results.totalElements = 10000;
+                        alerts.info("Query results are limited to 10,000. Either narrow your search or download the results to view everything.")
+                    } else {
+                        results.totalElements = response.data.totalElements;
+                    }
+
+                    if (results.totalElements == 0) {
+                        alerts.info("No results found.")
+                    }
 
                     results.data = response.data.content;
                 }
