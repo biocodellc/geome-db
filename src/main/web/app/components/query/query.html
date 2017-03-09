@@ -11,7 +11,8 @@
             </div>
 
             <div ng-repeat="alert in vm.alerts.getAlerts()" class="alert alert-{{alert.level}} alert-dismissable">
-                <button type="button" class="close" data-dismiss="alert" ng-click="vm.alerts.remove(alert)" aria-label="Close"><span
+                <button type="button" class="close" data-dismiss="alert" ng-click="vm.alerts.remove(alert)"
+                        aria-label="Close"><span
                         aria-hidden="true">&times;</span></button>
                 {{ alert.msg }}
             </div>
@@ -64,7 +65,7 @@
     <div class="query-content">
 
         <!-- map -->
-        <div class="query-map" ng-show="vm.showMap" ng-include="'app/components/query/queryMap.html'"></div>
+        <div class="angular-leaflet-map" ng-show="vm.showMap" id="queryMap"></div>
 
         <!-- table -->
         <div ng-show="!vm.showMap" class="query-table" ng-class="{'full-page-query-table': !vm.showSidebar}"

@@ -936,7 +936,6 @@ td.hideOverflow {
     flex-direction: column;
 }
 
-.query-map,
 .angular-leaflet-map {
     display: flex;
     flex: 1 1;

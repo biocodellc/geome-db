@@ -4,9 +4,13 @@
     angular.module('fims.query')
         .controller('QueryController', QueryController);
 
-    QueryController.$inject = ['$scope', 'queryService', 'queryParams', 'queryResults', 'alerts'];
+    QueryController.$inject = ['$scope', '$timeout', 'queryService', 'queryParams', 'queryResults', 'alerts', 'Map'];
 
-    function QueryController($scope, queryService, queryParams, queryResults, alerts) {
+    function QueryController($scope, $timeout, queryService, queryParams, queryResults, alerts, Map) {
+        var LATITUDE_COLUMN = 'decimalLatitude';
+        var LONGITUDE_COLUMN = 'decimalLongitude';
+        var map;
+
         var vm = this;
         vm.alerts = alerts;
         vm.queryResults = queryResults;
@@ -14,6 +18,12 @@
         vm.showSidebar = true;
         vm.showMap = true;
         vm.sidebarToggleToolTip = "hide sidebar";
+        activate();
+
+        function activate() {
+            map = new Map(LATITUDE_COLUMN, LONGITUDE_COLUMN);
+            map.init('queryMap');
+        }
 
         vm.downloadExcel = function() {queryService.downloadExcel(queryParams.getAsPOSTParams())};
         vm.downloadCsv = function() {queryService.downloadCsv(queryParams.getAsPOSTParams())};
@@ -27,7 +37,30 @@
             } else {
                 vm.sidebarToggleToolTip = "show sidebar";
             }
-        })
+        });
+
+        $scope.$watch('vm.showSidebar', updateMapSize);
+        $scope.$watch('vm.showMap', updateMapSize);
+
+        function updateMapSize() {
+            // wrap in $timeout to wait until the view has rendered
+            $timeout(function () {
+                map.refreshSize();
+            }, 0);
+
+        }
+
+        $scope.$watch('queryMapVm.queryResults.data', function () {
+            map.setMarkers(queryResults.data, generatePopupContent);
+        });
+
+        function generatePopupContent(resource) {
+            return "<strong>GUID</strong>:  " + resource.bcid + "<br>" +
+                "<strong>Genus</strong>:  " + resource.genus + "<br>" +
+                "<strong>Species</strong>:  " + resource.species + "<br>" +
+                "<strong>Locality, Country</strong>:  " + resource.locality + ", " + resource.country + "<br>" +
+                "<a href='#'>Sample details</a>";
+        }
 
     }
 
