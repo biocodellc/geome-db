@@ -4,9 +4,9 @@
     angular.module('fims.query')
         .factory('queryService', queryService);
 
-    queryService.$inject = ['$http', 'AuthFactory', 'exception', 'alerts', 'REST_ROOT'];
+    queryService.$inject = ['$http', '$window', 'exception', 'alerts', 'REST_ROOT'];
 
-    function queryService($http, AuthFactory, exception, alerts, REST_ROOT) {
+    function queryService($http, $window, exception, alerts, REST_ROOT) {
 
         var queryService = {
             queryJson: queryJson,
@@ -58,24 +58,47 @@
             }
         }
 
-        function downloadExcel(params) {
-            download(REST_ROOT + "projects/query/excel?access_token=" + AuthFactory.getAccessToken(), params);
+        function downloadExcel(query) {
+            download("excel", query);
         }
 
-        function downloadKml(params) {
-            download(REST_ROOT + "projects/query/kml?access_token=" + AuthFactory.getAccessToken(), params);
+        function downloadKml(query) {
+            download("kml", query);
         }
 
-        function downloadCsv(params) {
-            download(REST_ROOT + "projects/query/csv?access_token=" + AuthFactory.getAccessToken(), params);
+        function downloadCsv(query) {
+            download("csv", query);
         }
 
-        function downloadFasta(params) {
-            download(REST_ROOT + "projects/query/fasta?access_token=" + AuthFactory.getAccessToken(), params);
+        function downloadFasta(query) {
+            download("fasta", query);
         }
 
-        function downloadFastq(params) {
-            download(REST_ROOT + "projects/query/fastq?access_token=" + AuthFactory.getAccessToken(), params);
+        function downloadFastq(query) {
+            download("fastq", query);
+        }
+
+        function download(path, query) {
+            return $http({
+                method: 'POST',
+                url: REST_ROOT + "projects/query/" + path,
+                data: query,
+                keepJson: true
+            })
+                .then(downloadFile)
+                .catch(downloadFileFailed);
+        }
+
+        function downloadFile(response) {
+            if (response.status == 204) {
+                alerts.info("No results found.");
+            }
+
+            $window.open(response.data.url, '_blank');
+        }
+
+        function downloadFileFailed(response) {
+            exception.catcher("Failed downloading file!")(response);
         }
     }
 })();

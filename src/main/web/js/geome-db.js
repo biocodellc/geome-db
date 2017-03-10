@@ -613,34 +613,3 @@ function list(listName, columnName) {
         }
     });
 }
-
-/* ====== query.html Functions ======= */
-
-// create a form and then submit that form in order to download files
-function download(url, data) {
-    //url and data options are required
-    if (url && data) {
-        var form = $('<form />', { action: url, method: 'POST'});
-        $.each(data, function(key, value) {
-            // if the value is an array, we need to create an input element for each value
-            if (value instanceof Array) {
-                $.each(value, function(i, v) {
-                    var input = $('<input />', {
-                        type: 'hidden',
-                        name: key,
-                        value: v
-                    }).appendTo(form);
-                });
-            } else {
-                var input = $('<input />', {
-                    type: 'hidden',
-                    name: key,
-                    value: value
-                }).appendTo(form);
-            }
-        });
-
-        return form.appendTo('body').submit().remove();
-    }
-    throw new Error("url and data required");
-}

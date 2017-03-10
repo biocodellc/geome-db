@@ -1,7 +1,7 @@
 angular.module('fims.expeditions')
 
-.controller('ExpeditionCtrl', ['$http', 'UserFactory', '$scope', '$window', 'LoadingModalFactory', 'FailModalFactory', 'AuthFactory', 'REST_ROOT', 'PROJECT_ID',
-    function ($http, UserFactory, $scope, $window, LoadingModalFactory, FailModalFactory, AuthFactory, REST_ROOT, PROJECT_ID) {
+.controller('ExpeditionCtrl', ['$http', 'UserFactory', '$scope', '$window', 'LoadingModalFactory', 'FailModalFactory', 'queryService', 'QueryBuilder', 'AuthFactory', 'REST_ROOT', 'PROJECT_ID',
+    function ($http, UserFactory, $scope, $window, LoadingModalFactory, FailModalFactory, queryService, QueryBuilder, AuthFactory, REST_ROOT, PROJECT_ID) {
         var vm = this;
         vm.totalItems = null;
         vm.itemsPerPage = 100;
@@ -14,7 +14,9 @@ angular.module('fims.expeditions')
         vm.downloadFastq = downloadFastq;
 
         function downloadCsv(expeditionCode) {
-            download(REST_ROOT + "projects/query/csv?access_token=" + AuthFactory.getAccessToken(), {expeditions:[expeditionCode]});
+            var builder = new QueryBuilder();
+            builder.setExpeditions([expeditionCode]);
+            return queryService.downloadCsv(builder.build());
         }
 
         function downloadFastq(expeditionCode) {
@@ -22,7 +24,9 @@ angular.module('fims.expeditions')
         }
 
         function downloadFasta(expeditionCode) {
-            download(REST_ROOT + "projects/query/fasta?access_token=" + AuthFactory.getAccessToken(), {expeditions:[expeditionCode]});
+            var builder = new QueryBuilder();
+            builder.setExpeditions([expeditionCode]);
+            return queryService.downloadFasta(builder.build());
         }
 
         function pageChanged() {
