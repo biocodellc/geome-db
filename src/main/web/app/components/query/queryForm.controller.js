@@ -19,7 +19,7 @@
         vm.filterOptions = [];
         vm.expeditions = [];
         vm.markers = [];
-        vm.queryOptions = ["exact", "fuzzy", "has"];
+        vm.queryOptions = ["fuzzy", "exact", "has"];
 
         // view toggles
         vm.moreSearchOptions = false;
@@ -34,6 +34,7 @@
         vm.addFilter = addFilter;
         vm.removeFilter = removeFilter;
         vm.queryJson = queryJson;
+        vm.getList = getFilterList;
 
         activate();
 
@@ -76,6 +77,19 @@
 
         }
 
+        function getFilterList(filterIndex) {
+            var field = vm.params.filters[filterIndex].field;
+
+            for (var i=0; i < vm.filterOptions.length; i++) {
+                if (vm.filterOptions[i].field == field) {
+                    var list = vm.filterOptions[i].list;
+                    return list.length > 0 ? list : null;
+                }
+            }
+
+            return null;
+        }
+
         function getExpeditions() {
             ExpeditionFactory.getExpeditions()
                 .then(getExpeditionSuccess);
@@ -97,7 +111,6 @@
                 vm.markers = response.data;
 
             }
-
         }
 
         function getFilterOptions() {

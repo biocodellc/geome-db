@@ -123,12 +123,24 @@ public class ProjectController extends FimsAbstractProjectsController {
         Mapping mapping = new Mapping();
         mapping.addMappingRules(configFile);
 
+        Validation validation = new Validation();
+        validation.addValidationRules(configFile, mapping);
+
         ArrayNode filters = new SpringObjectMapper().createArrayNode();
 
         for (ElasticSearchFilterField f : GeomeQueryUtils.getAvailableFilters(mapping)) {
             ObjectNode filter = filters.addObject();
             filter.put("field", f.getField());
             filter.put("displayName", f.getDisplayName());
+
+            biocode.fims.digester.List list = validation.findListForColumn(f.getDisplayName(), mapping.getDefaultSheetName());
+            ArrayNode listFields = filter.putArray("list");
+
+            if (list != null && list.getFields() != null) {
+                for (Field field: list.getFields()) {
+                    listFields.add(field.getValue());
+                }
+            }
         }
 
         return Response.ok(filters).build();

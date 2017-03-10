@@ -11,7 +11,7 @@
             expeditions: [],
             _all: null,
             filters: [],
-            marker: undefined,
+            marker: null,
             hasSRAAccessions: false,
             order: null,
             genus: null,
