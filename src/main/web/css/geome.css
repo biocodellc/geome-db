@@ -858,6 +858,16 @@ td.hideOverflow {
     color: #03A9F4;
 }
 
+.query-bar .alerts .alert-error {
+    border-color: #9C2B1F;
+    background-color: rgba(207, 58, 36, .9);
+    color: white;
+}
+
+.query-bar .alerts .alert-info .close {
+    color: #471411;
+}
+
 .sidebar {
     min-width: 500px;
     flex: 1 1;
