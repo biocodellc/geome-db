@@ -25,11 +25,11 @@
             map.init('queryMap');
         }
 
-        vm.downloadExcel = function() {queryService.downloadExcel(queryParams.getAsPOSTParams())};
-        vm.downloadCsv = function() {queryService.downloadCsv(queryParams.getAsPOSTParams())};
-        vm.downloadKml = function() {queryService.downloadKml(queryParams.getAsPOSTParams())};
-        vm.downloadFasta = function() {queryService.downloadFasta(queryParams.getAsPOSTParams())};
-        vm.downloadFastq = function() {queryService.downloadFastq(queryParams.getAsPOSTParams())};
+        vm.downloadExcel = function() {queryService.downloadExcel(queryParams.build())};
+        vm.downloadCsv = function() {queryService.downloadCsv(queryParams.build())};
+        vm.downloadKml = function() {queryService.downloadKml(queryParams.build())};
+        vm.downloadFasta = function() {queryService.downloadFasta(queryParams.build())};
+        vm.downloadFastq = function() {queryService.downloadFastq(queryParams.build())};
 
         $scope.$watch('vm.showSidebar', function () {
             if (vm.showSidebar) {

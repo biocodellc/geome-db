@@ -19,8 +19,13 @@
 
         return queryService;
 
-        function queryJson(params, page, limit) {
-            return $http.post(REST_ROOT + "projects/query/json/?limit=" + limit + "&page=" + page, params)
+        function queryJson(query, page, limit) {
+            return $http({
+                method: 'POST',
+                url: REST_ROOT + "projects/query/json/?limit=" + limit + "&page=" + page,
+                data: query,
+                keepJson: true
+            })
                 .then(queryJsonComplete)
                 .catch(exception.catcher("Failed loading query results!"));
 

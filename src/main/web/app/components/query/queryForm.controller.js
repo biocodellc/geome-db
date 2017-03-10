@@ -9,7 +9,7 @@
     function QueryFormController(queryParams, queryService, queryResults, projectConfigService, ExpeditionFactory, usSpinnerService) {
         var defaultFilter = {
             field: null,
-            query: "",
+            type: null,
             value: null
         };
 
@@ -19,7 +19,15 @@
         vm.filterOptions = [];
         vm.expeditions = [];
         vm.markers = [];
-        vm.queryOptions = ["fuzzy", "exact", "has"];
+        vm.queryTypes = {
+            "fuzzy": "FUZZY",
+            "=": "EQUALS",
+            "has": "EXISTS",
+            "<": "LESS_THEN",
+            "<=": "LESS_THEN_EQUALS",
+            ">": "GREATER_THEN",
+            ">=": "GREATER_THEN_EQUALS"
+        };
 
         // view toggles
         vm.moreSearchOptions = false;
@@ -47,7 +55,7 @@
         function addFilter() {
             var filter = angular.copy(defaultFilter);
             filter.field = vm.filterOptions[0].field;
-            filter.query = vm.queryOptions[0];
+            filter.type = Object.values(vm.queryTypes)[0];
             vm.params.filters.push(filter);
         }
 
@@ -58,7 +66,7 @@
         function queryJson() {
             usSpinnerService.spin('query-spinner');
 
-            queryService.queryJson(queryParams.getAsPOSTParams(), 0, 10000)
+            queryService.queryJson(queryParams.build(), 0, 10000)
                 .then(queryJsonSuccess)
                 .catch(queryJsonFailed)
                 .finally(queryJsonFinally);

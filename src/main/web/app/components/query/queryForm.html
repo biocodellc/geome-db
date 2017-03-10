@@ -109,9 +109,9 @@
                         ></select>
                     </div>
                     <div class="col-xs-2 filter-query-select">
-                        <select ng-model="filter.query"
+                        <select ng-model="filter.type"
                                 class="form-control input-sm"
-                                ng-options="q as q for q in queryFormVm.queryOptions"></select>
+                                ng-options="value as key for (key, value) in queryFormVm.queryTypes"></select>
                     </div>
                     <div class="col-xs-5">
                         <div ng-show="filter.query != 'has'">
