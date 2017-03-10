@@ -15,16 +15,20 @@ import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
-import biocode.fims.query.*;
+import biocode.fims.query.Query;
+import biocode.fims.query.QueryCriteria;
+import biocode.fims.query.writers.*;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.settings.SettingsManager;
+import biocode.fims.tools.CachedFile;
+import biocode.fims.tools.FileCache;
 import biocode.fims.utils.FileUtils;
+import biocode.fims.utils.StringGenerator;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.lucene.search.join.ScoreMode;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -41,9 +45,9 @@ import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.*;
+import java.net.URI;
 import java.util.*;
 
 /**
@@ -60,14 +64,16 @@ public class QueryController extends FimsService {
     private final Client esClient;
     private final QueryAuthorizer queryAuthorizer;
     private final ExpeditionService expeditionService;
+    private final FileCache fileCache;
 
     @Autowired
     QueryController(SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer,
-                    ExpeditionService expeditionService) {
+                    ExpeditionService expeditionService, FileCache fileCache) {
         super(settingsManager);
         this.esClient = esClient;
         this.queryAuthorizer = queryAuthorizer;
         this.expeditionService = expeditionService;
+        this.fileCache = fileCache;
     }
 
     /**
@@ -128,17 +134,16 @@ public class QueryController extends FimsService {
      */
     @POST
     @Path("/json/")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryJsonAsPOST(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
-            MultivaluedMap<String, String> form) {
+            Query query) {
 
         // Build the query, etc..
         try {
-            ElasticSearchQuery query = POSTElasticSearchQuery(form);
-            return getJsonResults(page, limit, query);
+            return getJsonResults(page, limit, getEsQuery(query));
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
                 return Response.ok(
@@ -160,27 +165,19 @@ public class QueryController extends FimsService {
      */
     @POST
     @Path("/csv/")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("text/csv")
-    public Response queryCSVAsPOST(
-            MultivaluedMap<String, String> form) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response queryCSVAsPOST(Query query) {
 
         try {
             // Build the query, etc..
-            ElasticSearchQuery query = POSTElasticSearchQuery(form);
-
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(query));
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
             JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, GeomeQueryUtils.getJsonFieldTransforms(getMapping()), defaultOutputDirectory(), ",");
 
-            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
-
-            response.header("Content-Disposition",
-                    "attachment; filename=geome-fims-output.csv");
-
-            return response.build();
+            return returnFileResults(jsonWriter.write(), "geome-fims-output.csv");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
                 return Response.noContent().build();
@@ -202,14 +199,11 @@ public class QueryController extends FimsService {
     @Path("/kml/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.google-earth.kml+xml")
-    public Response queryKml(
-            MultivaluedMap<String, String> form) {
+    public Response queryKml(Query query) {
 
         try {
             // Build the query, etc..
-            ElasticSearchQuery query = POSTElasticSearchQuery(form);
-
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(query));
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
@@ -219,13 +213,7 @@ public class QueryController extends FimsService {
                     .namePath(GeomeQueryUtils.getUniqueKeyPointer())
                     .build();
 
-            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
-
-            response.header("Content-Disposition",
-                    "attachment; filename=geome-fims-output.kml");
-
-            // Return response
-            return response.build();
+            return returnFileResults(jsonWriter.write(), "geome-fims-output.kml");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
                 return Response.noContent().build();
@@ -239,14 +227,11 @@ public class QueryController extends FimsService {
     @Path("/fasta/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/zip")
-    public Response queryFasta(
-            MultivaluedMap<String, String> form) {
+    public Response queryFasta(Query query) {
 
         try {
             // Build the query, etc..
-            ElasticSearchQuery query = POSTElasticSearchQuery(form);
-
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(query));
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
@@ -259,7 +244,7 @@ public class QueryController extends FimsService {
 
             File metadataFile = metadataJsonWriter.write();
 
-            List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = getFastaSequenceFilters(form);
+            List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = getFastaSequenceFilters(query.getCriterion());
 
             JsonWriter fastaJsonWriter = new FastaJsonWriter(
                     results,
@@ -278,17 +263,7 @@ public class QueryController extends FimsService {
                 fileMap.put("geome-db-output.fasta", fastaFile);
             }
 
-            Response.ResponseBuilder response = Response.ok(FileUtils.zip(fileMap, defaultOutputDirectory()), "application/zip");
-
-            response.header("Content-Disposition",
-                    "attachment; filename=geome-fims-output.zip");
-
-            // Return response
-            if (response == null) {
-                return Response.status(204).build();
-            } else {
-                return response.build();
-            }
+            return returnFileResults(FileUtils.zip(fileMap, defaultOutputDirectory()), "geome-fims-output.zip");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
                 return Response.noContent().build();
@@ -302,14 +277,11 @@ public class QueryController extends FimsService {
     @Path("/fastq/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/zip")
-    public Response queryFastq(
-            MultivaluedMap<String, String> form) {
+    public Response queryFastq(Query query) {
 
         try {
             // Build the query, etc..
-            ElasticSearchQuery query = POSTElasticSearchQuery(form);
-
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(query));
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
@@ -320,13 +292,7 @@ public class QueryController extends FimsService {
                     ","
             );
 
-            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
-
-            response.header("Content-Disposition",
-                    "attachment; filename=geome-fims-output-including-fastq-metadata.csv");
-
-            // Return response
-            return response.build();
+            return returnFileResults(jsonWriter.write(), "geome-fims-output-including-fastq-metadata.csv");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
                 return Response.noContent().build();
@@ -348,107 +314,107 @@ public class QueryController extends FimsService {
     @Path("/excel/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.ms-excel")
-    public Response queryExcel(
-            MultivaluedMap<String, String> form) {
+    public Response queryExcel(Query query) {
 
-        if (!form.containsKey("expeditions") || form.get("expeditions").size() != 1) {
+        if (query.getExpeditions().size() != 1) {
             throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
         }
-        // Build the query, etc..
-        ElasticSearchQuery query = POSTElasticSearchQuery(form);
-
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
-
-        ArrayNode results = elasticSearchQuerier.getAllResults();
-
-        JsonWriter jsonWriter = new ExcelJsonWriter(results, GeomeQueryUtils.getJsonFieldTransforms(getMapping()), getMapping().getDefaultSheetName(), defaultOutputDirectory());
-
-        File file = jsonWriter.write();
-
-        // Here we attach the other components of the excel sheet found with
-        XSSFWorkbook justData = null;
         try {
-            justData = new XSSFWorkbook(new FileInputStream(file));
-        } catch (IOException e) {
-            logger.error("failed to open excel file", e);
+            // Build the query, etc..
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(query));
+
+            ArrayNode results = elasticSearchQuerier.getAllResults();
+
+            JsonWriter jsonWriter = new ExcelJsonWriter(results, GeomeQueryUtils.getJsonFieldTransforms(getMapping()), getMapping().getDefaultSheetName(), defaultOutputDirectory());
+
+            File file = jsonWriter.write();
+
+            // Here we attach the other components of the excel sheet found with
+            XSSFWorkbook justData = null;
+            try {
+                justData = new XSSFWorkbook(new FileInputStream(file));
+            } catch (IOException e) {
+                logger.error("failed to open excel file", e);
+            }
+
+            TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData);
+            file = t.createExcelFileFromExistingSources("Samples", defaultOutputDirectory());
+            Response.ResponseBuilder response = Response.ok(file);
+
+            return returnFileResults(file, "geome-fims-output.xlsx");
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
         }
 
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData);
-        file = t.createExcelFileFromExistingSources("Samples", defaultOutputDirectory());
-        Response.ResponseBuilder response = Response.ok(file);
-
-        response.header("Content-Disposition",
-                "attachment; filename=geome-fims-output.xlsx");
-
-        // Return response
-        if (response == null) {
-            return Response.status(204).build();
-        } else {
-            return response.build();
-        }
     }
 
-    /**
-     * Get the POST query result as a JSONArray
-     *
-     * @return
-     */
-    private ElasticSearchQuery POSTElasticSearchQuery(MultivaluedMap<String, String> form) {
-        List<String> expeditionCodes = new ArrayList<>();
+    private Response returnFileResults(File file, String name) {
+        int userId = userContext.getUser() != null ? userContext.getUser().getUserId() : 0;
+        String fileId = StringGenerator.generateString(20);
+        CachedFile cf = new CachedFile(fileId, file.getAbsolutePath(), userId, name);
+        fileCache.addFile(cf);
+
+        URI fileURI = uriInfo.getBaseUriBuilder().path(UtilsController.class).path("file").queryParam("id", fileId).build();
+
+        return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
+    }
+
+
+    private ElasticSearchQuery getEsQuery(Query query) {
         List<ElasticSearchFilterCondition> filterConditions = new ArrayList<>();
-
-        // remove the projectId if present
-        form.remove("projectId");
-
-        if (form.containsKey("expeditions")) {
-            expeditionCodes.addAll(form.remove("expeditions"));
-        }
-        if (form.containsKey("expeditions[]")) {
-            expeditionCodes.addAll(form.remove("expeditions[]"));
-        }
-
-        if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), expeditionCodes, userContext.getUser())) {
-            throw new ForbiddenRequestException("unauthorized query.");
-        }
 
         List<ElasticSearchFilterField> filterFields = GeomeQueryUtils.getAvailableFilters(getMapping());
         filterFields.add(GeomeQueryUtils.get_AllFilter());
 
-        for (Map.Entry<String, List<String>> entry : form.entrySet()) {
-
-            // only expect 1 value
-            ElasticSearchFilterCondition filterCondition = new ElasticSearchFilterCondition(
-                    lookupFilter(entry.getKey(), filterFields),
-                    entry.getValue().get(0));
-
-            filterConditions.add(filterCondition);
+        if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), query.getExpeditions(), userContext.getUser())) {
+            throw new ForbiddenRequestException("unauthorized query.");
         }
 
         // if no expeditions are specified, then we want to only query public expeditions
-        if (expeditionCodes.size() == 0) {
-            expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditionCodes.add(e.getExpeditionCode()));
+        if (query.getExpeditions().size() == 0) {
+            query.getExpeditions().addAll(getPublicExpeditions());
+        }
 
-            if (expeditionCodes.size() == 0) {
-                throw new FimsRuntimeException(QueryErrorCode.NO_RESOURCES, 204);
-            }
+        for (QueryCriteria criteria : query.getCriterion()) {
+            filterConditions.add(
+                    new ElasticSearchFilterCondition(
+                            lookupFilter(criteria.getKey(), filterFields),
+                            criteria.getValue(),
+                            criteria.getType()
+                    )
+            );
         }
 
         return new ElasticSearchQuery(
-                getQueryBuilder(filterConditions, expeditionCodes),
+                getQueryBuilder(filterConditions, query.getExpeditions()),
                 new String[]{String.valueOf(projectId)},
                 new String[]{ElasticSearchIndexer.TYPE}
         );
     }
 
-    private List<FastaSequenceJsonFieldFilter> getFastaSequenceFilters(MultivaluedMap<String, String> form) {
+    private List<String> getPublicExpeditions() {
+        List<String> expeditionCodes = new ArrayList<>();
+        expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditionCodes.add(e.getExpeditionCode()));
+
+        if (expeditionCodes.size() == 0) {
+            throw new FimsRuntimeException(QueryErrorCode.NO_RESOURCES, 204);
+        }
+        return expeditionCodes;
+    }
+
+    private List<FastaSequenceJsonFieldFilter> getFastaSequenceFilters(List<QueryCriteria> criterion) {
         List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = new ArrayList<>();
 
         List<ElasticSearchFilterField> fastaFilterFields = GeomeQueryUtils.getFastaFilters(getMapping());
 
-        for (Map.Entry<String, List<String>> entry : form.entrySet()) {
+        for (QueryCriteria criteria : criterion) {
 
             try {
-                ElasticSearchFilterField filterField = lookupFilter(entry.getKey(), fastaFilterFields);
+                ElasticSearchFilterField filterField = lookupFilter(criteria.getKey(), fastaFilterFields);
 
                 // fastaSequences are nested objects. the filterField getField would look like {nestedPath}.{attribute_uri}
                 // since fastaSequenceFilters only filter fastaSequence objects, we need to remove the nestedPath
@@ -457,7 +423,7 @@ public class QueryController extends FimsService {
                 fastaSequenceFilters.add(
                         new FastaSequenceJsonFieldFilter(
                                 fastaSequenceFilterPath,
-                                entry.getValue().get(0))
+                                criteria.getValue())
                 );
 
             } catch (FimsRuntimeException e) {
@@ -498,17 +464,7 @@ public class QueryController extends FimsService {
         }
 
         for (ElasticSearchFilterCondition filterCondition : filterConditions) {
-
-            if (filterCondition.isNested()) {
-                boolQueryBuilder.must(
-                        QueryBuilders.nestedQuery(
-                                filterCondition.getPath(),
-                                QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()),
-                                ScoreMode.None)
-                );
-            } else {
-                boolQueryBuilder.must(QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()));
-            }
+            boolQueryBuilder.must(filterCondition.getQuery());
         }
 
         return boolQueryBuilder;

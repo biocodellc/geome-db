@@ -8,11 +8,12 @@ import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
 import biocode.fims.fasta.FastaSequenceFields;
 import biocode.fims.fasta.fileManagers.FastaFileManager;
 import biocode.fims.fastq.fileManagers.FastqFileManager;
-import biocode.fims.query.JsonFieldTransform;
+import biocode.fims.query.writers.JsonFieldTransform;
 import com.fasterxml.jackson.core.JsonPointer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -50,12 +51,26 @@ public class GeomeQueryUtils {
         List<ElasticSearchFilterField> filters = new ArrayList<>();
 
         for (Attribute attribute : mapping.getDefaultSheetAttributes()) {
-            if (FILTER_COLUMNS.contains(attribute.getColumn())) {
-                filters.add(new ElasticSearchFilterField(attribute.getUri(), attribute.getColumn(), attribute.getDatatype()));
-            }
+            filters.add(new ElasticSearchFilterField(attribute.getUri(), attribute.getColumn(), attribute.getDatatype()));
         }
 
         filters.addAll(getFastaFilters(mapping));
+        filters.addAll(getFastqFilters());
+        return filters;
+    }
+
+    private static List<ElasticSearchFilterField> getFastqFilters() {
+        // TODO refactor when we refactor fastqMetadata to use configuration file
+        List<ElasticSearchFilterField> filters = new ArrayList<>();
+
+        filters.add(
+                new ElasticSearchFilterField(
+                        "fastqMetadata.bioSample",
+                        "fastqMetadata.bioSample",
+                        DataType.STRING
+                )
+        );
+
         return filters;
     }
 
