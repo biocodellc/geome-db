@@ -2,7 +2,8 @@
     <form method="POST" class="" name="queryForm">
 
         <div class="form-group" style="margin-bottom: 0">
-            <input type="text" placeholder="Full text search..." ng-model="queryFormVm.params._all" class="form-control"/>
+            <input type="text" placeholder="Full text search..." ng-model="queryFormVm.params._all"
+                   class="form-control"/>
             <a class="help-block text-right" href="#"
                ng-click="queryFormVm.moreSearchOptions = !queryFormVm.moreSearchOptions">
                 More search options</a>
@@ -10,26 +11,26 @@
 
         <div ng-show="queryFormVm.moreSearchOptions">
             <!--<div class="form-group">-->
-                <!--<a href="#" ng-click="queryFormVm.showHas = !queryFormVm.showHas">-->
-                    <!--<label class="control-label">Has ...</label>-->
-                <!--</a>-->
-                <!--<div class="filters" ng-show="queryFormVm.showHas">-->
-                    <!--<label class="checkbox-inline">-->
-                        <!--<input type="checkbox"-->
-                               <!--name="hasPermitInformation">-->
-                        <!--PermitInformation-->
-                    <!--</label>-->
-                    <!--<label class="checkbox-inline">-->
-                        <!--<input type="checkbox"-->
-                               <!--name="hasCoordinateUncertaintyInMeters">-->
-                        <!--CoordinateUncertaintyInMeters-->
-                    <!--</label>-->
-                    <!--<label class="checkbox-inline">-->
-                        <!--<input type="checkbox"-->
-                               <!--name="hasDepthInformation">-->
-                        <!--Depth Information-->
-                    <!--</label>-->
-                <!--</div>-->
+            <!--<a href="#" ng-click="queryFormVm.showHas = !queryFormVm.showHas">-->
+            <!--<label class="control-label">Has ...</label>-->
+            <!--</a>-->
+            <!--<div class="filters" ng-show="queryFormVm.showHas">-->
+            <!--<label class="checkbox-inline">-->
+            <!--<input type="checkbox"-->
+            <!--name="hasPermitInformation">-->
+            <!--PermitInformation-->
+            <!--</label>-->
+            <!--<label class="checkbox-inline">-->
+            <!--<input type="checkbox"-->
+            <!--name="hasCoordinateUncertaintyInMeters">-->
+            <!--CoordinateUncertaintyInMeters-->
+            <!--</label>-->
+            <!--<label class="checkbox-inline">-->
+            <!--<input type="checkbox"-->
+            <!--name="hasDepthInformation">-->
+            <!--Depth Information-->
+            <!--</label>-->
+            <!--</div>-->
             <!--</div>-->
 
             <div class="form-group">
@@ -39,6 +40,7 @@
                 <div class="filters" ng-show="queryFormVm.showSequences">
                     <label class="checkbox-inline">
                         <input type="checkbox"
+                               ng-model="queryFormVm.params.hasSRAAccessions"
                                name="hasSraAccessions">
                         has SRA Accession Numbers
                     </label>
@@ -48,9 +50,11 @@
                         </div>
                         <div class="col-xs-6">
                             <select ng-model="queryFormVm.params.marker"
-                                    ng-options="::marker.value for marker in ::queryFormVm.markers"
+                                    ng-options="::marker.value for marker in queryFormVm.markers"
                                     class="form-control input-sm"
-                            ></select>
+                            >
+                                <option value="">-- Select a Sequence Marker --</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -62,23 +66,31 @@
                 </a>
                 <div class="row filters" ng-show="queryFormVm.showDWC">
                     <div class="col-xs-6">
-                        <input class="form-control input-sm" type="text" placeholder="Order"/>
-                        <input class="form-control input-sm" type="text" placeholder="Genus"/>
-                        <input class="form-control input-sm" type="text" placeholder="Locality"/>
+                        <input ng-model="queryFormVm.params.order" class="form-control input-sm" type="text"
+                               placeholder="Order"/>
+                        <input ng-model="queryFormVm.params.genus" class="form-control input-sm" type="text"
+                               placeholder="Genus"/>
+                        <input ng-model="queryFormVm.params.locality" class="form-control input-sm" type="text"
+                               placeholder="Locality"/>
                     </div>
                     <div class="col-xs-6">
-                        <input class="form-control input-sm" type="text" placeholder="Family"/>
-                        <input class="form-control input-sm" type="text" placeholder="Species"/>
-                        <input class="form-control input-sm" type="text" placeholder="Country"/>
+                        <input ng-model="queryFormVm.params.family" class="form-control input-sm" type="text"
+                               placeholder="Family"/>
+                        <input ng-model="queryFormVm.params.species" class="form-control input-sm" type="text"
+                               placeholder="Species"/>
+                        <input ng-model="queryFormVm.params.country" class="form-control input-sm" type="text"
+                               placeholder="Country"/>
                     </div>
                     <div class="col-xs-12">
                         <span class="control-label">yearCollected</span>
                         <div class="col-xs-4">
-                            <input type="text" placeholder="YYYY" class="form-control input-sm"/>
+                            <input ng-model="queryFormVm.params.fromYear" type="text" placeholder="YYYY"
+                                   class="form-control input-sm"/>
                         </div>
                         <span class="control-label">to</span>
                         <div class="col-xs-4">
-                            <input type="text" placeholder="YYYY" class="form-control input-sm"/>
+                            <input ng-model="queryFormVm.params.toYear" type="text" placeholder="YYYY"
+                                   class="form-control input-sm"/>
                         </div>
                     </div>
 
@@ -89,7 +101,7 @@
                     <label class="control-label">Expeditions</label>
                 </a>
                 <typeahead ng-show="queryFormVm.showExpeditions" class="typeahead" expeditions="queryFormVm.expeditions"
-                           selected-expeditions="queryFormVm.params.selectedExpeditions"></typeahead>
+                           selected-expeditions="queryFormVm.params.expeditions"></typeahead>
             </div>
 
             <div class="form-group row">
@@ -114,13 +126,18 @@
                     <div class="col-xs-5">
                         <select ng-model="filter.field"
                                 ng-change="queryFormVm.params.filters[$index].value=null"
-                                ng-options="::filter.field as ::filter.displayName for filter in ::queryFormVm.filterOptions track by filter.field"
+                                ng-options="f.field as f.displayName for f in queryFormVm.filterOptions track by f.field"
                                 class="form-control input-sm"
                         ></select>
                     </div>
-                    <div class="col-xs-1 text-center"><span>=</span></div>
+                    <div class="col-xs-2 filter-query-select">
+                        <select ng-model="filter.query"
+                                class="form-control input-sm"
+                                ng-options="q as q for q in queryFormVm.queryOptions"></select>
+                    </div>
                     <div class="col-xs-5">
-                        <input type="text" class="form-control input-sm" ng-model="filter.value"/>
+                        <input ng-show="filter.query != 'has'" type="text" class="form-control input-sm"
+                               ng-model="filter.value"/>
                     </div>
                     <button type="button" class="btn btn-danger btn-xs filter-remove-btn"
                             ng-click="queryFormVm.removeFilter($index)">

@@ -939,6 +939,7 @@ td.hideOverflow {
     overflow-x: auto;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .angular-leaflet-map {
@@ -997,6 +998,13 @@ td.hideOverflow {
     margin-top: 7px;
 }
 
+.filter-query-select {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: -5px;
+    margin-right: -5px;
+}
+
 .filters {
     padding-left: 15px;
 }
@@ -1007,6 +1015,8 @@ td.hideOverflow {
 
 .filter-remove-btn {
     margin-top: 4px;
+    margin-left: -9px;
+    margin-right: -9px;
 }
 
 .column-filters-header {
@@ -1026,4 +1036,12 @@ td.hideOverflow {
 .full-page-query-table {
     margin-left: 40px;
     margin-right: 40px;
+}
+
+.center-spinner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }

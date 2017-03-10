@@ -53,7 +53,10 @@
                     var lng = resource[_this.longColumn];
 
                     var marker = L.marker([lat, lng]);
-                    marker.bindPopup(popupContentCallback(resource));
+
+                    if (typeof popupContentCallback === 'function') {
+                        marker.bindPopup(popupContentCallback(resource));
+                    }
 
                     _this._markers.push(marker);
                 });

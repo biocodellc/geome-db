@@ -8,10 +8,19 @@
 
     function queryParams() {
         var params = {
-            selectedExpeditions: [],
+            expeditions: [],
             _all: null,
             filters: [],
-            marker: null,
+            marker: undefined,
+            hasSRAAccessions: false,
+            order: null,
+            genus: null,
+            locality: null,
+            family: null,
+            species: null,
+            country: null,
+            fromYear: null,
+            toYear: null,
             getAsPOSTParams: getAsPOSTParams
         };
 

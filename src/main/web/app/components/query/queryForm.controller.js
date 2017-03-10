@@ -4,11 +4,12 @@
     angular.module('fims.query')
         .controller('QueryFormController', QueryFormController);
 
-    QueryFormController.$inject = ['queryParams', 'queryService', 'queryResults', 'projectConfigService', 'ExpeditionFactory'];
+    QueryFormController.$inject = ['queryParams', 'queryService', 'queryResults', 'projectConfigService', 'ExpeditionFactory', 'usSpinnerService'];
 
-    function QueryFormController(queryParams, queryService, queryResults, projectConfigService, ExpeditionFactory) {
+    function QueryFormController(queryParams, queryService, queryResults, projectConfigService, ExpeditionFactory, usSpinnerService) {
         var defaultFilter = {
             field: null,
+            query: "",
             value: null
         };
 
@@ -18,6 +19,7 @@
         vm.filterOptions = [];
         vm.expeditions = [];
         vm.markers = [];
+        vm.queryOptions = ["exact", "fuzzy", "has"];
 
         // view toggles
         vm.moreSearchOptions = false;
@@ -44,6 +46,7 @@
         function addFilter() {
             var filter = angular.copy(defaultFilter);
             filter.field = vm.filterOptions[0].field;
+            filter.query = vm.queryOptions[0];
             vm.params.filters.push(filter);
         }
 
@@ -52,12 +55,12 @@
         }
 
         function queryJson() {
-            // LoadingModalFactory.open();
+            usSpinnerService.spin('query-spinner');
 
             queryService.queryJson(queryParams.getAsPOSTParams(), 0, 10000)
                 .then(queryJsonSuccess)
-                .catch(queryJsonFailed);
-            // .finally(LoadingModalFactory.close);
+                .catch(queryJsonFailed)
+                .finally(queryJsonFinally);
 
             function queryJsonSuccess(data) {
                 queryResults.update(data);
@@ -65,6 +68,10 @@
 
             function queryJsonFailed() {
                 vm.queryResults.isSet = false;
+            }
+
+            function queryJsonFinally() {
+                usSpinnerService.stop('query-spinner');
             }
 
         }
@@ -87,7 +94,8 @@
                 .then(getMarkersListSuccess);
 
             function getMarkersListSuccess(response) {
-                angular.extend(vm.markers, response.data);
+                vm.markers = response.data;
+
             }
 
         }
