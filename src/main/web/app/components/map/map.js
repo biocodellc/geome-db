@@ -24,6 +24,7 @@
                 this._map = L.map(mapId, {
                     center: [0, 0],
                     zoom: 1,
+                    closePopupOnClick: false,
                     maxBoundsViscocity: .5
                 });
 

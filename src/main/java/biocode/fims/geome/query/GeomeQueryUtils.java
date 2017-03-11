@@ -104,7 +104,7 @@ public class GeomeQueryUtils {
      * @return
      */
     public static ElasticSearchFilterField get_AllFilter() {
-        return new ElasticSearchFilterField("_all", null, null);
+        return new ElasticSearchFilterField("_all", null, DataType.STRING);
     }
 
     /**
