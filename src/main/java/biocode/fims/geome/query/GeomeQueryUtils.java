@@ -13,7 +13,6 @@ import com.fasterxml.jackson.core.JsonPointer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -122,7 +121,7 @@ public class GeomeQueryUtils {
             fieldTransforms.add(
                     new JsonFieldTransform(
                             a.getColumn(),
-                            JsonPointer.compile("/" + a.getUri()),
+                            a.getUri(),
                             a.getDatatype()
                     )
             );
@@ -131,7 +130,7 @@ public class GeomeQueryUtils {
         fieldTransforms.add(
                 new JsonFieldTransform(
                         "bcid",
-                        JsonPointer.compile("/bcid"),
+                        "bcid",
                         DataType.STRING
                 )
         );
@@ -161,7 +160,7 @@ public class GeomeQueryUtils {
 
                 metadataFields.add(new JsonFieldTransform(
                         a.getColumn(),
-                        JsonPointer.compile("/" + a.getUri()),
+                        a.getUri(),
                         a.getDatatype()
                 ));
             }
@@ -198,77 +197,77 @@ public class GeomeQueryUtils {
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqLibraryStrategy",
-                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/libraryStrategy"),
+                        FastqFileManager.CONCEPT_ALIAS + ".libraryStrategy",
                         DataType.STRING
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqLibrarySource",
-                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/librarySource"),
+                        FastqFileManager.CONCEPT_ALIAS + ".librarySource",
                         DataType.STRING
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqLibrarySelection",
-                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/librarySelection"),
+                        FastqFileManager.CONCEPT_ALIAS + ".librarySelection",
                         DataType.STRING
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqLibraryLayout",
-                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/libraryLayout"),
+                        FastqFileManager.CONCEPT_ALIAS + ".libraryLayout",
                         DataType.STRING
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqPlatform",
-                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/platform"),
+                        FastqFileManager.CONCEPT_ALIAS + ".platform",
                         DataType.STRING
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqInstrumentModel",
-                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/instrumentModel"),
+                        FastqFileManager.CONCEPT_ALIAS + ".instrumentModel",
                         DataType.STRING
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqDesignDescription",
-                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/designDescription"),
+                        FastqFileManager.CONCEPT_ALIAS + ".designDescription",
                         DataType.STRING
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "bioSample Accession",
-                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/bioSample/accession"),
+                        FastqFileManager.CONCEPT_ALIAS + ".bioSample.accession",
                         DataType.STRING
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "bioProject Accession",
-                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/bioSample/bioProjectAccession"),
+                        FastqFileManager.CONCEPT_ALIAS + ".bioSample.bioProjectAccession",
                         DataType.STRING
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "Experiment Accession",
-                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/bioSample/experiment/experimentAccession"),
+                        FastqFileManager.CONCEPT_ALIAS + ".bioSample.experiment.experimentAccession",
                         DataType.STRING
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "Study Accession",
-                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/bioSample/experiment/studyAccession"),
+                        FastqFileManager.CONCEPT_ALIAS + ".bioSample.experiment.studyAccession",
                         DataType.STRING
                 )
         );
@@ -276,7 +275,7 @@ public class GeomeQueryUtils {
                 // currently only getting the 1st Run Accession
                 new JsonFieldTransform(
                         "Run Accessions",
-                        JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS + "/bioSample/experiment/runAccessions/0"),
+                        FastqFileManager.CONCEPT_ALIAS + "/bioSample/experiment/runAccessions/0",
                         DataType.STRING
                 )
         );

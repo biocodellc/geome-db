@@ -32,7 +32,7 @@
             builder.setExpeditions(params.expeditions);
 
             angular.forEach(params.filters, function (filter) {
-                if (filter.value) {
+                if (filter.value || filter.type == 'EXISTS') {
                     builder.addCriteria(filter.field, filter.value, filter.type);
                 }
             });

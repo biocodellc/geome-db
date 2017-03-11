@@ -103,7 +103,7 @@
                      ng-repeat="filter in queryFormVm.params.filters track by $index">
                     <div class="col-xs-5">
                         <select ng-model="filter.field"
-                                ng-change="queryFormVm.params.filters[$index].value=null"
+                                ng-change="queryFormVm.resetFilter($index)"
                                 ng-options="f.field as f.displayName for f in ::queryFormVm.filterOptions"
                                 class="form-control input-sm"
                         ></select>
@@ -111,10 +111,10 @@
                     <div class="col-xs-2 filter-query-select">
                         <select ng-model="filter.type"
                                 class="form-control input-sm"
-                                ng-options="value as key for (key, value) in queryFormVm.queryTypes"></select>
+                                ng-options="type as (type | queryTypeDisplay) for type in queryFormVm.getTypes($index)"></select>
                     </div>
                     <div class="col-xs-5">
-                        <div ng-show="filter.query != 'has'">
+                        <div ng-show="filter.type != 'EXISTS'">
                             <input ng-show="!queryFormVm.getList($index)" type="text" class="form-control input-sm"
                                    ng-model="filter.value"/>
 

@@ -31,15 +31,6 @@
         vm.filterOptions = [];
         vm.expeditions = [];
         vm.markers = [];
-        vm.queryTypes = {
-            "fuzzy": "FUZZY",
-            "=": "EQUALS",
-            "has": "EXISTS",
-            "<": "LESS_THEN",
-            "<=": "LESS_THEN_EQUALS",
-            ">": "GREATER_THEN",
-            ">=": "GREATER_THEN_EQUALS"
-        };
 
         // view toggles
         vm.moreSearchOptions = false;
@@ -55,6 +46,8 @@
         vm.removeFilter = removeFilter;
         vm.queryJson = queryJson;
         vm.getList = getFilterList;
+        vm.getTypes = getQueryTypes;
+        vm.resetFilter = resetFilter;
 
         activate();
 
@@ -67,7 +60,7 @@
         function addFilter() {
             var filter = angular.copy(defaultFilter);
             filter.field = vm.filterOptions[0].field;
-            filter.type = Object.values(vm.queryTypes)[0];
+            filter.type = vm.filterOptions[0].queryTypes[0];
             vm.params.filters.push(filter);
         }
 
@@ -108,6 +101,25 @@
             }
 
             return null;
+        }
+
+        function getQueryTypes(filterIndex) {
+            var filter = vm.params.filters[filterIndex];
+
+            for (var i=0; i < vm.filterOptions.length; i++) {
+                if (vm.filterOptions[i].field == filter.field) {
+                    var types = vm.filterOptions[i].queryTypes;
+                    return types;
+                }
+            }
+
+            return null;
+        }
+
+        function resetFilter(filterIndex) {
+            var filter = vm.params.filters[filterIndex];
+            filter.value = null;
+            filter.type = "EQUALS";
         }
 
         function getExpeditions() {

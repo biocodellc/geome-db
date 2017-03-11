@@ -18,6 +18,7 @@ import biocode.fims.ncbi.sra.submission.SraMetadataMapper;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.query.QueryType;
 import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.ProcessController;
@@ -37,6 +38,7 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,12 +128,14 @@ public class ProjectController extends FimsAbstractProjectsController {
         Validation validation = new Validation();
         validation.addValidationRules(configFile, mapping);
 
+        Map<DataType, List<QueryType>> queryTypeMap = getQueryTypeMap();
         ArrayNode filters = new SpringObjectMapper().createArrayNode();
 
         for (ElasticSearchFilterField f : GeomeQueryUtils.getAvailableFilters(mapping)) {
             ObjectNode filter = filters.addObject();
             filter.put("field", f.getField());
             filter.put("displayName", f.getDisplayName());
+            filter.putPOJO("queryTypes", queryTypeMap.get(f.getDataType()));
 
             biocode.fims.digester.List list = validation.findListForColumn(f.getDisplayName(), mapping.getDefaultSheetName());
             ArrayNode listFields = filter.putArray("list");
@@ -143,7 +147,25 @@ public class ProjectController extends FimsAbstractProjectsController {
             }
         }
 
+
         return Response.ok(filters).build();
+    }
+
+    private Map<DataType, List<QueryType>> getQueryTypeMap() {
+        Map<DataType, List<QueryType>> typeMap = new HashMap<>();
+        for (DataType dataType : DataType.values()) {
+            List<QueryType> types = new ArrayList<>();
+
+            for (QueryType type: QueryType.values()) {
+                if (type.getDataTypes().contains(dataType)) {
+                    types.add(type);
+                }
+            }
+
+            typeMap.put(dataType, types);
+        }
+
+        return typeMap;
     }
 
     @GET
