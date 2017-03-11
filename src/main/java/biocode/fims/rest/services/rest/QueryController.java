@@ -18,6 +18,7 @@ import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
 import biocode.fims.query.Query;
 import biocode.fims.query.QueryCriteria;
 import biocode.fims.query.writers.*;
+import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
@@ -137,6 +138,7 @@ public class QueryController extends FimsService {
      *
      * @return
      */
+    @Compress
     @POST
     @Path("/json/")
     @Consumes(MediaType.APPLICATION_JSON)
