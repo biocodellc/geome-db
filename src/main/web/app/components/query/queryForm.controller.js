@@ -7,6 +7,18 @@
     QueryFormController.$inject = ['queryParams', 'queryService', 'queryResults', 'projectConfigService', 'ExpeditionFactory', 'usSpinnerService'];
 
     function QueryFormController(queryParams, queryService, queryResults, projectConfigService, ExpeditionFactory, usSpinnerService) {
+        var SOURCE = [
+            "urn:principalInvestigator",
+            "urn:materialSampleID",
+            "urn:locality",
+            "urn:country",
+            "urn:decimalLatitude",
+            "urn:decimalLongitude",
+            "urn:genus",
+            "urn:species",
+            "fastqMetadata",
+            "bcid"
+        ];
         var defaultFilter = {
             field: null,
             type: null,
@@ -66,7 +78,7 @@
         function queryJson() {
             usSpinnerService.spin('query-spinner');
 
-            queryService.queryJson(queryParams.build(), 0, 10000)
+            queryService.queryJson(queryParams.build(SOURCE), 0, 10000)
                 .then(queryJsonSuccess)
                 .catch(queryJsonFailed)
                 .finally(queryJsonFinally);

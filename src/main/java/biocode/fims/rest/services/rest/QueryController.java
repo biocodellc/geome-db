@@ -26,7 +26,6 @@ import biocode.fims.tools.CachedFile;
 import biocode.fims.tools.FileCache;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.utils.StringGenerator;
-import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -49,6 +48,7 @@ import javax.ws.rs.core.Response;
 import java.io.*;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Query interface for Biocode-fims expedition
@@ -117,9 +117,14 @@ public class QueryController extends FimsService {
 
         List<JsonFieldTransform> writerColumns = GeomeQueryUtils.getJsonFieldTransforms(getMapping());
         writerColumns.add(
-                new JsonFieldTransform("fastqMetadata", JsonPointer.compile("/" + FastqFileManager.CONCEPT_ALIAS), null)
+                new JsonFieldTransform("fastqMetadata", FastqFileManager.CONCEPT_ALIAS, null)
         );
-        Page<ObjectNode> transformedResults = results.map(r -> JsonTransformer.transform(r, writerColumns));
+
+        List<JsonFieldTransform> filteredWriterColumns = writerColumns.stream()
+                .filter(t -> query.getSource().contains(t.getUri()))
+                .collect(Collectors.toList());
+
+        Page<ObjectNode> transformedResults = results.map(r -> JsonTransformer.transform(r, filteredWriterColumns));
 
         return Response.ok(transformedResults).build();
     }
@@ -143,7 +148,13 @@ public class QueryController extends FimsService {
 
         // Build the query, etc..
         try {
-            return getJsonResults(page, limit, getEsQuery(query));
+            ElasticSearchQuery esQuery = getEsQuery(query);
+
+            if (query.getSource().size() > 0) {
+                esQuery.source(query.getSource());
+            }
+
+            return getJsonResults(page, limit, esQuery);
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
                 return Response.ok(

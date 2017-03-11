@@ -26,7 +26,7 @@
 
         return params;
 
-        function buildQuery() {
+        function buildQuery(source) {
             var builder = new QueryBuilder();
 
             builder.setExpeditions(params.expeditions);
@@ -77,6 +77,7 @@
                 builder.addCriteria("urn:yearCollected", params.toYear, "LESS_THEN_EQUALS");
             }
 
+            builder.setSource(source);
             return builder.build();
 
         }

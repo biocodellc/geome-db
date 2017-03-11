@@ -92,6 +92,7 @@
         function downloadFile(response) {
             if (response.status == 204) {
                 alerts.info("No results found.");
+                return
             }
 
             $window.open(response.data.url, '_blank');
