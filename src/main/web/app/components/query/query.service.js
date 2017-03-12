@@ -26,8 +26,7 @@
                 data: query,
                 keepJson: true
             })
-                .then(queryJsonComplete)
-                .catch(exception.catcher("Failed loading query results!"));
+                .then(queryJsonComplete);
 
             function queryJsonComplete(response) {
                 var results = {

@@ -4,9 +4,9 @@
     angular.module('fims.query')
         .controller('QueryFormController', QueryFormController);
 
-    QueryFormController.$inject = ['queryParams', 'queryService', 'queryResults', 'projectConfigService', 'ExpeditionFactory', 'usSpinnerService'];
+    QueryFormController.$inject = ['queryParams', 'queryService', 'queryResults', 'projectConfigService', 'ExpeditionFactory', 'usSpinnerService', 'exception'];
 
-    function QueryFormController(queryParams, queryService, queryResults, projectConfigService, ExpeditionFactory, usSpinnerService) {
+    function QueryFormController(queryParams, queryService, queryResults, projectConfigService, ExpeditionFactory, usSpinnerService, exception) {
         var SOURCE = [
             "urn:principalInvestigator",
             "urn:materialSampleID",
@@ -80,7 +80,8 @@
                 queryResults.update(data);
             }
 
-            function queryJsonFailed() {
+            function queryJsonFailed(response) {
+                exception.catcher("Failed to load query results")(response);
                 vm.queryResults.isSet = false;
             }
 

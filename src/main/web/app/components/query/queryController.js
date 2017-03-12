@@ -4,9 +4,9 @@
     angular.module('fims.query')
         .controller('QueryController', QueryController);
 
-    QueryController.$inject = ['$scope', '$timeout', 'queryService', 'queryParams', 'queryResults', 'alerts', 'Map'];
+    QueryController.$inject = ['$scope', '$timeout', '$state', 'queryService', 'queryParams', 'queryResults', 'alerts', 'Map'];
 
-    function QueryController($scope, $timeout, queryService, queryParams, queryResults, alerts, Map) {
+    function QueryController($scope, $timeout, $state, queryService, queryParams, queryResults, alerts, Map) {
         var LATITUDE_COLUMN = 'decimalLatitude';
         var LONGITUDE_COLUMN = 'decimalLongitude';
         var map;
@@ -61,7 +61,7 @@
                 "<strong>Genus</strong>:  " + resource.genus + "<br>" +
                 "<strong>Species</strong>:  " + resource.species + "<br>" +
                 "<strong>Locality, Country</strong>:  " + resource.locality + ", " + resource.country + "<br>" +
-                "<a href='#'>Sample details</a>";
+                "<a href='" + $state.href('sample', {bcid: resource.bcid}) + "' target='_blank'>Sample details</a>";
         }
 
     }

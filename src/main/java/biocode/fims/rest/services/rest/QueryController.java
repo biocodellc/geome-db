@@ -121,9 +121,14 @@ public class QueryController extends FimsService {
                 new JsonFieldTransform("fastqMetadata", FastqFileManager.CONCEPT_ALIAS, null)
         );
 
-        List<JsonFieldTransform> filteredWriterColumns = writerColumns.stream()
-                .filter(t -> query.getSource().contains(t.getUri()))
-                .collect(Collectors.toList());
+        List<JsonFieldTransform> filteredWriterColumns;
+        if (query.getSource().isEmpty()) {
+            filteredWriterColumns = writerColumns;
+        } else {
+            filteredWriterColumns = writerColumns.stream()
+                    .filter(t -> query.getSource().contains(t.getUri()))
+                    .collect(Collectors.toList());
+        }
 
         Page<ObjectNode> transformedResults = results.map(r -> JsonTransformer.transform(r, filteredWriterColumns));
 
@@ -382,6 +387,7 @@ public class QueryController extends FimsService {
 
         List<ElasticSearchFilterField> filterFields = GeomeQueryUtils.getAvailableFilters(getMapping());
         filterFields.add(GeomeQueryUtils.get_AllFilter());
+        filterFields.add(GeomeQueryUtils.getBcidFilter());
 
         if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), query.getExpeditions(), userContext.getUser())) {
             throw new ForbiddenRequestException("unauthorized query.");

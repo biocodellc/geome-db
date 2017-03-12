@@ -4,17 +4,18 @@
     angular.module('fims.query')
         .controller('QueryTableController', QueryTableController);
 
-    QueryTableController.$inject = ['$scope', 'queryResults'];
+    QueryTableController.$inject = ['$scope', '$window', '$state', 'queryResults'];
 
-    function QueryTableController($scope, queryResults) {
+    function QueryTableController($scope, $window, $state, queryResults) {
         var vm = this;
         vm.queryResults = queryResults;
 
-        vm.tableColumns = ["principalInvestigator", "materialSampleID", "locality", "decimalLatitude", "decimalLongitude", "genus", "species", "bioProject", "bioProject bioSamples"];
+        vm.tableColumns = ["principalInvestigator", "materialSampleID", "locality", "decimalLatitude", "decimalLongitude", "genus", "species", "bcid"];
         vm.tableData = [];
         vm.currentPage = 1;
         vm.pageSize = 50;
         vm.updatePage = updatePage;
+        vm.detailView = detailView;
 
         function updatePage() {
             var start = (vm.currentPage - 1) * vm.pageSize;
@@ -23,6 +24,11 @@
             var data = vm.queryResults.data.slice(start, end);
 
             prepareTableData(data);
+        }
+
+        function detailView(resource) {
+            var bcidIndex = vm.tableColumns.indexOf("bcid");
+            $window.open($state.href('sample', {bcid: resource[bcidIndex]}))
         }
 
         /*
@@ -37,24 +43,7 @@
                 angular.forEach(data, function (resource) {
                     var resourceData = [];
                     angular.forEach(vm.tableColumns, function (key) {
-                        if (key == "bioProject") {
-                            if (resource.fastqMetadata && resource.fastqMetadata.bioSample) {
-                                var link = "https://www.ncbi.nlm.nih.gov/bioproject/" + resource.fastqMetadata.bioSample.bioProjectId;
-                                var val = "<a href=" + link + " target=_blank>" + link + "</a>";
-                                resourceData.push(val)
-                            } else {
-                                resourceData.push("")
-                            }
-                        } else if (key == "bioProject bioSamples") {
-                            if (resource.fastqMetadata && resource.fastqMetadata.bioSample) {
-                                var link = "https://www.ncbi.nlm.nih.gov/biosample?LinkName=bioproject_biosample_all&from_uid=" + resource.fastqMetadata.bioSample.bioProjectId;
-                                var val = "<a href=" + link + " target=_blank>" + link + "</a>";
-                                resourceData.push(val)
-                            } else {
-                                resourceData.push("")
-                            }
-                        } else
-                            resourceData.push(resource[key]);
+                        resourceData.push(resource[key]);
                     });
                     vm.tableData.push(resourceData);
                 });

@@ -107,6 +107,10 @@ public class GeomeQueryUtils {
         return new ElasticSearchFilterField("_all", null, DataType.STRING);
     }
 
+    public static ElasticSearchFilterField getBcidFilter() {
+        return new ElasticSearchFilterField("bcid", "bcid", DataType.STRING);
+    }
+
     /**
      * get a list of attributes as JsonFieldTransform objects to be used in transforming
      * the json resource fields into human readable fields.

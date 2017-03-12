@@ -422,12 +422,12 @@ div.sectioncontent.row {
 
 td {
     padding: 2px 8px;
-    text-align: center;
+    /*text-align: center;*/
 }
 
 th {
     padding: 2px 8px;
-    text-align: center;
+    /*text-align: center;*/
 }
 
 .tab-content {
@@ -770,6 +770,7 @@ td.hideOverflow {
     border-color: rgba(255, 255, 255, 0.5);
     display: flex;
     flex-direction: column;
+    /*overflow: auto;*/
 }
 
 .full-page-header {
@@ -1043,15 +1044,22 @@ td.hideOverflow {
     margin-top: 15px;
 }
 
+.query-table table tbody tr {
+    cursor: pointer;
+}
+
 .full-page-query-table {
     margin-left: 40px;
     margin-right: 40px;
 }
 
-.center-spinner {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+.sample-detail {
+    overflow: auto;
+}
+
+.sample-detail .detail-wrapper {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
 }
