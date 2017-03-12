@@ -23,6 +23,8 @@
         function activate() {
             map = new Map(LATITUDE_COLUMN, LONGITUDE_COLUMN);
             map.init('queryMap');
+            queryParams.clear();
+            queryResults.clear();
         }
 
         vm.downloadExcel = function() {queryService.downloadExcel(queryParams.build())};

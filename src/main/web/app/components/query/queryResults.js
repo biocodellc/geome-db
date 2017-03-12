@@ -13,7 +13,8 @@
             total: 0,
             data: [],
             isSet: false,
-            update: update
+            update: update,
+            clear: clear
         };
 
         return queryResults;
@@ -21,6 +22,11 @@
         function update(data) {
             angular.extend(queryResults, data);
             queryResults.isSet = true;
+        }
+
+        function clear() {
+            queryResults.data = [];
+            queryResults.isSet = false;
         }
     }
 })();

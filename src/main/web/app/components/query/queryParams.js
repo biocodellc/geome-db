@@ -7,10 +7,8 @@
     queryParams.$inject = ['QueryBuilder'];
 
     function queryParams(QueryBuilder) {
-        var params = {
-            expeditions: [],
+        var defaultParams = {
             _all: null,
-            filters: [],
             marker: null,
             hasSRAAccessions: false,
             order: null,
@@ -20,11 +18,23 @@
             species: null,
             country: null,
             fromYear: null,
-            toYear: null,
-            build: buildQuery
+            toYear: null
         };
 
+        var params = {
+            expeditions: [],
+            filters: [],
+            build: buildQuery,
+            clear: clear
+        };
+
+        activate();
+
         return params;
+
+        function activate() {
+            clear();
+        }
 
         function buildQuery(source) {
             var builder = new QueryBuilder();
@@ -80,6 +90,12 @@
             builder.setSource(source);
             return builder.build();
 
+        }
+
+        function clear() {
+            angular.extend(params, defaultParams);
+            params.expeditions = [];
+            params.filters = [];
         }
 
     }
