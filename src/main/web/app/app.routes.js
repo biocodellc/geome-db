@@ -63,25 +63,26 @@ angular.module('geomeApp')
                     controller: "QueryDetailController as vm",
                     parent: "fullPage",
                     resolve: {
-                        sample: function (queryService, QueryBuilder, $stateParams, $state) {
-                            var builder = new QueryBuilder();
-                            builder.addCriteria("bcid", $stateParams.bcid, "EQUALS");
+                        _sample: ['queryService', 'QueryBuilder', '$stateParams', '$state',
+                            function (queryService, QueryBuilder, $stateParams, $state) {
+                                var builder = new QueryBuilder();
+                                builder.addCriteria("bcid", $stateParams.bcid, "EQUALS");
 
-                            return queryService.queryJson(builder.build(), 0, 1)
-                                .then(function (response) {
-                                    if (response.data.length == 0) {
-                                        failed(response)
-                                    }
+                                return queryService.queryJson(builder.build(), 0, 1)
+                                    .then(function (response) {
+                                        if (response.data.length == 0) {
+                                            failed(response)
+                                        }
 
-                                    return response.data[0];
-                                })
-                                .catch(failed);
+                                        return response.data[0];
+                                    })
+                                    .catch(failed);
 
-                            function failed(response) {
-                                // exception.catcher("Failed to load sample detail")(response);
-                                return $state.go('notFound', {path: '404'});
-                            }
-                        }
+                                function failed(response) {
+                                    // exception.catcher("Failed to load sample detail")(response);
+                                    return $state.go('notFound', {path: '404'});
+                                }
+                            }]
 
                     }
                 })

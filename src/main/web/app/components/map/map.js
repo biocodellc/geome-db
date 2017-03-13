@@ -14,6 +14,8 @@
             this._markers = [];
             this._clusterLayer = null;
             this._map = null;
+            this._mapLayer = null;
+            this._satelliteLayer = null;
         }
 
         Map.prototype = {
@@ -32,9 +34,13 @@
                 var z = this._map.getBoundsZoom([[90, -180], [-90, 180]], true);
                 this._map.setZoom(z);
 
-                L.tileLayer('https://api.mapbox.com/v4/mapbox.outdoors/{z}/{x}/{y}.png?access_token={access_token}',
-                    {access_token: MAPBOX_TOKEN})
-                    .addTo(this._map);
+                this._mapLayer = L.tileLayer('https://api.mapbox.com/v4/mapbox.outdoors/{z}/{x}/{y}.png?access_token={access_token}',
+                    {access_token: MAPBOX_TOKEN});
+
+                this._mapLayer.addTo(this._map);
+
+                this._satelliteLayer = L.tileLayer('https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token={access_token}',
+                    {access_token: MAPBOX_TOKEN});
 
                 this._clusterLayer = L.markerClusterGroup({chunkedLoading: true});
             },
@@ -87,6 +93,16 @@
                     _this._map.setMaxBounds([nwCorner, seCorner]);
                 });
 
+            },
+
+            satelliteView: function() {
+                this._map.removeLayer(this._mapLayer);
+                this._map.addLayer(this._satelliteLayer);
+            },
+
+            mapView: function() {
+                this._map.removeLayer(this._satelliteLayer);
+                this._map.addLayer(this._mapLayer);
             },
 
             /**

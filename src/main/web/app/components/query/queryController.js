@@ -18,20 +18,35 @@
         vm.showSidebar = true;
         vm.showMap = true;
         vm.sidebarToggleToolTip = "hide sidebar";
-        activate();
 
-        function activate() {
-            map = new Map(LATITUDE_COLUMN, LONGITUDE_COLUMN);
-            map.init('queryMap');
-            queryParams.clear();
-            queryResults.clear();
-        }
+        vm.mapView = true;
+        vm.toggleMapView = toggleMapView;
 
         vm.downloadExcel = function() {queryService.downloadExcel(queryParams.build())};
         vm.downloadCsv = function() {queryService.downloadCsv(queryParams.build())};
         vm.downloadKml = function() {queryService.downloadKml(queryParams.build())};
         vm.downloadFasta = function() {queryService.downloadFasta(queryParams.build())};
         vm.downloadFastq = function() {queryService.downloadFastq(queryParams.build())};
+
+        activate();
+
+        function activate() {
+            map = new Map(LATITUDE_COLUMN, LONGITUDE_COLUMN);
+            map.init('queryMap');
+
+            queryParams.clear();
+            queryResults.clear();
+        }
+
+        function toggleMapView() {
+            if (vm.mapView) {
+                map.satelliteView();
+                vm.mapView = false;
+            } else {
+                map.mapView();
+                vm.mapView = true;
+            }
+        }
 
         $scope.$watch('vm.showSidebar', function () {
             if (vm.showSidebar) {

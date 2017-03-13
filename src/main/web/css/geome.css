@@ -958,6 +958,22 @@ td.hideOverflow {
     flex: 1 1;
 }
 
+.leaflet-touch .leaflet-bar.btn-group {
+    border-width: 1px;
+}
+
+.leaflet-touch .leaflet-bar.btn-group .btn {
+    font-weight: 500;
+}
+
+.leaflet-overlay-btn {
+
+}
+
+.map-view-btn {
+
+}
+
 .query-bar .btn {
     font-weight: 700;
 }
