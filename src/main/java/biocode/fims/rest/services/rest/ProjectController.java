@@ -135,6 +135,7 @@ public class ProjectController extends FimsAbstractProjectsController {
             ObjectNode filter = filters.addObject();
             filter.put("field", f.getField());
             filter.put("displayName", f.getDisplayName());
+            filter.put("group", f.getGroup());
             filter.putPOJO("queryTypes", queryTypeMap.get(f.getDataType()));
 
             biocode.fims.digester.List list = validation.findListForColumn(f.getDisplayName(), mapping.getDefaultSheetName());
@@ -338,8 +339,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
         LinkedList<String> requiredColumns = t.getRequiredColumns("error");
         LinkedList<String> desiredColumns = t.getRequiredColumns("warning");
-        // Use TreeMap for natural sorting of groups
-        Map<String, StringBuilder> groups = new TreeMap<String, StringBuilder>();
+        Map<String, StringBuilder> groups = new LinkedHashMap<>();
         String defaultGroupName = "Default Columns";
 
         //StringBuilder output = new StringBuilder();

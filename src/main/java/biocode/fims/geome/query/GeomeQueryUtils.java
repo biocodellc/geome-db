@@ -10,6 +10,7 @@ import biocode.fims.fasta.fileManagers.FastaFileManager;
 import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.query.writers.JsonFieldTransform;
 import com.fasterxml.jackson.core.JsonPointer;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +51,8 @@ public class GeomeQueryUtils {
         List<ElasticSearchFilterField> filters = new ArrayList<>();
 
         for (Attribute attribute : mapping.getDefaultSheetAttributes()) {
-            filters.add(new ElasticSearchFilterField(attribute.getUri(), attribute.getColumn(), attribute.getDatatype()));
+            String group = !StringUtils.isBlank(attribute.getGroup()) ? attribute.getGroup() : "Default Columns";
+            filters.add(new ElasticSearchFilterField(attribute.getUri(), attribute.getColumn(), attribute.getDatatype(), group));
         }
 
         filters.addAll(getFastaFilters(mapping));
@@ -66,7 +68,8 @@ public class GeomeQueryUtils {
                 new ElasticSearchFilterField(
                         "fastqMetadata.bioSample",
                         "fastqMetadata.bioSample",
-                        DataType.STRING
+                        DataType.STRING,
+                        "hidden"
                 )
         );
 
@@ -89,7 +92,8 @@ public class GeomeQueryUtils {
                     new ElasticSearchFilterField(
                             fastaEntity.getConceptAlias() + "." + attribute.getUri(),
                             fastaEntity.getConceptAlias() + "." + attribute.getColumn(),
-                            attribute.getDatatype())
+                            attribute.getDatatype(),
+                            "hidden")
                             .nested(fastaEntity.isEsNestedObject())
                             .path(fastaEntity.getConceptAlias())
             );
@@ -104,11 +108,11 @@ public class GeomeQueryUtils {
      * @return
      */
     public static ElasticSearchFilterField get_AllFilter() {
-        return new ElasticSearchFilterField("_all", null, DataType.STRING);
+        return new ElasticSearchFilterField("_all", null, DataType.STRING, "hidden");
     }
 
     public static ElasticSearchFilterField getBcidFilter() {
-        return new ElasticSearchFilterField("bcid", "bcid", DataType.STRING);
+        return new ElasticSearchFilterField("bcid", "bcid", DataType.STRING, "hidden");
     }
 
     /**

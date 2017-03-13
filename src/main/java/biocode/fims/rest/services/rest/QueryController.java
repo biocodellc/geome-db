@@ -215,8 +215,8 @@ public class QueryController extends FimsService {
      */
     @POST
     @Path("/kml/")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("application/vnd.google-earth.kml+xml")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response queryKml(Query query) {
 
         try {
@@ -243,8 +243,8 @@ public class QueryController extends FimsService {
 
     @POST
     @Path("/fasta/")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("application/zip")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response queryFasta(Query query) {
 
         try {
@@ -293,8 +293,8 @@ public class QueryController extends FimsService {
 
     @POST
     @Path("/fastq/")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("application/zip")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response queryFastq(Query query) {
 
         try {
@@ -330,8 +330,8 @@ public class QueryController extends FimsService {
      */
     @POST
     @Path("/excel/")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("application/vnd.ms-excel")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response queryExcel(Query query) {
 
         if (query.getExpeditions().size() != 1) {
