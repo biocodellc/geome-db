@@ -12,6 +12,24 @@
         <div ng-show="queryFormVm.moreSearchOptions">
 
             <div class="form-group">
+                <a href="#" ng-click="queryFormVm.showMap = !queryFormVm.showMap">
+                    <label class="control-label">Map</label>
+                </a>
+                <div class="filters" ng-show="queryFormVm.showMap">
+                    <label class="control-label small">BoundingBox: </label>
+                    <button type="button" class="btn btn-default btn-xs btn-primary"
+                            ng-class="{'active': queryFormVm.drawing}"
+                            ng-show="!queryFormVm.params.bounds"
+                            ng-click="queryFormVm.drawBounds()">Draw
+                    </button>
+                    <button type="button" class="btn btn-default btn-xs btn-danger"
+                            ng-show="queryFormVm.params.bounds"
+                            ng-click="queryFormVm.clearBounds()">Clear
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
                 <a href="#" ng-click="queryFormVm.showSequences = !queryFormVm.showSequences">
                     <label class="control-label">Sequences</label>
                 </a>
@@ -103,7 +121,7 @@
                      ng-repeat="filter in queryFormVm.params.filters track by $index">
                     <div class="col-xs-5">
                         <select ng-model="filter.field"
-                                ng-change="queryFormVm.resetFilter($index)"
+                                ng-change="queryFormVm.params.filters[$index].value=null && queryFormVm.params.filters[$index].type=EQUALS"
                                 ng-options="f.field as f.displayName for f in ::queryFormVm.filterOptions"
                                 class="form-control input-sm"
                         ></select>

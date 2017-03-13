@@ -8,17 +8,18 @@
 
     function Map(MAPBOX_TOKEN) {
 
-        function Map(latColumn, longColumn) {
+        function Map(latColumn, lngColumn) {
             this.latColumn = latColumn;
-            this.longColumn = longColumn;
-            this._markers = [];
-            this._clusterLayer = null;
-            this._map = null;
-            this._mapLayer = null;
-            this._satelliteLayer = null;
+            this.lngColumn = lngColumn;
         }
 
         Map.prototype = {
+            _markers: [],
+            _clusterLayer: null,
+            _map: null,
+            _mapTiles: null,
+            _satelliteTiles: null,
+            _boundingBox: null,
             /**
              * @param mapId the id of the the div container for the map
              */
@@ -34,12 +35,12 @@
                 var z = this._map.getBoundsZoom([[90, -180], [-90, 180]], true);
                 this._map.setZoom(z);
 
-                this._mapLayer = L.tileLayer('https://api.mapbox.com/v4/mapbox.outdoors/{z}/{x}/{y}.png?access_token={access_token}',
+                this._mapTiles = L.tileLayer('https://api.mapbox.com/v4/mapbox.outdoors/{z}/{x}/{y}.png?access_token={access_token}',
                     {access_token: MAPBOX_TOKEN});
 
-                this._mapLayer.addTo(this._map);
+                this._mapTiles.addTo(this._map);
 
-                this._satelliteLayer = L.tileLayer('https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token={access_token}',
+                this._satelliteTiles = L.tileLayer('https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token={access_token}',
                     {access_token: MAPBOX_TOKEN});
 
                 this._clusterLayer = L.markerClusterGroup({chunkedLoading: true});
@@ -48,7 +49,7 @@
             /**
              *
              * @param data data is a json array of objects. Each object should contain a key matching the given latColumn
-             * & longColumn
+             * & lngColumn
              * @param popupContentCallback the function to call to populate the popup box content. Will be passed the current resource
              */
             setMarkers: function (data, popupContentCallback) {
@@ -57,7 +58,7 @@
                 var _this = this;
                 angular.forEach(data, function (resource) {
                     var lat = resource[_this.latColumn];
-                    var lng = resource[_this.longColumn];
+                    var lng = resource[_this.lngColumn];
 
                     var marker = L.marker([lat, lng]);
 
@@ -95,14 +96,38 @@
 
             },
 
-            satelliteView: function() {
-                this._map.removeLayer(this._mapLayer);
-                this._map.addLayer(this._satelliteLayer);
+            satelliteView: function () {
+                this._map.removeLayer(this._mapTiles);
+                this._map.addLayer(this._satelliteTiles);
             },
 
-            mapView: function() {
-                this._map.removeLayer(this._satelliteLayer);
-                this._map.addLayer(this._mapLayer);
+            mapView: function () {
+                this._map.removeLayer(this._satelliteTiles);
+                this._map.addLayer(this._mapTiles);
+            },
+
+            drawBounds: function (createCallback) {
+                new L.Draw.Rectangle(this._map, {}).enable();
+
+                var _this = this;
+                this._map.on(L.Draw.Event.CREATED, function (e) {
+                    _this._boundingBox = e.layer;
+                    _this._map.addLayer(_this._boundingBox);
+                    var ne = e.layer.getBounds().getNorthEast().wrap();
+                    var sw = e.layer.getBounds().getSouthWest().wrap();
+
+                    createCallback({
+                        northEast: ne,
+                        southWest: sw
+                    });
+                });
+            },
+
+            clearBounds: function () {
+                if (this._boundingBox) {
+                    this._map.removeLayer(this._boundingBox);
+                    this._map.off(L.Draw.Event.CREATED);
+                }
             },
 
             /**

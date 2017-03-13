@@ -4,9 +4,10 @@
     angular.module('fims.query')
         .controller('QueryFormController', QueryFormController);
 
-    QueryFormController.$inject = ['queryParams', 'queryService', 'queryResults', 'projectConfigService', 'ExpeditionFactory', 'usSpinnerService', 'exception'];
+    QueryFormController.$inject = ['$timeout', 'queryParams', 'queryService', 'queryResults', 'queryMap', 'projectConfigService',
+        'ExpeditionFactory', 'usSpinnerService', 'exception'];
 
-    function QueryFormController(queryParams, queryService, queryResults, projectConfigService, ExpeditionFactory, usSpinnerService, exception) {
+    function QueryFormController($timeout, queryParams, queryService, queryResults, queryMap, projectConfigService, ExpeditionFactory, usSpinnerService, exception) {
         var SOURCE = [
             "urn:principalInvestigator",
             "urn:materialSampleID",
@@ -34,6 +35,7 @@
 
         // view toggles
         vm.moreSearchOptions = false;
+        vm.showMap = true;
         vm.showSequences = true;
         vm.showHas = true;
         vm.showDWC = true;
@@ -41,6 +43,7 @@
         vm.showFilters = true;
 
         vm.params = queryParams;
+        vm.drawing = false;
 
         vm.addFilter = addFilter;
         vm.removeFilter = removeFilter;
@@ -48,6 +51,8 @@
         vm.getList = getFilterList;
         vm.getTypes = getQueryTypes;
         vm.resetFilter = resetFilter;
+        vm.drawBounds = drawBounds;
+        vm.clearBounds = clearBounds;
 
         activate();
 
@@ -78,6 +83,8 @@
 
             function queryJsonSuccess(data) {
                 queryResults.update(data);
+                queryMap.clearBounds();
+                queryMap.setMarkers(queryResults.data);
             }
 
             function queryJsonFailed(response) {
@@ -121,6 +128,21 @@
             var filter = vm.params.filters[filterIndex];
             filter.value = null;
             filter.type = "EQUALS";
+        }
+
+        function drawBounds() {
+            vm.drawing = true;
+            queryMap.drawBounds(function(bounds) {
+                queryParams.bounds = bounds;
+                $timeout(function() {
+                    vm.drawing = false;
+                }, 0);
+            })
+        }
+
+        function clearBounds() {
+            queryMap.clearBounds();
+            queryParams.bounds = null;
         }
 
         function getExpeditions() {

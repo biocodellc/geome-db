@@ -4,12 +4,11 @@
     angular.module('fims.query')
         .controller('QueryController', QueryController);
 
-    QueryController.$inject = ['$scope', '$timeout', '$state', 'queryService', 'queryParams', 'queryResults', 'alerts', 'Map'];
+    QueryController.$inject = ['$scope', '$timeout', 'queryService', 'queryParams', 'queryResults', 'queryMap', 'alerts'];
 
-    function QueryController($scope, $timeout, $state, queryService, queryParams, queryResults, alerts, Map) {
+    function QueryController($scope, $timeout, queryService, queryParams, queryResults, queryMap, alerts) {
         var LATITUDE_COLUMN = 'decimalLatitude';
         var LONGITUDE_COLUMN = 'decimalLongitude';
-        var map;
 
         var vm = this;
         vm.alerts = alerts;
@@ -31,8 +30,7 @@
         activate();
 
         function activate() {
-            map = new Map(LATITUDE_COLUMN, LONGITUDE_COLUMN);
-            map.init('queryMap');
+            queryMap.init(LATITUDE_COLUMN, LONGITUDE_COLUMN, 'queryMap');
 
             queryParams.clear();
             queryResults.clear();
@@ -40,10 +38,10 @@
 
         function toggleMapView() {
             if (vm.mapView) {
-                map.satelliteView();
+                queryMap.satelliteView();
                 vm.mapView = false;
             } else {
-                map.mapView();
+                queryMap.mapView();
                 vm.mapView = true;
             }
         }
@@ -59,24 +57,14 @@
         $scope.$watch('vm.showSidebar', updateMapSize);
         $scope.$watch('vm.showMap', updateMapSize);
 
-        function updateMapSize() {
-            // wrap in $timeout to wait until the view has rendered
-            $timeout(function () {
-                map.refreshSize();
-            }, 0);
+        function updateMapSize(newVal, oldVal) {
+            if (newVal != oldVal) {
+                // wrap in $timeout to wait until the view has rendered
+                $timeout(function () {
+                    queryMap.refreshSize();
+                }, 0);
+            }
 
-        }
-
-        $scope.$watch('vm.queryResults.data', function () {
-            map.setMarkers(queryResults.data, generatePopupContent);
-        });
-
-        function generatePopupContent(resource) {
-            return "<strong>GUID</strong>:  " + resource.bcid + "<br>" +
-                "<strong>Genus</strong>:  " + resource.genus + "<br>" +
-                "<strong>Species</strong>:  " + resource.species + "<br>" +
-                "<strong>Locality, Country</strong>:  " + resource.locality + ", " + resource.country + "<br>" +
-                "<a href='" + $state.href('sample', {bcid: resource.bcid}) + "' target='_blank'>Sample details</a>";
         }
 
     }

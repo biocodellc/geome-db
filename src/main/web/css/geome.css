@@ -966,6 +966,10 @@ td.hideOverflow {
     font-weight: 500;
 }
 
+.leaflet-touch .leaflet-bar.btn-group .btn.disabled {
+    opacitly: .85;
+}
+
 .leaflet-overlay-btn {
 
 }

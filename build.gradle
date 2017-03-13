@@ -111,7 +111,8 @@ distributions {
 
 // specify files that require a specific loading order
 ext.externLibsOrdered = ["${projectDir}/src/main/web/js/externalLibs/lodash.js", "${projectDir}/src/main/web/js/externalLibs/papaparse.min.js",
-                         "${projectDir}/src/main/web/js/externalLibs/xlsx.min.js", "${projectDir}/src/main/web/js/externalLibs/xlsx-reader.js"]
+                         "${projectDir}/src/main/web/js/externalLibs/xlsx.min.js", "${projectDir}/src/main/web/js/externalLibs/xlsx-reader.js",
+                         "${projectDir}/src/main/web/js/externalLibs/leaflet.js"]
 javascript.source {
     externLibs {
         js {

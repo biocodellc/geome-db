@@ -18,7 +18,8 @@
             species: null,
             country: null,
             fromYear: null,
-            toYear: null
+            toYear: null,
+            bounds: null
         };
 
         var params = {
@@ -85,6 +86,13 @@
 
             if (params.toYear) {
                 builder.addCriteria("urn:yearCollected", params.toYear, "LESS_THEN_EQUALS");
+            }
+
+            if (params.bounds) {
+                builder.addCriteria("urn:decimalLatitude", params.bounds.northEast.lat, "LESS_THEN_EQUALS");
+                builder.addCriteria("urn:decimalLatitude", params.bounds.southWest.lat, "GREATER_THEN_EQUALS");
+                builder.addCriteria("urn:decimalLongitude", params.bounds.northEast.lng, "LESS_THEN_EQUALS");
+                builder.addCriteria("urn:decimalLongitude", params.bounds.southWest.lng, "GREATER_THEN_EQUALS");
             }
 
             builder.setSource(source);
