@@ -4,9 +4,9 @@ import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
 import biocode.fims.elasticSearch.FieldColumnTransformer;
+import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.geome.query.GeomeQueryUtils;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
-import biocode.fims.elasticSearch.query.ElasticSearchFilterCondition;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
 import biocode.fims.elasticSearch.query.ElasticSearchQuery;
 import biocode.fims.elasticSearch.query.ElasticSearchQuerier;
@@ -14,12 +14,11 @@ import biocode.fims.fasta.FastaJsonWriter;
 import biocode.fims.fasta.FastaSequenceJsonFieldFilter;
 import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.fimsExceptions.*;
-import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
-import biocode.fims.query.QueryCriteria;
-import biocode.fims.query.dsl.DeprecatedQuery;
 import biocode.fims.query.dsl.Query;
+import biocode.fims.query.dsl.QueryExpression;
 import biocode.fims.query.dsl.QueryParser;
+import biocode.fims.query.dsl.QueryStringQuery;
 import biocode.fims.query.writers.*;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsService;
@@ -34,8 +33,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.parboiled.Parboiled;
 import org.parboiled.errors.ParserRuntimeException;
@@ -56,6 +53,8 @@ import javax.ws.rs.core.Response;
 import java.io.*;
 import java.net.URI;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -157,7 +156,7 @@ public class QueryController extends FimsService {
             @QueryParam("limit") @DefaultValue("100") int limit,
             @QueryParam("q") String q,
             @QueryParam("source") String s) {
-        List<String> source = Arrays.asList(s.split(","));
+        List<String> source = s != null ? Arrays.asList(s.split(",")) : Collections.emptyList();
 
         // Build the query, etc..
         try {
@@ -213,7 +212,7 @@ public class QueryController extends FimsService {
      *
      * @return
      */
-    @POST
+    @GET
     @Path("/kml/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -241,15 +240,18 @@ public class QueryController extends FimsService {
         }
     }
 
-    @POST
+    @GET
     @Path("/fasta/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryFasta(@QueryParam("q") String q) {
 
+        Query query = parseQueryString(q);
+
         try {
+
             // Build the query, etc..
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(q));
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(query));
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
@@ -262,7 +264,7 @@ public class QueryController extends FimsService {
 
             File metadataFile = metadataJsonWriter.write();
 
-            List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = getFastaSequenceFilters(null);
+            List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = getFastaSequenceFilters(query);
 
             JsonWriter fastaJsonWriter = new FastaJsonWriter(
                     results,
@@ -291,7 +293,7 @@ public class QueryController extends FimsService {
         }
     }
 
-    @POST
+    @GET
     @Path("/fastq/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -322,24 +324,24 @@ public class QueryController extends FimsService {
 
     /**
      * Return Excel for a graph query using POST
-     * * <p/>
-     * filter parameters are of the form:
-     * name={URI} value={filter value}
      *
      * @return
      */
-    @POST
+    @GET
     @Path("/excel/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryExcel(@QueryParam("q") String q) {
 
-//        if (query.getExpeditions().size() != 1) {
-//            throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
-//        }
+        Query query = parseQueryString(q);
+
+        if (query.getExpeditions().size() != 1) {
+            throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
+        }
+
         try {
             // Build the query, etc..
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(q));
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(query));
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
@@ -381,10 +383,12 @@ public class QueryController extends FimsService {
         return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
     }
 
-
     private ElasticSearchQuery getEsQuery(String q) {
-        
         Query query = parseQueryString(q);
+        return getEsQuery(query);
+    }
+
+    private ElasticSearchQuery getEsQuery(Query query) {
 
         if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), query.getExpeditions(), userContext.getUser())) {
             throw new ForbiddenRequestException("unauthorized query.");
@@ -412,52 +416,43 @@ public class QueryController extends FimsService {
         return expeditionCodes;
     }
 
-    private List<FastaSequenceJsonFieldFilter> getFastaSequenceFilters(List<QueryCriteria> criterion) {
+    // TODO figure out a better way to deal with this
+    private List<FastaSequenceJsonFieldFilter> getFastaSequenceFilters(Query query) {
         List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = new ArrayList<>();
 
         List<ElasticSearchFilterField> fastaFilterFields = GeomeQueryUtils.getFastaFilters(getMapping());
 
-        for (QueryCriteria criteria : criterion) {
 
-            try {
-                ElasticSearchFilterField filterField = lookupFilter(criteria.getKey(), fastaFilterFields);
+        for (ElasticSearchFilterField f: fastaFilterFields) {
+            for (QueryExpression e: query.getExpressions(f.getDisplayName())) {
+                if (e instanceof QueryStringQuery) {
+                    QueryStringQuery queryStringQuery = (QueryStringQuery) e;
 
-                // fastaSequences are nested objects. the filterField getField would look like {nestedPath}.{attribute_uri}
-                // since fastaSequenceFilters only filter fastaSequence objects, we need to remove the nestedPath
-                String fastaSequenceFilterPath = filterField.getField().replace(filterField.getPath() + ".", "");
+                    String qs = queryStringQuery.getQueryString();
 
-                fastaSequenceFilters.add(
-                        new FastaSequenceJsonFieldFilter(
-                                fastaSequenceFilterPath,
-                                criteria.getValue())
-                );
+                    // we currently only support single term query_strings on fastaSequence fields. no range or phrase queries
+                    Matcher m = Pattern.compile("^\\b[a-zA-Z0-9_]+\\b$").matcher(qs);
+                    if (!m.matches()) {
+                        throw new FimsRuntimeException("invalid query for fastaSequence field", 400);
 
-            } catch (FimsRuntimeException e) {
-                if (e.getErrorCode().equals(QueryErrorCode.UNKNOWN_FILTER)) {
-                    // ignore
-                } else {
-                    throw e;
+                    }
+
+                    // fastaSequences are nested objects. the filterField getField would look like {nestedPath}.{attribute_uri}
+                    // since fastaSequenceFilters only filter fastaSequence objects, we need to remove the nestedPath
+                    String fastaSequenceFilterPath = f.getField().replace(f.getPath() + ".", "");
+
+                    fastaSequenceFilters.add(
+                            new FastaSequenceJsonFieldFilter(
+                                    fastaSequenceFilterPath,
+                                    qs)
+                    );
+
                 }
-            }
 
+            }
         }
 
         return fastaSequenceFilters;
-    }
-
-    private ElasticSearchFilterField lookupFilter(String key, List<ElasticSearchFilterField> filters) {
-        // if field doesn't contain a ":", then we assume this is the filter displayName
-        boolean isDisplayName = !key.contains(":");
-
-        for (ElasticSearchFilterField filter : filters) {
-            if (isDisplayName && key.equals(filter.getDisplayName())) {
-                return filter;
-            } else if (key.equals(filter.getField())) {
-                return filter;
-            }
-        }
-
-        throw new FimsRuntimeException(QueryErrorCode.UNKNOWN_FILTER, "is " + key + " a filterable field?", 400, key);
     }
 
     private Query parseQueryString(String q) {
