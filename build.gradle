@@ -85,7 +85,9 @@ dependencies {
     server 'org.slf4j:slf4j-log4j12:1.7.19'
     server 'com.googlecode.json-simple:json-simple:1.1.1'
 
-    server 'org.apache.commons:commons-digester3:3.2'
+    server ('org.apache.commons:commons-digester3:3.2') {
+        exclude module: 'asm'
+    }
     server 'commons-cli:commons-cli:1.2'
     server group: 'org.apache.commons', name: 'commons-exec', version: '1.3'
 

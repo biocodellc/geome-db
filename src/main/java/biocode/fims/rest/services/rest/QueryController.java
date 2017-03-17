@@ -3,6 +3,7 @@ package biocode.fims.rest.services.rest;
 import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Mapping;
+import biocode.fims.elasticSearch.FieldColumnTransformer;
 import biocode.fims.geome.query.GeomeQueryUtils;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterCondition;
@@ -15,8 +16,10 @@ import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
-import biocode.fims.query.Query;
 import biocode.fims.query.QueryCriteria;
+import biocode.fims.query.dsl.DeprecatedQuery;
+import biocode.fims.query.dsl.Query;
+import biocode.fims.query.dsl.QueryParser;
 import biocode.fims.query.writers.*;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsService;
@@ -34,6 +37,10 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ParserRuntimeException;
+import org.parboiled.parserunners.ReportingParseRunner;
+import org.parboiled.support.ParsingResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,27 +145,26 @@ public class QueryController extends FimsService {
     /**
      * Return JSON for a graph query as POST
      * <p/>
-     * filter parameters are of the form:
-     * name={URI} value={filter value}
-     *
      * @return
      */
     @Compress
-    @POST
+    @GET
     @Path("/json/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryJsonAsPOST(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
-            Query query) {
+            @QueryParam("q") String q,
+            @QueryParam("source") String s) {
+        List<String> source = Arrays.asList(s.split(","));
 
         // Build the query, etc..
         try {
-            ElasticSearchQuery esQuery = getEsQuery(query);
+            ElasticSearchQuery esQuery = getEsQuery(q);
 
-            if (query.getSource().size() > 0) {
-                esQuery.source(query.getSource());
+            if (source.size() > 0) {
+                esQuery.source(source);
             }
 
             return getJsonResults(page, limit, esQuery);
@@ -175,21 +181,18 @@ public class QueryController extends FimsService {
 
     /**
      * Return CSV for a graph query as POST
-     * <p/>
-     * filter parameters are of the form:
-     * name={URI} value={filter value}
      *
      * @return
      */
-    @POST
+    @GET
     @Path("/csv/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryCSVAsPOST(Query query) {
+    public Response queryCSVAsPOST(@QueryParam("q") String q) {
 
         try {
             // Build the query, etc..
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(query));
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(q));
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
@@ -207,9 +210,6 @@ public class QueryController extends FimsService {
 
     /**
      * Return KML for a graph query using POST
-     * * <p/>
-     * filter parameters are of the form:
-     * name={URI} value={filter value}
      *
      * @return
      */
@@ -217,11 +217,11 @@ public class QueryController extends FimsService {
     @Path("/kml/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryKml(Query query) {
+    public Response queryKml(@QueryParam("q") String q) {
 
         try {
             // Build the query, etc..
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(query));
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(q));
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
@@ -245,11 +245,11 @@ public class QueryController extends FimsService {
     @Path("/fasta/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryFasta(Query query) {
+    public Response queryFasta(@QueryParam("q") String q) {
 
         try {
             // Build the query, etc..
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(query));
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(q));
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
@@ -262,7 +262,7 @@ public class QueryController extends FimsService {
 
             File metadataFile = metadataJsonWriter.write();
 
-            List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = getFastaSequenceFilters(query.getCriterion());
+            List<FastaSequenceJsonFieldFilter> fastaSequenceFilters = getFastaSequenceFilters(null);
 
             JsonWriter fastaJsonWriter = new FastaJsonWriter(
                     results,
@@ -295,11 +295,11 @@ public class QueryController extends FimsService {
     @Path("/fastq/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryFastq(Query query) {
+    public Response queryFastq(@QueryParam("q") String q) {
 
         try {
             // Build the query, etc..
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(query));
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(q));
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
@@ -332,14 +332,14 @@ public class QueryController extends FimsService {
     @Path("/excel/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryExcel(Query query) {
+    public Response queryExcel(@QueryParam("q") String q) {
 
-        if (query.getExpeditions().size() != 1) {
-            throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
-        }
+//        if (query.getExpeditions().size() != 1) {
+//            throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
+//        }
         try {
             // Build the query, etc..
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(query));
+            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, getEsQuery(q));
 
             ArrayNode results = elasticSearchQuerier.getAllResults();
 
@@ -382,12 +382,9 @@ public class QueryController extends FimsService {
     }
 
 
-    private ElasticSearchQuery getEsQuery(Query query) {
-        List<ElasticSearchFilterCondition> filterConditions = new ArrayList<>();
-
-        List<ElasticSearchFilterField> filterFields = GeomeQueryUtils.getAvailableFilters(getMapping());
-        filterFields.add(GeomeQueryUtils.get_AllFilter());
-        filterFields.add(GeomeQueryUtils.getBcidFilter());
+    private ElasticSearchQuery getEsQuery(String q) {
+        
+        Query query = parseQueryString(q);
 
         if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), query.getExpeditions(), userContext.getUser())) {
             throw new ForbiddenRequestException("unauthorized query.");
@@ -398,18 +395,8 @@ public class QueryController extends FimsService {
             query.getExpeditions().addAll(getPublicExpeditions());
         }
 
-        for (QueryCriteria criteria : query.getCriterion()) {
-            filterConditions.add(
-                    new ElasticSearchFilterCondition(
-                            lookupFilter(criteria.getKey(), filterFields),
-                            criteria.getValue(),
-                            criteria.getType()
-                    )
-            );
-        }
-
         return new ElasticSearchQuery(
-                getQueryBuilder(filterConditions, query.getExpeditions()),
+                query.getQueryBuilder(),
                 new String[]{String.valueOf(projectId)},
                 new String[]{ElasticSearchIndexer.TYPE}
         );
@@ -473,20 +460,27 @@ public class QueryController extends FimsService {
         throw new FimsRuntimeException(QueryErrorCode.UNKNOWN_FILTER, "is " + key + " a filterable field?", 400, key);
     }
 
-    private QueryBuilder getQueryBuilder(List<ElasticSearchFilterCondition> filterConditions, List<String> expeditionCodes) {
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+    private Query parseQueryString(String q) {
+        List<ElasticSearchFilterField> filterFields = GeomeQueryUtils.getAvailableFilters(getMapping());
+        filterFields.add(GeomeQueryUtils.get_AllFilter());
+        filterFields.add(GeomeQueryUtils.getBcidFilter());
 
-        for (String expedition : expeditionCodes) {
-            // query the keyword sub-field for an exact match
-            boolQueryBuilder.should(QueryBuilders.matchQuery("expedition.expeditionCode.keyword", expedition));
-            boolQueryBuilder.minimumNumberShouldMatch(1);
+        FieldColumnTransformer transformer = new FieldColumnTransformer(filterFields);
+
+        QueryParser parser = Parboiled.createParser(QueryParser.class, transformer);
+        try {
+            ParsingResult<Query> result = new ReportingParseRunner<Query>(parser.Parse()).run(q);
+
+            if (result.hasErrors() || result.resultValue == null) {
+                throw new FimsRuntimeException(QueryErrorCode.INVALID_QUERY, 400, result.parseErrors.toString());
+            }
+
+            return result.resultValue;
+        } catch (ParserRuntimeException e) {
+            String parsedMsg = e.getMessage().replaceFirst(" action '(.*)'", "");
+            throw new FimsRuntimeException(QueryErrorCode.INVALID_QUERY, 400, parsedMsg.substring(0, (parsedMsg.indexOf("^") + 1)));
         }
 
-        for (ElasticSearchFilterCondition filterCondition : filterConditions) {
-            boolQueryBuilder.must(filterCondition.getQuery());
-        }
-
-        return boolQueryBuilder;
     }
 
     private Mapping getMapping() {
