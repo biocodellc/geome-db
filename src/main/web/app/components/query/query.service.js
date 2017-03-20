@@ -20,6 +20,7 @@
         return queryService;
 
         function queryJson(query, page, limit) {
+            alerts.removeTmp();
             return $http({
                 method: 'GET',
                 url: REST_ROOT + "projects/query/json/?limit=" + limit + "&page=" + page,

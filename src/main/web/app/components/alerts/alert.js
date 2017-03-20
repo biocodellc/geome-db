@@ -15,25 +15,26 @@
             warn: warn,
             error: error,
             getAlerts: getAlerts,
-            remove: remove
+            remove: remove,
+            removeTmp: removeTmp
         };
 
         return service;
 
-        function info(msg) {
-            alerts.push(new Message(msg, 'info'))
+        function info(msg, persist) {
+            alerts.push(new Message(msg, 'info', persist))
         }
 
-        function success(msg) {
-            alerts.push(new Message(msg, 'success'))
+        function success(msg, persist) {
+            alerts.push(new Message(msg, 'success', persist))
         }
 
-        function warn(msg) {
-            alerts.push(new Message(msg, 'warning'))
+        function warn(msg, persist) {
+            alerts.push(new Message(msg, 'warning', persist))
         }
 
-        function error(msg) {
-            alerts.push(new Message(msg, 'error'))
+        function error(msg, persist) {
+            alerts.push(new Message(msg, 'error', persist))
         }
 
         function getAlerts() {
@@ -44,10 +45,19 @@
             var i = alerts.indexOf(alert);
             alerts.splice(i, 1);
         }
+
+        function removeTmp() {
+            for (var i=0; i < alerts.length; i++) {
+                if (!alert.persist) {
+                    alerts.splice(i, 1);
+                }
+            }
+        }
     }
 
-    function Message(msg, level) {
+    function Message(msg, level, persist) {
         this.msg = msg;
-        this.level = level
+        this.level = level;
+        this.persist = persist || false;
     }
 })();
