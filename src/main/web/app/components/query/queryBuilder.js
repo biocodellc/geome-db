@@ -24,6 +24,9 @@
             },
 
             build: function () {
+                if (this.queryString.trim().length == 0) {
+                    this.queryString = "*";
+                }
                 return new Query(this.queryString , this.source);
             }
         };

@@ -14,7 +14,7 @@ import biocode.fims.fasta.FastaJsonWriter;
 import biocode.fims.fasta.FastaSequenceJsonFieldFilter;
 import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.fimsExceptions.*;
-import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
+import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.query.dsl.QueryExpression;
 import biocode.fims.query.dsl.QueryParser;
@@ -168,7 +168,7 @@ public class QueryController extends FimsService {
 
             return getJsonResults(page, limit, esQuery);
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.ok(
                         new PageImpl<String>(null, new PageRequest(page, limit), 0)
                 ).build();
@@ -199,7 +199,7 @@ public class QueryController extends FimsService {
 
             return returnFileResults(jsonWriter.write(), "geome-fims-output.csv");
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
             }
 
@@ -232,7 +232,7 @@ public class QueryController extends FimsService {
 
             return returnFileResults(jsonWriter.write(), "geome-fims-output.kml");
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
             }
 
@@ -285,7 +285,7 @@ public class QueryController extends FimsService {
 
             return returnFileResults(FileUtils.zip(fileMap, defaultOutputDirectory()), "geome-fims-output.zip");
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
             }
 
@@ -314,7 +314,7 @@ public class QueryController extends FimsService {
 
             return returnFileResults(jsonWriter.write(), "geome-fims-output-including-fastq-metadata.csv");
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
             }
 
@@ -363,7 +363,7 @@ public class QueryController extends FimsService {
 
             return returnFileResults(file, "geome-fims-output.xlsx");
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
             }
 
@@ -396,7 +396,7 @@ public class QueryController extends FimsService {
 
         // if no expeditions are specified, then we want to only query public expeditions
         if (query.getExpeditions().size() == 0) {
-            query.getExpeditions().addAll(getPublicExpeditions());
+            query.setExpeditions(getPublicExpeditions());
         }
 
         return new ElasticSearchQuery(
@@ -411,7 +411,7 @@ public class QueryController extends FimsService {
         expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditionCodes.add(e.getExpeditionCode()));
 
         if (expeditionCodes.size() == 0) {
-            throw new FimsRuntimeException(QueryErrorCode.NO_RESOURCES, 204);
+            throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 204);
         }
         return expeditionCodes;
     }
@@ -467,13 +467,13 @@ public class QueryController extends FimsService {
             ParsingResult<Query> result = new ReportingParseRunner<Query>(parser.Parse()).run(q);
 
             if (result.hasErrors() || result.resultValue == null) {
-                throw new FimsRuntimeException(QueryErrorCode.INVALID_QUERY, 400, result.parseErrors.toString());
+                throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, result.parseErrors.toString());
             }
 
             return result.resultValue;
         } catch (ParserRuntimeException e) {
             String parsedMsg = e.getMessage().replaceFirst(" action '(.*)'", "");
-            throw new FimsRuntimeException(QueryErrorCode.INVALID_QUERY, 400, parsedMsg.substring(0, (parsedMsg.indexOf("^") + 1)));
+            throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, parsedMsg.substring(0, (parsedMsg.indexOf("^"))));
         }
 
     }
