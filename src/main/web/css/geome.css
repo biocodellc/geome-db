@@ -959,14 +959,6 @@ td.hideOverflow {
     opacitly: .85;
 }
 
-.leaflet-overlay-btn {
-
-}
-
-.map-view-btn {
-
-}
-
 .query-bar .btn {
     font-weight: 700;
 }
@@ -1010,8 +1002,12 @@ td.hideOverflow {
     cursor: pointer;
 }
 
-#marker-query {
+.filters .row {
     margin-top: 5px;
+}
+
+.filters .btn-primary.active {
+    background-color: #203145;
 }
 
 #marker-query .control-label {

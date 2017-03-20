@@ -101,7 +101,7 @@
         function getFilterList(filterIndex) {
             var field = vm.params.filters[filterIndex].field;
 
-            for (var i=0; i < vm.filterOptions.length; i++) {
+            for (var i = 0; i < vm.filterOptions.length; i++) {
                 if (vm.filterOptions[i].field == field) {
                     var list = vm.filterOptions[i].list;
                     return list.length > 0 ? list : null;
@@ -114,7 +114,7 @@
         function getQueryTypes(filterIndex) {
             var filter = vm.params.filters[filterIndex];
 
-            for (var i=0; i < vm.filterOptions.length; i++) {
+            for (var i = 0; i < vm.filterOptions.length; i++) {
                 if (vm.filterOptions[i].field == filter.field) {
                     var types = vm.filterOptions[i].queryTypes;
                     return types;
@@ -132,11 +132,11 @@
 
         function drawBounds() {
             vm.drawing = true;
-            queryMap.drawBounds(function(bounds) {
+            queryMap.drawBounds(function (bounds) {
                 queryParams.bounds = bounds;
-                $timeout(function() {
+                $timeout(function () {
                     vm.drawing = false;
-                }, 0);
+                });
             })
         }
 

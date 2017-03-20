@@ -35,16 +35,25 @@
                         has permitInformation
                     </label>
                     <div class="row">
-                        <label class="control-label small">BoundingBox: </label>
-                        <button type="button" class="btn btn-default btn-xs btn-primary"
-                                ng-class="{'active': queryFormVm.drawing}"
-                                ng-show="!queryFormVm.params.bounds"
-                                ng-click="queryFormVm.drawBounds()">Draw
-                        </button>
-                        <button type="button" class="btn btn-default btn-xs btn-danger"
-                                ng-show="queryFormVm.params.bounds"
-                                ng-click="queryFormVm.clearBounds()">Clear
-                        </button>
+                        <div class="col-xs-3">
+                            <label class="control-label small">BoundingBox: </label>
+                        </div>
+
+                        <div class="col-xs-9">
+                            <div class="col-xs-9" ng-show="queryFormVm.params.bounds">
+                                <label class="small">northEast:</label><span> [{{queryFormVm.params.bounds.northEast.lat | number:2 }}, {{queryFormVm.params.bounds.northEast.lng | number:2 }}]</span>
+                                <label class="small">southWest:</label><span> [{{queryFormVm.params.bounds.southWest.lat | number:2 }}, {{queryFormVm.params.bounds.southWest.lng | number:2 }}]</span>
+                            </div>
+                            <button type="button" class="btn btn-default btn-xs btn-primary"
+                                    ng-class="{'active': queryFormVm.drawing}"
+                                    ng-show="!queryFormVm.params.bounds"
+                                    ng-click="queryFormVm.drawBounds()">Draw
+                            </button>
+                            <button type="button" class="btn btn-default btn-xs btn-danger"
+                                    ng-show="queryFormVm.params.bounds"
+                                    ng-click="queryFormVm.clearBounds()">Clear
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

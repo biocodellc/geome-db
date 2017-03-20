@@ -121,12 +121,21 @@
                         southWest: sw
                     });
                 });
+
+                this._map.on(L.Draw.Event.DRAWSTOP, function (e) {
+                    if (!_this._boundingBox) {
+                        _this._map.off(L.Draw.Event.CREATED)
+                        createCallback();
+                    }
+                    _this._map.off(L.Draw.Event.DRAWSTOP);
+                });
             },
 
             clearBounds: function () {
                 if (this._boundingBox) {
                     this._map.removeLayer(this._boundingBox);
                     this._map.off(L.Draw.Event.CREATED);
+                    this._boundingBox = null;
                 }
             },
 
