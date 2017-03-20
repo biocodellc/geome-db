@@ -141,6 +141,8 @@ javascript.source {
         js {
             srcDir "src/main/web/js"
             include "*.js"
+            exclude "autotrack.js"
+            exclude "fims-analytics.js"
         }
     }
     modules {
