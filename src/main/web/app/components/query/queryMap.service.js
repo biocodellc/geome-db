@@ -8,22 +8,17 @@
 
     function queryMap($state, Map) {
 
-        function QueryMap() {}
+        function QueryMap(latColumn, lngColumn) {
+            Map.call(this, latColumn, lngColumn);
+        }
 
         QueryMap.prototype = Object.create(Map.prototype);
-
-        QueryMap.prototype.init = function (latColumn, lngColumn, mapId) {
-            this.latColumn = latColumn;
-            this.lngColumn = lngColumn;
-            Map.prototype.init.call(this, mapId);
-        };
 
         QueryMap.prototype.setMarkers = function (data) {
             Map.prototype.setMarkers.call(this, data, generatePopupContent);
         };
 
-        return new QueryMap();
-
+        return new QueryMap('decimalLatitude', 'decimalLongitude');
 
         function generatePopupContent(resource) {
             return "<strong>GUID</strong>:  " + resource.bcid + "<br>" +

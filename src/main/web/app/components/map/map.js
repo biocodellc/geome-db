@@ -58,7 +58,7 @@
                 var _this = this;
                 angular.forEach(data, function (resource) {
                     var lat = resource[_this.latColumn];
-                    var lng = resource[_this.lngColumn];
+                    var lng = L.Util.wrapNum(resource[_this.lngColumn], [0,360], true); // center on pacific ocean
 
                     var marker = L.marker([lat, lng]);
 
@@ -77,7 +77,7 @@
                     .spin(false);
 
                 if (this._markers.length > 0) {
-                    this._map.fitBounds(this._clusterLayer.getBounds());
+                    this._map.fitBounds(this._clusterLayer.getBounds(), {padding:[30, 30]});
                 }
 
                 this._map.on('move', this._updateMarkerLocations.bind(this));
@@ -131,7 +131,7 @@
             },
 
             /**
-             * calls map.invalidateSize(). Used to recalculate the map size if the container has change dimensions
+             * calls map.invalidateSize(). Used to recalculate the map size if the container has changed dimensions
              */
             refreshSize: function () {
                 this._map.invalidateSize();

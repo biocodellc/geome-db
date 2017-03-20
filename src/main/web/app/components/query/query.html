@@ -67,14 +67,8 @@
         <div class="center-spinner" us-spinner="" spinner-key="query-spinner"></div>
 
         <!-- map -->
-        <div class="angular-leaflet-map" ng-show="vm.showMap" id="queryMap">
-            <div class="leaflet-top leaflet-right">
-                <div class="btn-group leaflet-control leaflet-bar btn-group-sm">
-                    <button type="button" class="btn btn-default" ng-class="{disabled: vm.mapView}" ng-click="vm.toggleMapView()">Map</button>
-                    <button type="button" class="btn btn-default" ng-class="{disabled: !vm.mapView}" ng-click="vm.toggleMapView()">Satellite</button>
-                </div>
-            </div>
-        </div>
+        <fims-map ng-show="vm.showMap" map="vm.queryMap" invalidate-size="vm.invalidSize" class="angular-leaflet-map"></fims-map>
+
 
         <!-- table -->
         <div ng-show="!vm.showMap" class="query-table" ng-class="{'full-page-query-table': !vm.showSidebar}"
