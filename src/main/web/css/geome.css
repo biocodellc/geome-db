@@ -1090,7 +1090,7 @@ td.hideOverflow {
 }
 
 .ui-select-choices-group-label {
-    font-size: 14px;
+    font-size: 13px;
     color: #555;
     font-weight: 600;
 }
@@ -1101,4 +1101,8 @@ td.hideOverflow {
     width: auto;
     min-width: 200px;
     max-height: 300px;
+}
+
+.ui-select-search {
+    font-size: 12px;
 }

@@ -76,7 +76,7 @@
         function queryJson() {
             usSpinnerService.spin('query-spinner');
 
-            queryService.queryJson(queryParams.build(SOURCE), 0, 10000)
+            queryService.queryJson(queryParams.build(SOURCE.join()), 0, 10000)
                 .then(queryJsonSuccess)
                 .catch(queryJsonFailed)
                 .finally(queryJsonFinally);

@@ -21,9 +21,9 @@
 
         function queryJson(query, page, limit) {
             return $http({
-                method: 'POST',
+                method: 'GET',
                 url: REST_ROOT + "projects/query/json/?limit=" + limit + "&page=" + page,
-                data: query,
+                params: query,
                 keepJson: true
             })
                 .then(queryJsonComplete);
@@ -79,9 +79,9 @@
 
         function download(path, query) {
             return $http({
-                method: 'POST',
+                method: 'GET',
                 url: REST_ROOT + "projects/query/" + path,
-                data: query,
+                params: query,
                 keepJson: true
             })
                 .then(downloadFile)

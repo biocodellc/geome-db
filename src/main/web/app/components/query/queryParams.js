@@ -8,10 +8,12 @@
 
     function queryParams(QueryBuilder) {
         var defaultParams = {
-            _all: null,
+            queryString: null,
             marker: null,
             hasSRAAccessions: false,
-            order: null,
+            isMappable: false,
+            hasCoordinateUncertaintyInMeters: false,
+            hasPermitInfo: false,
             genus: null,
             locality: null,
             family: null,
@@ -40,59 +42,106 @@
         function buildQuery(source) {
             var builder = new QueryBuilder();
 
-            builder.setExpeditions(params.expeditions);
+            angular.forEach(params.expeditions, function (e) {
+                builder.add("expedition:" + e);
+            });
 
             angular.forEach(params.filters, function (filter) {
-                if (filter.value || filter.type == 'EXISTS') {
-                    builder.addCriteria(filter.field, filter.value, filter.type);
+                if (filter.value || filter.type == QueryType.EXISTS ) {
+
+                    switch (QueryType) {
+                        case QueryType.EXISTS:
+                            builder.add("+_exists_:" + filter.field);
+                            break;
+                        case QueryType.EQ:
+                            builder.add("+" + filter.field + ":\"" + filter.value + "\"");
+                            break;
+                        case QueryType.LT:
+                            builder.add("+" + filter.field + ":<" + filter.value + "");
+                            break;
+                        case QueryType.LTE:
+                            builder.add("+" + filter.field + ":<=" + filter.value + "");
+                            break;
+                        case QueryType.GT:
+                            builder.add("+" + filter.field + ":>" + filter.value + "");
+                            break;
+                        case QueryType.GTE:
+                            builder.add("+" + filter.field + ":>=" + filter.value + "");
+                            break;
+                        default:
+                            builder.add("+" + filter.field + ":" + filter.value + "");
+                            break;
+                    }
+
                 }
             });
 
-            if (params._all) {
-                builder.addCriteria("_all", params._all, "FUZZY");
+            if (params.queryString) {
+                builder.add(params.queryString);
             }
 
             if (params.marker) {
-                builder.addCriteria("fastaSequence.urn:marker", params.marker.value, "EQUALS");
+                builder.add("+fastaSequence.marker:\"" + params.marker.value + "\"");
             }
 
             if (params.hasSRAAccessions) {
-                builder.addCriteria("fastqMetadata.bioSample", null, "EXISTS");
+                builder.add("+_exists_:fastqMetadata.bioSample");
             }
 
-            if (params.order) {
-                builder.addCriteria("urn:order", params.order, "FUZZY");
+            if (params.country) {
+                builder.add("+country:" + params.country);
             }
 
             if (params.genus) {
-                builder.addCriteria("urn:genus", params.genus, "FUZZY");
+                builder.add("+genus:" + params.genus);
             }
 
             if (params.locality) {
-                builder.addCriteria("urn:locality", params.locality, "FUZZY");
+                builder.add("+locality:" + params.locality);
             }
 
             if (params.family) {
-                builder.addCriteria("urn:family", params.family, "FUZZY");
+                builder.add("+family:" + params.family);
             }
 
             if (params.species) {
-                builder.addCriteria("urn:species", params.species, "FUZZY");
+                builder.add("+species:" + params.species);
             }
 
             if (params.fromYear) {
-                builder.addCriteria("urn:yearCollected", params.fromYear, "GREATER_THEN_EQUALS");
+                builder.add("+yearCollected:>=" + params.fromYear);
             }
 
             if (params.toYear) {
-                builder.addCriteria("urn:yearCollected", params.toYear, "LESS_THEN_EQUALS");
+                builder.add("+yearCollected:<=" + params.toYear);
+            }
+
+            if (params.isMappable) {
+                builder.add("+_exists_:decimalLongitude +_exists_:decimalLatitude");
+            }
+
+            if (params.hasCoordinateUncertaintyInMeters) {
+                builder.add("+_exists_:coordinateUncertaintyInMeters");
+            }
+
+            if (params.hasPermitInfo) {
+                builder.add("+_exists_:permitInformation")
             }
 
             if (params.bounds) {
-                builder.addCriteria("urn:decimalLatitude", params.bounds.northEast.lat, "LESS_THEN_EQUALS");
-                builder.addCriteria("urn:decimalLatitude", params.bounds.southWest.lat, "GREATER_THEN_EQUALS");
-                builder.addCriteria("urn:decimalLongitude", params.bounds.northEast.lng, "LESS_THEN_EQUALS");
-                builder.addCriteria("urn:decimalLongitude", params.bounds.southWest.lng, "GREATER_THEN_EQUALS");
+                var ne = params.bounds.northEast;
+                var sw = params.bounds.southWest;
+
+                if (ne.lng > sw.lng) {
+                    builder.add("+decimalLongitude:>=" + escapeNum(sw.lng));
+                    builder.add("+decimalLongitude:<=" + escapeNum(ne.lng));
+                } else {
+                    builder.add("+((+decimalLongitude:>=" + escapeNum(sw.lng) + " +decimalLongitude:<=180)");
+                    builder.add("(+decimalLongitude:<=" + escapeNum(ne.lng) + " +decimalLongitude:>=\\-180))");
+                }
+
+                builder.add("+decimalLatitude:<=" + escapeNum(ne.lat), QueryType.LTE);
+                builder.add("+decimalLatitude:>=" + escapeNum(sw.lat), QueryType.GTE);
             }
 
             builder.setSource(source);
@@ -106,6 +155,24 @@
             params.filters = [];
         }
 
+        function escapeNum(num) {
+            if (num < 0) {
+                return "\\" + num;
+            }
+
+            return num;
+        }
+
     }
+
+    var QueryType = {
+        FUZZY: 1,
+        LT: 2,
+        LTE: 3,
+        GT: 4,
+        GTE: 5,
+        EQ: 6,
+        EXISTS: 7
+    };
 
 })();

@@ -9,23 +9,14 @@
     function QueryBuilder() {
 
         function QueryBuilder() {
-            this.expeditions = [];
             this.source = [];
-            this.criterion = [];
+            this.queryString = "";
         }
 
         QueryBuilder.prototype = {
 
-            addCriteria: function (key, value, queryType) {
-                this.criterion.push({
-                    key: key,
-                    value: value,
-                    type: queryType
-                });
-            },
-
-            setExpeditions: function (expeditions) {
-                this.expeditions = expeditions;
+            add: function (q) {
+                this.queryString += q + " ";
             },
 
             setSource: function (source) {
@@ -33,15 +24,14 @@
             },
 
             build: function () {
-                return new Query(this.criterion, this.expeditions, this.source);
+                return new Query(this.queryString , this.source);
             }
         };
 
         return QueryBuilder;
 
-        function Query(criterion, expeditions, source) {
-            this.criterion = criterion;
-            this.expeditions = expeditions;
+        function Query(queryString, source) {
+            this.q = queryString;
             this.source = source;
         }
     }

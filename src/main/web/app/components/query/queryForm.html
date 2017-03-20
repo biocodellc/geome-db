@@ -2,7 +2,7 @@
     <form method="POST" name="queryForm">
 
         <div class="form-group" style="margin-bottom: 0">
-            <input type="text" placeholder="Full text search..." ng-model="queryFormVm.params._all"
+            <input type="text" placeholder="Query String..." ng-model="queryFormVm.params.queryString"
                    class="form-control"/>
             <a class="help-block text-right" href="#"
                ng-click="queryFormVm.moreSearchOptions = !queryFormVm.moreSearchOptions">
@@ -16,16 +16,36 @@
                     <label class="control-label">Map</label>
                 </a>
                 <div class="filters" ng-show="queryFormVm.showMap">
-                    <label class="control-label small">BoundingBox: </label>
-                    <button type="button" class="btn btn-default btn-xs btn-primary"
-                            ng-class="{'active': queryFormVm.drawing}"
-                            ng-show="!queryFormVm.params.bounds"
-                            ng-click="queryFormVm.drawBounds()">Draw
-                    </button>
-                    <button type="button" class="btn btn-default btn-xs btn-danger"
-                            ng-show="queryFormVm.params.bounds"
-                            ng-click="queryFormVm.clearBounds()">Clear
-                    </button>
+                    <label class="checkbox-inline">
+                        <input type="checkbox"
+                               ng-model="queryFormVm.params.isMappable"
+                               name="isMappable">
+                        is Mappable
+                    </label>
+                    <label class="checkbox-inline">
+                        <input type="checkbox"
+                               ng-model="queryFormVm.params.coordinateUncertaintyInMeters"
+                               name="coordinateUncertaintyInMeters">
+                        has coordinateUncertaintyInMeters
+                    </label>
+                    <label class="checkbox-inline">
+                        <input type="checkbox"
+                               ng-model="queryFormVm.params.hasPermitInfo"
+                               name="hasPermitInfo">
+                        has permitInformation
+                    </label>
+                    <div class="row">
+                        <label class="control-label small">BoundingBox: </label>
+                        <button type="button" class="btn btn-default btn-xs btn-primary"
+                                ng-class="{'active': queryFormVm.drawing}"
+                                ng-show="!queryFormVm.params.bounds"
+                                ng-click="queryFormVm.drawBounds()">Draw
+                        </button>
+                        <button type="button" class="btn btn-default btn-xs btn-danger"
+                                ng-show="queryFormVm.params.bounds"
+                                ng-click="queryFormVm.clearBounds()">Clear
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -62,20 +82,20 @@
                 </a>
                 <div class="row filters" ng-show="queryFormVm.showDWC">
                     <div class="col-xs-6">
-                        <input ng-model="queryFormVm.params.order" class="form-control input-sm" type="text"
-                               placeholder="Order"/>
                         <input ng-model="queryFormVm.params.genus" class="form-control input-sm" type="text"
                                placeholder="Genus"/>
-                        <input ng-model="queryFormVm.params.locality" class="form-control input-sm" type="text"
-                               placeholder="Locality"/>
+                        <input ng-model="queryFormVm.params.country" class="form-control input-sm" type="text"
+                               placeholder="Country"/>
                     </div>
                     <div class="col-xs-6">
                         <input ng-model="queryFormVm.params.family" class="form-control input-sm" type="text"
                                placeholder="Family"/>
+                        <input ng-model="queryFormVm.params.locality" class="form-control input-sm" type="text"
+                               placeholder="Locality"/>
+                    </div>
+                    <div class="col-xs-12">
                         <input ng-model="queryFormVm.params.species" class="form-control input-sm" type="text"
                                placeholder="Species"/>
-                        <input ng-model="queryFormVm.params.country" class="form-control input-sm" type="text"
-                               placeholder="Country"/>
                     </div>
                     <div class="col-xs-12">
                         <span class="control-label">yearCollected</span>

@@ -66,7 +66,7 @@ angular.module('geomeApp')
                         _sample: ['queryService', 'QueryBuilder', '$stateParams', '$state',
                             function (queryService, QueryBuilder, $stateParams, $state) {
                                 var builder = new QueryBuilder();
-                                builder.addCriteria("bcid", $stateParams.bcid, "EQUALS");
+                                builder.add("bcid:\"" + $stateParams.bcid + "\"");
 
                                 return queryService.queryJson(builder.build(), 0, 1)
                                     .then(function (response) {

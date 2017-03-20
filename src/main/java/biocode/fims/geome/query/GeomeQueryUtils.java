@@ -73,6 +73,15 @@ public class GeomeQueryUtils {
                 )
         );
 
+        filters.add(
+                new ElasticSearchFilterField(
+                        "fastqMetadata",
+                        "fastqMetadata",
+                        DataType.STRING,
+                        "hidden"
+                )
+        );
+
         return filters;
     }
 

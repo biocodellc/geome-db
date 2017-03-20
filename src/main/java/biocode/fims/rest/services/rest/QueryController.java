@@ -151,7 +151,7 @@ public class QueryController extends FimsService {
     @Path("/json/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryJsonAsPOST(
+    public Response queryJson(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
             @QueryParam("q") String q,
@@ -187,7 +187,7 @@ public class QueryController extends FimsService {
     @Path("/csv/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryCSVAsPOST(@QueryParam("q") String q) {
+    public Response queryCSV(@QueryParam("q") String q) {
 
         try {
             // Build the query, etc..
@@ -431,7 +431,7 @@ public class QueryController extends FimsService {
                     String qs = queryStringQuery.getQueryString();
 
                     // we currently only support single term query_strings on fastaSequence fields. no range or phrase queries
-                    Matcher m = Pattern.compile("^\\b[a-zA-Z0-9_]+\\b$").matcher(qs);
+                    Matcher m = Pattern.compile("^\"?\\b[a-zA-Z0-9_]+\\b\"?$").matcher(qs);
                     if (!m.matches()) {
                         throw new FimsRuntimeException("invalid query for fastaSequence field", 400);
 
