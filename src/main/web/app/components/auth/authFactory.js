@@ -87,7 +87,7 @@ angular.module('fims.auth')
                     data: {
                         client_id: client_id,
                         refresh_token: refreshToken
-                    },
+                    }
                 };
 
                 return $http(config)

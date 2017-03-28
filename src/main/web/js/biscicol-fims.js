@@ -626,7 +626,7 @@ function populateDefinitions(column) {
     var jqxhr = $.ajax({
         type: "GET",
         url: theUrl,
-        dataType: "html",
+        dataType: "html"
     })
         .done(function (data) {
             $("#definition").html(data);

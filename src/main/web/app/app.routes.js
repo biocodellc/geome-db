@@ -9,12 +9,12 @@ angular.module('biscicolApp')
         $stateProvider
             .state('home', {
                 url: "/",
-                templateUrl: "app/components/home/home.html",
+                templateUrl: "app/components/home/home.html"
             })
             .state('login', {
                 url: "/login",
                 templateUrl: "app/components/auth/login.html",
-                controller: "LoginCtrl as vm",
+                controller: "LoginCtrl as vm"
             })
             .state('validate', {
                 url: "/validate",
@@ -38,7 +38,7 @@ angular.module('biscicolApp')
             })
             .state('reset', {
                 url: "/reset",
-                templateUrl: "app/components/users/reset.html",
+                templateUrl: "app/components/users/reset.html"
             })
             .state('template', {
                 url: "/template?projectId",

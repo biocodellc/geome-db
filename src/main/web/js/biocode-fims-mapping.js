@@ -1,4 +1,4 @@
-(function(undefined) {
+(function (undefined) {
     'use strict';
     // Check if dependecies are available.
     if (typeof XLSXReader === 'undefined') {
@@ -21,9 +21,9 @@
         return;
     }
 
-    $.getJSON("/biocode-fims/rest/utils/getMapboxToken", function(data) {
+    $.getJSON("/biocode-fims/rest/utils/getMapboxToken", function (data) {
         L.mapbox.accessToken = data.accessToken;
-    }).fail(function() {
+    }).fail(function () {
         console.log("Failed to retrieve mapbox accessToken. Mapping features will not work.");
     });
 }).call(this);
@@ -32,27 +32,27 @@
 function getResourceCoordinates(configData) {
     try {
         var reader = new FileReader();
-    } catch(err) {
+    } catch (err) {
         return -1
     }
 
     // older browsers don't have a FileReader
     if (reader != null) {
         var deferred = new $.Deferred();
-        var inputFile= $('#dataset')[0].files[0];
+        var inputFile = $('#dataset')[0].files[0];
 
         var splitFileName = $('#dataset').val().split('.');
         if ($.inArray(splitFileName[splitFileName.length - 1], XLSXReader.exts) > -1) {
-            XLSXReader(inputFile, true, false, function(reader) {
+            XLSXReader(inputFile, true, false, function (reader) {
                 // get the data from the resource collection sheet
-                var data  = reader.sheets[configData.data_sheet].data;
+                var data = reader.sheets[configData.data_sheet].data;
 
                 // return the geoJSON data
                 deferred.resolve(parseGeoJSONData(data, configData.lat_column, configData.long_column, configData.uniqueKey));
             })
         } else {
             Papa.parse(inputFile, {
-                complete: function(results) {
+                complete: function (results) {
                     if (!results.meta.aborted)
                         deferred.resolve(parseGeoJSONData(results.data, configData.lat_column, configData.long_column, configData.uniqueKey));
                     else
@@ -67,27 +67,29 @@ function getResourceCoordinates(configData) {
 
 function parseGeoJSONData(data, lat_column, long_column, uniqueKey) {
     var featureTemplate = {
-                            "type": "Feature",
-                            "geometry": {"type": "Point", "coordinates": []},
-                            "properties": {
-                                            "description": "",
-                                           }
-                           };
-    var geoJSONData = {"type": "FeatureCollection",
-                       "features": []};
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": []},
+        "properties": {
+            "description": ""
+        }
+    };
+    var geoJSONData = {
+        "type": "FeatureCollection",
+        "features": []
+    };
 
     // find the index of the lat and long columns and the uniqueKey
     var latColumn = data[0].indexOf(lat_column);
     var longColumn = data[0].indexOf(long_column);
     var uniqueKeyColumn = data[0].indexOf(uniqueKey);
 
-    data.forEach(function(element, index, array) {
+    data.forEach(function (element, index, array) {
         // 0 index is the column headers, so skip
         if (index != 0) {
             f = $.extend(true, {}, featureTemplate);
 
             // only add coordinates if we find them
-            if ((element[longColumn] != null) && (element[latColumn] != null) ) {
+            if ((element[longColumn] != null) && (element[latColumn] != null)) {
                 // add the coordinates to the feature object
                 f.geometry.coordinates.push(element[longColumn]);
                 f.geometry.coordinates.push(element[latColumn]);
@@ -100,7 +102,7 @@ function parseGeoJSONData(data, lat_column, long_column, uniqueKey) {
                     geoJSONData.features.push(f);
                 } else {
                     geoJSONData.features[featureIndex].properties.description += ", Sample ID: " + element[uniqueKeyColumn] +
-                                                                                 " (Row " + (index + 1) + ")";
+                        " (Row " + (index + 1) + ")";
                 }
             }
         }
@@ -112,7 +114,7 @@ function parseGeoJSONData(data, lat_column, long_column, uniqueKey) {
 // function to check if the feature with the same coordinates already exists in the array
 function findFeature(feature, featuresArray) {
     var index = -1;
-    featuresArray.some(function(element, i) {
+    featuresArray.some(function (element, i) {
         if (element.geometry.coordinates.toString() == feature.geometry.coordinates.toString()) {
             index = i;
             return true;
@@ -133,7 +135,7 @@ function displayMap(id, geoJSONData) {
     // create the data points
     var geoJSONLayer = L.geoJson(geoJSONData, {
         onEachFeature: function (feature, layer) {
-            layer.bindPopup(L.mapbox.sanitize(feature.properties.description),{maxHeight: 175});
+            layer.bindPopup(L.mapbox.sanitize(feature.properties.description), {maxHeight: 175});
         }
     });
 
@@ -160,22 +162,22 @@ function generateMap(id, projectId) {
     $('#' + id).html('Loading map...');
     // generate a map with markers for all resource points
     $.getJSON("/biocode-fims/rest/projects/" + projectId + "/getLatLongColumns/"
-        ).done(function(data) {
-            $.getJSON("/biocode-fims/rest/projects/" + projectId + "/uniqueKey/"
-                ).done(function(uniqueKeyData) {
-                    data.uniqueKey = uniqueKeyData.uniqueKey;
-                }).always(function() {
-                    getResourceCoordinates(data).done(function(geoJSONData) {
-                        if (geoJSONData.features.length == 0) {
-                            $('#' + id).html('We didn\'t find any lat/long coordinates for your collection resources.');
-                        } else {
-                            displayMap(id, geoJSONData);
-                            }
-                        // remove the refresh map link if there is one
-                        $("#refresh_map").remove();
-                    });
-                });
-        }).fail(function(jqXHR) {
-            $('#' + id).html('Failed to load map.');
+    ).done(function (data) {
+        $.getJSON("/biocode-fims/rest/projects/" + projectId + "/uniqueKey/"
+        ).done(function (uniqueKeyData) {
+            data.uniqueKey = uniqueKeyData.uniqueKey;
+        }).always(function () {
+            getResourceCoordinates(data).done(function (geoJSONData) {
+                if (geoJSONData.features.length == 0) {
+                    $('#' + id).html('We didn\'t find any lat/long coordinates for your collection resources.');
+                } else {
+                    displayMap(id, geoJSONData);
+                }
+                // remove the refresh map link if there is one
+                $("#refresh_map").remove();
+            });
         });
+    }).fail(function (jqXHR) {
+        $('#' + id).html('Failed to load map.');
+    });
 }
