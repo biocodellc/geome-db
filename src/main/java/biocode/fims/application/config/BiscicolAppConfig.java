@@ -3,7 +3,6 @@ package biocode.fims.application.config;
 import biocode.fims.elasticSearch.ESFimsMetadataPersistenceManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataPersistenceManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
-import biocode.fims.fuseki.fileManagers.fimsMetadata.FusekiFimsMetadataPersistenceManager;
 import biocode.fims.run.EzidUpdator;
 import biocode.fims.service.ProjectService;
 import org.elasticsearch.client.Client;
