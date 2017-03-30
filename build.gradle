@@ -14,18 +14,14 @@ apply plugin: "application"
 apply plugin: "org.biocode.fims-web"
 
 
+ext.fimsCommonsVersion = "0.0.1"
+
+// set default values
+ext.biocodeFimsCommonsDir = hasProperty("biocodeFimsCommonsDir") ? biocodeFimsCommonsDir : null
+
 repositories {
     mavenCentral()
-}
-
-//noinspection GroovyAssignabilityCheck
-sourceSets {
-    doclet {
-        java {
-            srcDir project(":biocode-fims-commons").file("src/main/java")
-            srcDir project(":biocode-fims-fuseki").file("src/main/java")
-        }
-    }
+    mavenLocal()
 }
 
 // this is necessary for the subprojects.each closure to work correctly when dealing with the server configuration dependencies
@@ -48,12 +44,14 @@ dependencies {
     server 'commons-cli:commons-cli:1.2'
 
     server group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
-    compile project(":biocode-fims-commons")
-    compile project(":biocode-fims-fuseki")
+    compile composite.resolveDependency("org.biocode:biocode-fims-commons:${fimsCommonsVersion}", biocodeFimsCommonsDir)
 
     doclet fileTree(dir: 'swagger', include: ['swagger-doclet-*'])
 
     additionalSources(group: 'org.springframework.data', name: 'spring-data-commons', version: '1.10.1.RELEASE', classifier: 'sources') {
+        transitive = false
+    }
+    additionalSources(group: 'org.biocode', name: 'biocode-fims-commons', version: "${fimsCommonsVersion}") {
         transitive = false
     }
 
