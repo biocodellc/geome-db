@@ -5,5 +5,6 @@ if (hasProperty("gradleFimsDir") && file(gradleFimsDir).exists()) {
 }
 
 if (hasProperty("biocodeFimsCommonsDir")) {
-    includeFlat biocodeFimsCommonsDir
+    include ":biocode-fims-commons"
+    project(":biocode-fims-commons").projectDir = file(biocodeFimsCommonsDir)
 }
