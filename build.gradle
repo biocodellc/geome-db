@@ -237,8 +237,3 @@ jsApp {
         compilerOptions.language = "ECMASCRIPT5"
     }
 }
-
-task s << {
-    println war.archiveName
-    println jar.archiveName
-}
