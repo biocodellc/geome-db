@@ -95,7 +95,7 @@
                 return
             }
 
-            $window.open(response.data.url);
+            $window.open(response.data.url, "_self");
         }
 
         function downloadFileFailed(response) {

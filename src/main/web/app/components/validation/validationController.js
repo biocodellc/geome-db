@@ -61,7 +61,7 @@ angular.module('fims.validation')
                 if (latestExpeditionCode == null) {
                     return;
                 }
-                $window.open(REST_ROOT + "projects/" + PROJECT_ID + "/expeditions/" + latestExpeditionCode + "/generateSraFiles");
+                $window.open(REST_ROOT + "projects/" + PROJECT_ID + "/expeditions/" + latestExpeditionCode + "/generateSraFiles", "_self");
             }
 
             function checkCoordinatesVerified() {
