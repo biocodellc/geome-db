@@ -2,6 +2,7 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.config.ConfigurationFileFetcher;
+import biocode.fims.digester.DataType;
 import biocode.fims.digester.Mapping;
 import biocode.fims.elasticSearch.FieldColumnTransformer;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -124,7 +125,7 @@ public class QueryController extends FimsService {
 
         List<JsonFieldTransform> writerColumns = GeomeQueryUtils.getJsonFieldTransforms(getMapping());
         writerColumns.add(
-                new JsonFieldTransform("fastqMetadata", FastqFileManager.CONCEPT_ALIAS, null)
+                new JsonFieldTransform("fastqMetadata", FastqFileManager.CONCEPT_ALIAS, DataType.STRING, true)
         );
 
         List<JsonFieldTransform> filteredWriterColumns;
@@ -444,7 +445,7 @@ public class QueryController extends FimsService {
                     fastaSequenceFilters.add(
                             new FastaSequenceJsonFieldFilter(
                                     fastaSequenceFilterPath,
-                                    qs)
+                                    qs.substring(1, qs.length() - 1)) // qs is wrapped in "", we need to remove those to get the actual value
                     );
 
                 }

@@ -11,6 +11,7 @@ import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.query.writers.JsonFieldTransform;
 import com.fasterxml.jackson.core.JsonPointer;
 import org.apache.commons.lang.StringUtils;
+import org.glassfish.hk2.external.org.objectweb.asm.commons.Method;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,6 +40,13 @@ public class GeomeQueryUtils {
             "family",
             "subSpecies",
             "vernacularName"
+    );
+
+    private static final List<String> FASTA_METADATA_COLUMNS = Arrays.asList(
+            "genus",
+            "species",
+            "locality",
+            "materialSampleID"
     );
 
     /**
@@ -139,7 +147,8 @@ public class GeomeQueryUtils {
                     new JsonFieldTransform(
                             a.getColumn(),
                             a.getUri(),
-                            a.getDatatype()
+                            a.getDatatype(),
+                            false
                     )
             );
         }
@@ -148,7 +157,8 @@ public class GeomeQueryUtils {
                 new JsonFieldTransform(
                         "bcid",
                         "bcid",
-                        DataType.STRING
+                        DataType.STRING,
+                        false
                 )
         );
 
@@ -178,7 +188,19 @@ public class GeomeQueryUtils {
                 metadataFields.add(new JsonFieldTransform(
                         a.getColumn(),
                         a.getUri(),
-                        a.getDatatype()
+                        a.getDatatype(),
+                        true
+                ));
+            }
+        }
+
+        for (Attribute a: mapping.getDefaultSheetAttributes()) {
+            if (FASTA_METADATA_COLUMNS.contains(a.getColumn())) {
+                metadataFields.add(new JsonFieldTransform(
+                        a.getColumn(),
+                        a.getUri(),
+                        a.getDatatype(),
+                        false
                 ));
             }
         }
@@ -215,77 +237,88 @@ public class GeomeQueryUtils {
                 new JsonFieldTransform(
                         "fastqLibraryStrategy",
                         FastqFileManager.CONCEPT_ALIAS + ".libraryStrategy",
-                        DataType.STRING
+                        DataType.STRING,
+                        true
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqLibrarySource",
                         FastqFileManager.CONCEPT_ALIAS + ".librarySource",
-                        DataType.STRING
+                        DataType.STRING,
+                        true
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqLibrarySelection",
                         FastqFileManager.CONCEPT_ALIAS + ".librarySelection",
-                        DataType.STRING
+                        DataType.STRING,
+                        true
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqLibraryLayout",
                         FastqFileManager.CONCEPT_ALIAS + ".libraryLayout",
-                        DataType.STRING
+                        DataType.STRING,
+                        true
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqPlatform",
                         FastqFileManager.CONCEPT_ALIAS + ".platform",
-                        DataType.STRING
+                        DataType.STRING,
+                        true
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqInstrumentModel",
                         FastqFileManager.CONCEPT_ALIAS + ".instrumentModel",
-                        DataType.STRING
+                        DataType.STRING,
+                        true
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "fastqDesignDescription",
                         FastqFileManager.CONCEPT_ALIAS + ".designDescription",
-                        DataType.STRING
+                        DataType.STRING,
+                        true
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "bioSample Accession",
                         FastqFileManager.CONCEPT_ALIAS + ".bioSample.accession",
-                        DataType.STRING
+                        DataType.STRING,
+                        true
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "bioProject Accession",
                         FastqFileManager.CONCEPT_ALIAS + ".bioSample.bioProjectAccession",
-                        DataType.STRING
+                        DataType.STRING,
+                        true
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "Experiment Accession",
                         FastqFileManager.CONCEPT_ALIAS + ".bioSample.experiment.experimentAccession",
-                        DataType.STRING
+                        DataType.STRING,
+                        true
                 )
         );
         jsonFieldTransforms.add(
                 new JsonFieldTransform(
                         "Study Accession",
                         FastqFileManager.CONCEPT_ALIAS + ".bioSample.experiment.studyAccession",
-                        DataType.STRING
+                        DataType.STRING,
+                        true
                 )
         );
         jsonFieldTransforms.add(
@@ -293,7 +326,8 @@ public class GeomeQueryUtils {
                 new JsonFieldTransform(
                         "Run Accessions",
                         FastqFileManager.CONCEPT_ALIAS + "/bioSample/experiment/runAccessions/0",
-                        DataType.STRING
+                        DataType.STRING,
+                        true
                 )
         );
 

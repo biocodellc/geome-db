@@ -1,9 +1,15 @@
 rootProject.name = 'geome-db'
 
-include ":biocode-fims-commons"
-include ":biocode-fims-fuseki"
-include ":biocode-fims-sequences"
+if (hasProperty("gradleFimsDir") && file(gradleFimsDir).exists()) {
+    includeBuild gradleFimsDir
+}
 
-project(":biocode-fims-commons").projectDir = file(biocodeFimsCommonsDir)
-project(":biocode-fims-fuseki").projectDir = file(biocodeFimsFusekiDir)
-project(":biocode-fims-sequences").projectDir = file(biocodeFimsSequencesDir)
+if (hasProperty("biocodeFimsCommonsDir")) {
+    include ":biocode-fims-commons"
+    project(":biocode-fims-commons").projectDir = file(biocodeFimsCommonsDir)
+}
+
+if (hasProperty("biocodeFimsSequencesDir")) {
+    include ":biocode-fims-sequences"
+    project(":biocode-fims-sequences").projectDir = file(biocodeFimsSequencesDir)
+}
