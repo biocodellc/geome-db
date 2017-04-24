@@ -10,7 +10,7 @@ buildscript {
         mavenLocal()
     }
     dependencies {
-        classpath "org.biocode:gradle-fims:1.1.0"
+        classpath "org.biocode:gradle-fims:1.1.5"
     }
 }
 
@@ -20,7 +20,7 @@ apply plugin: "org.biocode.fims-web"
 import org.biocode.gradle.web.tasks.RestartRemoteJettyTask
 import org.biocode.gradle.web.tasks.HotDeployRemoteJettyTask
 
-ext.fimsCommonsVersion = "0.1.0"
+ext.fimsCommonsVersion = "0.2.1"
 
 fims {
     maven {
@@ -69,6 +69,7 @@ dependencies {
 
     subprojects.each {
         project.configurations.server.dependencies.addAll(it.configurations.server.dependencies)
+        project.configurations.serverRuntime.dependencies.addAll(it.configurations.serverRuntime.dependencies)
     }
 }
 

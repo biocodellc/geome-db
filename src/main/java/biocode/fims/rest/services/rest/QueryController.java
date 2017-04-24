@@ -13,8 +13,9 @@ import biocode.fims.elasticSearch.query.ElasticSearchQuerier;
 import biocode.fims.elasticSearch.query.ElasticSearchQuery;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.errorCodes.QueryErrorCode;
-import biocode.fims.query.*;
+import biocode.fims.fimsExceptions.errorCodes.QueryCode;
+import biocode.fims.query.QueryType;
+import biocode.fims.query.writers.*;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
@@ -51,7 +52,7 @@ import java.util.*;
 /**
  * Query interface for Biocode-fims expedition
  *
- * @resourceDescription Query a project's resources. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>
+ * @resourceDescription Query a project's resources. See <a href='http://fims.readthedocs.io/en/stable/fims/query.html'>Fims Docs</a>
  * for more detailed information regarding queries.
  * @resourceTag Resources
  */
@@ -173,7 +174,7 @@ public class QueryController extends FimsService {
 
             return getJsonResults(page, limit, query);
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.ok(
                         new PageImpl<String>(null, new PageRequest(page, limit), 0)
                 ).build();
@@ -213,7 +214,7 @@ public class QueryController extends FimsService {
 
             return getJsonResults(page, limit, query);
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.ok(
                         new PageImpl<String>(null, new PageRequest(page, limit), 0)
                 ).build();
@@ -257,7 +258,7 @@ public class QueryController extends FimsService {
 
             return response.build();
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
             }
 
@@ -303,7 +304,7 @@ public class QueryController extends FimsService {
 
             return response.build();
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
             }
 
@@ -356,7 +357,7 @@ public class QueryController extends FimsService {
                 return response.build();
             }
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
             }
 
@@ -412,7 +413,7 @@ public class QueryController extends FimsService {
                 return response.build();
             }
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
             }
 
@@ -458,7 +459,7 @@ public class QueryController extends FimsService {
             // Return response
             return response.build();
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
             }
 
@@ -501,7 +502,7 @@ public class QueryController extends FimsService {
 
             return response.build();
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
             }
 
@@ -546,7 +547,7 @@ public class QueryController extends FimsService {
 
             return response.build();
         } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryErrorCode.NO_RESOURCES) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
             }
 
@@ -682,7 +683,7 @@ public class QueryController extends FimsService {
             // only expect 1 value
             ElasticSearchFilterCondition filterCondition = new ElasticSearchFilterCondition(
                     lookupFilter(entry.getKey(), filterFields),
-                    entry.getValue().get(0));
+                    entry.getValue().get(0), QueryType.EQUALS);
 
             filterConditions.add(filterCondition);
         }
@@ -692,7 +693,7 @@ public class QueryController extends FimsService {
             expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditionCodes.add(e.getExpeditionCode()));
 
             if (expeditionCodes.size() == 0) {
-                throw new FimsRuntimeException(QueryErrorCode.NO_RESOURCES, 204);
+                throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 204);
             }
         }
 
@@ -738,7 +739,7 @@ public class QueryController extends FimsService {
                 expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditions.add(e.getExpeditionCode()));
 
                 if (expeditions.size() == 0) {
-                    throw new FimsRuntimeException(QueryErrorCode.NO_RESOURCES, 204);
+                    throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 204);
                 }
             }
 
@@ -781,7 +782,8 @@ public class QueryController extends FimsService {
                         filterConditions.add(
                                 new ElasticSearchFilterCondition(
                                         BiscicolQueryUtils.get_AllFilter(),
-                                        filter[0]
+                                        filter[0],
+                                        QueryType.FUZZY
                                 )
                         );
                     continue;
@@ -799,7 +801,8 @@ public class QueryController extends FimsService {
                                 key,
                                 filterFields
                         ),
-                        filter[1]
+                        filter[1],
+                        QueryType.EQUALS
                 );
 
                 filterConditions.add(filterCondition);
@@ -814,7 +817,7 @@ public class QueryController extends FimsService {
 
     private ElasticSearchFilterField lookupFilter(String key, List<ElasticSearchFilterField> filters) {
         if (key == null) {
-            throw new FimsRuntimeException(QueryErrorCode.UNKNOWN_FILTER, "is " + key + " a valid column or uri?", 400, key);
+            throw new FimsRuntimeException(QueryCode.UNKNOWN_FILTER, "is " + key + " a valid column or uri?", 400, key);
         }
 
         // _all is a special filter
@@ -833,7 +836,7 @@ public class QueryController extends FimsService {
             }
         }
 
-        throw new FimsRuntimeException(QueryErrorCode.UNKNOWN_FILTER, "is " + key + " a filterable field?", 400, key);
+        throw new FimsRuntimeException(QueryCode.UNKNOWN_FILTER, "is " + key + " a filterable field?", 400, key);
     }
 
     private QueryBuilder getQueryBuilder(List<ElasticSearchFilterCondition> filterConditions, List<String> expeditionCodes) {
@@ -850,16 +853,16 @@ public class QueryController extends FimsService {
 
         for (ElasticSearchFilterCondition filterCondition : filterConditions) {
 
-            if (filterCondition.isNested()) {
-                boolQueryBuilder.must(
-                        QueryBuilders.nestedQuery(
-                                filterCondition.getPath(),
-                                QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()),
-                                ScoreMode.None)
-                );
-            } else {
-                boolQueryBuilder.must(QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()));
-            }
+//            if (filterCondition.isNested()) {
+//                boolQueryBuilder.must(
+//                        QueryBuilders.nestedQuery(
+//                                filterCondition.getPath(),
+//                                QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()),
+//                                ScoreMode.None)
+//                );
+//            } else {
+//                boolQueryBuilder.must(QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()));
+//            }
         }
 
         return boolQueryBuilder;

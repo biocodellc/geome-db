@@ -4,7 +4,7 @@ import biocode.fims.digester.Attribute;
 import biocode.fims.digester.DataType;
 import biocode.fims.digester.Mapping;
 import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
-import biocode.fims.query.JsonFieldTransform;
+import biocode.fims.query.writers.JsonFieldTransform;
 import com.fasterxml.jackson.core.JsonPointer;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class BiscicolQueryUtils {
         List<ElasticSearchFilterField> filters = new ArrayList<>();
 
         for (Attribute attribute : mapping.getDefaultSheetAttributes()) {
-            filters.add(new ElasticSearchFilterField(attribute.getUri(), attribute.getColumn(), attribute.getDatatype()));
+            filters.add(new ElasticSearchFilterField(attribute.getUri(), attribute.getColumn(), attribute.getDatatype(), attribute.getGroup()));
         }
 
         return filters;
@@ -40,7 +40,7 @@ public class BiscicolQueryUtils {
      * @return
      */
     public static ElasticSearchFilterField get_AllFilter() {
-        return new ElasticSearchFilterField("_all", null, null);
+        return new ElasticSearchFilterField("_all", null, DataType.STRING, "hidden");
     }
 
     /**
@@ -57,8 +57,9 @@ public class BiscicolQueryUtils {
             fieldTransforms.add(
                     new JsonFieldTransform(
                             a.getColumn(),
-                            JsonPointer.compile("/" + a.getUri()),
-                            a.getDatatype()
+                            a.getUri(),
+                            a.getDatatype(),
+                            false
                     )
             );
         }
@@ -66,8 +67,9 @@ public class BiscicolQueryUtils {
         fieldTransforms.add(
                 new JsonFieldTransform(
                         "bcid",
-                        JsonPointer.compile("/bcid"),
-                        DataType.STRING
+                        "bcid",
+                        DataType.STRING,
+                        false
                 )
         );
 
