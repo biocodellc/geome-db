@@ -5,6 +5,7 @@
 !src/main/resources/locale/*.properties
 !src/main/resources/settings-manager.properties
 !src/main/environment/*/log4j.properties
+!gradle/wrapper/gradle-wrapper.properties
 dist
 build
 classes
