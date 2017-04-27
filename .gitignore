@@ -7,6 +7,8 @@ src/main/web/app/components/auth/clientId.js
 !src/main/environment/*/log4j.properties
 !src/main/resources/settings-manager.properties
 !src/main/resources/locale/*
+!src/integration-test/resources/log4j.properties
+!gradle/wrapper/gradle-wrapper.properties
 dist/*
 build/*
 classes/*

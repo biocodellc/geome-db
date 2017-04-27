@@ -1,5 +1,6 @@
 package biocode.fims.rest;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +17,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author rjewing
@@ -54,7 +56,7 @@ public class V1_REST_SERVICES_TEST {
         // login as non-admin user
         MultivaluedMap authDetails = new MultivaluedHashMap();
         authDetails.add("username", "demo2");
-        authDetails.add("password", "d2");
+        authDetails.add("password", "d");
         Response authRes = target.path("/authenticationService/login").request().post(Entity.form(authDetails));
 
         // successful login
@@ -91,7 +93,7 @@ public class V1_REST_SERVICES_TEST {
         // login
         MultivaluedMap authDetails = new MultivaluedHashMap();
         authDetails.add("username", "demo3");
-        authDetails.add("password", "d3");
+        authDetails.add("password", "d");
         Response authRes = target.path("/authenticationService/login").request().post(Entity.form(authDetails));
 
         // successful login
@@ -100,14 +102,14 @@ public class V1_REST_SERVICES_TEST {
         // should return only member projects
         res = target.path("projects/list").request().get();
         assertEquals(200, res.getStatus());
-        assertEquals("[{\"projectId\":\"2\",\"projectCode\":\"PROJ2\",\"projectTitle\":\"project 2\",\"validationXml\":\"\"},{\"projectId\":\"3\",\"projectCode\":\"PROJ3\",\"projectTitle\":\"project 3\",\"validationXml\":\"\"}]",
+        assertEquals("[{\"projectId\":\"2\",\"projectCode\":\"PROJ2\",\"projectTitle\":\"project 2\",\"validationXml\":\"\"},{\"projectId\":\"3\",\"projectCode\":\"PROJ3\",\"projectTitle\":\"project 3\",\"validationXml\":\"\"},{\"projectId\":\"4\",\"projectCode\":\"PROJ4\",\"projectTitle\":\"project 4\",\"validationXml\":\"\"}]",
                 res.readEntity(String.class));
 
         // should return member projects and public projects
         res = target.path("projects/list")
                 .queryParam("includePublic", "true").request().get();
         assertEquals(200, res.getStatus());
-        assertEquals("[{\"projectId\":\"1\",\"projectCode\":\"PROJ1\",\"projectTitle\":\"project 1\",\"validationXml\":\"\"},{\"projectId\":\"2\",\"projectCode\":\"PROJ2\",\"projectTitle\":\"project 2\",\"validationXml\":\"\"},{\"projectId\":\"3\",\"projectCode\":\"PROJ3\",\"projectTitle\":\"project 3\",\"validationXml\":\"\"}]",
+        assertEquals("[{\"projectId\":\"1\",\"projectCode\":\"PROJ1\",\"projectTitle\":\"project 1\",\"validationXml\":\"\"},{\"projectId\":\"2\",\"projectCode\":\"PROJ2\",\"projectTitle\":\"project 2\",\"validationXml\":\"\"},{\"projectId\":\"3\",\"projectCode\":\"PROJ3\",\"projectTitle\":\"project 3\",\"validationXml\":\"\"},{\"projectId\":\"4\",\"projectCode\":\"PROJ4\",\"projectTitle\":\"project 4\",\"validationXml\":\"\"}]",
                 res.readEntity(String.class));
 
     }
@@ -121,7 +123,7 @@ public class V1_REST_SERVICES_TEST {
         // login
         MultivaluedMap authDetails = new MultivaluedHashMap();
         authDetails.add("username", "demo3");
-        authDetails.add("password", "d3");
+        authDetails.add("password", "d");
         Response authRes = target.path("/authenticationService/login").request().post(Entity.form(authDetails));
 
         // successful login
@@ -130,8 +132,34 @@ public class V1_REST_SERVICES_TEST {
         // should return only member projects
         res = target.path("projects/user/list").request().get();
         assertEquals(200, res.getStatus());
-        assertEquals("[{\"projectId\":\"2\",\"projectCode\":\"PROJ2\",\"projectTitle\":\"project 2\",\"validationXml\":\"\"},{\"projectId\":\"3\",\"projectCode\":\"PROJ3\",\"projectTitle\":\"project 3\",\"validationXml\":\"\"}]",
+        assertEquals("[{\"projectId\":\"2\",\"projectCode\":\"PROJ2\",\"projectTitle\":\"project 2\",\"validationXml\":\"\"},{\"projectId\":\"3\",\"projectCode\":\"PROJ3\",\"projectTitle\":\"project 3\",\"validationXml\":\"\"},{\"projectId\":\"4\",\"projectCode\":\"PROJ4\",\"projectTitle\":\"project 4\",\"validationXml\":\"\"}]",
                 res.readEntity(String.class));
     }
 
+    @Test
+    public void POST_bcids() {
+        MultivaluedMap bcidForm = new MultivaluedHashMap();
+        bcidForm.add("doi", "doi:test");
+        bcidForm.add("webAddress", "http://example.com/resolver/?abc123");
+        bcidForm.add("graph", "graphId");
+        bcidForm.add("title", "a test bcid");
+        bcidForm.add("resourceType", "http://purl.org/dc/dcmitype/Collection");
+
+        Response res = target.path("bcids").request().post(Entity.form(bcidForm));
+        assertEquals(401, res.getStatus());
+
+        // login
+        MultivaluedMap authDetails = new MultivaluedHashMap();
+        authDetails.add("username", "demo");
+        authDetails.add("password", "d");
+        Response authRes = target.path("/authenticationService/login").request().post(Entity.form(authDetails));
+
+        // successful login
+        assertEquals(200, authRes.getStatus());
+
+        res = target.path("bcids").request().post(Entity.form(bcidForm));
+        assertEquals(200, res.getStatus());
+        ObjectNode responseEntity = res.readEntity(ObjectNode.class);
+        assertTrue(responseEntity.has("identifier"));
+    }
 }
