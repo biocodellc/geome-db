@@ -3,7 +3,7 @@ var appRoot = "/";
 var biocodeFimsRestRoot = "/biocode-fims/rest/v2/";
 
 $.ajaxSetup({
-    headers: { 'Biscicol-App': 'Biscicol-Fims' },
+    headers: { 'Fims-App': 'Biscicol-Fims' },
     beforeSend: function (jqxhr, config) {
         jqxhr.config = config;
         var biscicolSessionStorage = JSON.parse(window.sessionStorage.biscicol);

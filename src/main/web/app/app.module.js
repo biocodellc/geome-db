@@ -18,7 +18,7 @@ var app = angular.module('biscicolApp', [
 var currentUser = {};
 app.run(['$http', 'UserFactory', function ($http, UserFactory) {
     UserFactory.setUser(currentUser);
-    $http.defaults.headers.common = {'Biscicol-App': 'Biscicol-Fims'};
+    $http.defaults.headers.common = {'Fims-App': 'Biscicol-Fims'};
 }]);
 
 angular.element(document).ready(function () {
