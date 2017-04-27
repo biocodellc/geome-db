@@ -3,7 +3,6 @@ package biocode.fims.application.config;
 import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.fileManagers.AuxilaryFileManager;
-import biocode.fims.rest.services.rest.ValidateController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 

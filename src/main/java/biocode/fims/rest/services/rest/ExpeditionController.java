@@ -4,6 +4,7 @@ import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.ExpeditionService;
+import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +26,9 @@ import java.util.ArrayList;
 @Path("expeditions")
 public class ExpeditionController extends FimsAbstractExpeditionController {
 
-
     @Autowired
-    public ExpeditionController(ExpeditionService expeditionService, SettingsManager settingsManager) {
-        super(expeditionService, settingsManager);
+    public ExpeditionController(ExpeditionService expeditionService, ProjectService projectService, SettingsManager settingsManager) {
+        super(expeditionService, projectService, settingsManager);
     }
 
     @GET
