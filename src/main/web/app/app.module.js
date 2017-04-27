@@ -20,6 +20,7 @@ var app = angular.module('geomeApp', [
 var currentUser = {};
 app.run(['UserFactory', function (UserFactory) {
     UserFactory.setUser(currentUser);
+    $http.defaults.headers.common = {'Fims-App': 'Geome-Fims'};
 }]);
 
 angular.element(document).ready(function () {

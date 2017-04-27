@@ -3,6 +3,7 @@ var appRoot = "/";
 var RestRoot = "/rest/v1/";
 
 $.ajaxSetup({
+    headers: { 'Fims-App': 'Geome-Fims' },
     beforeSend: function(jqxhr, config) {
         jqxhr.config = config;
         var geomeSessionStorage = JSON.parse(window.sessionStorage.geome);
