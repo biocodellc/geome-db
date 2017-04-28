@@ -7,7 +7,6 @@ angular.module('fims.auth')
             'request': function (config) {
                 // only add query string if the request url isn't in the $templateCache
                 if ($templateCache.get(config.url) === undefined) {
-                    var $window = $injector.get("$window");
                     var AuthFactory = $injector.get('AuthFactory');
                     var accessToken = AuthFactory.getAccessToken();
                     if (!angular.isUndefined(accessToken)) {

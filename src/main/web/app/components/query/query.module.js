@@ -1,5 +1,6 @@
-(function() {
+(function () {
     'use strict';
 
-    angular.module('fims.query', ['fims.modals', 'fims.projects', 'fims.map', 'fims.alerts', 'fims.exception', 'sly', 'ui.select']);
+    angular.module('fims.query', ['fims.modals', 'fims.projects', 'fims.map', 'fims.alerts', 'fims.exception',
+        'fims.auth', 'sly', 'ui.select']);
 })();

@@ -15,7 +15,7 @@ angular.module('fims.expeditions')
 
         function downloadCsv(expeditionCode) {
             var builder = new QueryBuilder();
-            builder.add("expedition:" + expeditionCode);
+            builder.add("+expedition:" + expeditionCode);
             return queryService.downloadCsv(builder.build());
         }
 

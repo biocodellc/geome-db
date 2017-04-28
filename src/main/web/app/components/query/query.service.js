@@ -4,9 +4,9 @@
     angular.module('fims.query')
         .factory('queryService', queryService);
 
-    queryService.$inject = ['$http', '$window', 'exception', 'alerts', 'REST_ROOT'];
+    queryService.$inject = ['$http', '$window', 'exception', 'alerts', 'AuthFactory', 'REST_ROOT'];
 
-    function queryService($http, $window, exception, alerts, REST_ROOT) {
+    function queryService($http, $window, exception, alerts, AuthFactory, REST_ROOT) {
 
         var queryService = {
             queryJson: queryJson,
@@ -95,7 +95,21 @@
                 return
             }
 
-            $window.open(response.data.url, "_self");
+            var access_token = AuthFactory.getAccessToken();
+            var url = new URL(response.data.url);
+
+            var parser = document.createElement('a');
+            parser.href = url;
+
+            if (access_token) {
+                if (parser.search) {
+                    url += '&access_token=' + access_token;
+                } else {
+                    url += '?access_token=' + access_token;
+                }
+            }
+
+            $window.open(url, "_self");
         }
 
         function downloadFileFailed(response) {
