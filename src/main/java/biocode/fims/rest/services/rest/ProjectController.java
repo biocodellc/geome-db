@@ -20,7 +20,6 @@ import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.query.QueryType;
 import biocode.fims.rest.SpringObjectMapper;
-import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.ProcessController;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
@@ -38,7 +37,6 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.filter.InternalFilter;
 import org.elasticsearch.search.aggregations.bucket.nested.Nested;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -539,7 +537,6 @@ public class ProjectController extends FimsAbstractProjectsController {
      * @return
      */
     @GET
-    @Authenticated
     @Path("/{projectId}/expeditions/stats")
     @Produces({MediaType.APPLICATION_JSON})
     public Response listExpeditionsWithLatestDatasets(@PathParam("projectId") Integer projectId) {
@@ -547,15 +544,10 @@ public class ProjectController extends FimsAbstractProjectsController {
         // possibly need to store the sequence count as a field and them sum that
         // also, aggs can't use pagination, so we are fetching 1000 expeditions. to support pagination, we need to query
         // the expeditionCodes
-        Project project = projectService.getProjectWithExpeditions(projectId);
+        Project project = projectService.getProject(projectId);
 
         if (project == null) {
             throw new BadRequestException("Project doesn't exist");
-        }
-
-        Map<String, String> expeditionMap = new HashMap<>();
-        for (Expedition expedition : project.getExpeditions()) {
-            expeditionMap.put(expedition.getExpeditionCode(), expedition.getExpeditionTitle());
         }
 
         AggregationBuilder aggsBuilder = AggregationBuilders.terms("expeditions").field("expedition.expeditionCode.keyword")
@@ -577,12 +569,19 @@ public class ProjectController extends FimsAbstractProjectsController {
         Terms terms = response.getAggregations().get("expeditions");
         List<ObjectNode> buckets = new ArrayList<>();
 
+        List<Expedition> expeditions = expeditionService.getExpeditions(projectId, false);
 
         for (Terms.Bucket bucket : terms.getBuckets()) {
+            Expedition expedition = expeditions.stream()
+                    .filter(e -> e.getExpeditionCode().equals(bucket.getKeyAsString()))
+                    .findFirst()
+                    .get();
+
             ObjectNode b = new SpringObjectMapper().createObjectNode();
             b.put("resourceCount", bucket.getDocCount());
             b.put("expeditionCode", String.valueOf(bucket.getKey()));
-            b.put("expeditionTitle", expeditionMap.get(String.valueOf(bucket.getKey())));
+            b.put("expeditionTitle", expedition != null ? expedition.getExpeditionTitle() : "");
+            b.put("expeditionIdentifier", expedition != null ? String.valueOf(expedition.getExpeditionBcid().getIdentifier()) : "");
             b.put("fastaSequenceCount", ((Nested) bucket.getAggregations().get("fastaSequenceCount")).getDocCount());
             b.put("fastqMetadataCount", ((InternalFilter) bucket.getAggregations().get("fastqMetadataCount")).getDocCount());
 

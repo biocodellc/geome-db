@@ -100,11 +100,10 @@ angular.module('geomeApp')
                     loginRequired: true,
                     parent: "main"
                 })
-                .state('expeditionManager', {
-                    url: "/secure/expeditions",
+                .state('expeditions', {
+                    url: "/expeditions",
                     templateUrl: "app/components/expeditions/expeditions.html",
                     controller: "ExpeditionCtrl as vm",
-                    loginRequired: true,
                     parent: "main"
                 })
                 .state('notFound', {

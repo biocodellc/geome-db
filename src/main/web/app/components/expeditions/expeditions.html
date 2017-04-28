@@ -1,15 +1,16 @@
 <div class="row">
-    <h3 class="page-header">Expedition Data</h3>
+    <h3 class="page-header">Expedition Browser</h3>
     <p class="text-center">In this system we refer to each dataset as an “Expedition” each of which includes the
         metadata and sequences
         uploaded from a single dataset.</p>
 
     <table class="table table-hover table-condensed text-center" ng-show="vm.displayResults.length > 0">
         <thead>
-            <th>Expedition Title</th>
-            <th>Samples</th>
-            <th>Fasta Sequences</th>
-            <th>Fastq Metadata</th>
+            <th class="text-center">Expedition Title</th>
+            <th class="text-center">Samples</thcl>
+            <th class="text-center">Fasta Sequences</th>
+            <th class="text-center">Fastq Metadata</th>
+            <th class="text-center">GUID</th>
             <th></th>
         </thead>
 
@@ -19,6 +20,8 @@
                 <td>{{ expedition.resourceCount}}</td>
                 <td>{{ expedition.fastaSequenceCount}}</td>
                 <td>{{ expedition.fastqMetadataCount}}</td>
+                <td ng-show="expedition.expeditionIdentifier"><a href="http://n2t.net/{{expedition.expeditionIdentifier}}">http://n2t.net/{{ expedition.expeditionIdentifier}}</a></td>
+                <td ng-show="!expedition.expeditionIdentifier"></td>
                 <td>
                     <div class="btn-group">
                         <button type="button" class="btn btn-primary btn-xs dropdown-toggle"
