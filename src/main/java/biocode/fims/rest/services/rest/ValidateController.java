@@ -2,7 +2,7 @@ package biocode.fims.rest.services.rest;
 
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.elasticSearch.ElasticSearchIndexer;
-import biocode.fims.entities.Project;
+import biocode.fims.models.Project;
 import biocode.fims.fileManagers.AuxilaryFileManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;

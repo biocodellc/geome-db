@@ -2,7 +2,7 @@ package biocode.fims.run;
 
 import biocode.fims.application.config.BiscicolAppConfig;
 import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.entities.User;
+import biocode.fims.models.User;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;

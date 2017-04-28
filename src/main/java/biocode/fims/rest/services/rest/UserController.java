@@ -1,11 +1,9 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.entities.User;
+import biocode.fims.models.User;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.EmailUtils;

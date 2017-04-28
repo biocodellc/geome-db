@@ -1,7 +1,7 @@
 package biocode.fims.run;
 
 import biocode.fims.application.config.BiscicolAppConfig;
-import biocode.fims.entities.Bcid;
+import biocode.fims.models.Bcid;
 import biocode.fims.ezid.EzidException;
 import biocode.fims.ezid.EzidService;
 import biocode.fims.ezid.EzidUtils;

@@ -1,6 +1,6 @@
 package biocode.fims.rest.versioning.transformers;
 
-import biocode.fims.entities.Project;
+import biocode.fims.models.Project;
 import biocode.fims.rest.SpringObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
