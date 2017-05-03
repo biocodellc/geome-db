@@ -5,12 +5,14 @@ import biocode.fims.bcid.BcidMetadataSchema;
 import biocode.fims.bcid.Identifier;
 import biocode.fims.bcid.Renderer.JSONRenderer;
 import biocode.fims.entities.Bcid;
+import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Controller;
@@ -67,6 +69,12 @@ public class BcidController extends FimsAbstractBcidController {
                 appRoot
         );
 
-        return Response.ok(renderer.getMetadata()).build();
+        ObjectNode metadata = renderer.getMetadata();
+
+        if (bcid.getResourceType().equals(Expedition.EXPEDITION_RESOURCE_TYPE) && bcid.getExpedition() != null) {
+            metadata.put("expeditionCode", bcid.getExpedition().getExpeditionCode());
+        }
+
+        return Response.ok(metadata).build();
     }
 }

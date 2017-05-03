@@ -1,1 +1,1 @@
-angular.module('fims.bcids', []);
+angular.module('fims.bcids', ['fims.query']);

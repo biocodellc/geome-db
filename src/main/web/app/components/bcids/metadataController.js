@@ -1,7 +1,7 @@
 angular.module('fims.bcids')
 
-    .controller('MetadataCtrl', ['$http', '$stateParams', 'REST_ROOT',
-        function ($http, $stateParams, REST_ROOT) {
+    .controller('MetadataCtrl', ['$http', '$stateParams', 'queryService', 'QueryBuilder', 'REST_ROOT',
+        function ($http, $stateParams, queryService, QueryBuilder, REST_ROOT) {
             var DATASET_TYPE = "http://purl.org/dc/dcmitype/Dataset";
 
             var vm = this;
@@ -9,6 +9,16 @@ angular.module('fims.bcids')
             vm.metadata = {};
             vm.filteredMetadata = {};
             vm.submit = submitForm;
+            vm.getValue = getValue;
+            vm.downloadLatestMetadata = downloadLatestMetadata;
+
+            function getValue(key) {
+                if (vm.metadata[key]) {
+                    return vm.metadata[key].value
+                }
+
+                return ""
+            }
 
             function submitForm() {
                 $window.location = 'http://biscicol.org/id/' + vm.identifier;
@@ -23,6 +33,12 @@ angular.module('fims.bcids')
                     }
                 });
                 return filteredMetadata;
+            }
+
+            function downloadLatestMetadata(expeditionCode) {
+                var builder = new QueryBuilder();
+                builder.add("+expedition:" + expeditionCode);
+                return queryService.downloadFastq(builder.build());
             }
 
 

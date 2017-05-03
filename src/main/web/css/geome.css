@@ -742,6 +742,10 @@ td.hideOverflow {
 
 /** Bcid Metadata rules */
 
+.bcid-metadata {
+    margin-top: 20px;
+}
+
 .bcid-metadata > tbody > tr > td {
     text-align: left;
 }
