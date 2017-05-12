@@ -1,20 +1,25 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.config.ConfigurationFileFetcher;
-import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import biocode.fims.models.Project;
-import biocode.fims.fileManagers.AuxilaryFileManager;
-import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
+import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.reader.DataReaderFactory;
+import biocode.fims.renderers.EntityMessages;
+import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.FimsService;
-import biocode.fims.run.Process;
+import biocode.fims.run.DatasetProcessor;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
+import biocode.fims.run.DataSourceMetadata;
+import biocode.fims.validation.RecordValidatorFactory;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -25,11 +30,8 @@ import org.springframework.stereotype.Controller;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @resourceTag Data
@@ -41,19 +43,19 @@ import java.util.Map;
 public class ValidateController extends FimsService {
 
     private final ExpeditionService expeditionService;
-    private final List<AuxilaryFileManager> fileManagers;
-    private final FimsMetadataFileManager fimsMetadataFileManager;
-    private final ElasticSearchIndexer esIndexer;
+    private final RecordValidatorFactory validatorFactory;
+    private final RecordRepository recordRepository;
     private final ProjectService projectService;
+    private final DataReaderFactory readerFactory;
 
-    public ValidateController(ExpeditionService expeditionService, FimsMetadataFileManager fimsMetadataFileManager,
-                              List<AuxilaryFileManager> fileManagers, SettingsManager settingsManager,
-                              ElasticSearchIndexer esIndexer, ProjectService projectService) {
+    public ValidateController(ExpeditionService expeditionService, DataReaderFactory readerFactory,
+                              RecordValidatorFactory validatorFactory, RecordRepository recordRepository,
+                              ProjectService projectService, SettingsManager settingsManager) {
         super(settingsManager);
         this.expeditionService = expeditionService;
-        this.fimsMetadataFileManager = fimsMetadataFileManager;
-        this.fileManagers = fileManagers;
-        this.esIndexer = esIndexer;
+        this.readerFactory = readerFactory;
+        this.validatorFactory = validatorFactory;
+        this.recordRepository = recordRepository;
         this.projectService = projectService;
     }
 
@@ -63,21 +65,18 @@ public class ValidateController extends FimsService {
      * @param projectId
      * @param expeditionCode
      * @param upload
-     * @param fimsMetadata
      * @return
      */
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
-    public Response validate(@FormDataParam("projectId") Integer projectId,
-                             @FormDataParam("expeditionCode") String expeditionCode,
-                             @FormDataParam("upload") boolean upload,
-                             @FormDataParam("public") @DefaultValue("false") boolean isPublic,
-                             @FormDataParam("fimsMetadata") FormDataBodyPart fimsMetadata,
-                             final FormDataMultiPart multiPart) {
-        Map<String, Map<String, Object>> fmProps = new HashMap<>();
-        JSONObject returnValue = new JSONObject();
-        boolean closeProcess = true;
+    public ValidationResponse validate(@FormDataParam("projectId") Integer projectId,
+                                       @FormDataParam("expeditionCode") String expeditionCode,
+                                       @FormDataParam("dataSourceMetadata") List<DataSourceMetadata> dataSourceMetadata,
+                                       @FormDataParam("dataSourceFiles") List<FormDataBodyPart> dataSourceFiles,
+                                       @FormDataParam("workbooks") List<FormDataBodyPart> workbooks,
+                                       @FormDataParam("upload") boolean upload,
+                                       @FormDataParam("public") @DefaultValue("false") boolean isPublic) {
         boolean removeController = true;
 
         Project project = projectService.getProject(projectId, appRoot);
@@ -94,71 +93,98 @@ public class ValidateController extends FimsService {
         // by calling biocode.fims.rest/validate/status
         session.setAttribute("processController", processController);
 
+        DatasetProcessor.Builder builder = new DatasetProcessor.Builder(processController)
+                .projectConfig(project.getProjectConfig())
+                .readerFactory(readerFactory)
+                .recordRepository(recordRepository)
+                .validatorFactory(validatorFactory)
+                .reloadDataset(false);
+
 
         try {
             // update the status
             processController.appendStatus("Initializing...<br>");
 
-            // save the datasets
-            if (fimsMetadata != null && fimsMetadata.getContentDisposition().getFileName() != null) {
-                String fimeMetadataFilename = fimsMetadata.getContentDisposition().getFileName();
-                processController.appendStatus("\nFims Metadata Dataset filename = " + fimeMetadataFilename);
+            if (workbooks != null && workbooks.size() > 0) {
+                for (FormDataBodyPart workbookData : workbooks) {
+                    String workbookFilename = workbookData.getContentDisposition().getFileName();
+                    processController.appendStatus("\nExcel workbook filename = " + workbookFilename);
 
-                InputStream is = fimsMetadata.getEntityAs(InputStream.class);
-                String tempFilename = saveFile(is, fimeMetadataFilename, "xls");
+                    InputStream is = workbookData.getEntityAs(InputStream.class);
+                    String tmpFilename = saveFile(is, workbookFilename, "");
 
-                Map<String, Object> props = new HashMap<>();
-                props.put("filename", tempFilename);
-
-                fmProps.put(FimsMetadataFileManager.NAME, props);
+                    builder.workbook(tmpFilename);
+                }
             }
 
-            File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), false).getOutputFile();
+            if ((dataSourceMetadata != null && dataSourceMetadata.size() > 0)
+                    || (dataSourceFiles != null && dataSourceFiles.size() > 0)) {
 
-            // Create the process object --- this is done each time to orient the application
-            Process process = new Process.ProcessBuilder(fimsMetadataFileManager, processController)
-                    .addFileManagers(fileManagers)
-                    .addFmProperties(fmProps)
-                    .configFile(configFile)
-                    .elasticSearchIndexer(esIndexer)
-                    .build();
+                for (FormDataBodyPart dataSourceFile : dataSourceFiles) {
+                    RecordMetadata recordMetadata = null;
 
-            processController.setProcess(process);
+                    String dataSourceFilename = dataSourceFile.getContentDisposition().getFileName();
+                    processController.appendStatus("\nDataSourceMetadata filename = " + dataSourceFilename);
 
-            if (process.validate() && upload) {
+                    for (DataSourceMetadata metadata : dataSourceMetadata) {
+                        if (StringUtils.equals(dataSourceFilename, metadata.getFilename())) {
+
+                            recordMetadata = metadata.toRecordMetadata(readerFactory.getReaderTypes());
+
+                            // remove the metadata so we can later verify that every dataSourceMetadata contains a matching dataSourceFile
+                            dataSourceMetadata.remove(metadata);
+                            break;
+                        }
+                    }
+
+                    if (recordMetadata == null) {
+                        throw new BadRequestException("could not find a matching DataSourceMetadata object for dataSourceFile: " + dataSourceFilename,
+                                "Make sure every dataSourceFile has a corresponding dataSourceMetadata object with the correct DataSourceMetadata.filename");
+                    }
+
+                    InputStream is = dataSourceFile.getEntityAs(InputStream.class);
+                    String tmpFilename = saveFile(is, dataSourceFilename, "");
+
+                    builder.addDataset(tmpFilename, recordMetadata);
+                }
+
+            }
+
+            DatasetProcessor processor = builder.build();
+
+            processController.setDatasetProcessor(processor);
+
+            if (upload) {
                 if (userContext.getUser() == null) {
                     throw new UnauthorizedRequestException("You must be logged in to upload.");
                 }
-
                 processController.setUserId(userContext.getUser().getUserId());
                 processController.setPublicStatus(isPublic);
 
-                // if there were validation warnings and user would like to upload, we need to ask the user to continue
-                if (processController.getHasWarnings()) {
-                    returnValue.put("continue", processController.getMessages());
-
-                    // there were no validation warnings and the user would like to upload, so continue
-                } else {
-                    JSONObject msg = new JSONObject();
-                    msg.put("message", "continue");
-                    returnValue.put("continue", msg);
-                }
-
-                // don't remove the controller or inputFiles as we will need it later for uploading this file
-                closeProcess = false;
+                // don't remove the controller as we will need it later for uploading this file
                 removeController = false;
 
+                boolean isvalid = processor.validate();
+
+                return new ValidationResponse(
+                        isvalid,
+                        processor.hasError(),
+                        processor.messages(),
+                        null //TODO set this
+                );
+
             } else {
-                returnValue.put("done", processController.getMessages());
+                boolean isvalid = processor.validate();
+
+                return new ValidationResponse(
+                        isvalid,
+                        processor.hasError(),
+                        processor.messages(),
+                        null
+                );
             }
-
-
-            return Response.ok(returnValue).build();
 
         } finally {
-            if (closeProcess && processController.getProcess() != null) {
-                processController.getProcess().close();
-            }
             if (removeController) {
                 session.removeAttribute("processController");
             }
@@ -196,7 +222,7 @@ public class ValidateController extends FimsService {
             }
 
 
-            Process p = processController.getProcess();
+            DatasetProcessor p = processController.getDatasetProcessor();
 
             if (createExpedition) {
                 processController.setExpeditionTitle(processController.getExpeditionCode() + " spreadsheet");
@@ -227,7 +253,7 @@ public class ValidateController extends FimsService {
             // remove the processController from the session
             if (removeProcessController) {
                 session.removeAttribute("processController");
-                processController.getProcess().close();
+//                processController.getDatasetProcessor().close();
             }
         }
     }
@@ -257,6 +283,25 @@ public class ValidateController extends FimsService {
         }
 
         return tempFilename;
+    }
+
+    private static class ValidationResponse {
+        @JsonProperty
+        private boolean isValid;
+        @JsonProperty
+        private boolean hasError;
+        @JsonProperty
+        private List<EntityMessages> messages;
+        @JsonProperty
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        private String uploadUrl;
+
+        public ValidationResponse(boolean isValid, boolean hasError, List<EntityMessages> messages, String uploadUrl) {
+            this.isValid = isValid;
+            this.hasError = hasError;
+            this.messages = messages;
+            this.uploadUrl = uploadUrl;
+        }
     }
 }
 
