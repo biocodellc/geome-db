@@ -9,11 +9,13 @@ import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.renderers.EntityMessages;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.FimsService;
+import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.DatasetProcessor;
-import biocode.fims.run.ProcessController;
+import biocode.fims.run.ProcessorStatus;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
+import biocode.fims.tools.UploadStore;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.run.DataSourceMetadata;
 import biocode.fims.validation.RecordValidatorFactory;
@@ -21,26 +23,24 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.json.simple.JSONObject;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @resourceTag Data
  * @resourceDescription Validate and load data
  */
-@Scope("prototype")
 @Controller
-@Path("validate")
-public class ValidateController extends FimsService {
+@Path("data")
+public class DatasetController extends FimsService {
 
     private final ExpeditionService expeditionService;
     private final RecordValidatorFactory validatorFactory;
@@ -48,26 +48,24 @@ public class ValidateController extends FimsService {
     private final ProjectService projectService;
     private final DataReaderFactory readerFactory;
 
-    public ValidateController(ExpeditionService expeditionService, DataReaderFactory readerFactory,
-                              RecordValidatorFactory validatorFactory, RecordRepository recordRepository,
-                              ProjectService projectService, SettingsManager settingsManager) {
+    private final UploadStore uploadStore;
+
+    public DatasetController(ExpeditionService expeditionService, DataReaderFactory readerFactory,
+                             RecordValidatorFactory validatorFactory, RecordRepository recordRepository,
+                             ProjectService projectService, SettingsManager settingsManager) {
         super(settingsManager);
         this.expeditionService = expeditionService;
         this.readerFactory = readerFactory;
         this.validatorFactory = validatorFactory;
         this.recordRepository = recordRepository;
         this.projectService = projectService;
+
+        this.uploadStore = new UploadStore();
     }
 
-    /**
-     * service to validate a dataset against a project's rules
-     *
-     * @param projectId
-     * @param expeditionCode
-     * @param upload
-     * @return
-     */
+
     @POST
+    @Path("validate")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
     public ValidationResponse validate(@FormDataParam("projectId") Integer projectId,
@@ -77,7 +75,6 @@ public class ValidateController extends FimsService {
                                        @FormDataParam("workbooks") List<FormDataBodyPart> workbooks,
                                        @FormDataParam("upload") boolean upload,
                                        @FormDataParam("public") @DefaultValue("false") boolean isPublic) {
-        boolean removeController = true;
 
         Project project = projectService.getProject(projectId, appRoot);
 
@@ -85,30 +82,33 @@ public class ValidateController extends FimsService {
             throw new BadRequestException("Project not found");
         }
 
-        // create a new processController
-        ProcessController processController = new ProcessController(projectId, expeditionCode);
-        processController.setOutputFolder(defaultOutputDirectory());
-
-        // place the processController in the session here so that we can track the status of the validation process
-        // by calling biocode.fims.rest/validate/status
-        session.setAttribute("processController", processController);
-
-        DatasetProcessor.Builder builder = new DatasetProcessor.Builder(processController)
-                .projectConfig(project.getProjectConfig())
-                .readerFactory(readerFactory)
-                .recordRepository(recordRepository)
-                .validatorFactory(validatorFactory)
-                .reloadDataset(false);
-
+        // create a new processorStatus
+        ProcessorStatus processorStatus = new ProcessorStatus();
 
         try {
+            // place the processorStatus in the session here so that we can track the status of the validation process
+            // by calling biocode.fims.rest/validate/status
+            session.setAttribute("processorStatus", processorStatus);
+
+            DatasetProcessor.Builder builder = new DatasetProcessor.Builder(projectId, expeditionCode, processorStatus)
+                    .user(userContext.getUser())
+                    .projectConfig(project.getProjectConfig())
+                    .readerFactory(readerFactory)
+                    .recordRepository(recordRepository)
+                    .validatorFactory(validatorFactory)
+                    .expeditionService(expeditionService)
+                    .ignoreUser(Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")))
+                    .publicStatus(isPublic)
+                    .serverDataDir(settingsManager.retrieveValue("serverRoot"))
+                    .reloadDataset(false);
+
             // update the status
-            processController.appendStatus("Initializing...<br>");
+            processorStatus.appendStatus("Initializing...");
 
             if (workbooks != null && workbooks.size() > 0) {
                 for (FormDataBodyPart workbookData : workbooks) {
                     String workbookFilename = workbookData.getContentDisposition().getFileName();
-                    processController.appendStatus("\nExcel workbook filename = " + workbookFilename);
+                    processorStatus.appendStatus("\nExcel workbook filename = " + workbookFilename);
 
                     InputStream is = workbookData.getEntityAs(InputStream.class);
                     String tmpFilename = saveFile(is, workbookFilename, "");
@@ -124,7 +124,7 @@ public class ValidateController extends FimsService {
                     RecordMetadata recordMetadata = null;
 
                     String dataSourceFilename = dataSourceFile.getContentDisposition().getFileName();
-                    processController.appendStatus("\nDataSourceMetadata filename = " + dataSourceFilename);
+                    processorStatus.appendStatus("\nDataSourceMetadata filename = " + dataSourceFilename);
 
                     for (DataSourceMetadata metadata : dataSourceMetadata) {
                         if (StringUtils.equals(dataSourceFilename, metadata.getFilename())) {
@@ -152,31 +152,33 @@ public class ValidateController extends FimsService {
 
             DatasetProcessor processor = builder.build();
 
-            processController.setDatasetProcessor(processor);
-
             if (upload) {
                 if (userContext.getUser() == null) {
                     throw new UnauthorizedRequestException("You must be logged in to upload.");
                 }
-                processController.setUserId(userContext.getUser().getUserId());
-                processController.setPublicStatus(isPublic);
-
-                // don't remove the controller as we will need it later for uploading this file
-                removeController = false;
 
                 boolean isvalid = processor.validate();
 
+                UUID id = uploadStore.put(processor, userContext.getUser().getUserId());
+
+                URI uploadUri = UriBuilder
+                        .fromMethod(this.getClass(), "upload")
+                        .queryParam("id", id)
+                        .build();
+
                 return new ValidationResponse(
+                        id,
                         isvalid,
                         processor.hasError(),
                         processor.messages(),
-                        null //TODO set this
+                        uploadUri.toString()
                 );
 
             } else {
                 boolean isvalid = processor.validate();
 
                 return new ValidationResponse(
+                        null,
                         isvalid,
                         processor.hasError(),
                         processor.messages(),
@@ -185,76 +187,58 @@ public class ValidateController extends FimsService {
             }
 
         } finally {
-            if (removeController) {
-                session.removeAttribute("processController");
-            }
-
+            session.removeAttribute("processorStatus");
         }
     }
 
     /**
      * Service to upload a dataset to an expedition. The validate service must be called before this service.
      *
-     * @param createExpedition
+     * @param id               required. The dataset id returned from the validate service
+     * @param createExpedition Do you want to create the expedition if it does not exist?
      * @return
      */
-    @GET
-    @Path("/continue")
+    @Authenticated
+    @PUT
+    @Path("/upload/{id}")
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
-    public Response upload(@QueryParam("createExpedition") @DefaultValue("false") Boolean createExpedition) {
-        ProcessController processController = (ProcessController) session.getAttribute("processController");
-        JSONObject returnValue = new JSONObject();
-        boolean removeProcessController = true;
+    public UploadResponse upload(@PathParam("id") UUID id,
+                                 @QueryParam("createExpedition") @DefaultValue("false") Boolean createExpedition) {
+        if (id == null) {
+            throw new BadRequestException("id queryParam is required");
+        }
 
-        // if no processController is found, we can't do anything
-        if (processController == null) {
-            //TODO throw exception with ErrorCode
-            returnValue.put("error", "No process was detected");
-            return Response.ok(returnValue).build();
+        int userId = userContext.getUser() != null ? userContext.getUser().getUserId() : 0;
+        DatasetProcessor processor = uploadStore.get(id, userId);
+
+        // if no processorStatus is found, we can't do anything
+        if (processor == null) {
+            throw new FimsRuntimeException("Could not find a validated dataset with the id \"" + id + "\"." +
+                    " Validated datasets expire after 5 mins.", 400);
         }
 
         try {
-
-            // check if user is logged in
-            if (processController.getUserId() == 0) {
-                returnValue.put("error", "You must be logged in to upload");
-                return Response.ok(returnValue).build();
-            }
-
-
-            DatasetProcessor p = processController.getDatasetProcessor();
-
-            if (createExpedition) {
-                processController.setExpeditionTitle(processController.getExpeditionCode() + " spreadsheet");
-            }
+            // place the processorStatus in the session here so that we can track the status of upload process
+            session.setAttribute("processorStatus", processor.status());
 
             try {
-                p.upload(createExpedition, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
+                processor.upload(createExpedition);
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode() == UploadCode.EXPEDITION_CREATE) {
-                    JSONObject message = new JSONObject();
-                    message.put("message",
-                            "The expedition code \"" + processController.getExpeditionCode() +
-                                    "\" does not exist.  " +
-                                    "Do you wish to create it now?<br><br>" +
-                                    "If you choose to continue, your data will be associated with this new expedition code."
-                    );
-                    returnValue.put("continue", message);
-                    removeProcessController = false;
-                    return Response.ok(returnValue).build();
+                    String message = "The expedition code \"" + processor.expeditionCode() + "\" does not exist.";
+
+                    URI uri = uriInfo.getRequestUriBuilder().queryParam("createExpedition", true).build();
+                    return new UploadResponse(false, message, uri.toString());
                 } else {
                     throw e;
                 }
             }
 
-            returnValue.put("done", processController.getSuccessMessage());
-            return Response.ok(returnValue).build();
+            uploadStore.invalidate(id);
+            return new UploadResponse(true, "Successfully Uploaded!", null);
+
         } finally {
-            // remove the processController from the session
-            if (removeProcessController) {
-                session.removeAttribute("processController");
-//                processController.getDatasetProcessor().close();
-            }
+            session.removeAttribute("processorStatus");
         }
     }
 
@@ -267,12 +251,13 @@ public class ValidateController extends FimsService {
     @Path("/status")
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
     public String status() {
-        ProcessController processController = (ProcessController) session.getAttribute("processController");
-        if (processController == null) {
-            return "{\"error\": \"Waiting for validation to process...\"}";
+        ProcessorStatus processorStatus = (ProcessorStatus) session.getAttribute("processorStatus");
+
+        if (processorStatus == null) {
+            throw new BadRequestException("No dataset is being validated");
         }
 
-        return "{\"status\": \"" + processController.getStatusSB().toString() + "\"}";
+        return "{\"status\": \"" + processorStatus.statusHtml() + "\"}";
     }
 
     private String saveFile(InputStream is, String filename, String defaultExt) {
@@ -285,7 +270,11 @@ public class ValidateController extends FimsService {
         return tempFilename;
     }
 
+
     private static class ValidationResponse {
+        @JsonProperty
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        private UUID id;
         @JsonProperty
         private boolean isValid;
         @JsonProperty
@@ -296,10 +285,27 @@ public class ValidateController extends FimsService {
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
         private String uploadUrl;
 
-        public ValidationResponse(boolean isValid, boolean hasError, List<EntityMessages> messages, String uploadUrl) {
+        public ValidationResponse(UUID id, boolean isValid, boolean hasError, List<EntityMessages> messages, String uploadUrl) {
+            this.id = id;
             this.isValid = isValid;
             this.hasError = hasError;
             this.messages = messages;
+            this.uploadUrl = uploadUrl;
+        }
+    }
+
+    private static class UploadResponse {
+        @JsonProperty
+        private boolean success;
+        @JsonProperty
+        private String message;
+        @JsonProperty
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        private String uploadUrl;
+
+        public UploadResponse(boolean success, String message, String uploadUrl) {
+            this.success = success;
+            this.message = message;
             this.uploadUrl = uploadUrl;
         }
     }
