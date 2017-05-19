@@ -50,14 +50,12 @@ public class ProjectController extends FimsAbstractProjectsController {
     private static Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
     private final UserService userService;
-    private final Client esClient;
 
     @Autowired
     ProjectController(ExpeditionService expeditionService, SettingsManager settingsManager,
-                      ProjectService projectService, UserService userService, Client esClient) {
+                      ProjectService projectService, UserService userService) {
         super(expeditionService, settingsManager, projectService);
         this.userService = userService;
-        this.esClient = esClient;
     }
 
     @GET
@@ -664,18 +662,5 @@ public class ProjectController extends FimsAbstractProjectsController {
         mapping.addMappingRules(configFile);
 
         return Response.ok("{\"uniqueKey\":\"" + mapping.getDefaultSheetUniqueKey() + "\"}").build();
-    }
-
-    @Override
-    @GET
-    @Path("/{projectId}/config/refreshCache")
-    public Response refreshCache(@PathParam("projectId") Integer projectId) {
-        File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), false).getOutputFile();
-
-        ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
-        JSONObject mapping = ConfigurationFileEsMapper.convert(configFile);
-        indexer.updateMapping(projectId, mapping);
-
-        return Response.noContent().build();
     }
 }

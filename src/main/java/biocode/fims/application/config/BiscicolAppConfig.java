@@ -12,7 +12,7 @@ import java.io.FileNotFoundException;
  * Configuration class for Biscicol-Fims applications. Including cli and webapps
  */
 @Configuration
-@Import({FimsAppConfig.class, ElasticSearchAppConfig.class})
+@Import({FimsAppConfig.class})
 // declaring this here allows us to override any properties that are also included in biscicol-fims.props
 @PropertySource(value = "classpath:biocode-fims.props", ignoreResourceNotFound = true)
 @PropertySource("classpath:biscicol-fims.props")
@@ -21,8 +21,6 @@ public class BiscicolAppConfig {
     FimsAppConfig fimsAppConfig;
     @Autowired
     ProjectService projectService;
-    @Autowired
-    Client esClient;
 
     @Bean
     public EzidUpdator ezidUpdator() throws FileNotFoundException {

@@ -71,10 +71,10 @@ public class QueryController extends FimsService {
     private final ExpeditionService expeditionService;
 
     @Autowired
-    QueryController(SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer,
+    QueryController(SettingsManager settingsManager, QueryAuthorizer queryAuthorizer,
                     ExpeditionService expeditionService) {
         super(settingsManager);
-        this.esClient = esClient;
+        this.esClient = null;
         this.queryAuthorizer = queryAuthorizer;
         this.expeditionService = expeditionService;
     }

@@ -15,12 +15,6 @@ public class BiscicolWebAppConfig {
     @Autowired
     private BiscicolAppConfig biscicolAppConfig;
 
-    //TODO move to ElasticSearchAppConfig.class
-    @Bean
-    public ElasticSearchIndexer esIndexer() {
-        return new ElasticSearchIndexer(biscicolAppConfig.esClient);
-    }
-
     @Bean
     public QueryAuthorizer queryAuthorizer() {
         return new QueryAuthorizer(biscicolAppConfig.projectService, biscicolAppConfig.fimsAppConfig.settingsManager);

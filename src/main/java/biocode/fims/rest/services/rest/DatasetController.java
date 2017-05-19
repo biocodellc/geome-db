@@ -76,19 +76,25 @@ public class DatasetController extends FimsService {
                                        @FormDataParam("upload") boolean upload,
                                        @FormDataParam("public") @DefaultValue("false") boolean isPublic) {
 
-        Project project = projectService.getProject(projectId, appRoot);
-
-        if (project == null) {
-            throw new BadRequestException("Project not found");
-        }
-
-        // create a new processorStatus
-        ProcessorStatus processorStatus = new ProcessorStatus();
-
         try {
+            if (projectId == null || expeditionCode == null ||
+                    (workbooks.isEmpty() && dataSourceFiles.isEmpty() && dataSourceMetadata.isEmpty())) {
+                throw new BadRequestException("projectId, expeditionCode, and either workbooks or dataSourFiles are required.");
+
+            }
+
+            // create a new processorStatus
+            ProcessorStatus processorStatus = new ProcessorStatus();
+
             // place the processorStatus in the session here so that we can track the status of the validation process
             // by calling biocode.fims.rest/validate/status
             session.setAttribute("processorStatus", processorStatus);
+
+            Project project = projectService.getProject(projectId, appRoot);
+
+            if (project == null) {
+                throw new BadRequestException("Project not found");
+            }
 
             DatasetProcessor.Builder builder = new DatasetProcessor.Builder(projectId, expeditionCode, processorStatus)
                     .user(userContext.getUser())
@@ -105,7 +111,7 @@ public class DatasetController extends FimsService {
             // update the status
             processorStatus.appendStatus("Initializing...");
 
-            if (workbooks != null && workbooks.size() > 0) {
+            if (workbooks.size() > 0) {
                 for (FormDataBodyPart workbookData : workbooks) {
                     String workbookFilename = workbookData.getContentDisposition().getFileName();
                     processorStatus.appendStatus("\nExcel workbook filename = " + workbookFilename);
@@ -272,41 +278,65 @@ public class DatasetController extends FimsService {
 
 
     private static class ValidationResponse {
-        @JsonProperty
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        private UUID id;
-        @JsonProperty
+        private UUID processId;
         private boolean isValid;
-        @JsonProperty
         private boolean hasError;
-        @JsonProperty
         private List<EntityMessages> messages;
-        @JsonProperty
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         private String uploadUrl;
 
         public ValidationResponse(UUID id, boolean isValid, boolean hasError, List<EntityMessages> messages, String uploadUrl) {
-            this.id = id;
+            this.processId = id;
             this.isValid = isValid;
             this.hasError = hasError;
             this.messages = messages;
             this.uploadUrl = uploadUrl;
         }
+
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        public UUID getId() {
+            return processId;
+        }
+
+        public boolean isValid() {
+            return isValid;
+        }
+
+        public boolean isHasError() {
+            return hasError;
+        }
+
+        public List<EntityMessages> getMessages() {
+            return messages;
+        }
+
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        public String getUploadUrl() {
+            return uploadUrl;
+        }
     }
 
     private static class UploadResponse {
-        @JsonProperty
         private boolean success;
-        @JsonProperty
         private String message;
-        @JsonProperty
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         private String uploadUrl;
 
         public UploadResponse(boolean success, String message, String uploadUrl) {
             this.success = success;
             this.message = message;
             this.uploadUrl = uploadUrl;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        public String getUploadUrl() {
+            return uploadUrl;
         }
     }
 }
