@@ -21,3 +21,4 @@ biscicol-fims.iws
 out/
 triples/
 src/main/web/WEB-INF/web.xml
+**/app.constants.js

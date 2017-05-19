@@ -242,3 +242,15 @@ jsApp {
         compilerOptions.language = "ECMASCRIPT5"
     }
 }
+
+//=================================
+//= angular constants configuration
+//=================================
+
+populateJsProps {
+    propsFile file("src/main/resources/biscicol-fims.props")
+    templateFile file("${webAppDir}/app/app.constants.js.template")
+    constantsFile file("${webAppDir}/app/app.constants.js")
+    propsMap = ['mapboxToken': 'mapboxAccessToken',
+                'naan'  : 'naan']
+}
