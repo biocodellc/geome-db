@@ -46,23 +46,19 @@ angular.module('fims.validation')
 
                 validateSubmit(true).then(
                     function (response) {
-                        if (response.data.done) {
-                            ResultsDataFactory.validationMessages = response.data.done;
+                        var validationResponse = response.data;
+                        ResultsDataFactory.validationResponse = validationResponse;
+
+                        if (validationResponse.hasError) {
                             ResultsDataFactory.showOkButton = true;
-                            ResultsDataFactory.showValidationMessages = true;
-                        } else if (response.data.continue) {
-                            if (response.data.continue.message == "continue") {
-                                continueUpload();
-                            } else {
-                                ResultsDataFactory.validationMessages = response.data.continue;
-                                ResultsDataFactory.showValidationMessages = true;
-                                ResultsDataFactory.showStatus = false;
-                                ResultsDataFactory.showContinueButton = true;
-                                ResultsDataFactory.showCancelButton = true;
-                            }
+                            ResultsDataFactory.showValidationMessages = true; //TODO remove this?
+                        } else if (validationResponse.valid) {
+                            continueUpload();
                         } else {
-                            ResultsDataFactory.error = "Unexpected response from server. Please contact system admin.";
-                            ResultsDataFactory.showOkButton = true;
+                            ResultsDataFactory.showValidationMessages = true; //TODO remove this?
+                            ResultsDataFactory.showStatus = false;
+                            ResultsDataFactory.showContinueButton = true;
+                            ResultsDataFactory.showCancelButton = true;
                         }
                     });
             }
@@ -76,19 +72,19 @@ angular.module('fims.validation')
 
             function continueUpload() {
                 StatusPollingFactory.startPolling();
-                return $http.get(REST_ROOT + "validate/continue?createExpedition=" + vm.newExpedition).then(
+                return $http.put(ResultsDataFactory.validationResponse.uploadUrl + "?createExpedition=" + vm.newExpedition).then(
                     function (response) {
-                        if (response.data.error) {
-                            ResultsDataFactory.error = response.data.error;
-                        } else if (response.data.continue) {
-                            ResultsDataFactory.uploadMessage = response.data.continue.message;
+                        if (!response.data.success) {
+                            // ResultsDataFactory.error = response.data.error;
+                        // } else if (response.data.continue) {
+                            ResultsDataFactory.uploadMessage = response.data.message;
                             ResultsDataFactory.showOkButton = false;
                             ResultsDataFactory.showContinueButton = true;
                             ResultsDataFactory.showCancelButton = true;
                             ResultsDataFactory.showStatus = false;
                             ResultsDataFactory.showUploadMessages = true;
                         } else {
-                            ResultsDataFactory.successMessage = response.data.done;
+                            ResultsDataFactory.successMessage = response.data.message;
                             modalInstance.close();
                             resetForm();
                         }
@@ -304,9 +300,9 @@ angular.module('fims.validation')
                     getExpeditions();
                     generateMap('map', vm.project.projectId, vm.fimsMetadata, MAPBOX_TOKEN)
                         .always(function () {
-                        // this is a hack since we are using jQuery for generateMap
-                        $scope.$apply();
-                    });
+                            // this is a hack since we are using jQuery for generateMap
+                            $scope.$apply();
+                        });
                 }
             });
 

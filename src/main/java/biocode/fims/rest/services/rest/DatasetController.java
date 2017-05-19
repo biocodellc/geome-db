@@ -165,20 +165,31 @@ public class DatasetController extends FimsService {
 
                 boolean isvalid = processor.validate();
 
-                UUID id = uploadStore.put(processor, userContext.getUser().getUserId());
+                if (processor.hasError()) {
+                    return new ValidationResponse(
+                            null,
+                            isvalid,
+                            processor.hasError(),
+                            processor.messages(),
+                            null
+                    );
+                } else {
 
-                URI uploadUri = UriBuilder
-                        .fromMethod(this.getClass(), "upload")
-                        .queryParam("id", id)
-                        .build();
+                    UUID id = uploadStore.put(processor, userContext.getUser().getUserId());
 
-                return new ValidationResponse(
-                        id,
-                        isvalid,
-                        processor.hasError(),
-                        processor.messages(),
-                        uploadUri.toString()
-                );
+                    URI uploadUri = uriInfo
+                            .getBaseUriBuilder()
+                            .path("v2/data/upload/{id}") //TODO find a better way to do this
+                            .build(id);
+
+                    return new ValidationResponse(
+                            id,
+                            isvalid,
+                            processor.hasError(),
+                            processor.messages(),
+                            uploadUri.toString()
+                    );
+                }
 
             } else {
                 boolean isvalid = processor.validate();
