@@ -153,7 +153,7 @@
                                    refresh="queryFormVm.params.filters[$index].value=null && queryFormVm.params.filters[$index].type=EQUALS">
                             <ui-select-match>{{$select.selected.displayName}}</ui-select-match>
                             <ui-select-choices
-                                    repeat="f.field as f in (queryFormVm.filterOptions | filter: {displayName: $select.search} | filter: {group: '!hidden'}) track by $index"
+                                    repeat="f.displayName as f in (queryFormVm.filterOptions | filter: {displayName: $select.search} | filter: {group: '!hidden'}) track by $index"
                                     position="up"
                                     group-by="'group'">
                                 <div ng-bind-html="f.displayName | highlight: $select.search | trusted_html"></div>

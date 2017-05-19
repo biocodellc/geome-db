@@ -47,7 +47,7 @@
             });
 
             angular.forEach(params.filters, function (filter) {
-                if (filter.value || filter.type == QueryType.EXISTS ) {
+                if (filter.value || filter.type === QueryType.EXISTS ) {
 
                     switch (QueryType) {
                         case QueryType.EXISTS:

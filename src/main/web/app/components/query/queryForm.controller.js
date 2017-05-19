@@ -64,7 +64,7 @@
 
         function addFilter() {
             var filter = angular.copy(defaultFilter);
-            filter.field = vm.filterOptions[0].field;
+            filter.field = vm.filterOptions[0].displayName;
             filter.type = vm.filterOptions[0].queryTypes[0];
             vm.params.filters.push(filter);
         }
@@ -102,7 +102,7 @@
             var field = vm.params.filters[filterIndex].field;
 
             for (var i = 0; i < vm.filterOptions.length; i++) {
-                if (vm.filterOptions[i].field == field) {
+                if (vm.filterOptions[i].displayName == field) {
                     var list = vm.filterOptions[i].list;
                     return list.length > 0 ? list : null;
                 }
@@ -115,7 +115,7 @@
             var filter = vm.params.filters[filterIndex];
 
             for (var i = 0; i < vm.filterOptions.length; i++) {
-                if (vm.filterOptions[i].field == filter.field) {
+                if (vm.filterOptions[i].displayName == filter.field) {
                     var types = vm.filterOptions[i].queryTypes;
                     return types;
                 }
