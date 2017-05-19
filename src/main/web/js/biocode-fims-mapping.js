@@ -1,18 +1,18 @@
 (function (undefined) {
     'use strict';
-    // Check if dependecies are available.
+    // Check if dependencies are available.
     if (typeof XLSXReader === 'undefined') {
         console.log('xlsx-reader.js is required. Get it from https://gist.github.com/psjinx/8002786');
         return;
     }
 
     if (typeof L === 'undefined') {
-        console.log('mapbox.js is required. Get it from https://www.mapbox.com/mapbox.js/api/v2.1.9/');
+        console.log('leaflet.js is required. Get it from http://cdn.leafletjs.com/leaflet/v1.0.3/leaflet.zip');
         return;
     }
 
     if (typeof L.MarkerClusterGroup === 'undefined') {
-        console.log('leaflet.markercluster.js is required. Get it from https://www.mapbox.com/mapbox.js/plugins/#leaflet-markercluster');
+        console.log('leaflet.markercluster.js is required. Get it from https://github.com/Leaflet/Leaflet.markercluster');
         return;
     }
 
@@ -20,16 +20,10 @@
         console.log('papaparser.js is required. Get it from http://papaparse.com/');
         return;
     }
-
-    $.getJSON("/biocode-fims/rest/utils/getMapboxToken", function (data) {
-        L.mapbox.accessToken = data.accessToken;
-    }).fail(function () {
-        console.log("Failed to retrieve mapbox accessToken. Mapping features will not work.");
-    });
 }).call(this);
 
-// function to parse the resource coordinates from the spreadsheet
-function getResourceCoordinates(configData) {
+// function to parse the sample coordinates from the spreadsheet
+function getSampleCoordinates(configData, inputFile) {
     try {
         var reader = new FileReader();
     } catch (err) {
@@ -37,11 +31,10 @@ function getResourceCoordinates(configData) {
     }
 
     // older browsers don't have a FileReader
-    if (reader != null) {
+    if (reader) {
         var deferred = new $.Deferred();
-        var inputFile = $('#dataset')[0].files[0];
 
-        var splitFileName = $('#dataset').val().split('.');
+        var splitFileName = inputFile.name.split('.');
         if ($.inArray(splitFileName[splitFileName.length - 1], XLSXReader.exts) > -1) {
             XLSXReader(inputFile, true, false, function (reader) {
                 // get the data from the resource collection sheet
@@ -128,20 +121,27 @@ var map;
 var projectId;
 
 //function to display the map given the div id and the geoJSONData
-function displayMap(id, geoJSONData) {
+function displayMap(id, geoJSONData, mapboxToken) {
     // create the map
-    map = L.mapbox.map(id, 'mapbox.streets');
+    map = L.map(id, {
+        center: [0, 0],
+        zoom: 1
+    });
+
+    L.tileLayer('https://api.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token={access_token}',
+        {access_token: mapboxToken})
+        .addTo(map);
 
     // create the data points
     var geoJSONLayer = L.geoJson(geoJSONData, {
         onEachFeature: function (feature, layer) {
-            layer.bindPopup(L.mapbox.sanitize(feature.properties.description), {maxHeight: 175});
+            layer.bindPopup(feature.properties.description, {maxHeight: 175});
         }
     });
 
     // use marker clusters if there are more then 1000 different points
     if (geoJSONData.features.length > 1000) {
-        var markers = new L.MarkerClusterGroup()
+        var markers = new L.MarkerClusterGroup();
         markers.addLayer(geoJSONLayer);
         map.addLayer(markers);
     } else {
@@ -152,10 +152,11 @@ function displayMap(id, geoJSONData) {
     map.fitBounds(geoJSONLayer.getBounds());
 }
 
-function generateMap(id, projectId) {
+function generateMap(id, projectId, inputFile, mapboxToken) {
+    var deferred = $.Deferred();
     this.projectId = projectId;
 
-    if (map != undefined) {
+    if (map) {
         map.remove();
         map = undefined;
     }
@@ -167,11 +168,13 @@ function generateMap(id, projectId) {
         ).done(function (uniqueKeyData) {
             data.uniqueKey = uniqueKeyData.uniqueKey;
         }).always(function () {
-            getResourceCoordinates(data).done(function (geoJSONData) {
+            getSampleCoordinates(data, inputFile).done(function (geoJSONData) {
                 if (geoJSONData.features.length == 0) {
                     $('#' + id).html('We didn\'t find any lat/long coordinates for your collection resources.');
+                    deferred.reject();
                 } else {
-                    displayMap(id, geoJSONData);
+                    displayMap(id, geoJSONData, mapboxToken);
+                    deferred.resolve();
                 }
                 // remove the refresh map link if there is one
                 $("#refresh_map").remove();
@@ -179,5 +182,7 @@ function generateMap(id, projectId) {
         });
     }).fail(function (jqXHR) {
         $('#' + id).html('Failed to load map.');
+        deferred.reject();
     });
+    return deferred;
 }

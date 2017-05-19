@@ -5,6 +5,7 @@ angular.module('fims.expeditions')
             var expeditionFactory = {
                 getExpeditions: getExpeditions,
                 getExpedition: getExpedition,
+                getExpeditionsForUser: getExpeditionsForUser,
                 getExpeditionsForAdmin: getExpeditionsForAdmin,
                 updateExpeditions: updateExpeditions
             };
@@ -17,6 +18,13 @@ angular.module('fims.expeditions')
 
             function getExpedition(projectId, expeditionCode) {
                 return $http.get(REST_ROOT + 'projects/' + projectId + '/expedition/' + expeditionCode);
+            }
+
+            function getExpeditionsForUser(projectId, includePrivate) {
+                if (!includePrivate) {
+                    includePrivate = false;
+                }
+                return $http.get(REST_ROOT + 'projects/' + projectId + '/expeditions?user&includePrivate=' + includePrivate);
             }
 
             function getExpeditionsForAdmin(projectId) {

@@ -13,7 +13,7 @@ angular.module('fims.query')
             vm.filters = [];
             vm._all = null;
             vm.expeditions = [];
-            vm.projectId = null;
+            vm.project = null;
             vm.selectedExpeditions = [];
             vm.queryResults = null;
             vm.queryInfo = {
@@ -79,7 +79,7 @@ angular.module('fims.query')
             function getQueryPostParams() {
                 var params = {
                     expeditions: vm.selectedExpeditions,
-                    projectId: vm.projectId
+                    projectId: vm.project.projectId
                 };
 
                 angular.forEach(vm.filters, function (filter) {
@@ -96,7 +96,7 @@ angular.module('fims.query')
             }
 
             function getExpeditions() {
-                ExpeditionFactory.getExpeditions(vm.projectId)
+                ExpeditionFactory.getExpeditions(vm.project.projectId)
                     .then(function (response) {
                         vm.selectedExpeditions = [];
                         vm.expeditions = [];
@@ -109,7 +109,7 @@ angular.module('fims.query')
             }
 
             function getFilterOptions() {
-                $http.get(REST_ROOT + "projects/" + vm.projectId + "/filterOptions")
+                $http.get(REST_ROOT + "projects/" + vm.project.projectId + "/filterOptions")
                     .then(function (response) {
                         angular.extend(vm.filterOptions, response.data);
 
@@ -146,7 +146,7 @@ angular.module('fims.query')
                 return transformedData;
             }
 
-            $scope.$watch("queryVm.projectId", function (value) {
+            $scope.$watch("queryVm.project", function (value) {
                 if (value && value > 0) {
                     getExpeditions();
                     getFilterOptions();

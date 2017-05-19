@@ -8,7 +8,8 @@ angular.module('biscicolApp')
             controllerAs: 'projectSelectVm',
             scope: {},
             bindToController: {
-                projectId: "=?",
+                project: "=?",
+                required: "=",
                 selectClasses: '@',
                 publicBtnClasses: '@'
             },
@@ -25,8 +26,7 @@ angular.module('biscicolApp')
             vm.isAuthenticated = AuthFactory.isAuthenticated;
             vm.includePublic = !AuthFactory.isAuthenticated;
             vm.projects = null;
-            vm.selectedProject = null;
-            vm.projectId = null;
+            vm.project = null;
             vm.getProjects = getProjects;
             vm.setProject = setProject;
 
@@ -41,19 +41,19 @@ angular.module('biscicolApp')
             }
 
             function setProject() {
-                if (!vm.selectedProject) {
+                if (!vm.project) {
                     if ($location.search()['projectId']) {
 
                         var projectId = $location.search()['projectId'];
 
                         angular.forEach(vm.projects, function (project) {
 
-                            if (project.projectId == projectId) {
-                                vm.selectedProject = project;
+                            if (project.projectId === projectId) {
+                                vm.project = project;
                             }
                         });
                     } else if (vm.projects.length === 1) {
-                        vm.selectedProject = vm.projects[0];
+                        vm.project = vm.projects[0];
                     }
                 }
             }
@@ -62,16 +62,12 @@ angular.module('biscicolApp')
                 getProjects();
             }).call();
 
-            $scope.$watch('projectSelectVm.selectedProject', function (value) {
+            $scope.$watch('projectSelectVm.project', function (value) {
                 if (value && value.projectId > 0) {
-                    vm.projectId = value.projectId;
-
                     // hack for existing jquery code
                     $timeout(function () {
                         $('#projects').trigger('change');
                     });
-                } else {
-                    vm.projectId = null;
                 }
             });
         }]);

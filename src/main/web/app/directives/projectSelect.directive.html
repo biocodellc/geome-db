@@ -1,4 +1,5 @@
-<select id=projects name="projectId" ng-model="projectSelectVm.selectedProject" ng-class="projectSelectVm.selectClasses"
+<select id=projects name="projectId" ng-model="projectSelectVm.project" ng-class="projectSelectVm.selectClasses"
+        ng-required="projectSelectVm.required"
         ng-options="project as project.projectTitle for project in projectSelectVm.projects track by project.projectId">
     <option value="">Select a project</option>
 </select>

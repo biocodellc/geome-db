@@ -1,13 +1,14 @@
 angular.module('fims.projects')
 
-    .factory('ProjectFactory', ['$http', '$cacheFactory', 'UserFactory', 'REST_ROOT',
-        function ($http, $cacheFactory, UserFactory, REST_ROOT) {
+    .factory('ProjectFactory', ['$http', '$cacheFactory', '$q', 'UserFactory', 'REST_ROOT',
+        function ($http, $cacheFactory, $q, UserFactory, REST_ROOT) {
             var PROJECT_CACHE = $cacheFactory.get('project');
             var MEMBER_CACHE = $cacheFactory.get('project_members');
 
             var projectFactory = {
                 getProjects: getProjects,
                 getProjectsForAdmin: getProjectsForAdmin,
+                get: get,
                 updateProject: updateProject,
                 getMembers: getMembers,
                 removeMember: removeMember,
@@ -22,6 +23,32 @@ angular.module('fims.projects')
 
             function getProjectsForAdmin() {
                 return $http.get(REST_ROOT + 'projects?admin', {cache: PROJECT_CACHE});
+            }
+
+            function get(projectId) {
+                var deferred = new $q.defer();
+
+                getProjects(true)
+                    .then(getProjectsComplete, getProjectsFail);
+
+                function getProjectsComplete(response) {
+
+                    angular.forEach(response.data, function (project) {
+
+                        if (project.projectId === projectId) {
+                            deferred.resolve(project);
+                        }
+
+                    });
+
+                    deferred.resolve(undefined);
+                }
+
+                function getProjectsFail(response) {
+                    deferred.reject(response);
+                }
+
+                return deferred.promise;
             }
 
             function updateProject(project) {

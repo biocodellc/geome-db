@@ -1,0 +1,19 @@
+<div class="modal-header">
+    <h3 class="modal-title">Validation Results</h3>
+</div>
+<div class="modal-body">
+    <div ng-show="!vm.results.status && !vm.results.validationMessages && !vm.results.error">
+        <span us-spinner></span></div>
+    <div ng-show="vm.results.showStatus" ng-bind-html="vm.results.status | trusted_html"></div>
+    <div ng-show="vm.results.showValidationMessages || vm.results.showUploadMessages || vm.results.showSuccessMessages"
+         ng-include="'app/components/validation/results/results.tpl.html'"></div>
+    <div ng-show="vm.results.error" ng-bind-html="vm.results.error | trusted_html" class="error"></div>
+</div>
+<div class="modal-footer">
+    <button ng-show="vm.results.showOkButton" class="btn btn-primary" type="button" ng-click="vm.close()">OK</button>
+    <button ng-show="vm.results.showContinueButton" class="btn btn-primary" type="button"
+            ng-click="vm.continueUpload()">Continue
+    </button>
+    <button ng-show="vm.results.showCancelButton" class="btn btn-primary" type="button" ng-click="vm.cancel()">Cancel
+    </button>
+</div>
