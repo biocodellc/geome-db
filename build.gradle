@@ -10,7 +10,7 @@ buildscript {
         mavenLocal()
     }
     dependencies {
-        classpath "org.biocode:gradle-fims:1.1.5"
+        classpath "org.biocode:gradle-fims:1.1.6"
     }
 }
 
@@ -54,7 +54,7 @@ dependencies {
     server 'commons-cli:commons-cli:1.2'
 
     server group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
-    compile composite.resolveDependency("org.biocode:biocode-fims-commons:${fimsCommonsVersion}", "biocode-fims-commons")
+    compile composite.resolveDependency("org.biocode:biocode-fims-commons:${fimsCommonsVersion}", ":biocode-fims-commons")
 
     doclet fileTree(dir: 'swagger', include: ['swagger-doclet-*'])
 
