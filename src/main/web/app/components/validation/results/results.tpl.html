@@ -1,9 +1,9 @@
 <div ng-controller="ResultsCtrl as vm">
-    <div ng-show="vm.results.showValidationMessages">
+    <div ng-show="vm.results.validationResponse">
         <div ng-repeat="entityMessage in ::vm.results.validationResponse.messages">
 
-            <b>Validation results for entity: {{ ::entityMessage.entity }} on worksheet:
-                {{ ::entityMessage.sheetName}}.</b>
+            <b>Validation results for "{{ ::entityMessage.entity }}" entity on
+                "{{ ::entityMessage.sheetName}}" worksheet.</b>
             <br>
 
             <div class="tab-content" ng-show="!vm.isEmptyObject(entityMessage.errors)">
@@ -36,8 +36,6 @@
 
         </div>
     </div>
-</div>
 
-<div ng-show="vm.results.showUploadMessages" ng-bind-html="vm.results.uploadMessage | trusted_html"></div>
-<div ng-show="vm.results.showSuccessMessages" ng-bind-html="vm.results.successMessage | trusted_html"></div>
+    <div ng-show="vm.results.uploadMessage"><span ng-bind-html="vm.results.uploadMessage | trusted_html"></span></div>
 </div>

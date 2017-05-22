@@ -2,8 +2,8 @@ angular.module('fims.projects')
 
     .factory('ProjectFactory', ['$http', '$cacheFactory', '$q', 'UserFactory', 'REST_ROOT',
         function ($http, $cacheFactory, $q, UserFactory, REST_ROOT) {
-            var PROJECT_CACHE = $cacheFactory.get('project');
-            var MEMBER_CACHE = $cacheFactory.get('project_members');
+            var PROJECT_CACHE = $cacheFactory('project');
+            var MEMBER_CACHE = $cacheFactory('project_members');
 
             var projectFactory = {
                 getProjects: getProjects,
@@ -33,14 +33,12 @@ angular.module('fims.projects')
 
                 function getProjectsComplete(response) {
 
-                    angular.forEach(response.data, function (project) {
-
-                        if (project.projectId === projectId) {
-                            deferred.resolve(project);
+                    for (var i = 0; i < response.data.length; i++) {
+                        var project = response.data[i];
+                        if (project.projectId == projectId) {
+                            return deferred.resolve(project);
                         }
-
-                    });
-
+                    }
                     deferred.resolve(undefined);
                 }
 

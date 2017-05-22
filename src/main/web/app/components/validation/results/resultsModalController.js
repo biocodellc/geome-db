@@ -4,18 +4,10 @@ angular.module('fims.validation')
             var resultsDataFactory = {};
             var defaultState = {
                 validationResponse: null,
-                validationMessages: null,
-                error: "",
-                status: "",
-                uploadMessage: "",
-                successMessage: "",
-                showCancelButton: false,
-                showOkButton: false,
-                showContinueButton: false,
-                showStatus: false,
-                showValidationMessages: false,
-                showUploadMessages: false,
-                showSuccessMessages: false,
+                error: null,
+                status: null,
+                uploadMessage: null,
+                processing: true,
                 reset: reset
             };
 

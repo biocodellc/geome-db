@@ -1,11 +1,16 @@
-<select id=projects name="projectId" ng-model="projectSelectVm.project" ng-class="projectSelectVm.selectClasses"
-        ng-required="projectSelectVm.required"
-        ng-options="project as project.projectTitle for project in projectSelectVm.projects track by project.projectId">
-    <option value="">Select a project</option>
-</select>
+<div class="form-group" show-errors>
+    <label ng-class="projectSelectVm.labelClasses" class="col-sm-3 control-label">Project</label>
+    <div class="col-sm-7">
+        <select id=projects name="projectId" ng-model="projectSelectVm.project" class="form-control"
+                ng-required="projectSelectVm.required" ng-class="projectSelectVm.selectClasses"
+                ng-options="project as project.projectTitle for project in projectSelectVm.projects track by project.projectId">
+            <option value="">Select a project</option>
+        </select>
+    </div>
 
-<span ng-class="projectSelectVm.publicBtnClasses" ng-show="projectSelectVm.isAuthenticated">
-    <input type="checkbox" ng-change="projectSelectVm.getProjects()" ng-model="projectSelectVm.includePublic"
-           id="includePublic"/>
-    <span style="font-size:11px;">(include public projects)</span>
-</span>
+    <span ng-class="projectSelectVm.publicBtnClasses" ng-show="projectSelectVm.isAuthenticated">
+        <input type="checkbox" ng-change="projectSelectVm.getProjects()" ng-model="projectSelectVm.includePublic"
+               id="includePublic"/>
+        <span style="font-size:11px;">(include public projects)</span>
+    </span>
+</div>

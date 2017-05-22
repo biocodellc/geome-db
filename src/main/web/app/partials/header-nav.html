@@ -23,9 +23,10 @@
                     <a href="#" data-toggle="dropdown" class="dropdown-toggle">Tools<b class="caret"></b></a>
                     <ul class="dropdown-menu">
                         <li><a ui-sref="template" class='enabled'>Generate Template</a></li>
-                        <li><a ui-sref="validate" class='enabled'>Validate and Load Data</a></li>
                         <li><a ui-sref="query" class='enabled'>Query</a></li>
                         <li><a ui-sref="lookup" class='enabled'>ID Lookup</a></li>
+                        <li ng-show="!vm.isAuthenticated"><a ui-sref="validate" class='disabled'>Validate and Load Data</a></li>
+                        <li ng-show="vm.isAuthenticated"><a ui-sref="validate" class='enabled'>Validate and Load Data</a></li>
                         <li ng-show="!vm.isAuthenticated"><a href='#' class='disabled'>BCID Creator</a></li>
                         <li ng-show="vm.isAuthenticated"><a ui-sref="expeditionManager" class='enabled'>Expedition Manager</a></li>
                         <li ng-show="!vm.isAuthenticated"><a href='#' class='disabled'>BCID Creator</a></li>

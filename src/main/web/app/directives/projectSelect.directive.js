@@ -2,13 +2,12 @@ angular.module('biscicolApp')
 
     .directive('projectSelect', ['$rootScope', function ($rootScope) {
         var directive = {
-            restrict: 'EA',
+            restrict: 'E',
             templateUrl: 'app/directives/projectSelect.directive.html',
             controller: 'ProjectSelectCtrl',
             controllerAs: 'projectSelectVm',
-            scope: {},
             bindToController: {
-                project: "=?",
+                project: "=",
                 required: "=",
                 selectClasses: '@',
                 publicBtnClasses: '@'
@@ -28,7 +27,6 @@ angular.module('biscicolApp')
             vm.projects = null;
             vm.project = null;
             vm.getProjects = getProjects;
-            vm.setProject = setProject;
 
             function getProjects() {
                 ProjectFactory.getProjects(vm.includePublic)

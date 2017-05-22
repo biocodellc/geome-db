@@ -48,16 +48,20 @@
 
                     inputNgEl = angular.element(inputEl);
                     var inputName = $interpolate(inputNgEl.attr('name') || '')(scope);
-                    if (!inputName) {
-                        throw "show-errors element has no child input elements with a 'name' attribute and a 'form-control' class";
-                    }
 
-                    inputNames.push(inputName);
-                    inputNgEl.bind(trigger, function () {
-                        blurred = true;
-                        return toggleClasses(checkGroupValidity(inputNames, formCtrl));
-                    });
+                    if (inputName) {
+                        inputNames.push(inputName);
+                        inputNgEl.bind(trigger, function () {
+                            blurred = true;
+                            return toggleClasses(checkGroupValidity(inputNames, formCtrl));
+                        });
+                    }
                 });
+
+                if (inputNames.length === 0) {
+                    throw "show-errors element has no child input elements with a 'name' attribute and a 'form-control' class";
+                }
+
                 scope.$watch(function () {
                     return checkGroupValidity(inputNames, formCtrl);
                 }, function (valid) {

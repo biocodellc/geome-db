@@ -19,7 +19,8 @@ angular.module('biscicolApp')
             .state('validate', {
                 url: "/validate",
                 templateUrl: "app/components/validation/validation.html",
-                controller: "ValidationCtrl as vm"
+                controller: "ValidationController as vm",
+                loginRequired: true
             })
             .state('lookup', {
                 url: "/lookup?id",

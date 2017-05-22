@@ -169,7 +169,7 @@ public class DatasetController extends FimsService {
                     return new ValidationResponse(
                             null,
                             isvalid,
-                            processor.hasError(),
+                            true,
                             processor.messages(),
                             null
                     );
@@ -244,15 +244,14 @@ public class DatasetController extends FimsService {
                 if (e.getErrorCode() == UploadCode.EXPEDITION_CREATE) {
                     String message = "The expedition code \"" + processor.expeditionCode() + "\" does not exist.";
 
-                    URI uri = uriInfo.getRequestUriBuilder().queryParam("createExpedition", true).build();
-                    return new UploadResponse(false, message, uri.toString());
+                    return new UploadResponse(false, message);
                 } else {
                     throw e;
                 }
             }
 
             uploadStore.invalidate(id);
-            return new UploadResponse(true, "Successfully Uploaded!", null);
+            return new UploadResponse(true, "Successfully Uploaded!");
 
         } finally {
             session.removeAttribute("processorStatus");
@@ -329,12 +328,10 @@ public class DatasetController extends FimsService {
     private static class UploadResponse {
         private boolean success;
         private String message;
-        private String uploadUrl;
 
-        public UploadResponse(boolean success, String message, String uploadUrl) {
+        public UploadResponse(boolean success, String message) {
             this.success = success;
             this.message = message;
-            this.uploadUrl = uploadUrl;
         }
 
         public boolean isSuccess() {
@@ -343,11 +340,6 @@ public class DatasetController extends FimsService {
 
         public String getMessage() {
             return message;
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        public String getUploadUrl() {
-            return uploadUrl;
         }
     }
 }

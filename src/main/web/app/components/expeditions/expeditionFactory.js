@@ -17,7 +17,7 @@ angular.module('fims.expeditions')
             }
 
             function getExpedition(projectId, expeditionCode) {
-                return $http.get(REST_ROOT + 'projects/' + projectId + '/expedition/' + expeditionCode);
+                return $http.get(REST_ROOT + 'projects/' + projectId + '/expeditions/' + expeditionCode);
             }
 
             function getExpeditionsForUser(projectId, includePrivate) {
