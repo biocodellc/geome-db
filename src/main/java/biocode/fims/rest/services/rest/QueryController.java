@@ -1,53 +1,41 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.authorizers.QueryAuthorizer;
-import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Attribute;
-import biocode.fims.digester.Mapping;
-import biocode.fims.digester.Validation;
-import biocode.fims.biscicol.query.BiscicolQueryUtils;
-import biocode.fims.elasticSearch.ElasticSearchIndexer;
-import biocode.fims.elasticSearch.query.ElasticSearchFilterCondition;
-import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
-import biocode.fims.elasticSearch.query.ElasticSearchQuerier;
-import biocode.fims.elasticSearch.query.ElasticSearchQuery;
+import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
-import biocode.fims.query.QueryType;
+import biocode.fims.models.Project;
+import biocode.fims.query.QueryBuilder;
+import biocode.fims.query.QueryResult;
+import biocode.fims.query.dsl.Query;
+import biocode.fims.query.dsl.QueryParser;
 import biocode.fims.query.writers.*;
+import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
+import biocode.fims.service.ProjectService;
 import biocode.fims.settings.SettingsManager;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.lucene.search.join.ScoreMode;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ParserRuntimeException;
+import org.parboiled.parserunners.ReportingParseRunner;
+import org.parboiled.support.ParsingResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.*;
+import java.util.List;
 
 /**
  * Query interface for Biocode-fims expedition
@@ -56,226 +44,93 @@ import java.util.*;
  * for more detailed information regarding queries.
  * @resourceTag Resources
  */
-@Scope("request")
 @Controller
 @Path("/projects/query")
 public class QueryController extends FimsService {
     private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
 
-    private Integer projectId;
-    private Mapping mapping;
-    private File configFile;
-
-    private final Client esClient;
+    private final RecordRepository recordRepository;
     private final QueryAuthorizer queryAuthorizer;
     private final ExpeditionService expeditionService;
+    private final ProjectService projectService;
 
     @Autowired
-    QueryController(SettingsManager settingsManager, QueryAuthorizer queryAuthorizer,
-                    ExpeditionService expeditionService) {
+    QueryController(SettingsManager settingsManager, RecordRepository recordRepository, QueryAuthorizer queryAuthorizer,
+                    ExpeditionService expeditionService, ProjectService projectService) {
         super(settingsManager);
-        this.esClient = null;
+        this.recordRepository = recordRepository;
         this.queryAuthorizer = queryAuthorizer;
         this.expeditionService = expeditionService;
+        this.projectService = projectService;
     }
 
     /**
-     * @summary query using elastic search Query object
-     * @description accepts an elastic json query request. note that aggregations are not supported, and the json query object needs
-     * to exclude the initial {"query": } that you would send via the elasticsearch rest api
-     *
-     * ex.
-     *
-     *     {
-     *         "match": {
-     *             "_all": "ants"
-     *         }
-     *     }
-     *
-     *
-     * @param page  the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
-     *              limit=10, results 21-30 will be returned
-     * @param limit the number of results to return
-     * @param projectId the project to query
-     * @implicitParam esQueryString|string|body|false|||||false|es "Query" json object
-     * @requiredParams projectId
-     * @excludeParams esQueryString
-     *
-     * @responseType org.springframework.data.domain.Page<>
-     */
-    @POST
-    @Path("/es")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response queryElasticSearch(
-            @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("limit") @DefaultValue("100") int limit,
-            @QueryParam("projectId") Integer projectId,
-            ObjectNode esQueryString) {
-
-        if (projectId == null) {
-            throw new BadRequestException("projectId query param is required");
-        }
-
-        this.projectId = projectId;
-
-        if (!queryAuthorizer.authorizedQuery(Arrays.asList(projectId), esQueryString, userContext.getUser())) {
-            throw new ForbiddenRequestException("unauthorized query");
-        }
-
-        ElasticSearchQuery query = new ElasticSearchQuery(
-                QueryBuilders.wrapperQuery(esQueryString.toString()),
-                new String[]{String.valueOf(projectId)},
-                new String[]{ElasticSearchIndexer.TYPE}
-        );
-
-        return getJsonResults(page, limit, query);
-    }
-
-    private Response getJsonResults(int page, int limit, ElasticSearchQuery query) {
-        Pageable pageable = new PageRequest(page, limit);
-
-        query.pageable(pageable);
-
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
-
-        Page<ObjectNode> results = elasticSearchQuerier.getPageableResults();
-
-        List<JsonFieldTransform> writerColumns = BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId));
-        Page<ObjectNode> transformedResults = results.map(r -> JsonTransformer.transform(r, writerColumns));
-
-        return Response.ok(transformedResults).build();
-    }
-
-    /**
+     * @param projectId   the project to query
+     * @param queryString the query to run
+     * @param page        the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
+     *                    limit=10, results 21-30 will be returned
+     * @param limit       the number of results to return
      * @summary Query project resources, returning JSON
-     *
-     * @param page  the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
-     *              limit=10, results 21-30 will be returned
-     * @param limit the number of results to return
-     * @implicitParam expeditions|string|form|false|||||true|expeditionCode(s) to filter the query results on
-     * @implicitParam projectId|string|form|true|||||false|projectId to query
-     * @implicitParam filter|string|body|false|||||true|accepts multiple {columnName}={value}
-     * @excludeParams form
-     *
      * @responseType org.springframework.data.domain.Page<>
      */
     @POST
     @Path("/json/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryJsonAsPost(
+    public Page queryJsonAsPost(
+            @FormParam("projectId") Integer projectId,
+            @FormParam("query") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("limit") @DefaultValue("100") int limit,
-            MultivaluedMap<String, String> form) {
-
-        try {
-            // Build the query, etc..
-            ElasticSearchQuery query = POSTElasticSearchQuery(form);
-
-            return getJsonResults(page, limit, query);
-        } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
-                return Response.ok(
-                        new PageImpl<String>(null, new PageRequest(page, limit), 0)
-                ).build();
-            }
-
-            throw e;
-        }
+            @QueryParam("limit") @DefaultValue("100") int limit) {
+        return json(queryString, projectId, page, limit);
     }
 
     /**
-     * @summary Query project resources, returning JSON
-     *
-     * @csvParams expeditionsString,filter
-     *
-     * @param filter , seperated list of {columnName}:{value} filters
-     * @param expeditionsString , seperate list of expeditionCodes to filter results on
      * @param projectId the project to query
-     * @param page  the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
-     *              limit=10, results 21-30 will be returned
-     * @param limit the number of results to return
-     * @requiredParams projectId
-     *
+     * @param page      the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
+     *                  limit=10, results 21-30 will be returned
+     * @param limit     the number of results to return
+     * @implicitParam q|string|query|true|||||false|the query to run
+     * @excludeParams queryString
+     * @summary Query project resources, returning JSON
      * @responseType org.springframework.data.domain.Page<>
      */
     @GET
     @Path("/json/")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryJson(
-            @QueryParam("expeditions") String expeditionsString,
+    public Page queryJson(
+            @QueryParam("q") String queryString,
             @QueryParam("projectId") Integer projectId,
-            @QueryParam("filter") String filter,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit) {
+        return json(queryString, projectId, page, limit);
+    }
 
-        try {
-            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditionsString, filter);
-
-            return getJsonResults(page, limit, query);
-        } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
-                return Response.ok(
-                        new PageImpl<String>(null, new PageRequest(page, limit), 0)
-                ).build();
-            }
-
-            throw e;
-        }
+    private Page json(String queryString, int projectId, int page, int limit) {
+        Query query = buildQuery(projectId, queryString);
+        return recordRepository.query(query, page, limit, true);
     }
 
     /**
+     * @param projectId   the project to query
+     * @param queryString the query to run
      * @summary Query project resources, returning a CSV file
-     *
-     * @implicitParam expeditions|string|form|false|||||true|expeditionCode(s) to filter the query results on
-     * @implicitParam projectId|string|form|true|||||false|projectId to query
-     * @implicitParam filter|string|body|false|||||true|accepts multiple {columnName}={value}
-     * @excludeParams form
-     *
      * @responseType java.io.File
      */
     @POST
     @Path("/csv/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("text/csv")
-    public Response queryCSVAsPost(
-            MultivaluedMap<String, String> form) {
-
-        try {
-            // Build the query, etc..
-            ElasticSearchQuery query = POSTElasticSearchQuery(form);
-
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
-
-            ArrayNode results = elasticSearchQuerier.getAllResults();
-
-            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), defaultOutputDirectory(), ",");
-
-            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
-
-            response.header("Content-Disposition",
-                    "attachment; filename=biocode-fims-output.csv");
-
-            return response.build();
-        } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
-                return Response.noContent().build();
-            }
-
-            throw e;
-        }
+    public Response queryCSVAsPost(@FormParam("projectId") Integer projectId,
+                                   @FormParam("query") String queryString) {
+        return csv(projectId, queryString);
     }
 
     /**
-     * @summary Query project resources, returning CSV file
-     *
-     * @csvParams expeditionsString,filter
-     *
-     * @param filter , seperated list of {columnName}:{value} filters
-     * @param expeditionsString , seperate list of expeditionCodes to filter results on
      * @param projectId the project to query
-     * @requiredParams projectId
-     *
+     * @implicitParam q|string|query|true|||||false|the query to run
+     * @excludeParams queryString
+     * @summary Query project resources, returning CSV file
      * @responseType java.io.File
      */
     @GET
@@ -283,21 +138,18 @@ public class QueryController extends FimsService {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("text/csv")
     public Response queryCSV(
-            @QueryParam("expeditions") String expeditionsString,
-            @QueryParam("projectId") Integer projectId,
-            @QueryParam("filter") String filter) {
+            @QueryParam("q") String queryString,
+            @QueryParam("projectId") Integer projectId) {
+        return csv(projectId, queryString);
+    }
+
+    private Response csv(int projectId, String queryString) {
+        QueryResult queryResult = run(projectId, queryString);
 
         try {
-            // Build the query, etc..
-            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditionsString, filter);
+            QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResult, ",");
 
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
-
-            ArrayNode results = elasticSearchQuerier.getAllResults();
-
-            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), defaultOutputDirectory(), ",");
-
-            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+            Response.ResponseBuilder response = Response.ok(queryWriter.write());
 
             response.header("Content-Disposition",
                     "attachment; filename=biocode-fims-output.csv");
@@ -313,105 +165,60 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * @summary Query project resources, returning google earth KML file
-     *
-     * @implicitParam expeditions|string|form|false|||||true|expeditionCode(s) to filter the query results on
-     * @implicitParam projectId|string|form|true|||||false|projectId to query
-     * @implicitParam filter|string|body|false|||||true|accepts multiple {columnName}={value}
-     * @excludeParams form
-     *
+     * @param projectId   the project to query
+     * @param queryString the query to run
+     * @summary Query project resources, returning a KML file
      * @responseType java.io.File
      */
     @POST
     @Path("/kml/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.google-earth.kml+xml")
-    public Response queryKmlAsPost(
-            MultivaluedMap<String, String> form) {
-
-        try {
-            // Build the query, etc..
-            ElasticSearchQuery query = POSTElasticSearchQuery(form);
-
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
-
-            ArrayNode results = elasticSearchQuerier.getAllResults();
-
-            Mapping mapping = getMapping(projectId);
-
-            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, defaultOutputDirectory(), BiscicolQueryUtils.getJsonFieldTransforms(mapping))
-                    .latPath(BiscicolQueryUtils.getLatitudePointer(mapping))
-                    .longPath(BiscicolQueryUtils.getLongitudePointer(mapping))
-                    .namePath(BiscicolQueryUtils.getUniqueKeyPointer(mapping))
-                    .build();
-
-            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
-
-            response.header("Content-Disposition",
-                    "attachment; filename=biocode-fims-output.kml");
-
-            // Return response
-            if (response == null) {
-                return Response.status(204).build();
-            } else {
-                return response.build();
-            }
-        } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
-                return Response.noContent().build();
-            }
-
-            throw e;
-        }
+    public Response queryKMLAsPost(@FormParam("projectId") Integer projectId,
+                                   @FormParam("query") String queryString) {
+        return kml(projectId, queryString);
     }
 
     /**
-     * @summary Query project resources, returning google earth KML file
-     *
-     * @csvParams expeditionsString,filter
-     *
-     * @param filter , seperated list of {columnName}:{value} filters
-     * @param expeditionsString , seperate list of expeditionCodes to filter results on
      * @param projectId the project to query
-     * @requiredParams projectId
-     *
+     * @implicitParam q|string|query|true|||||false|the query to run
+     * @excludeParams queryString
+     * @summary Query project resources, returning KML file
      * @responseType java.io.File
      */
     @GET
     @Path("/kml/")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.google-earth.kml+xml")
-    public Response queryKml(
-            @QueryParam("expeditions") String expeditionsString,
-            @QueryParam("projectId") Integer projectId,
-            @QueryParam("filter") String filter) {
+    public Response queryKML(
+            @QueryParam("q") String queryString,
+            @QueryParam("projectId") Integer projectId) {
+        return kml(projectId, queryString);
+    }
+
+    private Response kml(int projectId, String queryString) {
+        Query query = buildQuery(projectId, queryString);
+        QueryResult queryResult = recordRepository.query(query);
 
         try {
-            // Build the query, etc..
-            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditionsString, filter);
+            // TODO centralize this definedBy and point this method and ProjectController.getLatLongColumns to it
+            String decimalLongDefinedBy = "http://rs.tdwg.org/dwc/terms/decimalLongitude";
+            String decimalLatDefinedBy = "http://rs.tdwg.org/dwc/terms/decimalLatitude";
 
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            Entity entity = query.entity();
 
-            ArrayNode results = elasticSearchQuerier.getAllResults();
-
-            Mapping mapping = getMapping(projectId);
-
-            JsonWriter jsonWriter = new KmlJsonWriter.KmlJsonWriterBuilder(results, defaultOutputDirectory(), BiscicolQueryUtils.getJsonFieldTransforms(mapping))
-                    .latPath(BiscicolQueryUtils.getLatitudePointer(mapping))
-                    .longPath(BiscicolQueryUtils.getLongitudePointer(mapping))
-                    .namePath(BiscicolQueryUtils.getUniqueKeyPointer(mapping))
+            QueryWriter queryWriter = new KmlQueryWriter.Builder(queryResult)
+                    .latColumn(getColumn(entity.getAttributes(), decimalLongDefinedBy))
+                    .latColumn(getColumn(entity.getAttributes(), decimalLatDefinedBy))
+                    .nameColumn(entity.getUniqueKey())
                     .build();
 
-            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+            Response.ResponseBuilder response = Response.ok(queryWriter.write());
 
             response.header("Content-Disposition",
                     "attachment; filename=biocode-fims-output.kml");
 
-            // Return response
-            if (response == null) {
-                return Response.status(204).build();
-            } else {
-                return response.build();
-            }
+            return response.build();
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
@@ -421,42 +228,41 @@ public class QueryController extends FimsService {
         }
     }
 
+    private String getColumn(List<Attribute> attributes, String definedBy) {
+        for (Attribute a : attributes) {
+            if (a.getDefined_by().equals(definedBy)) {
+                return a.getColumn();
+            }
+        }
+
+        return null;
+    }
+
     /**
-     * @summary Query project resources, returning a CSPACE file
-     *
-     * @csvParams expeditionsString,filter
-     *
-     * @param filter , seperated list of {columnName}:{value} filters
-     * @param expeditionsString , seperate list of expeditionCodes to filter results on
      * @param projectId the project to query
-     * @requiredParams projectId
-     *
+     * @implicitParam q|string|query|true|||||false|the query to run
+     * @excludeParams queryString
+     * @summary Query project resources, returning CSPACE file
      * @responseType java.io.File
      */
     @GET
     @Path("/cspace/")
     @Produces(MediaType.APPLICATION_XML)
     public Response queryCspace(
-            @QueryParam("expeditions") String expeditionsString,
-            @QueryParam("projectId") Integer projectId,
-            @QueryParam("filter") String filter) {
+            @QueryParam("q") String queryString,
+            @QueryParam("projectId") Integer projectId) {
+
+        QueryResult queryResult = run(projectId, queryString);
 
         try {
-            // Build the query, etc..
-            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditionsString, filter);
+            Project project = projectService.getProject(projectId);
+            QueryWriter queryWriter = new CspaceQueryWriter(queryResult, project.getProjectConfig());
 
-            Mapping mapping = getMapping(projectId);
-            Validation validation = new Validation();
-            validation.addValidationRules(configFile, mapping);
+            Response.ResponseBuilder response = Response.ok(queryWriter.write());
 
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
+            response.header("Content-Disposition",
+                    "attachment; filename=biocode-fims-output.cspace.xmll");
 
-            ArrayNode results = elasticSearchQuerier.getAllResults();
-
-            JsonWriter jsonWriter = new CspaceJsonWriter(results, defaultOutputDirectory(), validation);
-            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
-
-            // Return response
             return response.build();
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
@@ -469,78 +275,44 @@ public class QueryController extends FimsService {
     }
 
     /**
-     * @summary Query project resources, returning a tab deliminated text file
-     *
-     * @implicitParam expeditions|string|form|false|||||true|expeditionCode(s) to filter the query results on
-     * @implicitParam projectId|string|form|true|||||false|projectId to query
-     * @implicitParam filter|string|body|false|||||true|accepts multiple {columnName}={value}
-     * @excludeParams form
-     *
+     * @param projectId   the project to query
+     * @param queryString the query to run
+     * @summary Query project resources, returning a TAB delimited text file
      * @responseType java.io.File
      */
     @POST
     @Path("/tab/")
-    @Consumes("application/x-www-form-urlencoded")
-    @Produces("text/tsv")
-    public Response queryTabAsPost(
-            MultivaluedMap<String, String> form) {
-
-        try {
-            // Build the query, etc..
-            ElasticSearchQuery query = POSTElasticSearchQuery(form);
-
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
-
-            ArrayNode results = elasticSearchQuerier.getAllResults();
-
-            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), defaultOutputDirectory(), "\t");
-
-            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
-
-            response.header("Content-Disposition",
-                    "attachment; filename=biocode-fims-output.txt");
-
-            return response.build();
-        } catch (FimsRuntimeException e) {
-            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
-                return Response.noContent().build();
-            }
-
-            throw e;
-        }
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces("text/txt")
+    public Response queryTABAsPost(@FormParam("projectId") Integer projectId,
+                                   @FormParam("query") String queryString) {
+        return tsv(projectId, queryString);
     }
 
     /**
-     * @summary Query project resources, returning a tab deliminated file
-     *
-     * @csvParams expeditionsString,filter
-     *
-     * @param filter , seperated list of {columnName}:{value} filters
-     * @param expeditionsString , seperate list of expeditionCodes to filter results on
      * @param projectId the project to query
-     * @requiredParams projectId
-     *
+     * @implicitParam q|string|query|true|||||false|the query to run
+     * @excludeParams queryString
+     * @summary Query project resources, returning TAB delimited text file
      * @responseType java.io.File
      */
     @GET
-    @Path("/tab/")
-    @Produces("text/tsv")
-    public Response queryTab(
-            @QueryParam("expeditions") String expeditionsString,
-            @QueryParam("projectId") Integer projectId,
-            @QueryParam("filter") String filter) {
+    @Path("/tsv/")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces("text/txt")
+    public Response queryTAB(
+            @QueryParam("q") String queryString,
+            @QueryParam("projectId") Integer projectId) {
+        return tsv(projectId, queryString);
+    }
+
+    private Response tsv(int projectId, String queryString) {
+        QueryResult queryResult = run(projectId, queryString);
 
         try {
-            // Build the query, etc..
-            ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditionsString, filter);
+            QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResult, "\t");
 
-            ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
-
-            ArrayNode results = elasticSearchQuerier.getAllResults();
-
-            JsonWriter jsonWriter = new DelimitedTextJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), defaultOutputDirectory(), "\t");
-
-            Response.ResponseBuilder response = Response.ok(jsonWriter.write());
+            Response.ResponseBuilder response = Response.ok(queryWriter.write());
 
             response.header("Content-Disposition",
                     "attachment; filename=biocode-fims-output.txt");
@@ -556,331 +328,105 @@ public class QueryController extends FimsService {
     }
 
     /**
+     * @param projectId   the project to query
+     * @param queryString the query to run
      * @summary Query project resources, returning a excel workbook
-     *
-     * @implicitParam expeditions|string|form|false|||||true|expeditionCode(s) to filter the query results on
-     * @implicitParam projectId|string|form|true|||||false|projectId to query
-     * @implicitParam filter|string|body|false|||||true|accepts multiple {columnName}={value}
-     * @excludeParams form
-     *
      * @responseType java.io.File
      */
     @POST
     @Path("/excel/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.ms-excel")
-    public Response queryExcelAsPost(
-            MultivaluedMap<String, String> form) {
-
-        if (!form.containsKey("expeditions") || form.get("expeditions").size() != 1) {
-            throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
-        }
-        // Build the query, etc..
-        ElasticSearchQuery query = POSTElasticSearchQuery(form);
-
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
-
-        ArrayNode results = elasticSearchQuerier.getAllResults();
-
-        return writeExcelResponse(results);
-    }
-
-    private Response writeExcelResponse(ArrayNode results) {
-        JsonWriter jsonWriter = new ExcelJsonWriter(results, BiscicolQueryUtils.getJsonFieldTransforms(getMapping(projectId)), getMapping(projectId).getDefaultSheetName(), defaultOutputDirectory());
-
-        File file = jsonWriter.write();
-
-        // Here we attach the other components of the excel sheet found with
-        XSSFWorkbook justData = null;
-        try {
-            justData = new XSSFWorkbook(new FileInputStream(file));
-        } catch (IOException e) {
-            logger.error("failed to open excel file", e);
-        }
-
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData);
-        file = t.createExcelFileFromExistingSources("Samples", defaultOutputDirectory());
-        Response.ResponseBuilder response = Response.ok(file);
-
-        response.header("Content-Disposition",
-                "attachment; filename=biocode-fims-output.xlsx");
-
-        // Return response
-        if (response == null) {
-            return Response.status(204).build();
-        } else {
-            return response.build();
-        }
+    public Response queryExcelAsPost(@FormParam("projectId") Integer projectId,
+                                     @FormParam("query") String queryString) {
+        return excel(projectId, queryString);
     }
 
     /**
-     * @summary Query project resources, returning a excel workbook
-     *
-     * @csvParams expeditionsString,filter
-     *
-     * @param filter , seperated list of {columnName}:{value} filters
-     * @param expeditionsString , seperate list of expeditionCodes to filter results on
      * @param projectId the project to query
-     *
+     * @implicitParam q|string|query|true|||||false|the query to run
+     * @excludeParams queryString
+     * @summary Query project resources, returning excel workbook
      * @responseType java.io.File
      */
     @GET
     @Path("/excel/")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.ms-excel")
     public Response queryExcel(
-            @QueryParam("expeditions") String expeditionsString,
-            @QueryParam("projectId") Integer projectId,
-            @QueryParam("filter") String filter) {
-
-        if (expeditionsString == null || expeditionsString.split(",").length != 1) {
-            throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
-        }
-
-        // Build the query, etc..
-        ElasticSearchQuery query = GETElasticSearchQuery(projectId, expeditionsString, filter);
-
-        ElasticSearchQuerier elasticSearchQuerier = new ElasticSearchQuerier(esClient, query);
-
-        ArrayNode results = elasticSearchQuerier.getAllResults();
-
-        return writeExcelResponse(results);
+            @QueryParam("q") String queryString,
+            @QueryParam("projectId") Integer projectId) {
+        return excel(projectId, queryString);
     }
 
-    /**
-     * Get the POST query result as a JSONArray
-     *
-     * @return
-     */
-    private ElasticSearchQuery POSTElasticSearchQuery(MultivaluedMap<String, String> form) {
-        List<String> expeditionCodes = new ArrayList<>();
-        List<ElasticSearchFilterCondition> filterConditions = new ArrayList<>();
+    private Response excel(int projectId, String queryString) {
+        //TODO verify that only 1 expedition is included
+//        throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
 
-        // remove the projectId if present
-        if (form.containsKey("projectId")) {
-            projectId = Integer.parseInt(String.valueOf(form.remove("projectId").get(0)));
-        }
+        QueryResult queryResult = run(projectId, queryString);
 
-        if (form.containsKey("expeditions")) {
-            expeditionCodes.addAll(form.remove("expeditions"));
-        }
-        if (form.containsKey("expeditions[]")) {
-            expeditionCodes.addAll(form.remove("expeditions[]"));
-        }
+        try {
+            //TODO refactor the templateProcessor code to be done inside the ExcelQueryWriter
+            QueryWriter queryWriter = new ExcelQueryWriter(queryResult);
 
-        if (projectId == null) {
-            throw new BadRequestException("ERROR: incomplete arguments");
-        }
+            File file = queryWriter.write();
 
-        // commenting this out for now until biocode-lims releases a new plugin
-        if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), expeditionCodes, userContext.getUser())) {
-            throw new ForbiddenRequestException("unauthorized query.");
-        }
-
-        List<ElasticSearchFilterField> filterFields = BiscicolQueryUtils.getAvailableFilters(getMapping(projectId));
-
-        for (Map.Entry<String, List<String>> entry : form.entrySet()) {
-
-            // only expect 1 value
-            ElasticSearchFilterCondition filterCondition = new ElasticSearchFilterCondition(
-                    lookupFilter(entry.getKey(), filterFields),
-                    entry.getValue().get(0), QueryType.EQUALS);
-
-            filterConditions.add(filterCondition);
-        }
-
-        // if no expeditionsString are specified, then we want to only query public expeditionsString
-        if (expeditionCodes.size() == 0) {
-            expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditionCodes.add(e.getExpeditionCode()));
-
-            if (expeditionCodes.size() == 0) {
-                throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 204);
+            // Here we attach the other components of the excel sheet found with
+            XSSFWorkbook justData = null;
+            try {
+                justData = new XSSFWorkbook(new FileInputStream(file));
+            } catch (IOException e) {
+                logger.error("failed to open excel file", e);
             }
-        }
 
-        return new ElasticSearchQuery(
-                getQueryBuilder(filterConditions, expeditionCodes),
-                new String[]{String.valueOf(projectId)},
-                new String[]{ElasticSearchIndexer.TYPE}
+            TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData);
+            file = t.createExcelFileFromExistingSources(queryResult.entity().getWorksheet(), defaultOutputDirectory());
+
+            Response.ResponseBuilder response = Response.ok(file);
+
+            response.header("Content-Disposition",
+                    "attachment; filename=biocode-fims-output.xlsx");
+
+            return response.build();
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
+                return Response.noContent().build();
+            }
+
+            throw e;
+        }
+    }
+
+    private QueryResult run(int projectId, String queryString) {
+        return recordRepository.query(
+                buildQuery(projectId, queryString)
         );
     }
 
-    /**
-     * Get the query result as a file
-     *
-     * @param projectId
-     * @param filter
-     * @return
-     */
-    private ElasticSearchQuery GETElasticSearchQuery(Integer projectId, String expeditionsString, String filter) {
+    private Query buildQuery(Integer projectId, String queryString) {
         // Make sure projectId is set
         if (projectId == null) {
             throw new BadRequestException("ERROR: incomplete arguments");
         }
 
-        this.projectId = projectId;
+        Project project = projectService.getProject(projectId);
 
-        Mapping mapping = getMapping(projectId);
-        List<Attribute> attributes = mapping.getDefaultSheetAttributes();
+        // TODO currently assuming that each project only has 1 entity, need to pass entity as param
+        QueryBuilder queryBuilder = new QueryBuilder(project, project.getProjectConfig().getEntities().get(0).getConceptAlias());
 
-        // Parse the GET filter
-        List<ElasticSearchFilterCondition> filterConditions = parseGETFilter(filter, attributes, mapping);
-
+        QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder);
         try {
-            List<String> expeditions = (expeditionsString == null || expeditionsString.isEmpty()) ? new ArrayList<>() : Arrays.asList(
-                    URLDecoder.decode(expeditionsString, "UTF-8").split(","));
+            ParsingResult<Query> result = new ReportingParseRunner<Query>(parser.Parse()).run(queryString);
 
-            // commenting this out for now until biocode-lims releases a new plugin
-            if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), expeditions, userContext.getUser())) {
-                throw new ForbiddenRequestException("unauthorized query.");
+            if (result.hasErrors() || result.resultValue == null) {
+                throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, result.parseErrors.toString());
             }
 
-            // if no expeditions are specified, then we want to only query public expeditionsString
-            if (expeditions.size() == 0) {
-                expeditionService.getPublicExpeditions(projectId).forEach(e -> expeditions.add(e.getExpeditionCode()));
-
-                if (expeditions.size() == 0) {
-                    throw new FimsRuntimeException(QueryCode.NO_RESOURCES, 204);
-                }
-            }
-
-            return new ElasticSearchQuery(
-                    getQueryBuilder(filterConditions, expeditions),
-                    new String[]{String.valueOf(projectId)},
-                    new String[]{ElasticSearchIndexer.TYPE});
-
-        } catch (UnsupportedEncodingException e) {
-            throw new biocode.fims.fimsExceptions.ServerErrorException(e);
+            return result.resultValue;
+        } catch (ParserRuntimeException e) {
+            String parsedMsg = e.getMessage().replaceFirst(" action '(.*)'", "");
+            throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, parsedMsg.substring(0, (parsedMsg.indexOf("^"))));
         }
-    }
-
-    /**
-     * Parse the GET filter string smartly.  This looks for either column Names or URI Properties, and
-     * if it finds a column name maps to a uri.  Values are assumed to be last element past a semicolon ALWAYS.
-     *
-     * @param filterQueryString
-     * @return
-     */
-    private List<ElasticSearchFilterCondition> parseGETFilter(String filterQueryString, List<Attribute> attributes, Mapping mapping) {
-        List<ElasticSearchFilterCondition> filterConditions = new ArrayList<>();
-
-        if (filterQueryString == null) {
-            return filterConditions;
-        }
-
-        List<ElasticSearchFilterField> filterFields = BiscicolQueryUtils.getAvailableFilters(getMapping(projectId));
-
-        try {
-        String[] filterSplit = URLDecoder.decode(filterQueryString, "UTF-8").split(",");
-
-            for (String filterString : filterSplit) {
-                // this regex will split on the last ":". This is need since uri's contain ":", but we want the whole
-                // uri as the key
-                String[] filter = filterString.split("[:](?=[^:]*$)");
-
-                if (filter.length != 2) {
-                    // This is an _all query
-                        filterConditions.add(
-                                new ElasticSearchFilterCondition(
-                                        BiscicolQueryUtils.get_AllFilter(),
-                                        filter[0],
-                                        QueryType.FUZZY
-                                )
-                        );
-                    continue;
-                }
-
-                String key = filter[0];
-
-                if (!key.contains(":")) {
-                    key = mapping.lookupUriForColumn(key, attributes);
-                }
-
-                // only expect 1 value
-                ElasticSearchFilterCondition filterCondition = new ElasticSearchFilterCondition(
-                        lookupFilter(
-                                key,
-                                filterFields
-                        ),
-                        filter[1],
-                        QueryType.EQUALS
-                );
-
-                filterConditions.add(filterCondition);
-            }
-
-        } catch (UnsupportedEncodingException e) {
-            throw new FimsRuntimeException(500, e);
-        }
-
-        return filterConditions;
-    }
-
-    private ElasticSearchFilterField lookupFilter(String key, List<ElasticSearchFilterField> filters) {
-        if (key == null) {
-            throw new FimsRuntimeException(QueryCode.UNKNOWN_FILTER, "is " + key + " a valid column or uri?", 400, key);
-        }
-
-        // _all is a special filter
-        if (key.equals("_all")) {
-            return BiscicolQueryUtils.get_AllFilter();
-        }
-
-        // if field doesn't contain a ":", then we assume this is the filter displayName
-        boolean isDisplayName = !key.contains(":");
-
-        for (ElasticSearchFilterField filter : filters) {
-            if (isDisplayName && key.equals(filter.getDisplayName())) {
-                return filter;
-            } else if (key.equals(filter.getField())) {
-                return filter;
-            }
-        }
-
-        throw new FimsRuntimeException(QueryCode.UNKNOWN_FILTER, "is " + key + " a filterable field?", 400, key);
-    }
-
-    private QueryBuilder getQueryBuilder(List<ElasticSearchFilterCondition> filterConditions, List<String> expeditionCodes) {
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        BoolQueryBuilder expeditionQuery = QueryBuilders.boolQuery();
-
-        if (expeditionCodes.size() > 0) {
-            for (String expedition : expeditionCodes) {
-                expeditionQuery.should(QueryBuilders.matchQuery("expedition.expeditionCode.keyword", expedition));
-            }
-            expeditionQuery.minimumNumberShouldMatch(1);
-            boolQueryBuilder.must(expeditionQuery);
-        }
-
-        for (ElasticSearchFilterCondition filterCondition : filterConditions) {
-
-//            if (filterCondition.isNested()) {
-//                boolQueryBuilder.must(
-//                        QueryBuilders.nestedQuery(
-//                                filterCondition.getPath(),
-//                                QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()),
-//                                ScoreMode.None)
-//                );
-//            } else {
-//                boolQueryBuilder.must(QueryBuilders.matchQuery(filterCondition.getField(), filterCondition.getValue()));
-//            }
-        }
-
-        return boolQueryBuilder;
-    }
-
-    private Mapping getMapping(Integer projectId) {
-        if (mapping != null) {
-            return mapping;
-        }
-
-        if (configFile == null) {
-            configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
-        }
-
-        mapping = new Mapping();
-        mapping.addMappingRules(configFile);
-
-        return mapping;
     }
 }
 
