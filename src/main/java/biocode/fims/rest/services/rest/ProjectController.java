@@ -1,18 +1,12 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.bcid.ProjectMinter;
-import biocode.fims.biscicol.query.BiscicolQueryUtils;
-import biocode.fims.config.ConfigurationFileEsMapper;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
-import biocode.fims.elasticSearch.ElasticSearchIndexer;
-import biocode.fims.elasticSearch.query.ElasticSearchFilterField;
+import biocode.fims.fimsExceptions.*;
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
 import biocode.fims.models.User;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.ForbiddenRequestException;
-import biocode.fims.rest.SpringObjectMapper;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.TemplateProcessor;
@@ -20,9 +14,6 @@ import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.SettingsManager;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.elasticsearch.client.Client;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,20 +87,20 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Path("/{projectId}/filterOptions")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFilterOptions(@PathParam("projectId") int projectId) {
-        File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
+        Project project = projectService.getProject(projectId, settingsManager.retrieveValue("appRoot"));
 
-        Mapping mapping = new Mapping();
-        mapping.addMappingRules(configFile);
-
-        ArrayNode filters = new SpringObjectMapper().createArrayNode();
-
-        for (ElasticSearchFilterField f : BiscicolQueryUtils.getAvailableFilters(mapping)) {
-            ObjectNode filter = filters.addObject();
-            filter.put("field", f.getField());
-            filter.put("displayName", f.getDisplayName());
+        if (project == null) {
+            throw new biocode.fims.fimsExceptions.BadRequestException("Invalid projectId");
         }
 
-        return Response.ok(filters).build();
+        List<String> columns = new ArrayList<>();
+
+        // TODO don't default to first entity
+        for (Attribute a: project.getProjectConfig().getEntities().get(0).getAttributes()) {
+            columns.add(a.getColumn());
+        }
+
+        return Response.ok(columns).build();
     }
 
     @GET

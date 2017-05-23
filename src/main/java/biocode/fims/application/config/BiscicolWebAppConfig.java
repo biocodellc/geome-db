@@ -1,7 +1,6 @@
 package biocode.fims.application.config;
 
 import biocode.fims.authorizers.QueryAuthorizer;
-import biocode.fims.elasticSearch.ElasticSearchIndexer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 

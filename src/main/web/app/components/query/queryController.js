@@ -3,7 +3,7 @@ angular.module('fims.query')
     .controller('QueryCtrl', ['$rootScope', '$scope', '$http', 'LoadingModalFactory', 'FailModalFactory', 'ExpeditionFactory', 'AuthFactory', 'REST_ROOT',
         function ($rootScope, $scope, $http, LoadingModalFactory, FailModalFactory, ExpeditionFactory, AuthFactory, REST_ROOT) {
             var defaultFilter = {
-                field: null,
+                column: null,
                 value: null
             };
             var vm = this;
@@ -11,7 +11,7 @@ angular.module('fims.query')
             vm.moreSearchOptions = false;
             vm.filterOptions = [];
             vm.filters = [];
-            vm._all = null;
+            vm.queryString = null;
             vm.expeditions = [];
             vm.project = null;
             vm.selectedExpeditions = [];
@@ -36,7 +36,12 @@ angular.module('fims.query')
 
             function queryJson() {
                 LoadingModalFactory.open();
-                $http.post(REST_ROOT + "projects/query/json/?limit=50&page=" + (vm.currentPage - 1), getQueryPostParams())
+                var data = {
+                    projectId: vm.project.projectId,
+                    query: vm.queryString
+                };
+
+                $http.post(REST_ROOT + "projects/query/json/?limit=50&page=" + (vm.currentPage - 1), data)
                     .then(
                         function (response) {
                             vm.queryResults = transformData(response.data);
@@ -56,7 +61,7 @@ angular.module('fims.query')
 
             function addFilter() {
                 var filter = angular.copy(defaultFilter);
-                filter.field = vm.filterOptions[0].field;
+                filter.column = vm.filterOptions[0];
                 vm.filters.push(filter);
             }
 
@@ -74,25 +79,6 @@ angular.module('fims.query')
 
             function downloadCsv() {
                 download(REST_ROOT + "projects/query/csv?access_token=" + AuthFactory.getAccessToken(), getQueryPostParams());
-            }
-
-            function getQueryPostParams() {
-                var params = {
-                    expeditions: vm.selectedExpeditions,
-                    projectId: vm.project.projectId
-                };
-
-                angular.forEach(vm.filters, function (filter) {
-                    if (filter.value) {
-                        params[filter.field] = filter.value;
-                    }
-                });
-
-                if (vm._all) {
-                    params._all = vm._all;
-                }
-
-                return params;
             }
 
             function getExpeditions() {
@@ -113,7 +99,7 @@ angular.module('fims.query')
                     .then(function (response) {
                         angular.extend(vm.filterOptions, response.data);
 
-                        if (vm.filters.length == 0) {
+                        if (vm.filters.length === 0) {
                             addFilter();
                         }
                     }, function (response) {
@@ -125,9 +111,7 @@ angular.module('fims.query')
                 var transformedData = {keys: [], data: []};
                 if (data) {
                     vm.queryInfo.size = data.size;
-
-                    // elasitc_search will throw an error if we try and retrieve results from 10000 and greater
-                    vm.queryInfo.totalElements = data.totalElements > 10000 ? 10000 : data.totalElements;
+                    vm.queryInfo.totalElements = data.totalElements;
 
                     if (data.content.length > 0) {
                         transformedData.keys = Object.keys(data.content[0]);
@@ -146,11 +130,43 @@ angular.module('fims.query')
                 return transformedData;
             }
 
-            $scope.$watch("queryVm.project", function (value) {
-                if (value && value > 0) {
+            function updateQueryString() {
+                var q = "";
+
+                if (vm.selectedExpeditions.length > 0) {
+                    q += "_expeditions_:[" + vm.selectedExpeditions.join(", ") + "]";
+                }
+
+                angular.forEach(vm.filters, function (filter) {
+                    if (filter.value) {
+                        if (q.trim().length > 0) {
+                            q += " AND ";
+                        }
+
+                        q += filter.column+ " = \"" + filter.value + "\"";
+                    }
+                });
+
+                vm.queryString = q;
+            }
+
+            $scope.$watch("queryVm.project", function (newVal, oldVal) {
+                if (newVal && newVal !== oldVal) {
                     getExpeditions();
                     getFilterOptions();
                 }
             });
+
+            $scope.$watchCollection("queryVm.selectedExpeditions", function (newVal, oldVal) {
+                if (newVal && newVal != oldVal) {
+                    updateQueryString();
+                }
+            });
+
+            $scope.$watch("queryVm.filters", function (newVal, oldVal) {
+                if (newVal && newVal != oldVal) {
+                    updateQueryString();
+                }
+            }, true);
 
         }]);

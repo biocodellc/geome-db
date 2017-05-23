@@ -2,7 +2,6 @@ package biocode.fims.application.config;
 
 import biocode.fims.run.EzidUpdator;
 import biocode.fims.service.ProjectService;
-import org.elasticsearch.client.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 
