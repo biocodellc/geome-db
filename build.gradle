@@ -95,7 +95,7 @@ remotes {
 //=============================
 //= application configuration
 //=============================
-mainClassName = "biocode.fims.run.FusekiDataExporter"
+mainClassName = "biocode.fims.run.FimsPostgresMigrator"
 
 distributions {
     main {
