@@ -208,18 +208,22 @@ javascript.source {
             exclude "app.js"
             exclude "app.module.js"
             exclude "**/module.js"
+            exclude "**/*.module.js"
         }
     }
     js {
         js {
             srcDir "src/main/web/js"
             include "*.js"
+            exclude "fims-analytics.js"
+            exclude "autotrack.js"
         }
     }
     modules {
         js {
             srcDir "src/main/web/app"
             include "**/module.js"
+            include "**/*.module.js"
         }
     }
 }
