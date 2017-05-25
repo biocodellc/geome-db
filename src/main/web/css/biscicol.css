@@ -433,6 +433,10 @@ td.hideOverflow {
     padding-left: 40px;
 }
 
+.group-message > div {
+    padding-left: 30px;
+}
+
 .panel-login {
     border-color: #ccc;
     -webkit-box-shadow: 0px 2px 3px 0px rgba(0, 0, 0, 0.2);

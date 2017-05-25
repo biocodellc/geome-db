@@ -35,6 +35,8 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -422,7 +424,14 @@ public class QueryController extends FimsService {
                 throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, result.parseErrors.toString());
             }
 
-            return result.resultValue;
+            Query query = result.resultValue;
+
+            // commenting this out for now until biocode-lims releases a new plugin
+//            if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), new ArrayList<>(query.expeditions()), userContext.getUser())) {
+//                throw new ForbiddenRequestException("unauthorized query.");
+//            }
+
+            return query;
         } catch (ParserRuntimeException e) {
             String parsedMsg = e.getMessage().replaceFirst(" action '(.*)'", "");
             throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, parsedMsg.substring(0, (parsedMsg.indexOf("^"))));

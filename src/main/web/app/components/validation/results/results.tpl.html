@@ -22,18 +22,44 @@
                     <div uib-accordion-heading><span class="text-danger">Error: <span
                             ng-bind-html="::group.groupMessage | trusted_html"></span></span>
                     </div>
-                    <div ng-repeat="message in ::group.messages track by $index">{{ ::message }}</div>
+                    <div ng-repeat="message in ::group.messages track by $index">
+                        <span ng-show="!message.list">{{ ::message.message }}</span>
+
+                        <uib-accordian close-others="false" ng-show="message.list">
+                            <div uib-accordion-group class="group-message"
+                                 template-url="app/components/validation/results/resultsAccordionGroup.tpl.html">
+                                <div uib-accordion-heading>{{::message.message}}</div>
+                                <ul>
+                                    <li ng-repeat="val in ::message.list">{{::val}}</li>
+                                </ul>
+                            </div>
+                        </uib-accordian>
+                    </div>
                 </div>
 
                 <div ng-repeat="group in ::entityMessage.warnings" uib-accordion-group
                      template-url="app/components/validation/results/resultsAccordionGroup.tpl.html"
                      class="group-message">
+
                     <div uib-accordion-heading><span class="text-warning">Warning: <span
                             ng-bind-html="::group.groupMessage | trusted_html"></span></span></div>
-                    <div ng-repeat="message in ::group.messages">{{ ::message }}</div>
+
+                    <div ng-repeat="message in ::group.messages">
+
+                        <span ng-show="!message.list">{{ ::message.message }}</span>
+
+                        <uib-accordian close-others="false" ng-show="message.list">
+                            <a uib-accordion-group class="group-message" heading="::message.message">
+                                <ul>
+                                    <li ng-repeat="val in ::message.list">{{::val}}</li>
+                                </ul>
+                            </a>
+                            {{ ::message.message }}
+                        </uib-accordian>
+
+                    </div>
                 </div>
             </uib-accordion>
-
         </div>
     </div>
 

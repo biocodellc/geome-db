@@ -38,7 +38,7 @@ angular.module('fims.query')
                 LoadingModalFactory.open();
                 var data = {
                     projectId: vm.project.projectId,
-                    query: vm.queryString
+                    query: (vm.queryString.trim().length > 0) ? vm.queryString : "*"
                 };
 
                 $http.post(REST_ROOT + "projects/query/json/?limit=50&page=" + (vm.currentPage - 1), data)
