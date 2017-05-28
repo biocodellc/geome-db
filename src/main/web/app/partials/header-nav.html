@@ -1,52 +1,106 @@
-<nav id="myNavbar" class="navbar navbar-default" role="navigation">
+<div ng-controller="HeaderController as vm">
 
-    <!-- Brand and toggle get grouped for better mobile display -->
-    <div ng-controller="NavCtrl as vm">
-        <div class="navbar-header">
-
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <div>
-                <a class="navbar-brand" ui-sref="home" style="float:left;"><img src='docs/fishHeader.gif' height=50><br></a>
-                <a class="navbar-brand" ui-sref="home" style="float:left;line-height: 50px;color: #080808;">Biocode Field Information Management System</a>
-            </div>
+    <!-- Sidebar navigation -->
+    <nav class="side-nav navbar navbar-default">
+        <div class="section">
+            <h5 class="section-title">Main</h5>
+            <ul class="nav nav-stacked">
+                <li><a ui-sref="home"><i class="fa fa-home fa-fw"></i> Home</a></li>
+                <li><a ui-sref="template"><i class="fa fa-file-excel-o fa-fw"></i> Generate Template</a></li>
+                <li><a ui-sref="query"><i class="fa fa-search fa-fw"></i> View Data</a></li>
+                <li><a ui-sref="validate"><i class="fa fa-upload fa-fw"></i> Validate and Upload Data</a></li>
+            </ul>
         </div>
 
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav navbar-right" style="margin-top: -15px;">
-                <li class="dropdown">
-                    <a href="#" data-toggle="dropdown" class="dropdown-toggle">Tools<b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li><a ui-sref="template" class='enabled'>Generate Template</a></li>
-                        <li><a ui-sref="query" class='enabled'>Query</a></li>
-                        <li><a ui-sref="lookup" class='enabled'>ID Lookup</a></li>
-                        <li ng-show="!vm.isAuthenticated"><a ui-sref="validate" class='disabled'>Validate and Load Data</a></li>
-                        <li ng-show="vm.isAuthenticated"><a ui-sref="validate" class='enabled'>Validate and Load Data</a></li>
-                        <li ng-show="!vm.isAuthenticated"><a href='#' class='disabled'>BCID Creator</a></li>
-                        <li ng-show="vm.isAuthenticated"><a ui-sref="expeditionManager" class='enabled'>Expedition Manager</a></li>
-                        <li ng-show="!vm.isAuthenticated"><a href='#' class='disabled'>BCID Creator</a></li>
-                        <li ng-show="vm.isAuthenticated"><a ui-sref="creator" class='enabled'>BCID Creator</a></li>
-                        <li ng-show="vm.isAdmin"><a ui-sref='projects' class='enabled'>Project Manager</a></li>
-                        <li ng-show="!vm.isAdmin"><a href='#' class='disabled'>Project Manager</a></li>
-                    </ul>
-                </li>
-
-                <li ng-show="!vm.isAuthenticated"><a id="login" ng-click="vm.login()" ui-sref="login">Login</a></li>
-                <li ng-show="vm.isAuthenticated"><a ui-sref="profile">{{ vm.user.username }}</a></li>
-                <li ng-show="vm.isAuthenticated"><a ng-click="vm.logout()" ui-sref="home">Logout</a></li>
-                <li class="dropdown">
-                    <a href="#" data-toggle="dropdown" classs="dropdown-toggle">Help</a>
-                    <ul class="dropdown-menu">
-                        <li><a ng-click="vm.apidocs()">Api Docs</a></li>
-                        <li><a href="http://fims.readthedocs.org/en/stable/">Help</a></li>
-                    </ul>
-                </li>
+        <div class="section" ng-show="vm.isAuthenticated">
+            <h5 class="section-title">Admin</h5>
+            <ul class="nav nav-stacked">
+                <li><a ui-sref="expeditionManager"><i class="fa fa-cog fa-fw"></i> Expeditions</a></li>
+                <li><a ui-sref="projects" ng-show="vm.isAdmin"><i class="fa fa-cog fa-fw"></i> Projects</a></li>
+                <li><a ui-sref="profile"><i class="fa fa-user fa-fw"></i> User Profile</a></li>
             </ul>
-        </div><!-- /.navbar-collapse -->
-    </div>
-</nav>
+        </div>
+    </nav>
+    <!--/. Sidebar navigation -->
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-default">
+        <!-- SideNav slide-out button -->
+        <div class="navbar-header">
+            <!--<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">-->
+            <!--<span class="sr-only">Toggle navigation</span>-->
+            <!--<span class="icon-bar"></span>-->
+            <!--<span class="icon-bar"></span>-->
+            <!--<span class="icon-bar"></span>-->
+            <!--</button>-->
+            <a class="navbar-brand separator" ui-sref="home">Biocode-Fims</a>
+        </div>
+
+
+        <!--<div class="float-left">-->
+        <!--<a href="#" data-activates="slide-out" class="button-collapse"><i class="fa fa-bars"></i></a>-->
+        <!--</div>-->
+        <ul class="nav navbar-nav pull-right">
+            <li class="dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle"><i class="fa fa-cog fa-md"></i>
+                    <i class="fa fa-angle-down"></i></a>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li><a ng-click="vm.apidocs()"><i class="fa fa-code fa-fw"></i> Api Docs</a></li>
+                    <li><a href="http://fims.readthedocs.org/en/stable/"><i class="fa fa-question"></i> Help</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul class="nav navbar-nav pull-right">
+            <li class="dropdown separator">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">
+                    <span ng-show="vm.isAuthenticated" style="padding-right: 5px;">hi, {{ vm.user.username }}!</span>
+                    <i class="fa fa-user-circle-o fa-lg"></i> <i class="fa fa-angle-down"></i>
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li ng-show="!vm.isAuthenticated">
+                        <a ng-click="vm.login()" ui-sref="login"><i class="fa fa-sign-in fa-fw"></i> Sign In</a>
+                    </li>
+                    <li ng-show="vm.isAuthenticated">
+                        <a ui-sref="profile"><i class="fa fa-user fa-fw"></i> User Profile</a>
+                    </li>
+                    <li ng-show="vm.isAuthenticated" role="separator" class="divider"></li>
+                    <li ng-show="vm.isAuthenticated">
+                        <a ng-click="vm.logout()" ui-sref="home"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+        <ul class="project-selector nav navbar-nav pull-right">
+            <li uib-dropdown ng-init="projectSelector.open=false" is-open="projectSelector.open"
+                auto-close="outsideClick" ng-click="projectSelector.open=!projectSelector.open" class="separator">
+                <a href="#" uib-dropdown-toggle ng-click="projectSelector.open=true">
+                    <span ng-show="!isEmpty(vm.project)">{{ vm.project.projectTitle }}</span>
+                    <span ng-show="isEmpty(vm.project)">Choose a Project</span>
+                    <i class="fa fa-angle-down"></i>
+                </a>
+                <ul uib-dropdown-menu class="dropdown-menu separator">
+                    <li class="section-title clearfix">Switch Project
+                        <span class="include-public pull-right" ng-show="vm.isAuthenticated">
+                            <label>include public</label>
+                            <input type="checkbox" class="pull-right" ng-model="vm.includePublicProjects"/>
+                        </span>
+                    </li>
+                    <li class="divider"></li>
+                    <li ng-repeat="project in vm.projects">
+                        <a href='#' ng-click="vm.setProject(project); projectSelector.open=false;">
+                            {{ ::project.projectTitle }} <i ng-show="vm.project.projectId === project.projectId"
+                                                            class="fa fa-check"></i>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <!--<li><a ui-sref="lookup" class='enabled'>ID Lookup</a></li>-->
+    <!--<li ng-show="!vm.isAuthenticated"><a href='#' class='disabled'>BCID Creator</a></li>-->
+    <!--<li ng-show="vm.isAuthenticated"><a ui-sref="creator" class='enabled'>BCID Creator</a></li>-->
+
+</div>

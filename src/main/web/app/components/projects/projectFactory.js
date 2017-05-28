@@ -9,6 +9,7 @@ angular.module('fims.projects')
                 getProjects: getProjects,
                 getProjectsForAdmin: getProjectsForAdmin,
                 get: get,
+                getConfig: getConfig,
                 updateProject: updateProject,
                 getMembers: getMembers,
                 removeMember: removeMember,
@@ -47,6 +48,10 @@ angular.module('fims.projects')
                 }
 
                 return deferred.promise;
+            }
+
+            function getConfig(projectId) {
+                return $http.get(REST_ROOT + 'projects/' + projectId + '/config');
             }
 
             function updateProject(project) {

@@ -11,10 +11,12 @@ buildscript {
     }
     dependencies {
         classpath "org.biocode:gradle-fims:1.1.6"
+        classpath 'com.github.fgiannesini.libsass.gradle.plugin:libsass-gradle-plugin:+'
     }
 }
 
 apply plugin: "application"
+apply plugin: 'com.github.fgiannesini.libsass.gradle.plugin'
 apply plugin: "org.biocode.fims-web"
 
 import org.biocode.gradle.web.tasks.RestartRemoteJettyTask
@@ -260,3 +262,20 @@ populateJsProps {
     propsMap = ['mapboxToken': 'mapboxAccessToken',
                 'naan'  : 'naan']
 }
+
+//===========================
+//= libsass configuration
+//===========================
+
+libSassParameters {
+    inputFilePath = "${projectDir}/src/main/stylesheets/style.scss"
+    outputFilePath = "${buildDir}/css/style.css"
+    watchedDirectoryPath = "${projectDir}/src/main/stylesheets"
+    sourceMapEmbed = true
+    libSassProductionParameters {
+        outputStyle "compressed"
+    }
+}
+
+fatWar.dependsOn compileLibSassProduction
+war.dependsOn compileLibSassProduction

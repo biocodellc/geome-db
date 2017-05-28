@@ -1,0 +1,17 @@
+// Default variables.
+@import "variables";
+
+// Bootstrap Framework.
+@import 'bootstrap/assets/stylesheets/bootstrap';
+
+// Font Awesomwe
+@import 'font-awesome/font-awesome';
+
+// Bootswatch Flatly Theme
+@import "bootswatch";
+
+// Fims Overrides
+@import "fims/fims";
+
+// Base-theme overrides.
+@import 'overrides';

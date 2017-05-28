@@ -1,0 +1,75 @@
+/**
+ * Document-wide styles.
+ **/
+[ng\:cloak], [ng-cloak], .ng-cloak {
+  display: none !important;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('../fonts/roboto/Roboto-Bold.woff') format('woff'),
+  url('../fonts/roboto/Roboto-Bold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('../fonts/roboto/Roboto-Medium.woff') format('woff'),
+  url('../fonts/roboto/Roboto-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('../fonts/roboto/Roboto-Regular.woff') format('woff'),
+  url('../fonts/roboto/Roboto-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('../fonts/roboto/Roboto-Light.woff') format('woff'),
+  url('../fonts/roboto/Roboto-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('../fonts/roboto/Roboto-Thin.woff') format('woff'),
+  url('../fonts/roboto/Roboto-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+}
+
+// font-awesome helper classes
+.fa-sm { font-size: .75em; }
+.fa-md {
+  line-height: .75em;
+  vertical-align: -15%;
+  font-size: 1.25em;
+}
+.fa-lg { font-size: 1.5em; }
+
+
+// main view
+
+.main {
+  margin: 30px 25px;
+  padding-left: $sidenav-width;
+
+  //@media (min-width: $grid-float-breakpoint-max) {
+  //  padding-left: 0;
+  //}
+}
+
+.alert-link {
+  cursor: pointer;
+}
+
+a {
+  &.disabled {
+    @extend .btn.disabled;
+    @extend a.btn.disabled;
+  }
+}

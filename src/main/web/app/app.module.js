@@ -1,6 +1,7 @@
 var app = angular.module('biscicolApp', [
     'ui.router',
     'ui.bootstrap',
+    'fims.header',
     'fims.query',
     'fims.auth',
     'fims.templates',
@@ -47,6 +48,10 @@ app.controller('biscicolCtrl', ['$rootScope', '$scope', '$state', '$location', '
     function ($rootScope, $scope, $state, $location, AuthFactory) {
         $scope.error = $location.search()['error'];
 
+        $rootScope.isEmpty = function(val) {
+            return angular.equals({}, val);
+        };
+
         $rootScope.$on('$stateChangeStart', function (event, next) {
             if (next.loginRequired && !AuthFactory.isAuthenticated) {
                 event.preventDefault();
@@ -58,50 +63,6 @@ app.controller('biscicolCtrl', ['$rootScope', '$scope', '$state', '$location', '
         });
     }]);
 
-app.controller('NavCtrl', ['$rootScope', '$scope', '$location', '$window', '$state', 'AuthFactory', 'UserFactory',
-    function ($rootScope, $scope, $location, $window, $state, AuthFactory, UserFactory) {
-        var vm = this;
-        vm.isAuthenticated = AuthFactory.isAuthenticated;
-        vm.isAdmin = UserFactory.isAdmin;
-        vm.user = UserFactory.user;
-        vm.logout = logout;
-        vm.login = login;
-        vm.apidocs = apidocs;
-
-        function apidocs() {
-            $window.location = "http://biscicol.org/apidocs?url=" + $location.$$absUrl.replace($location.path(), "/apidocs/current/service.json")
-        }
-
-        function login() {
-            $rootScope.savedState = $state.current.name;
-            $rootScope.savedStateParams = $state.params;
-        }
-
-        function logout() {
-            AuthFactory.logout();
-            UserFactory.removeUser();
-        }
-
-        $scope.$watch(
-            function () {
-                return AuthFactory.isAuthenticated
-            },
-
-            function (newVal) {
-                vm.isAuthenticated = newVal;
-            }
-        )
-
-        $scope.$watch(
-            function () {
-                return UserFactory.isAdmin
-            },
-
-            function (newVal) {
-                vm.isAdmin = newVal;
-            }
-        )
-    }]);
 
 // register an interceptor to convert objects to a form-data like string for $http data attributes and
 // set the appropriate header

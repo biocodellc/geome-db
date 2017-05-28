@@ -54,6 +54,7 @@ angular.module('fims.projects')
             vm.expeditions = [];
             vm.modifiedExpeditions = [];
             vm.members = [];
+            vm.editConfig = editConfig;
             vm.updateProject = updateProject;
             vm.setProject = setProject;
             vm.updateExpeditions = updateExpeditions;
@@ -61,6 +62,22 @@ angular.module('fims.projects')
             vm.removeMember = removeMember;
             vm.addMember = addMember;
             vm.editMember = editMember;
+
+            function editConfig() {
+                var modalInstance = $uibModal.open({
+                    templateUrl: 'app/components/projects/config/config.tpl.html',
+                    size: 'lg',
+                    controller: 'ProjectConfigController',
+                    controllerAs: 'vm',
+                    windowClass: 'app-modal-window',
+                    backdrop: 'static',
+                    resolve: {
+                        project: function () {
+                            return vm.project;
+                        }
+                    }
+                });
+            }
 
             function editMember(username) {
                 var modalInstance = $uibModal.open({

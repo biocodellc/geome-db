@@ -10,9 +10,9 @@
 
     <link rel="stylesheet" type="text/css" href="css/jquery-ui.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
-    <!--<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">-->
-    <link rel="stylesheet" type="text/css" href="css/alerts.css"/>
-    <link rel="stylesheet" type="text/css" href="css/biscicol.css"/>
+    <!--<link rel="stylesheet" type="text/css" href="css/alerts.css"/>-->
+    <!--<link rel="stylesheet" type="text/css" href="css/biscicol.css"/>-->
+    <link rel="stylesheet" type="text/css" href="css/style.css"/>
 
     <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.css' rel='stylesheet' />
     <link rel="stylesheet" type="text/css" href="css/leaflet.css"/>
@@ -24,17 +24,19 @@
     <link rel="short icon" href="docs/fimsicon.png" />
 </head>
 <body ng-cloak>
-<div id="container">
+<!--<div id="container">-->
 
     <header ng-include="'app/partials/header-nav.html'"></header>
-    <div class="alert-container"><div id="alerts"></div></div>
-    <div ng-show="error" class="alert alert-error">{{ error }}</div>
+    <!--<div class="alert-container"><div id="alerts"></div></div>-->
+    <!--<div ng-show="error" class="alert alert-error">{{ error }}</div>-->
 
-    <div ui-view></div>
+    <main class="main">
+            <div ui-view></div>
+    </main>
 
-    <div id="dialogContainer"></div>
-    <div class="clearfooter"></div>
-</div> <!—-End Container—>
+    <!--<div id="dialogContainer"></div>-->
+    <!--<div class="clearfooter"></div>-->
+<!--</div> <!—-End Container—>-->
 
 <!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>-->
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.min.js"></script>
