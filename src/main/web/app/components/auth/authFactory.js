@@ -1,7 +1,7 @@
 angular.module('fims.auth')
 
-.factory('AuthFactory', ['$http', '$q', '$rootScope', '$window', 'oAuth', 'REST_ROOT', 'APP_ROOT',
-    function ($http, $q, $rootScope, $window, oAuth, REST_ROOT, APP_ROOT) {
+.factory('AuthFactory', ['$rootScope', '$http', '$q', 'oAuth', 'StorageService', 'REST_ROOT', 'APP_ROOT',
+    function ($rootScope, $http, $q, oAuth, StorageService, REST_ROOT, APP_ROOT) {
         var triedToRefresh = false;
 
         var authFactory = {
@@ -30,8 +30,7 @@ angular.module('fims.auth')
         }
 
         function isTokenExpired() {
-            var biscicolSessionStorage = JSON.parse($window.sessionStorage.biscicol);
-            var oAuthTimestamp = biscicolSessionStorage.oAuthTimestamp;
+            var oAuthTimestamp = StorageService.get('oAuthTimestamp');
             var now = new Date().getTime();
 
             if (now - oAuthTimestamp > oAuth.USER_LOGIN_EXPIRATION) {
@@ -43,8 +42,7 @@ angular.module('fims.auth')
         }
 
         function getAccessToken() {
-            var biscicolSessionStorage = JSON.parse($window.sessionStorage.biscicol);
-            return biscicolSessionStorage.accessToken;
+            return StorageService.get('accessToken');
         }
 
         function login(username, password) {
@@ -61,25 +59,31 @@ angular.module('fims.auth')
             };
 
             return $http(config)
-                .success(function(data, status, headers, config) {
+                .success(function(data) {
                     setOAuthTokens(data.access_token, data.refresh_token);
                     authFactory.isAuthenticated = true;
                     triedToRefresh = false;
                 })
-                .error(function (data, status, headers, config) {
+                .error(function () {
                     authFactory.logout();
                 });
         }
 
         function logout() {
-            $window.sessionStorage.biscicol = JSON.stringify({});
+            StorageService.extend({
+                accessToken: undefined,
+                refreshToken: undefined,
+                oAuthTimestamp: undefined
+            });
+
             if (authFactory)
                 authFactory.isAuthenticated = false;
+
+            $rootScope.$broadcast('$logoutEvent');
         }
 
         function refreshAccessToken() {
-            var biscicolSessionStorage = JSON.parse($window.sessionStorage.biscicol);
-            var refreshToken = biscicolSessionStorage.refreshToken;
+            var refreshToken = StorageService.get('refreshToken');
             if (checkAuthenticated() && !triedToRefresh && !angular.isUndefined(refreshToken)) {
                 var config = {
                     method: 'POST',
@@ -95,7 +99,7 @@ angular.module('fims.auth')
                         setOAuthTokens(response.data.access_token, response.data.refresh_token);
                         triedToRefresh = false;
                     },
-                    function (response) {
+                    function () {
                         triedToRefresh = true;
                         authFactory.isAuthenticated = false;
                     });
@@ -105,12 +109,10 @@ angular.module('fims.auth')
         }
 
         function setOAuthTokens(accessToken, refreshToken) {
-            var biscicolSessionStorage = {
+            StorageService.extend({
                 accessToken: accessToken,
                 refreshToken: refreshToken,
                 oAuthTimestamp: new Date().getTime()
-            };
-            
-            $window.sessionStorage.biscicol = JSON.stringify(biscicolSessionStorage);
+            });
         }
     }]);

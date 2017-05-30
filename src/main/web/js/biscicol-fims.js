@@ -103,20 +103,6 @@ function isTokenExpired() {
     return false;
 }
 
-// function for displaying a loading dialog while waiting for a response from the server
-function loadingDialog(promise) {
-    var dialogContainer = $("#dialogContainer");
-    var msg = "Loading ...";
-    dialog(msg, "", null);
-
-    // close the dialog when the ajax call has returned only if the html is the same
-    promise.always(function () {
-        if (dialogContainer.html() == msg) {
-            dialogContainer.dialog("close");
-        }
-    });
-}
-
 // function to retrieve a user's projects and populate the page
 function listProjects(username, url, expedition) {
     var jqxhr = $.getJSON(url
@@ -211,28 +197,6 @@ function populateDivFromService(url, elementID, failMessage) {
         .fail(function () {
             $(elementID).html(failMessage);
         });
-}
-
-function populateProjects() {
-    theUrl = biocodeFimsRestRoot + "projects?includePublic=true";
-    var jqxhr = $.getJSON(theUrl, function (data) {
-        var listItems = "";
-        listItems += "<option value='0'>Select a project ...</option>";
-        $.each(data, function (index, project) {
-            listItems += "<option value='" + project.projectId + "'>" + project.projectTitle + "</option>";
-        });
-        $("#projects").html(listItems);
-        // Set to the first value in the list which should be "select one..."
-        $("#projects").val($("#projects option:first").val());
-
-    }).fail(function (jqXHR, textStatus) {
-        if (textStatus == "timeout") {
-            showMessage("Timed out waiting for response! Try again later or reduce the number of graphs you are querying. If the problem persists, contact the System Administrator.");
-        } else {
-            showMessage("Error completing request!");
-        }
-    });
-    return jqxhr;
 }
 
 function failError(jqxhr) {
@@ -565,29 +529,6 @@ function getProfileEditor(username) {
 }
 
 /* ====== templates.html Functions ======= */
-function hideTemplateInfo() {
-    if (!$('#abstract').is(':hidden')) {
-        $('#abstract').hide(400);
-    }
-    if (!$('#definition').is(':hidden')) {
-        $('#definition').hide(400);
-    }
-    if (!$('#cat1').is(':hidden')) {
-        $('#cat1').hide(400);
-    }
-}
-
-function showTemplateInfo() {
-    if ($('#abstract').is(':hidden')) {
-        $('#abstract').show(400);
-    }
-    if ($('#definition').is(':hidden')) {
-        $('#definition').show(400);
-    }
-    if ($('#cat1').is(':hidden')) {
-        $('#cat1').show(400);
-    }
-}
 
 function populate_bottom() {
     var selected = new Array();

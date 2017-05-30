@@ -16,49 +16,23 @@ var app = angular.module('biscicolApp', [
     'angularSpinner'
 ]);
 
-var currentUser = {};
-app.run(['$http', 'UserFactory', function ($http, UserFactory) {
-    UserFactory.setUser(currentUser);
+app.run(['$http', '$rootScope', function ($http, $rootScope) {
     $http.defaults.headers.common = {'Fims-App': 'Biscicol-Fims'};
+
+    $rootScope.isEmpty = function (val) {
+        return angular.equals({}, val);
+    };
 }]);
 
-angular.element(document).ready(function () {
-    if (!angular.isDefined(window.sessionStorage.biscicol)) {
-        // initialize the biscicol sessionStorage object to not get undefined errors later when
-        // JSON.parse($window.sessionStorage.biscicol) is called
-        window.sessionStorage.biscicol = JSON.stringify({});
-    }
-
-    var biscicolSessionStorage = JSON.parse(window.sessionStorage.biscicol);
-    var accessToken = biscicolSessionStorage.accessToken;
-    if (!isTokenExpired() && accessToken) {
-        $.get('/biocode-fims/rest/users/profile?access_token=' + accessToken, function (data) {
-            currentUser = data;
-            angular.bootstrap(document, ['biscicolApp']);
-        }).fail(function () {
-            angular.bootstrap(document, ['biscicolApp']);
-        });
-    } else {
-        angular.bootstrap(document, ['biscicolApp']);
-    }
-});
-
-
-app.controller('biscicolCtrl', ['$rootScope', '$scope', '$state', '$location', 'AuthFactory',
-    function ($rootScope, $scope, $state, $location, AuthFactory) {
+app.controller('biscicolCtrl', ['$rootScope', '$scope', '$state', '$location', '$transitions', 'AuthFactory',
+    function ($rootScope, $scope, $state, $location, $transitions, AuthFactory) {
         $scope.error = $location.search()['error'];
 
-        $rootScope.isEmpty = function(val) {
-            return angular.equals({}, val);
-        };
 
-        $rootScope.$on('$stateChangeStart', function (event, next) {
-            if (next.loginRequired && !AuthFactory.isAuthenticated) {
-                event.preventDefault();
-                /* Save the user's location to take him back to the same page after he has logged-in */
-                $rootScope.savedState = next.name;
-
-                $state.go('login');
+        $transitions.onStart({}, function (trans) {
+            var to = trans.$to();
+            if (to.loginRequired && !AuthFactory.isAuthenticated) {
+                return trans.router.stateService.target('login', {nextState: to.name, nextStateParams: to.params});
             }
         });
     }]);

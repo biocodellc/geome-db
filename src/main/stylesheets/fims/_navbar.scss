@@ -97,6 +97,16 @@
     padding-bottom: 13px;
     @extend .text-uppercase;
 
+    &.disabled {
+      cursor: default;
+      pointer-events: auto;
+
+      &:hover,
+      &:focus {
+        background-color: $navbar-default-bg;
+      }
+    }
+
     &:hover,
     &:focus {
       background-color: darken($navbar-default-bg, 5%);

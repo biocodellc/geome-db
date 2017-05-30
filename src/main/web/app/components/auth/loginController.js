@@ -35,22 +35,19 @@ angular.module('fims.auth')
             function submit() {
                 LoadingModalFactory.open();
                 AuthFactory.login(vm.credentials.username, vm.credentials.password)
-                    .success(function (data, status, headers, config) {
+                    .success(function () {
                         UserFactory.fetchUser()
-                            .success(function (data) {
-                                if (data.hasSetPassword == false) {
-                                    $state.go("profile", {error: "Please update your password."});
+                            .then(function (user) {
+                                if (user && !angular.equals({}, user) && user.hasSetPassword == false) {
+                                    return $state.go("profile", {error: "Please update your password."});
                                 }
                             });
-                        if ($rootScope.savedState) {
-                            if ($rootScope.savedState != "login")
-                                $state.go($rootScope.savedState, $rootScope.savedStateParams);
-                            else
-                                $state.go("home");
-                            delete $rootScope.savedState;
-                            delete $rootScope.savedStateParams;
+                        var params = $state.params;
+                        if (params.nextState
+                            && params.nextState != "login") {
+                            return $state.go(params.nextState, params.nextStateParams);
                         } else {
-                            $state.go('home');
+                            return $state.go('home');
                         }
                     })
                     .error(function (data, status, headers, config) {

@@ -14,12 +14,17 @@ angular.module('biscicolApp')
             .state('login', {
                 url: "/login",
                 templateUrl: "app/components/auth/login.html",
-                controller: "LoginCtrl as vm"
+                controller: "LoginCtrl as vm",
+                params: {
+                    nextState: null,
+                    nextStateParams: null
+                }
             })
             .state('validate', {
                 url: "/validate",
                 templateUrl: "app/components/validation/validation.html",
                 controller: "ValidationController as vm",
+                projectRequired: true,
                 loginRequired: true
             })
             .state('lookup', {
@@ -41,15 +46,11 @@ angular.module('biscicolApp')
                 url: "/reset",
                 templateUrl: "app/components/users/reset.html"
             })
-            .state('template', {
-                url: "/template?projectId",
-                templateUrl: "app/components/templates/templates.html",
-                controller: "TemplateCtrl as vm"
-            })
             .state('query', {
                 url: "/query",
                 templateUrl: "app/components/query/query.html",
                 controller: "QueryCtrl as queryVm",
+                projectRequired: true
             })
             .state('creator', {
                 url: "/bcidCreator",
@@ -67,12 +68,14 @@ angular.module('biscicolApp')
                 url: "/secure/projects",
                 templateUrl: "app/components/projects/projects.html",
                 controller: "ProjectCtrl as vm",
+                projectRequired: true,
                 loginRequired: true
             })
             .state('expeditionManager', {
                 url: "/secure/expeditions",
                 templateUrl: "app/components/expeditions/expeditions.html",
                 controller: "ExpeditionCtrl as vm",
+                projectRequired: true,
                 loginRequired: true
             })
             .state('resourceTypes', {

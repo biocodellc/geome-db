@@ -1,64 +1,72 @@
 angular.module('fims.users')
 
-.factory('UserFactory', ['$rootScope', '$http', '$q', 'AuthFactory', 'REST_ROOT',
-    function($rootScope, $http, $q, AuthFactory, REST_ROOT) {
-        
-        var userFactory = {
-            user: {},
-            isAdmin: false,
-            removeUser: removeUser,
-            setUser: setUser,
-            fetchUser: fetchUser,
-            createUser: createUser,
-            getUsers: getUsers,
-            updateUser: updateUser,
-            getUser: getUser
-        };
+    .factory('UserFactory', ['$rootScope', '$http', '$q', 'AuthFactory', 'REST_ROOT',
+        function ($rootScope, $http, $q, AuthFactory, REST_ROOT) {
 
-        return userFactory;
+            var userFactory = {
+                user: {},
+                isAdmin: false,
+                removeUser: removeUser,
+                setUser: setUser,
+                fetchUser: fetchUser,
+                createUser: createUser,
+                getUsers: getUsers,
+                updateUser: updateUser,
+                getUser: getUser
+            };
 
-        function removeUser() {
-            angular.extend(userFactory.user, {});
-        }
+            return userFactory;
 
-        function setUser(newUser) {
-            angular.extend(userFactory.user, newUser);
-            userFactory.isAdmin = (newUser.projectAdmin == true);
-        }
-
-        function fetchUser() {
-            if (AuthFactory.isAuthenticated) {
-                return $http.get(REST_ROOT + 'users/profile')
-                    .success(function (data, status, headers, config) {
-                        setUser(data);
-                    })
+            function removeUser() {
+                angular.extend(userFactory.user, {});
             }
-            return $q.reject;
-        }
 
-        function getUsers() {
-            return $http.get(REST_ROOT + 'users/');
-        }
+            function setUser(newUser) {
+                angular.extend(userFactory.user, newUser);
+                userFactory.isAdmin = (newUser.projectAdmin == true);
+            }
 
-        function getUser(username) {
-            return $http.get(REST_ROOT + 'users/' + username);
-        }
+            function fetchUser() {
+                var deferred = new $q.defer();
 
-        function createUser(user) {
-            return $http({
-                method: 'POST',
-                url: REST_ROOT + 'users/',
-                data: user,
-                keepJson: true
-            });
-        }
+                if (AuthFactory.isAuthenticated) {
+                    $http.get(REST_ROOT + 'users/profile')
+                        .then(function (response) {
+                            setUser(response.data);
+                            deferred.resolve(userFactory.user);
+                        }, function (response) {
+                            deferred.reject(response);
+                        });
+                } else {
+                    deferred.resolve();
+                }
 
-        function updateUser(user) {
-            return $http({
-                method: 'PUT',
-                url: REST_ROOT + 'users/' + user.username,
-                data: user,
-                keepJson: true
-            });
-        }
-    }]);
+                return deferred.promise;
+            }
+
+            function getUsers() {
+                return $http.get(REST_ROOT + 'users/');
+            }
+
+            function getUser(username) {
+                return $http.get(REST_ROOT + 'users/' + username);
+            }
+
+            function createUser(user) {
+                return $http({
+                    method: 'POST',
+                    url: REST_ROOT + 'users/',
+                    data: user,
+                    keepJson: true
+                });
+            }
+
+            function updateUser(user) {
+                return $http({
+                    method: 'PUT',
+                    url: REST_ROOT + 'users/' + user.username,
+                    data: user,
+                    keepJson: true
+                });
+            }
+        }]);

@@ -1,5 +1,5 @@
 <!doctype html>
-<html ng-controller="biscicolCtrl">
+<html ng-app="biscicolApp" ng-strict-di ng-controller="biscicolCtrl">
 <head>
     <base href="/">
     <title>Biocode Field Information Management System</title>
@@ -10,8 +10,6 @@
 
     <link rel="stylesheet" type="text/css" href="css/jquery-ui.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
-    <!--<link rel="stylesheet" type="text/css" href="css/alerts.css"/>-->
-    <!--<link rel="stylesheet" type="text/css" href="css/biscicol.css"/>-->
     <link rel="stylesheet" type="text/css" href="css/style.css"/>
 
     <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.css' rel='stylesheet' />
@@ -24,22 +22,20 @@
     <link rel="short icon" href="docs/fimsicon.png" />
 </head>
 <body ng-cloak>
-<!--<div id="container">-->
 
-    <header ng-include="'app/partials/header-nav.html'"></header>
+    <header ng-include="'app/components/header/header.tpl.html'"></header>
     <!--<div class="alert-container"><div id="alerts"></div></div>-->
     <!--<div ng-show="error" class="alert alert-error">{{ error }}</div>-->
 
     <main class="main">
-            <div ui-view></div>
+            <div class="container-fluid" ui-view></div>
     </main>
 
     <!--<div id="dialogContainer"></div>-->
     <!--<div class="clearfooter"></div>-->
 <!--</div> <!—-End Container—>-->
 
-<!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>-->
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.3/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
 <script
         src="https://code.jquery.com/jquery-1.11.1.min.js"
         integrity="sha256-VAvG3sHdS5LqTT+5A/aeq/bZGa/Uj04xKxY8KM/w9EE="
