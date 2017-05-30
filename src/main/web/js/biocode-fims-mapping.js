@@ -130,7 +130,7 @@ function displayMap(id, geoJSONData, mapboxToken) {
 
     L.tileLayer('https://api.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token={access_token}',
         {access_token: mapboxToken})
-        .addTo(vm.map);
+        .addTo(map);
 
     // create the data points
     var geoJSONLayer = L.geoJson(geoJSONData, {
