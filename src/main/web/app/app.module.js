@@ -2,6 +2,7 @@ var app = angular.module('biscicolApp', [
     'ui.router',
     'ui.bootstrap',
     'fims.header',
+    'fims.alerts',
     'fims.query',
     'fims.auth',
     'fims.templates',
@@ -24,11 +25,8 @@ app.run(['$http', '$rootScope', function ($http, $rootScope) {
     };
 }]);
 
-app.controller('biscicolCtrl', ['$rootScope', '$scope', '$state', '$location', '$transitions', 'AuthFactory',
-    function ($rootScope, $scope, $state, $location, $transitions, AuthFactory) {
-        $scope.error = $location.search()['error'];
-
-
+app.controller('RootController', ['$transitions', 'AuthFactory',
+    function ($transitions, AuthFactory) {
         $transitions.onStart({}, function (trans) {
             var to = trans.$to();
             if (to.loginRequired && !AuthFactory.isAuthenticated) {

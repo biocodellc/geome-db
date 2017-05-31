@@ -1,0 +1,11 @@
+<div class="alerts row" ng-controller="AlertController as vm">
+    <div class="col-xs-12">
+        <div ng-repeat="alert in vm.alerts.getAlerts()" class="alert alert-{{alert.level}} alert-dismissable">
+            <button type="button" class="close" data-dismiss="alert" ng-click="vm.alerts.remove(alert)"
+                    aria-label="Close">
+                <i class="fa fa-times"></i>
+            </button>
+            {{ alert.msg }}
+        </div>
+    </div>
+</div>

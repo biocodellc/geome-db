@@ -4,9 +4,9 @@
     angular.module('fims.templates')
         .controller('TemplateController', TemplateController);
 
-    TemplateController.$inject = ['$rootScope', 'AuthFactory', 'TemplateService', 'ProjectService', 'UserFactory'];
+    TemplateController.$inject = ['$rootScope', 'AuthFactory', 'TemplateService', 'ProjectService', 'UserFactory', 'exception'];
 
-    function TemplateController($scope, AuthFactory, TemplateService, ProjectService, UserFactory) {
+    function TemplateController($scope, AuthFactory, TemplateService, ProjectService, UserFactory, exception) {
         var DEFAULT_TEMPLATE = {name: 'DEFAULT'};
         var config = undefined;
         var vm = this;
@@ -90,9 +90,9 @@
                 .then(function (response) {
                     vm.templates = [DEFAULT_TEMPLATE].concat(response.data);
                     templateChange();
-                }, function (response) {
-                    //TODO handle error
-                });
+                },
+                    exception.catcher("Failed to load templates")(response)
+                );
         }
 
         function _getAttributes() {

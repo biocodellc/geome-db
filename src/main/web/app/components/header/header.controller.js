@@ -3,10 +3,10 @@
     angular.module('fims.header')
         .controller('HeaderController', HeaderController);
 
-    HeaderController.$inject = ['$scope', '$location', '$window', '$state', 'ProjectService',
+    HeaderController.$inject = ['$scope', '$location', '$window', '$state', 'ProjectService', 'exception',
         'AuthFactory', 'UserFactory'];
 
-    function HeaderController($scope, $location, $window, $state, ProjectService, AuthFactory, UserFactory) {
+    function HeaderController($scope, $location, $window, $state, ProjectService, exception, AuthFactory, UserFactory) {
         var vm = this;
         vm.isAuthenticated = AuthFactory.isAuthenticated;
         vm.isAdmin = UserFactory.isAdmin;
@@ -42,11 +42,11 @@
                 }
             );
 
-            $scope.$on('$projectChangeEvent', function(event, project) {
+            $scope.$on('$projectChangeEvent', function (event, project) {
                 vm.project = project;
             });
 
-            $scope.$watch('vm.includePublicProjects', function(newVal, oldVal) {
+            $scope.$watch('vm.includePublicProjects', function (newVal, oldVal) {
                 if (newVal !== oldVal) {
                     getProjects();
                 }
@@ -69,10 +69,10 @@
         function getProjects() {
             ProjectService.all(vm.includePublicProjects)
                 .then(function (response) {
-                    vm.projects = response.data;
-                }, function (response) {
-                    //TODO handle error
-                });
+                        vm.projects = response.data;
+                    },
+                    exception.catcher("Failed to load projects")(response)
+                );
         }
     }
 

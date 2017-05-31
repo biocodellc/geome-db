@@ -4,9 +4,10 @@
     angular.module('fims.projects')
         .factory('ProjectService', ProjectService);
 
-    ProjectService.$inject = ['$q', '$rootScope', '$cacheFactory', '$http', '$timeout', 'StorageService', 'ProjectConfigService', 'REST_ROOT'];
+    ProjectService.$inject = ['$q', '$rootScope', '$cacheFactory', '$http', '$timeout', 'StorageService', 'exception',
+        'ProjectConfigService', 'REST_ROOT'];
 
-    function ProjectService($q, $rootScope, $cacheFactory, $http, $timeout, StorageService, ProjectConfigService, REST_ROOT) {
+    function ProjectService($q, $rootScope, $cacheFactory, $http, $timeout, StorageService, exception, ProjectConfigService, REST_ROOT) {
         var PROJECT_CACHE = $cacheFactory('project');
 
         var _loading = false;
@@ -37,7 +38,7 @@
          */
         function waitForProject() {
             if (_loading) {
-                return $q(function(resolve, reject) {
+                return $q(function (resolve, reject) {
                     $rootScope.$on('$projectChangeEvent', function (project) {
                         resolve(project);
                     });
@@ -68,7 +69,7 @@
                     _loading = false;
                 }, function (response) {
                     _loading = false;
-                    //TODO handle error
+                    exception.catcher("Failed to load project configuration")(response);
                 });
 
             service.currentProject = project;

@@ -4,9 +4,9 @@
     angular.module('fims.templates')
         .factory('TemplateService', TemplateService);
 
-    TemplateService.$inject = ['$http', 'FileService', 'REST_ROOT'];
+    TemplateService.$inject = ['$http', 'FileService', 'exception', 'REST_ROOT'];
 
-    function TemplateService($http, FileService, REST_ROOT) {
+    function TemplateService($http, FileService, exception, REST_ROOT) {
 
         var service = {
             all: all,
@@ -26,13 +26,9 @@
             })
                 .then(function(response) {
                     return FileService.download(response.data.url)
-                }).catch(downloadFileFailed);
-
-            function downloadFileFailed(response) {
-                // TODO handle error
-                // exception.catcher("Failed downloading file!")(response);
-            }
-
+                },
+                    exception.catcher("Failed to generate template")(response)
+                );
         }
     }
 })();

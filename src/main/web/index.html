@@ -1,5 +1,5 @@
 <!doctype html>
-<html ng-app="biscicolApp" ng-strict-di ng-controller="biscicolCtrl">
+<html ng-app="biscicolApp" ng-strict-di ng-controller="RootController">
 <head>
     <base href="/">
     <title>Biocode Field Information Management System</title>
@@ -8,48 +8,42 @@
     <script async src='https://www.google-analytics.com/analytics.js'></script>
     <script async src='js/autotrack.js'></script>
 
-    <link rel="stylesheet" type="text/css" href="css/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="css/jquery-ui.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="css/style.css"/>
 
-    <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.css' rel='stylesheet' />
+    <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.css' rel='stylesheet'/>
     <link rel="stylesheet" type="text/css" href="css/leaflet.css"/>
     <link rel="stylesheet" type="text/css" href="css/MarkerCluster.Default.css"/>
     <link rel="stylesheet" type="text/css" href="css/MarkerCluster.css"/>
 
 
-
-    <link rel="short icon" href="docs/fimsicon.png" />
+    <link rel="short icon" href="docs/fimsicon.png"/>
 </head>
-<body ng-cloak>
 
+<body ng-cloak>
     <header ng-include="'app/components/header/header.tpl.html'"></header>
-    <!--<div class="alert-container"><div id="alerts"></div></div>-->
-    <!--<div ng-show="error" class="alert alert-error">{{ error }}</div>-->
 
     <main class="main">
-            <div class="container-fluid" ui-view></div>
+        <div ng-include="'app/components/alerts/alerts.tpl.html'"></div>
+        <div class="container-fluid" ui-view></div>
     </main>
 
-    <!--<div id="dialogContainer"></div>-->
-    <!--<div class="clearfooter"></div>-->
-<!--</div> <!—-End Container—>-->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script
+            src="https://code.jquery.com/jquery-1.11.1.min.js"
+            integrity="sha256-VAvG3sHdS5LqTT+5A/aeq/bZGa/Uj04xKxY8KM/w9EE="
+            crossorigin="anonymous"></script>
+    <script
+            src="http://code.jquery.com/ui/1.11.0/jquery-ui.min.js"
+            integrity="sha256-lCF+55kMUF+3fO/3BiXui4eiUKcQmtr7ecKSeLVDxIQ="
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
-<script
-        src="https://code.jquery.com/jquery-1.11.1.min.js"
-        integrity="sha256-VAvG3sHdS5LqTT+5A/aeq/bZGa/Uj04xKxY8KM/w9EE="
-        crossorigin="anonymous"></script>
-<script
-        src="http://code.jquery.com/ui/1.11.0/jquery-ui.min.js"
-        integrity="sha256-lCF+55kMUF+3fO/3BiXui4eiUKcQmtr7ecKSeLVDxIQ="
-        crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.js'></script>
+    <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
 
-<script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.9/mapbox.js'></script>
-<script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js'></script>
-
-<!-- LIBRARY LOADING -->
+    <!-- LIBRARY LOADING -->
     <!-- use minified and combined js file FOR PROD -->
     <script src="js/allExternalLibs.min.js"></script>
     <script src="js/all.min.js"></script><!-- END: LIBRARY LOADING -->

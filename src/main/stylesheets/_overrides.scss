@@ -55,12 +55,27 @@
 // main view
 
 .main {
-  margin: 30px 25px;
   padding-left: $sidenav-width;
+
+  > .container-fluid {
+    margin: 30px 25px;
+  }
 
   //@media (min-width: $grid-float-breakpoint-max) {
   //  padding-left: 0;
   //}
+}
+
+// alerts
+
+.alerts {
+  margin-top: -$navbar-margin-bottom;
+  margin-bottom: $navbar-margin-bottom + 30px;
+
+  .alert {
+    border-radius: 0;
+    margin-bottom: 0;
+  }
 }
 
 .alert-link {

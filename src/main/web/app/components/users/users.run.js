@@ -4,16 +4,11 @@
     angular.module('fims.users')
         .run(init);
 
-    init.$inject = ['UserFactory'];
+    init.$inject = ['UserFactory', 'exception'];
 
-    function init(UserFactory) {
+    function init(UserFactory, exception) {
         UserFactory.fetchUser()
-            .then(
-                function() {},
-                function(response) {
-                    //TODO handle error
-                }
-            );
+            .catch(exception.catcher("Failed to load user")(response));
     }
 
 })();
