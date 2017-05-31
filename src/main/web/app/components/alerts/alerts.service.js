@@ -1,4 +1,4 @@
-(function() {
+(function () {
     'use strict';
 
     angular.module('fims.alerts')
@@ -22,19 +22,27 @@
         return service;
 
         function info(msg, persist) {
-            alerts.push(new Message(msg, 'info', persist))
+            var m = new Message(msg, 'info', persist);
+            alerts.push(m);
+            return m;
         }
 
         function success(msg, persist) {
-            alerts.push(new Message(msg, 'success', persist))
+            var m = new Message(msg, 'success', persist);
+            alerts.push(m);
+            return m;
         }
 
         function warn(msg, persist) {
-            alerts.push(new Message(msg, 'warning', persist))
+            var m = new Message(msg, 'warning', persist);
+            alerts.push(m);
+            return m;
         }
 
         function error(msg, persist) {
-            alerts.push(new Message(msg, 'error', persist))
+            var m = new Message(msg, 'error', persist);
+            alerts.push(m);
+            return m;
         }
 
         function getAlerts() {
@@ -42,12 +50,22 @@
         }
 
         function remove(alert) {
-            var i = alerts.indexOf(alert);
-            alerts.splice(i, 1);
+            var toRemove = undefined;
+
+            for (var i = 0; i < alerts.length; i++) {
+                if (angular.equals(alert, alerts[i])) {
+                    toRemove = i;
+                    break;
+                }
+            }
+
+            if (toRemove) {
+                alerts.splice(toRemove, 1);
+            }
         }
 
         function removeTmp() {
-            for (var i=0; i < alerts.length; i++) {
+            for (var i = 0; i < alerts.length; i++) {
                 if (!alert.persist) {
                     alerts.splice(i, 1);
                 }

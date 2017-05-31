@@ -1,8 +1,8 @@
 angular.module('fims.creator')
 
-.controller('CreatorCtrl', ['UserFactory', function (UserFactory) {
+.controller('CreatorCtrl', ['UserService', function (UserService) {
     var vm = this;
-    vm.user = UserFactory.user;
+    vm.user = UserService.currentUser;
 
     angular.element(document).ready(function () {
         getResourceTypesMinusDataset("resourceTypesMinusDataset");

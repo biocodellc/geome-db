@@ -1,12 +1,12 @@
-(function() {
+(function () {
     'use strict';
 
     angular.module('fims.files')
         .service('FileService', FileService);
 
-    FileService.$inject = ['$window', 'AuthFactory'];
+    FileService.$inject = ['$window', 'AuthService'];
 
-    function FileService($window, AuthFactory) {
+    function FileService($window, AuthService) {
 
         var service = {
             download: download
@@ -15,7 +15,7 @@
         return service;
 
         function download(urlString) {
-            var access_token = AuthFactory.getAccessToken();
+            var access_token = AuthService.getAccessToken();
             var url = new URL(urlString);
 
             var parser = document.createElement('a');

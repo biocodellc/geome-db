@@ -25,16 +25,10 @@ app.run(['$http', '$rootScope', function ($http, $rootScope) {
     };
 }]);
 
-app.controller('RootController', ['$transitions', 'AuthFactory',
-    function ($transitions, AuthFactory) {
-        $transitions.onStart({}, function (trans) {
-            var to = trans.$to();
-            if (to.loginRequired && !AuthFactory.isAuthenticated) {
-                return trans.router.stateService.target('login', {nextState: to.name, nextStateParams: to.params});
-            }
-        });
-    }]);
+app.config(['$qProvider', function($qProvider) {
+    $qProvider.errorOnUnhandledRejections(false);
 
+}]);
 
 // register an interceptor to convert objects to a form-data like string for $http data attributes and
 // set the appropriate header

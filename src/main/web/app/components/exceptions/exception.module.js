@@ -1,5 +1,5 @@
 (function() {
     'use strict';
 
-    angular.module('fims.exception', ['fims.alerts']);
+    angular.module('fims.exceptions', ['fims.alerts']);
 })();

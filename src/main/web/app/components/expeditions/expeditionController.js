@@ -1,10 +1,10 @@
 angular.module('fims.expeditions')
 
-.controller('ExpeditionCtrl', ['UserFactory', function (UserFactory) {
+.controller('ExpeditionCtrl', ['UserService', function (UserService) {
     var vm = this;
 
     angular.element(document).ready(function () {
-        populateExpeditionPage(UserFactory.user.username, UserFactory.user.userId);
+        populateExpeditionPage(UserService.currentUser.username, UserService.currentUser.userId);
     });
     
 }]);

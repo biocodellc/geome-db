@@ -73,9 +73,14 @@
   margin-bottom: $navbar-margin-bottom + 30px;
 
   .alert {
+    text-align: center;
     border-radius: 0;
     margin-bottom: 0;
   }
+}
+
+.alert-error {
+  @extend .alert-danger;
 }
 
 .alert-link {

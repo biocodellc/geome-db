@@ -1,7 +1,7 @@
 angular.module('fims.query')
 
-    .controller('QueryCtrl', ['$rootScope', '$scope', '$http', 'LoadingModalFactory', 'FailModalFactory', 'ProjectService', 'ExpeditionFactory', 'AuthFactory', 'REST_ROOT',
-        function ($rootScope, $scope, $http, LoadingModalFactory, FailModalFactory, ProjectService, ExpeditionFactory, AuthFactory, REST_ROOT) {
+    .controller('QueryCtrl', ['$rootScope', '$scope', '$http', 'LoadingModalFactory', 'FailModalFactory', 'ProjectService', 'ExpeditionFactory', 'AuthService', 'REST_ROOT',
+        function ($rootScope, $scope, $http, LoadingModalFactory, FailModalFactory, ProjectService, ExpeditionFactory, AuthService, REST_ROOT) {
             var defaultFilter = {
                 column: null,
                 value: null
@@ -70,15 +70,15 @@ angular.module('fims.query')
             }
 
             function downloadExcel() {
-                download(REST_ROOT + "projects/query/excel?access_token=" + AuthFactory.getAccessToken(), getQueryPostParams());
+                download(REST_ROOT + "projects/query/excel?access_token=" + AuthService.getAccessToken(), getQueryPostParams());
             }
 
             function downloadKml() {
-                download(REST_ROOT + "projects/query/kml?access_token=" + AuthFactory.getAccessToken(), getQueryPostParams());
+                download(REST_ROOT + "projects/query/kml?access_token=" + AuthService.getAccessToken(), getQueryPostParams());
             }
 
             function downloadCsv() {
-                download(REST_ROOT + "projects/query/csv?access_token=" + AuthFactory.getAccessToken(), getQueryPostParams());
+                download(REST_ROOT + "projects/query/csv?access_token=" + AuthService.getAccessToken(), getQueryPostParams());
             }
 
             function getExpeditions() {

@@ -27,7 +27,7 @@
                 .then(function(response) {
                     return FileService.download(response.data.url)
                 },
-                    exception.catcher("Failed to generate template")(response)
+                    exception.catcher("Failed to generate template")
                 );
         }
     }

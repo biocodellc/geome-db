@@ -1,9 +1,9 @@
 angular.module('fims.projects')
 
-    .controller('ProjectCtrl', ['UserFactory', 'ProjectFactory', 'FailModalFactory',
-        function (UserFactory, ProjectFactory, FailModalFactory) {
+    .controller('ProjectCtrl', ['UserService', 'ProjectFactory', 'FailModalFactory',
+        function (UserService, ProjectFactory, FailModalFactory) {
             var vm = this;
-            vm.username = UserFactory.user.username;
+            vm.username = UserService.currentUser.username;
             vm.projects = [];
             vm.getProjects = getProjects;
 
@@ -22,9 +22,6 @@ angular.module('fims.projects')
             }).call(this);
 
             angular.element(document).ready(function () {
-                // populateProjectPage(UserFactory.user.username);
-
-                fimsBrowserCheck($('#warning'));
 
                 $(document).ajaxStop(function () {
                     if ($(".pwcheck").length > 0) {
@@ -38,8 +35,8 @@ angular.module('fims.projects')
 
         }])
 
-    .controller('ProjectManagerProjectCtrl', ['$scope', '$uibModal', 'UserFactory', 'ProjectFactory', 'ExpeditionFactory',
-        function ($scope, $uibModal, UserFactory, ProjectFactory, ExpeditionFactory) {
+    .controller('ProjectManagerProjectCtrl', ['$scope', '$uibModal', 'UserService', 'ProjectFactory', 'ExpeditionFactory',
+        function ($scope, $uibModal, UserService, ProjectFactory, ExpeditionFactory) {
             var originalExpeditions = [];
             var vm = this;
             vm.editMetadata = false;

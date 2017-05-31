@@ -24,7 +24,7 @@
             </ul>
         </div>
 
-        <div class="section" ng-show="vm.isAuthenticated">
+        <div class="section" ng-show="vm.user">
             <h5 class="section-title">Admin</h5>
             <ul class="nav nav-stacked">
                 <li><a ui-sref="expeditionManager"
@@ -33,7 +33,7 @@
                        tooltip-enable="!vm.project">
                     <i class="fa fa-cog fa-fw"></i> Expeditions</a></li>
                 <li><a ui-sref="projects"
-                       ng-show="vm.isAdmin"
+                       ng-show="vm.user.projectAdmin"
                        ng-class="{disabled: !vm.project}"
                        uib-tooltip="Select a project"
                        tooltip-enable="!vm.project">
@@ -65,19 +65,19 @@
         <ul class="nav navbar-nav pull-right">
             <li class="dropdown separator">
                 <a href="#" data-toggle="dropdown" class="dropdown-toggle">
-                    <span ng-show="vm.isAuthenticated" style="padding-right: 5px;">hi, {{ vm.user.username }}!</span>
+                    <span ng-show="vm.user" style="padding-right: 5px;">hi, {{ vm.user.username }}!</span>
                     <i class="fa fa-user-circle-o fa-lg"></i> <i class="fa fa-angle-down"></i>
                 </a>
 
                 <ul class="dropdown-menu dropdown-menu-right">
-                    <li ng-show="!vm.isAuthenticated">
+                    <li ng-show="!vm.user">
                         <a ng-click="vm.login()"><i class="fa fa-sign-in fa-fw"></i> Sign In</a>
                     </li>
-                    <li ng-show="vm.isAuthenticated">
+                    <li ng-show="vm.user">
                         <a ui-sref="profile"><i class="fa fa-user fa-fw"></i> User Profile</a>
                     </li>
-                    <li ng-show="vm.isAuthenticated" role="separator" class="divider"></li>
-                    <li ng-show="vm.isAuthenticated">
+                    <li ng-show="vm.user" role="separator" class="divider"></li>
+                    <li ng-show="vm.user">
                         <a ng-click="vm.logout()" ui-sref="home"><i class="fa fa-sign-out fa-fw"></i> Sign Out</a>
                     </li>
                 </ul>
@@ -94,7 +94,7 @@
                 </a>
                 <ul uib-dropdown-menu class="dropdown-menu separator">
                     <li class="section-title clearfix">Switch Project
-                        <span class="include-public pull-right" ng-show="vm.isAuthenticated">
+                        <span class="include-public pull-right" ng-show="vm.user">
                             <label>include public</label>
                             <input type="checkbox" class="pull-right" ng-model="vm.includePublicProjects"/>
                         </span>
@@ -111,7 +111,7 @@
         </ul>
     </nav>
     <!--<li><a ui-sref="lookup" class='enabled'>ID Lookup</a></li>-->
-    <!--<li ng-show="!vm.isAuthenticated"><a href='#' class='disabled'>BCID Creator</a></li>-->
-    <!--<li ng-show="vm.isAuthenticated"><a ui-sref="creator" class='enabled'>BCID Creator</a></li>-->
+    <!--<li ng-show="!vm.user"><a href='#' class='disabled'>BCID Creator</a></li>-->
+    <!--<li ng-show="vm.user"><a ui-sref="creator" class='enabled'>BCID Creator</a></li>-->
 
 </div>

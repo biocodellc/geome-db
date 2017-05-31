@@ -1,9 +1,9 @@
 angular.module('fims.users')
 
-.controller('UserCtrl', ['$location', 'UserFactory', 'REST_ROOT', 
-    function ($location, UserFactory, REST_ROOT) {
+.controller('UserCtrl', ['$location', 'UserService', 'REST_ROOT',
+    function ($location, UserService, REST_ROOT) {
         var vm = this;
-        vm.user = UserFactory.user;
+        vm.user = UserService.currentUser;
 
         angular.element(document).ready(function () {
             // Populate User Profile

@@ -94,7 +94,8 @@
         }
 
         function all(includePublic) {
-            return $http.get(REST_ROOT + 'projects?includePublic=' + includePublic, {cache: PROJECT_CACHE});
+            return $http.get(REST_ROOT + 'projects?includePublic=' + includePublic, {cache: PROJECT_CACHE})
+                .catch(exception.catcher("Failed to load projects"));
         }
     }
 })();

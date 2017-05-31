@@ -1,7 +1,7 @@
 angular.module('fims.projects')
 
-    .controller('AddProjectMemberModalCtrl', ['$scope', '$uibModalInstance', 'UserFactory', 'ProjectFactory', 'projectId',
-        function ($scope, $uibModalInstance, UserFactory, ProjectFactory, projectId) {
+    .controller('AddProjectMemberModalCtrl', ['$scope', '$uibModalInstance', 'UserService', 'ProjectFactory', 'projectId',
+        function ($scope, $uibModalInstance, UserService, ProjectFactory, projectId) {
             var vm = this;
 
             vm.users = [];
@@ -29,15 +29,12 @@ angular.module('fims.projects')
 
                 var e = $('#pwindicator');
                 if (!e.hasClass('pw-weak')) {
-                    UserFactory.createUser(vm.user)
+                    UserService.create(vm.user)
                         .then(
                             function () {
                                 vm.username = vm.user.username;
                                 _addMember();
-                            }, function (response) {
-                                vm.error = response.data.error || response.data.usrMessage || "Server Error!";
-                            }
-                        )
+                            });
                 }
 
             }
@@ -67,14 +64,11 @@ angular.module('fims.projects')
             }
 
             function getUsers() {
-                UserFactory.getUsers()
+                UserService.all()
                     .then(
-                        function (response) {
-                            vm.users = response.data;
-                        }, function (response) {
-                            vm.error = response.data.error || response.data.usrMessage || "Server Error!";
-                        }
-                    )
+                        function (users) {
+                            vm.users = users;
+                        });
             }
 
             (function init() {

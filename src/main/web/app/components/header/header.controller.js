@@ -3,15 +3,12 @@
     angular.module('fims.header')
         .controller('HeaderController', HeaderController);
 
-    HeaderController.$inject = ['$scope', '$location', '$window', '$state', 'ProjectService', 'exception',
-        'AuthFactory', 'UserFactory'];
+    HeaderController.$inject = ['$scope', '$location', '$window', '$state', 'ProjectService', 'UserService'];
 
-    function HeaderController($scope, $location, $window, $state, ProjectService, exception, AuthFactory, UserFactory) {
+    function HeaderController($scope, $location, $window, $state, ProjectService, UserService) {
         var vm = this;
-        vm.isAuthenticated = AuthFactory.isAuthenticated;
-        vm.isAdmin = UserFactory.isAdmin;
-        vm.includePublicProjects = !AuthFactory.isAuthenticated;
-        vm.user = UserFactory.user;
+        vm.user = UserService.user;
+        vm.includePublicProjects = !(vm.user);
         vm.project = ProjectService.currentProject;
         vm.projects = [];
         vm.setProject = ProjectService.set;
@@ -22,34 +19,21 @@
         init();
 
         function init() {
-            getProjects();
+            _getProjects();
 
             $scope.$watch(
                 function () {
-                    return AuthFactory.isAuthenticated
+                    return UserService.currentUser;
                 },
-                function (newVal) {
-                    vm.isAuthenticated = newVal;
-                }
-            );
-
-            $scope.$watch(
-                function () {
-                    return UserFactory.isAdmin
-                },
-                function (newVal) {
-                    vm.isAdmin = newVal;
+                function (user) {
+                    vm.user = user;
+                    vm.includePublicProjects = !(user);
+                    _getProjects();
                 }
             );
 
             $scope.$on('$projectChangeEvent', function (event, project) {
                 vm.project = project;
-            });
-
-            $scope.$watch('vm.includePublicProjects', function (newVal, oldVal) {
-                if (newVal !== oldVal) {
-                    getProjects();
-                }
             });
         }
 
@@ -62,16 +46,14 @@
         }
 
         function logout() {
-            AuthFactory.logout();
-            UserFactory.removeUser();
+            UserService.signOut();
         }
 
-        function getProjects() {
+        function _getProjects() {
             ProjectService.all(vm.includePublicProjects)
                 .then(function (response) {
                         vm.projects = response.data;
-                    },
-                    exception.catcher("Failed to load projects")(response)
+                    }
                 );
         }
     }

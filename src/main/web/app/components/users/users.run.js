@@ -4,11 +4,10 @@
     angular.module('fims.users')
         .run(init);
 
-    init.$inject = ['UserFactory', 'exception'];
+    init.$inject = ['UserService'];
 
-    function init(UserFactory, exception) {
-        UserFactory.fetchUser()
-            .catch(exception.catcher("Failed to load user")(response));
+    function init(UserService) {
+        UserService.loadUserFromSession();
     }
 
 })();

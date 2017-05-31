@@ -11,15 +11,6 @@ angular.module('biscicolApp')
                 url: "/",
                 templateUrl: "app/components/home/home.html"
             })
-            .state('login', {
-                url: "/login",
-                templateUrl: "app/components/auth/login.html",
-                controller: "LoginCtrl as vm",
-                params: {
-                    nextState: null,
-                    nextStateParams: null
-                }
-            })
             .state('validate', {
                 url: "/validate",
                 templateUrl: "app/components/validation/validation.html",
@@ -37,15 +28,6 @@ angular.module('biscicolApp')
                 templateUrl: "app/components/lookup/lookup.metadata.html",
                 controller: "LookupMetadataCtrl as vm"
             })
-            .state('resetPass', {
-                url: "/resetPass",
-                templateUrl: "app/components/users/resetPass.html",
-                controller: "ResetPassCtrl as vm"
-            })
-            .state('reset', {
-                url: "/reset",
-                templateUrl: "app/components/users/reset.html"
-            })
             .state('query', {
                 url: "/query",
                 templateUrl: "app/components/query/query.html",
@@ -56,12 +38,6 @@ angular.module('biscicolApp')
                 url: "/bcidCreator",
                 templateUrl: "app/components/creator/bcidCreator.jsp",
                 controller: "CreatorCtrl as vm",
-                loginRequired: true
-            })
-            .state('profile', {
-                url: "/secure/profile?error",
-                templateUrl: "app/components/users/profile.html",
-                controller: "UserCtrl as vm",
                 loginRequired: true
             })
             .state('projects', {

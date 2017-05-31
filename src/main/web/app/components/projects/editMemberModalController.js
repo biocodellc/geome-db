@@ -1,7 +1,7 @@
 angular.module('fims.projects')
 
-    .controller('EditMemberModalCtrl', ['$scope', '$uibModalInstance', 'UserFactory', 'username',
-        function ($scope, $uibModalInstance, UserFactory, username) {
+    .controller('EditMemberModalCtrl', ['$scope', '$uibModalInstance', 'UserService', 'username',
+        function ($scope, $uibModalInstance, UserService, username) {
             var vm = this;
 
             vm.error = null;
@@ -25,27 +25,21 @@ angular.module('fims.projects')
 
                 var e = $('#pwindicator');
                 if (!vm.user.password || !e.hasClass('pw-weak')) {
-                    UserFactory.updateUser(vm.user)
+                    UserService.save(vm.user)
                         .then(
                             function () {
                                 close();
-                            }, function (response) {
-                                vm.error = response.data.error || response.data.usrMessage || "Server Error!";
-                            }
-                        )
+                            });
                 }
 
             }
 
             function getUser() {
-                UserFactory.getUser(username)
+                UserService.get(username)
                     .then(
-                        function (response) {
-                            vm.user = response.data;
-                        }, function (response) {
-                            vm.error = response.data.error || response.data.usrMessage || "Server Error!";
-                        }
-                    )
+                        function (user) {
+                            vm.user = user;
+                        });
             }
 
             (function init() {

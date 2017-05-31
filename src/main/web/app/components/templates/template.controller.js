@@ -4,14 +4,14 @@
     angular.module('fims.templates')
         .controller('TemplateController', TemplateController);
 
-    TemplateController.$inject = ['$rootScope', 'AuthFactory', 'TemplateService', 'ProjectService', 'UserFactory', 'exception'];
+    TemplateController.$inject = ['$rootScope', 'UserService', 'TemplateService', 'ProjectService', 'exception'];
 
-    function TemplateController($scope, AuthFactory, TemplateService, ProjectService, UserFactory, exception) {
+    function TemplateController($scope, UserService, TemplateService, ProjectService, exception) {
         var DEFAULT_TEMPLATE = {name: 'DEFAULT'};
         var config = undefined;
         var vm = this;
 
-        vm.isAuthenticated = AuthFactory.isAuthenticated;
+        vm.isAuthenticated = false;
         vm.template = DEFAULT_TEMPLATE;
         vm.templates = [DEFAULT_TEMPLATE];
         vm.sheetName = undefined;
@@ -38,6 +38,13 @@
                 _getAttributes();
                 vm.description = project.description;
             }
+
+            $scope.$watch(
+                function() {return UserService.currentUser},
+                function(newVal) {
+                    vm.isAuthenticated = !!(newVal);
+                }
+            )
         }
 
         function toggleSelected(attribute) {
@@ -72,7 +79,7 @@
 
         function canRemoveTemplate() {
             return vm.template && vm.template !== DEFAULT_TEMPLATE &&
-                vm.template.user.userId === UserFactory.user.userId;
+                vm.template.user.userId === UserService.currentUser.userId;
         }
         
         function generate() {
@@ -91,7 +98,7 @@
                     vm.templates = [DEFAULT_TEMPLATE].concat(response.data);
                     templateChange();
                 },
-                    exception.catcher("Failed to load templates")(response)
+                    exception.catcher("Failed to load templates")
                 );
         }
 

@@ -1,7 +1,7 @@
 angular.module('fims.projects')
 
-    .factory('ProjectFactory', ['$http', '$cacheFactory', '$q', 'UserFactory', 'REST_ROOT',
-        function ($http, $cacheFactory, $q, UserFactory, REST_ROOT) {
+    .factory('ProjectFactory', ['$http', '$cacheFactory', '$q', 'UserService', 'REST_ROOT',
+        function ($http, $cacheFactory, $q, UserService, REST_ROOT) {
             var PROJECT_CACHE = $cacheFactory('projectOld');
             var MEMBER_CACHE = $cacheFactory('project_members');
 
