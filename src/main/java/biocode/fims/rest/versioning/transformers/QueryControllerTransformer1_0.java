@@ -132,7 +132,7 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
         }
 
         if (argMap.containsKey("limit")) {
-            argMap.put("limit", Integer.parseInt(queryParameters.getOrDefault("limit", Collections.singletonList("10000")).get(0)));
+            argMap.put("limit", Integer.parseInt(queryParameters.getOrDefault("limit", Collections.singletonList("500000")).get(0)));
         }
 
         List<String> expeditions = null;
@@ -156,7 +156,7 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
         MultivaluedMap<String, String> form = (MultivaluedMap<String, String>) argMap.get("form");
 
         if (argMap.containsKey("limit")) {
-            argMap.put("limit", Integer.parseInt(queryParameters.getOrDefault("limit", Collections.singletonList("10000")).get(0)));
+            argMap.put("limit", Integer.parseInt(queryParameters.getOrDefault("limit", Collections.singletonList("500000")).get(0)));
         }
 
         form.put("projectId", form.remove("project_id"));
