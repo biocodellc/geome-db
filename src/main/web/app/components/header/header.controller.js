@@ -7,11 +7,13 @@
 
     function HeaderController($scope, $location, $window, $state, ProjectService, UserService) {
         var vm = this;
+        vm.projectSelectorOpen = false;
         vm.user = UserService.user;
         vm.includePublicProjects = !(vm.user);
         vm.project = ProjectService.currentProject;
         vm.projects = [];
         vm.setProject = ProjectService.set;
+        vm.toggleProjectSelector = toggleProjectSelector;
         vm.logout = logout;
         vm.login = login;
         vm.apidocs = apidocs;
@@ -35,6 +37,17 @@
             $scope.$on('$projectChangeEvent', function (event, project) {
                 vm.project = project;
             });
+
+
+            $scope.$watch('vm.includePublicProjects', function (newVal, oldVal) {
+                if (newVal !== oldVal) {
+                    _getProjects();
+                }
+            });
+        }
+
+        function toggleProjectSelector() {
+            vm.projectSelectorOpen = !vm.projectSelectorOpen;
         }
 
         function apidocs() {

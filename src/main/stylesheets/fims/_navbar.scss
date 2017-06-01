@@ -6,12 +6,7 @@
 
 .navbar {
   border-radius: 0;
-
-  &:after {
-    @extend .side-nav-divider;
-    width: $sidenav-width !important;
-    bottom: -3px;
-  }
+  margin-bottom: 0;
 
   .project-selector {
 
@@ -20,6 +15,9 @@
     }
 
     .dropdown-menu {
+      max-height: calc(100vh - #{$navbar-height});
+      overflow-y: auto;
+
       .section-title {
         font-weight: 700;
         padding: 3px 20px 0;
@@ -86,8 +84,9 @@
   padding-bottom: 60px;
   overflow: auto;
 
-  &.navbar:after {
-    content: None;
+  &:before {
+      @extend .side-nav-divider;
+      top: 0;
   }
 
   ul > li > a {

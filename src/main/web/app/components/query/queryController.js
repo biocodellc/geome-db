@@ -1,7 +1,7 @@
 angular.module('fims.query')
 
-    .controller('QueryCtrl', ['$rootScope', '$scope', '$http', 'LoadingModalFactory', 'FailModalFactory', 'ProjectService', 'ExpeditionFactory', 'AuthService', 'REST_ROOT',
-        function ($rootScope, $scope, $http, LoadingModalFactory, FailModalFactory, ProjectService, ExpeditionFactory, AuthService, REST_ROOT) {
+    .controller('QueryCtrl', ['$rootScope', '$scope', '$http', 'LoadingModalFactory', 'FailModalFactory', 'ProjectService', 'ExpeditionService', 'AuthService', 'REST_ROOT',
+        function ($rootScope, $scope, $http, LoadingModalFactory, FailModalFactory, ProjectService, ExpeditionService, AuthService, REST_ROOT) {
             var defaultFilter = {
                 column: null,
                 value: null
@@ -82,7 +82,7 @@ angular.module('fims.query')
             }
 
             function getExpeditions() {
-                ExpeditionFactory.getExpeditions(vm.project.projectId)
+                ExpeditionService.getExpeditions(vm.project.projectId)
                     .then(function (response) {
                         vm.selectedExpeditions = [];
                         vm.expeditions = [];

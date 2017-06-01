@@ -1,0 +1,33 @@
+<h3 class="page-header">Expedition</h3>
+
+<div class="row">
+    <div class="col-xs-12">
+        <a href ui-sref="expeditions.list"> <i class="fa fa-chevron-left"></i> Expeditions</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        {{ vm.expedition.expeditionTitle }}
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-xs-1"></div>
+    <div class="col-xs-10">
+
+        <ul class="nav nav-pills">
+            <li class="active"><a href ui-sref=".settings" ui-sref-active="active">Settings</a></li>
+            <li class="active"><a href ui-sref=".resources" ui-sref-active="active">Resources</a></li>
+            <li class="active"><a href ui-sref=".members" ui-sref-active="active">Members</a></li>
+        </ul>
+
+    </div>
+    <div class="col-xs-1"></div>
+</div>
+
+<div class="row">
+    <div ui-view="details" class="col-xs-12"></div>
+</div>
+

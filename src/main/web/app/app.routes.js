@@ -47,13 +47,6 @@ angular.module('biscicolApp')
                 projectRequired: true,
                 loginRequired: true
             })
-            .state('expeditionManager', {
-                url: "/secure/expeditions",
-                templateUrl: "app/components/expeditions/expeditions.html",
-                controller: "ExpeditionCtrl as vm",
-                projectRequired: true,
-                loginRequired: true
-            })
             .state('resourceTypes', {
                 url: "/resourceTypes",
                 templateUrl: "app/components/creator/resourceTypes.jsp",
@@ -87,7 +80,6 @@ angular.module('biscicolApp')
                 $state.go('template', $location.search());
             }])
             .when('/secure/bcidCreator.jsp', 'creator')
-            .when('/secure/expeditions.jsp', 'expeditionManager')
             .when('/secure/profile.jsp', 'profile')
             .when('/secure/projects.jsp', 'projects')
     }]);

@@ -35,8 +35,8 @@ angular.module('fims.projects')
 
         }])
 
-    .controller('ProjectManagerProjectCtrl', ['$scope', '$uibModal', 'UserService', 'ProjectFactory', 'ExpeditionFactory',
-        function ($scope, $uibModal, UserService, ProjectFactory, ExpeditionFactory) {
+    .controller('ProjectManagerProjectCtrl', ['$scope', '$uibModal', 'UserService', 'ProjectFactory', 'ExpeditionService',
+        function ($scope, $uibModal, UserService, ProjectFactory, ExpeditionService) {
             var originalExpeditions = [];
             var vm = this;
             vm.editMetadata = false;
@@ -161,7 +161,7 @@ angular.module('fims.projects')
             }
 
             function updateExpeditions() {
-                ExpeditionFactory.updateExpeditions(vm.project.projectId, vm.modifiedExpeditions)
+                ExpeditionService.updateExpeditions(vm.project.projectId, vm.modifiedExpeditions)
                     .then(
                         function (response) {
                             vm.messages.success.expeditions = "Successfully updated expeditions";
@@ -189,7 +189,7 @@ angular.module('fims.projects')
             }
 
             function getExpeditions() {
-                ExpeditionFactory.getExpeditionsForAdmin(vm.project.projectId)
+                ExpeditionService.getExpeditionsForAdmin(vm.project.projectId)
                     .then(
                         function (response) {
                             vm.expeditions = response.data;

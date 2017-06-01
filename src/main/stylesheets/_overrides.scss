@@ -52,12 +52,16 @@
 .fa-lg { font-size: 1.5em; }
 
 
+body {
+  height: 100vh;
+  overflow: hidden;
+}
 // main view
 
 .main {
   padding-left: $sidenav-width;
 
-  > .container-fluid {
+  > .content > .container-fluid {
     margin: 30px 25px;
   }
 
@@ -66,11 +70,16 @@
   //}
 }
 
+.content {
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: calc(100vh - #{$navbar-height});
+}
+
 // alerts
 
 .alerts {
-  margin-top: -$navbar-margin-bottom;
-  margin-bottom: $navbar-margin-bottom + 30px;
+  margin-bottom: $navbar-margin-bottom;
 
   .alert {
     text-align: center;
@@ -83,9 +92,15 @@
   @extend .alert-danger;
 }
 
-.alert-link {
-  cursor: pointer;
+// page header
+
+.page-header {
+  margin-top: 0;
+  margin-bottom: 35px;
+  text-align: center
 }
+
+// links
 
 a {
   &.disabled {

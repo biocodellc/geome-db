@@ -21,6 +21,7 @@
 
             var service = {
                 configureStates: configureStates,
+                redirect: redirect,
                 getStates: getStates
             };
 
@@ -36,6 +37,10 @@
                     hasOtherwise = true;
                     $urlRouterProvider.otherwise(otherwisePath);
                 }
+            }
+
+            function redirect(path, toState) {
+                $urlRouterProvider.when(path, toState);
             }
 
             function getStates() { return $state.get(); }

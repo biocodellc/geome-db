@@ -4,10 +4,10 @@
     angular.module('fims.validation')
         .controller('ValidationController', ValidationController);
 
-    ValidationController.$inject = ['$scope', '$q', '$http', '$uibModal', 'Validator', 'ExpeditionFactory',
+    ValidationController.$inject = ['$scope', '$q', '$http', '$uibModal', 'Validator', 'ExpeditionService',
         'FailModalFactory', 'ResultsDataFactory', 'ProjectFactory', 'StatusPollingFactory', 'NAAN', 'MAPBOX_TOKEN'];
 
-    function ValidationController($scope, $q, $http, $uibModal, Validator, ExpeditionFactory, FailModalFactory, ResultsDataFactory, ProjectFactory, StatusPollingFactory, NAAN, MAPBOX_TOKEN) {
+    function ValidationController($scope, $q, $http, $uibModal, Validator, ExpeditionService, FailModalFactory, ResultsDataFactory, ProjectFactory, StatusPollingFactory, NAAN, MAPBOX_TOKEN) {
         var modalInstance = null;
         var vm = this;
 
@@ -261,7 +261,7 @@
         }
 
         function checkExpeditionExists() {
-            return ExpeditionFactory.getExpedition(vm.project.projectId, vm.expedition.expeditionCode)
+            return ExpeditionService.getExpedition(vm.project.projectId, vm.expedition.expeditionCode)
                 .then(function (response) {
                     // if we get an expedition, then it already exists
                     if (response.data) {
@@ -274,7 +274,7 @@
 
         function getExpeditions() {
             vm.expeditions = [];
-            ExpeditionFactory.getExpeditionsForUser(vm.project.projectId, true)
+            ExpeditionService.getExpeditionsForUser(vm.project.projectId, true)
                 .then(function (response) {
                     vm.expeditions = response.data;
                     vm.newExpedition = vm.expeditions.length === 0;
