@@ -9,6 +9,8 @@
     function ExpeditionService($q, $http, ProjectService, exception, REST_ROOT) {
 
         var service = {
+            update: update,
+            delete: deleteExpedition,
             userExpeditions: userExpeditions,
             getExpeditions: getExpeditions,
             getExpedition: getExpedition,
@@ -18,7 +20,34 @@
         };
 
         return service;
-        
+
+        function update(expedition) {
+            var projectId = ProjectService.currentProject.projectId;
+
+            if (!projectId) {
+                return $q.reject({data: {error: "No project is selected"}});
+            }
+
+            return $http({
+                method: 'PUT',
+                url: REST_ROOT + 'projects/' + projectId + '/expeditions/' + expedition.expeditionCode,
+                data: expedition,
+                keepJson: true
+            })
+                .catch(exception.catcher("Failed to update the expedition."));
+        }
+
+        function deleteExpedition(expedition) {
+            var projectId = ProjectService.currentProject.projectId;
+
+            if (!projectId) {
+                return $q.reject({data: {error: "No project is selected"}});
+            }
+
+            return $http.delete(REST_ROOT + 'projects/' + projectId + '/expeditions/' + expedition.expeditionCode)
+                .catch(exception.catcher("Failed to delete the expedition."));
+        }
+
         function userExpeditions(includePrivate) {
             var projectId = ProjectService.currentProject.projectId;
 

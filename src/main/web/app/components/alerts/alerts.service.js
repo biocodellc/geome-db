@@ -23,26 +23,22 @@
 
         function info(msg, persist) {
             var m = new Message(msg, 'info', persist);
-            alerts.push(m);
-            return m;
+            return _addMessage(m);
         }
 
         function success(msg, persist) {
             var m = new Message(msg, 'success', persist);
-            alerts.push(m);
-            return m;
+            return _addMessage(m);
         }
 
         function warn(msg, persist) {
             var m = new Message(msg, 'warning', persist);
-            alerts.push(m);
-            return m;
+            return _addMessage(m);
         }
 
         function error(msg, persist) {
             var m = new Message(msg, 'error', persist);
-            alerts.push(m);
-            return m;
+            return _addMessage(m);
         }
 
         function getAlerts() {
@@ -59,7 +55,7 @@
                 }
             }
 
-            if (toRemove) {
+            if (toRemove !== undefined) {
                 alerts.splice(toRemove, 1);
             }
         }
@@ -70,6 +66,16 @@
                     alerts.splice(i, 1);
                 }
             }
+        }
+
+        function _addMessage(m) {
+            for (var i = 0; i < alerts.length; i++) {
+                if (angular.equals(m, alerts[i])) {
+                    return m;
+                }
+            }
+
+            alerts.push(m);
         }
     }
 

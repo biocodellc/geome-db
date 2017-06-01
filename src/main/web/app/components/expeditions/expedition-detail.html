@@ -1,6 +1,6 @@
-<h3 class="page-header">Expedition</h3>
+<!--<h3 class="page-header">Expedition</h3>-->
 
-<div class="row">
+<div class="row back">
     <div class="col-xs-12">
         <a href ui-sref="expeditions.list"> <i class="fa fa-chevron-left"></i> Expeditions</a>
     </div>
@@ -8,26 +8,54 @@
 
 <div class="row">
     <div class="col-xs-12">
-        {{ vm.expedition.expeditionTitle }}
+        <section class="heading">
+            <h3>{{ vm.expedition.expeditionTitle }}</h3>
+            <p><strong>Expedition Code: </strong> {{ vm.expedition.expeditionCode }}</p>
+            <p><strong>Identifier: </strong> <a href="http://n2t.net/{{vm.expedition.identifier}}">http://n2t.net/{{
+                vm.expedition.identifier }}</a></p>
+        </section>
     </div>
 </div>
 
 
 <div class="row">
-    <div class="col-xs-1"></div>
-    <div class="col-xs-10">
+    <div class="col-xs-9">
+        <section>
+            <div class="row">
+                <div class="col-xs-12">
+                    <ul class="nav nav-pills">
+                        <li ui-sref-active="active"><a href ui-sref=".settings" ui-sref-active="active">Settings</a>
+                        </li>
+                        <li ui-sref-active="active"><a href ui-sref=".resources" ui-sref-active="active">Resources</a>
+                        </li>
+                        <li><a href ui-sref=".members" ui-sref-active="active">Members</a></li>
+                    </ul>
+                </div>
+            </div>
 
-        <ul class="nav nav-pills">
-            <li class="active"><a href ui-sref=".settings" ui-sref-active="active">Settings</a></li>
-            <li class="active"><a href ui-sref=".resources" ui-sref-active="active">Resources</a></li>
-            <li class="active"><a href ui-sref=".members" ui-sref-active="active">Members</a></li>
-        </ul>
+            <div class="row">
+                <div ui-view="details" class="col-xs-12"></div>
+            </div>
 
+        </section>
     </div>
-    <div class="col-xs-1"></div>
+
+    <div class="col-xs-3 right-column">
+        <section>
+            <div class="list-group">
+                <a class="list-group-item" href ui-sref="query">
+                    <strong>View Data <i class="fa fa-map-marker fa-fw pull-right"></i></strong>
+                </a>
+                <a class="list-group-item" href ui-sref="validate">
+                    <strong>Upload Data <i class="fa fa-upload fa-fw pull-right"></i></strong>
+                </a>
+                <a class="list-group-item" href="#">
+                    <strong>Export Data <i class="fa fa-download fa-fw pull-right"></i></strong>
+                </a>
+            </div>
+        </section>
+    </div>
+
 </div>
 
-<div class="row">
-    <div ui-view="details" class="col-xs-12"></div>
-</div>
 

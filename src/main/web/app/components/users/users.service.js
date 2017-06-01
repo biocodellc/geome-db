@@ -4,9 +4,9 @@
     angular.module('fims.users')
         .factory('UserService', UserService);
 
-    UserService.$inject = ['$rootScope', '$http', '$state', 'exception', 'User', 'AuthService', 'REST_ROOT'];
+    UserService.$inject = ['$rootScope', '$http', '$state', 'exception', 'alerts', 'User', 'AuthService', 'REST_ROOT'];
 
-    function UserService($rootScope, $http, $state, exception, User, AuthService, REST_ROOT) {
+    function UserService($rootScope, $http, $state, exception, alerts, User, AuthService, REST_ROOT) {
         var service = {
             currentUser: undefined,
             signIn: signIn,
@@ -20,7 +20,8 @@
             sendResetPasswordToken: sendResetPasswordToken
         };
 
-        $rootScope.$on('$$userRefreshFailedEvent', signOut);
+        $rootScope.$on('$userRefreshFailedEvent', signOut);
+        $rootScope.$on('$authTimeoutEvent', _authTimeout);
 
         return service;
 
@@ -120,6 +121,12 @@
                     },
                     exception.catcher("Failed to load user.")
                 );
+        }
+
+        function _authTimeout() {
+            signOut();
+            alerts.info("You have been signed out due to inactivity.");
+            $state.go("home");
         }
     }
 })();

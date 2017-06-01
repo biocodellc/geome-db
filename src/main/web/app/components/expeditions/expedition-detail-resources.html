@@ -1,1 +1,15 @@
-<div>Resources management</div>
+<div class="settings">
+    <ul class="list-group">
+        <li class="list-group-heading clearfix">
+            <div class="col-xs-4">Entity</div>
+            <div class="col-xs-8">Root Identifier</div>
+        </li>
+        <li class="list-group-item clearfix" ng-repeat="entityIdentifier in vm.expedition.entityIdentifiers">
+            <div class="col-xs-4">{{ entityIdentifier.conceptAlias }}</div>
+            <div class="col-xs-8">
+                <a href="http://n2t.net/{{entityIdentifier.identifier}}">http://n2t.net/{{
+                    entityIdentifier.identifier }}</a>
+            </div>
+        </li>
+    </ul>
+</div>

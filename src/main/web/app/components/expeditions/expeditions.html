@@ -14,10 +14,9 @@
                 </div>
                 <div class="col-xs-6">
                     <ul class="list-unstyled">
-                        <li><strong>Identifier: </strong>{{ expedition.identifier}}</li>
+                        <li><strong>Identifier: </strong>http://n2t.net/{{ expedition.identifier }}</li>
                         <li><strong>Visibility: </strong>
-                            <span ng-show="expedition.public">public</span>
-                            <span ng-show="!expedition.public">private</span>
+                            {{ expedition.visibility }}
                         </li>
                     </ul>
                 </div>

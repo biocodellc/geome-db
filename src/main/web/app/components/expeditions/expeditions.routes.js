@@ -18,7 +18,7 @@
                 state: 'expeditions',
                 config: {
                     abstract: true,
-                    template: '<ui-view/>',
+                    template: '<ui-view class="admin"/>',
                     resolve: {
                         expeditions: _resolveExpeditions
                     },
@@ -72,7 +72,7 @@
                     views: {
                         "details": {
                             templateUrl: "app/components/expeditions/expedition-detail-resources.html",
-                            // controller: "ExpeditionResourcessController as vm"
+                            controller: "ExpeditionResourcesController as vm"
                         }
                     }
                 }
@@ -108,14 +108,16 @@
             });
     }
 
-    _resolveExpedition.$inject = ['expeditions', '$transition$'];
+    _resolveExpedition.$inject = ['$state', 'expeditions', '$transition$'];
 
-    function _resolveExpedition(expeditions, $transition$) {
+    function _resolveExpedition($state, expeditions, $transition$) {
         for (var i = 0; i < expeditions.length; i++) {
             if (expeditions[i].expeditionId === $transition$.params().id) {
                 return expeditions[i];
             }
         }
+
+        $state.go('expeditions.list');
     }
 
     _expeditionsOnEnter.$inject = ['$rootScope', '$state'];

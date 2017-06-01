@@ -20,6 +20,7 @@
   font-weight: 500;
   font-style: normal;
 }
+
 @font-face {
   font-family: 'Roboto';
   src: url('../fonts/roboto/Roboto-Regular.woff') format('woff'),
@@ -27,6 +28,7 @@
   font-weight: normal;
   font-style: normal;
 }
+
 @font-face {
   font-family: 'Roboto';
   src: url('../fonts/roboto/Roboto-Light.woff') format('woff'),
@@ -34,6 +36,7 @@
   font-weight: 300;
   font-style: normal;
 }
+
 @font-face {
   font-family: 'Roboto';
   src: url('../fonts/roboto/Roboto-Thin.woff') format('woff'),
@@ -43,19 +46,44 @@
 }
 
 // font-awesome helper classes
-.fa-sm { font-size: .75em; }
+.fa-sm {
+  font-size: .75em;
+}
+
 .fa-md {
   line-height: .75em;
   vertical-align: -15%;
   font-size: 1.25em;
 }
-.fa-lg { font-size: 1.5em; }
 
+.fa-lg {
+  font-size: 1.5em;
+}
 
 body {
   height: 100vh;
   overflow: hidden;
 }
+
+// grid
+.vertical-align {
+  display: flex;
+  flex-direction: row;
+}
+
+.vertical-align > [class^="col-"],
+.vertical-align > [class*=" col-"] {
+  display: flex;
+  align-items: center;     /* Align the flex-items vertically */
+  justify-content: center; /* Optional, to align inner flex-items horizontally within the column  */
+  flex-flow: row wrap;
+}
+
+.vertical-align > [class^="col-"] > *,
+.vertical-align > [class*=" col-"] > * {
+  width: 100%;
+}
+
 // main view
 
 .main {
@@ -73,7 +101,14 @@ body {
 .content {
   overflow-x: hidden;
   overflow-y: auto;
-  max-height: calc(100vh - #{$navbar-height});
+  height: calc(100vh - #{$navbar-height});
+  background-color: hsla(0, 0%, 98%, 1);
+
+  section {
+    background-color: #fff;
+    border: 1px solid hsla(184, 6%, 85%, 1);
+    padding: 15px;
+  }
 }
 
 // alerts
@@ -108,3 +143,111 @@ a {
     @extend a.btn.disabled;
   }
 }
+
+// admin pages
+
+.admin {
+
+  .nav-pills {
+
+    > li {
+      > a {
+        color: $gray-darker;
+        border-radius: 0;
+
+        &.active {
+          &,
+          &:hover,
+          &:focus {
+            background-color: $nav-link-hover-bg;;
+          }
+        }
+      }
+    }
+
+  }
+
+  .back {
+    margin-bottom: 5px;
+  }
+
+  .heading {
+    margin-bottom: 20px;
+    min-height: 110px;
+
+    h1, h2, h3, h4, h5 {
+      margin-top: 5px;
+    }
+  }
+
+  .nav {
+    border-top: 1px solid $gray-light;
+    border-bottom: 1px solid $gray-light;
+    margin-bottom: 15px;
+  }
+
+  .right-column .list-group {
+    margin-bottom: 5px;
+
+    .list-group-item {
+      border-left: none;
+      border-right: none;
+    }
+  }
+}
+
+// modals
+
+.modal-content {
+  border-radius: $border-radius-base !important;
+}
+
+// forms
+
+.settings {
+
+  legend {
+    font-size: $font-size-large;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  fieldset {
+    border-bottom: 1px solid $gray-lighter;
+    margin-bottom: $form-group-margin-bottom;
+  }
+
+  .checkbox {
+    margin-top: 0;
+
+    .help-block {
+      margin-top: 3px;
+      margin-bottom: 0;
+    }
+  }
+
+  .panel-danger {
+    background-color: hsla(6, 80%, 80%, 0.4);
+  }
+
+  .help-block {
+    color: #798088;
+    font-size: $font-size-small;
+  }
+
+  .list-group-item {
+    border-left: none;
+    border-right: none;
+    padding: 20px 15px;
+  }
+
+  .list-group-heading {
+    @extend .list-group-item;
+    border: none;
+    font-weight: 700;
+    font-size: $font-size-large;
+    padding: 15px 15px 10px;
+    }
+}
+
+// expeditions

@@ -9,7 +9,7 @@
     function configureRoutes($transitions, routerHelper, UserService) {
         routerHelper.configureStates(getStates());
 
-        $transitions.onStart({}, function (trans) {
+        $transitions.onBefore({}, function (trans) {
             var to = trans.$to();
             if (to.loginRequired && !UserService.currentUser) {
                 return trans.router.stateService.target('login', {nextState: to.name, nextStateParams: to.params});

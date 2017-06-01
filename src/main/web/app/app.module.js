@@ -25,11 +25,6 @@ app.run(['$http', '$rootScope', function ($http, $rootScope) {
     };
 }]);
 
-app.config(['$qProvider', function($qProvider) {
-    $qProvider.errorOnUnhandledRejections(false);
-
-}]);
-
 // register an interceptor to convert objects to a form-data like string for $http data attributes and
 // set the appropriate header
 app.factory('postInterceptor', [

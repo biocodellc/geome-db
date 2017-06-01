@@ -4,11 +4,12 @@
     angular.module('fims.auth')
         .factory('AuthService', AuthService);
 
-    AuthService.$inject = ['$rootScope', '$http', '$q', 'StorageService', 'AUTH_TIMEOUT', 'REST_ROOT', 'APP_ROOT'];
+    AuthService.$inject = ['$rootScope', '$http', '$q', '$timeout', 'StorageService', 'AUTH_TIMEOUT', 'REST_ROOT', 'APP_ROOT'];
 
 
-    function AuthService($rootScope, $http, $q, StorageService, AUTH_TIMEOUT, REST_ROOT, APP_ROOT) {
+    function AuthService($rootScope, $http, $q, $timeout, StorageService, AUTH_TIMEOUT, REST_ROOT, APP_ROOT) {
         var _triedToRefresh = false;
+        var _authTimoutPromise = undefined;
 
         var AuthService = {
             authenticate: authenticate,
@@ -34,8 +35,7 @@
 
             return $http.post(REST_ROOT + 'authenticationService/oauth/accessToken', data)
                 .then(function (response) {
-                    _setOAuthTokens(response.data.access_token, response.data.refresh_token);
-                    _triedToRefresh = false;
+                    _authSuccess(response.data);
                 }, function (response) {
                     AuthService.clearTokens();
                     return $q.reject(response);
@@ -59,8 +59,7 @@
 
                 })
                     .then(function (response) {
-                            _setOAuthTokens(response.data.access_token, response.data.refresh_token);
-                            _triedToRefresh = false;
+                            _authSuccess(response.data);
                         },
                         function (response) {
                             $rootScope.$broadcast('$userRefreshFailedEvent');
@@ -69,7 +68,27 @@
                         });
             }
 
+            $rootScope.$broadcast('$userRefreshFailedEvent');
             return $q.reject();
+        }
+
+        function _resetAuthTimeout() {
+            if (_authTimoutPromise) {
+                $timeout.cancel(_authTimoutPromise);
+            }
+
+            _authTimoutPromise = $timeout(_signoutUser, AUTH_TIMEOUT);
+
+            function _signoutUser() {
+                $rootScope.$broadcast('$authTimeoutEvent');
+            }
+
+        }
+
+        function _authSuccess(data) {
+            _setOAuthTokens(data.access_token, data.refresh_token);
+            _resetAuthTimeout();
+            _triedToRefresh = false;
         }
 
         function _checkAuthenticated() {

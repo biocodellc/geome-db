@@ -33,7 +33,7 @@
         return service;
 
         /**
-         * Returns a Promise that is resolved when the project loads, or after 2s. If the project is loaded,
+         * Returns a Promise that is resolved when the project loads, or after 5s. If the project is loaded,
          * the promise will resolve immediately. The promise will be rejected if there is no project loaded.
          */
         function waitForProject() {
@@ -50,7 +50,7 @@
                         } else {
                             reject();
                         }
-                    }, 2000, false);
+                    }, 5000, false);
                 });
             } else if (service.currentProject) {
                 return $q.when(service.currentProject);
