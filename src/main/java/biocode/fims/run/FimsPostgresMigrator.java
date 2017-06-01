@@ -27,11 +27,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.io.IOException;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author rjewing
@@ -42,16 +46,18 @@ public class FimsPostgresMigrator {
     private final ProjectService projectService;
     private final RecordRepository recordRepository;
     private final ProjectConfigConverter configConverter;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
     private final String projectUrl;
     private final Client client;
 
     FimsPostgresMigrator(ProjectService projectService, RecordRepository recordRepository,
-                         ProjectConfigConverter configConverter, String projectUrl,
+                         ProjectConfigConverter configConverter, String projectUrl, NamedParameterJdbcTemplate jdbcTemplate,
                          Client client) {
         this.projectService = projectService;
         this.recordRepository = recordRepository;
         this.configConverter = configConverter;
         this.projectUrl = projectUrl;
+        this.jdbcTemplate = jdbcTemplate;
         this.client = client;
     }
 
@@ -82,6 +88,7 @@ public class FimsPostgresMigrator {
         int records = 0;
         for (Expedition e : p.getExpeditions()) {
             try {
+                insertEntityIdentifiers(e, config);
 
                 QueryBuilder q = QueryBuilders.matchQuery("expedition.expeditionCode.keyword", e.getExpeditionCode());
                 ElasticSearchQuery query = new ElasticSearchQuery(q, new String[]{String.valueOf(p.getProjectId())}, new String[]{ElasticSearchIndexer.TYPE});
@@ -123,6 +130,30 @@ public class FimsPostgresMigrator {
 
     }
 
+    private void insertEntityIdentifiers(Expedition e, ProjectConfig config) {
+        List<String> conceptAliases = config.getEntities()
+                .stream()
+                .map(Entity::getConceptAlias)
+                .collect(Collectors.toList());
+
+        try {
+            String sql = "INSERT INTO entity_identifiers (expedition_id, concept_alias, identifier) " +
+                    "select " + e.getExpeditionId() + ", b.title, b.identifier " +
+                    "from bcids b " +
+                    "join expedition_bcids eb on b.id = eb.bcid_id " +
+                    "where eb.expedition_id = " + e.getExpeditionId() + " AND b.title in ('" + String.join("', '", conceptAliases) + "');";
+
+            int rows = jdbcTemplate.update(sql, new HashMap<>());
+
+            if (rows != conceptAliases.size()) {
+                logger.warn("MISSING_ENTITY_IDENTIFIERS\tDidn't find bcids for every entity for expedition: " + e.getExpeditionId());
+            }
+
+        } catch (Exception exception) {
+            logger.error("ENTITY_IDENTIFIER_ERROR\t Error inserting entity_identifiers", exception);
+        }
+    }
+
     private void createTables(Project p, ProjectConfig config) {
         recordRepository.createProjectSchema(p.getProjectId());
 
@@ -147,6 +178,7 @@ public class FimsPostgresMigrator {
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(BiscicolAppConfig.class);
         ProjectService projectService = applicationContext.getBean(ProjectService.class);
         RecordRepository repository = applicationContext.getBean(RecordRepository.class);
+        NamedParameterJdbcTemplate jdbcTemplate = applicationContext.getBean(NamedParameterJdbcTemplate.class);
         Client client = applicationContext.getBean(Client.class);
 
         String projectUrl = null;
@@ -189,7 +221,7 @@ public class FimsPostgresMigrator {
 
         ProjectConfigConverter projectConfigConverter = new ProjectConfigConverter(projectService, projectUrl);
 
-        FimsPostgresMigrator migrator = new FimsPostgresMigrator(projectService, repository, projectConfigConverter, projectUrl, client);
+        FimsPostgresMigrator migrator = new FimsPostgresMigrator(projectService, repository, projectConfigConverter, projectUrl, jdbcTemplate, client);
         migrator.migrate();
     }
 }
