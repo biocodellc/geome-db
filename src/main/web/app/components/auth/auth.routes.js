@@ -9,12 +9,30 @@
     function configureRoutes($transitions, routerHelper, UserService) {
         routerHelper.configureStates(getStates());
 
-        $transitions.onBefore({}, function (trans) {
+        $transitions.onBefore({}, _redirectIfLoginRequired, {priority: 100});
+
+        function _redirectIfLoginRequired(trans) {
             var to = trans.$to();
-            if (to.loginRequired && !UserService.currentUser) {
-                return trans.router.stateService.target('login', {nextState: to.name, nextStateParams: to.params});
+            if (_checkLoginRequired(to)) {
+                return UserService.waitForUser()
+                    .catch(function() {
+                        return trans.router.stateService.target('login', {nextState: to.name, nextStateParams: to.params});
+                    });
             }
-        });
+        }
+
+        function _checkLoginRequired(state) {
+            var s = state;
+
+            do {
+                if (s.loginRequired) {
+                    return true;
+                }
+                s = s.parent;
+            } while (s);
+
+            return false;
+        }
     }
 
     function getStates() {

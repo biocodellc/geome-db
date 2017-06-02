@@ -9,9 +9,9 @@
     function configureRoutes($transitions, routerHelper, ProjectService) {
         // routerHelper.configureStates(getStates());
 
-        $transitions.onStart({}, function (trans) {
+        $transitions.onBefore({}, function (trans) {
             var to = trans.$to();
-            if (to.projectRequired) {
+            if (_checkProjectRequired(to)) {
                 return ProjectService.waitForProject()
                     .then(function () {
                     }, function () {
@@ -19,6 +19,19 @@
                     });
             }
         });
+
+        function _checkProjectRequired(state) {
+            var s = state;
+
+            do {
+                if (s.projectRequired) {
+                    return true;
+                }
+                s = s.parent;
+            } while (s);
+
+            return false;
+        }
     }
 
     function getStates() {

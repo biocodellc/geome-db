@@ -4,14 +4,18 @@
     angular.module('fims.users')
         .factory('UserService', UserService);
 
-    UserService.$inject = ['$rootScope', '$http', '$state', 'exception', 'alerts', 'User', 'AuthService', 'REST_ROOT'];
+    UserService.$inject = ['$rootScope', '$q', '$http', '$timeout', '$state', 'exception', 'alerts', 'User',
+        'AuthService', 'REST_ROOT'];
 
-    function UserService($rootScope, $http, $state, exception, alerts, User, AuthService, REST_ROOT) {
+    function UserService($rootScope, $q, $http, $timeout, $state, exception, alerts, User, AuthService, REST_ROOT) {
+        var _loading = false;
+
         var service = {
             currentUser: undefined,
             signIn: signIn,
             signOut: signOut,
             loadUserFromSession: loadUserFromSession,
+            waitForUser: waitForUser,
             save: save,
             all: all,
             create: create,
@@ -44,6 +48,33 @@
         function loadUserFromSession() {
             if (AuthService.getAccessToken()) {
                 _fetchUser();
+            }
+        }
+
+        /**
+         * Returns a Promise that is resolved when the user loads, or after 5s. If the user is loaded,
+         * the promise will resolve immediately. The promise will be rejected if there is no user loaded.
+         */
+        function waitForUser() {
+            if (_loading) {
+                return $q(function (resolve, reject) {
+                    $rootScope.$on('$userChangeEvent', function (user) {
+                        resolve(user);
+                    });
+
+                    // set a timeout in-case the user takes too long to load
+                    $timeout(function () {
+                        if (service.currentUser) {
+                            resolve(service.currentUser);
+                        } else {
+                            reject();
+                        }
+                    }, 5000, false);
+                });
+            } else if (service.currentUser) {
+                return $q.when(service.currentUser);
+            } else {
+                return $q.reject();
             }
         }
 
@@ -107,20 +138,24 @@
         }
 
         function _fetchUser() {
+            _loading = true;
             return $http.get(REST_ROOT + 'users/profile')
                 .then(function (response) {
-                        var user = response.data;
-                        if (user) {
-                            service.currentUser = new User(user);
+                    var user = response.data;
+                    _loading = false;
+                    if (user) {
+                        service.currentUser = new User(user);
+                        $rootScope.$broadcast("$userChangeEvent", service.currentUser);
 
-                            if (user.hasSetPassword === false) {
-                                alerts.info("Please update your password.");
-                                return $state.go("profile");
-                            }
+                        if (user.hasSetPassword === false) {
+                            alerts.info("Please update your password.");
+                            return $state.go("profile");
                         }
-                    },
-                    exception.catcher("Failed to load user.")
-                );
+                    }
+                }, function (response) {
+                    _loading = false;
+                    exception.catcher("Failed to load user.")(response);
+                });
         }
 
         function _authTimeout() {
