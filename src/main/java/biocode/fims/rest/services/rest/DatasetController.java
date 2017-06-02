@@ -1,11 +1,23 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.authorizers.QueryAuthorizer;
+import biocode.fims.digester.Entity;
+import biocode.fims.fimsExceptions.errorCodes.QueryCode;
+import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.query.QueryBuilder;
+import biocode.fims.query.QueryResult;
+import biocode.fims.query.dsl.*;
+import biocode.fims.query.writers.DelimitedTextQueryWriter;
+import biocode.fims.query.writers.QueryWriter;
 import biocode.fims.reader.DataReaderFactory;
+import biocode.fims.tools.CachedFile;
+import biocode.fims.tools.FileCache;
+import biocode.fims.utils.StringGenerator;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.FimsService;
@@ -27,10 +39,11 @@ import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @resourceTag Data
@@ -45,18 +58,23 @@ public class DatasetController extends FimsService {
     private final RecordRepository recordRepository;
     private final ProjectService projectService;
     private final DataReaderFactory readerFactory;
+    private final QueryAuthorizer queryAuthorizer;
+    private final FileCache fileCache;
 
     private final UploadStore uploadStore;
 
     public DatasetController(ExpeditionService expeditionService, DataReaderFactory readerFactory,
                              RecordValidatorFactory validatorFactory, RecordRepository recordRepository,
-                             ProjectService projectService, SettingsManager settingsManager) {
+                             ProjectService projectService, QueryAuthorizer queryAuthorizer, FileCache fileCache,
+                             SettingsManager settingsManager) {
         super(settingsManager);
         this.expeditionService = expeditionService;
         this.readerFactory = readerFactory;
         this.validatorFactory = validatorFactory;
         this.recordRepository = recordRepository;
         this.projectService = projectService;
+        this.queryAuthorizer = queryAuthorizer;
+        this.fileCache = fileCache;
 
         this.uploadStore = new UploadStore();
     }
@@ -254,6 +272,55 @@ public class DatasetController extends FimsService {
         } finally {
             session.removeAttribute("processorStatus");
         }
+    }
+
+    @GET
+    @Path("/export/{projectId}/{expeditionCode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response export(@PathParam("projectId") int projectId,
+                           @PathParam("expeditionCode") String expeditionCode) {
+
+        if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), Collections.singletonList(expeditionCode), userContext.getUser())) {
+            throw new ForbiddenRequestException("You are not authorized to access this expeditions data.");
+        }
+
+        Expedition expedition = expeditionService.getExpedition(expeditionCode, projectId);
+
+        if (expedition == null) {
+            throw new NotFoundException("could not find expedition");
+        }
+
+        Map<String, File> fileMap = new HashMap<>();
+        for (Entity entity: expedition.getProject().getProjectConfig().getEntities()) {
+            QueryBuilder qb = new QueryBuilder(expedition.getProject(), entity.getConceptAlias());
+            Query query = new Query(qb, new ExpeditionExpression(expeditionCode));
+
+            QueryResult result = recordRepository.query(query);
+            QueryWriter queryWriter = new DelimitedTextQueryWriter(result, ",");
+
+            try {
+                fileMap.put(expeditionCode + "_" + entity.getConceptAlias() + "-export.csv", queryWriter.write());
+            } catch (FimsRuntimeException e) {
+                if (!e.getErrorCode().equals(QueryCode.NO_RESOURCES)) {
+                    throw e;
+                }
+            }
+        }
+
+        if (fileMap.isEmpty()) {
+            return Response.noContent().build();
+        }
+
+        File zFile = FileUtils.zip(fileMap, defaultOutputDirectory());
+
+        int userId = userContext.getUser() != null ? userContext.getUser().getUserId() : 0;
+        String fileId = StringGenerator.generateString(20);
+        CachedFile cf = new CachedFile(fileId, zFile.getAbsolutePath(), userId, expeditionCode + "-export.zip");
+        fileCache.addFile(cf);
+
+        URI fileURI = uriInfo.getBaseUriBuilder().path(UtilsController.class).path("file").queryParam("id", fileId).build();
+
+        return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
     }
 
     /**
