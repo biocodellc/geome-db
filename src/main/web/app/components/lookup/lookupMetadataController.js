@@ -14,7 +14,7 @@ angular.module('fims.lookup')
             var filteredMetadata = {};
             var metadataToExclude = ['identifier', 'datasets', 'download', 'message'];
             angular.forEach(vm.metadata, function(value, key) {
-                if (metadataToExclude.indexOf(key) == -1 && value.value.trim()) {
+                if (metadataToExclude.indexOf(key) === -1 && value.value.trim()) {
                     filteredMetadata[key] = value;
                 }
             });
@@ -35,7 +35,7 @@ angular.module('fims.lookup')
                         }
                     },
                     function (data, status, headers, config) {
-                        if (status == 404) {
+                        if (status === 404) {
                             vm.error = "Invalid identifier";
                         } else {
                             vm.error = data.data.usrMessage;

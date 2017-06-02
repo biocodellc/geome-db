@@ -47,11 +47,6 @@ angular.module('biscicolApp')
                 projectRequired: true,
                 loginRequired: true
             })
-            .state('resourceTypes', {
-                url: "/resourceTypes",
-                templateUrl: "app/components/creator/resourceTypes.jsp",
-                controller: "ResourceTypesCtrl as vm"
-            })
             .state('notFound', {
                 url: '*path',
                 templateUrl: "app/partials/page-not-found.html"
@@ -75,7 +70,6 @@ angular.module('biscicolApp')
             .when('/resetPass.jsp', ['$state', '$location', function ($state, $location) {
                 $state.go('template', $location.search());
             }])
-            .when('/resourceTypes.jsp', 'resourceTypes')
             .when('/templates.jsp', ['$state', '$location', function ($state, $location) {
                 $state.go('template', $location.search());
             }])

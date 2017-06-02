@@ -1,7 +1,7 @@
 angular.module('fims.query')
 
-    .controller('QueryCtrl', ['$rootScope', '$scope', '$http', 'LoadingModalFactory', 'FailModalFactory', 'ProjectService', 'ExpeditionService', 'AuthService', 'REST_ROOT',
-        function ($rootScope, $scope, $http, LoadingModalFactory, FailModalFactory, ProjectService, ExpeditionService, AuthService, REST_ROOT) {
+    .controller('QueryCtrl', ['$rootScope', '$scope', '$http', 'LoadingModalFactory', 'FailModalFactory', 'ProjectService', 'ExpeditionService', 'AuthService', 'FileService', 'exception', 'REST_ROOT',
+        function ($rootScope, $scope, $http, LoadingModalFactory, FailModalFactory, ProjectService, ExpeditionService, AuthService, FileService, exception, REST_ROOT) {
             var defaultFilter = {
                 column: null,
                 value: null
@@ -70,15 +70,63 @@ angular.module('fims.query')
             }
 
             function downloadExcel() {
-                download(REST_ROOT + "projects/query/excel?access_token=" + AuthService.getAccessToken(), getQueryPostParams());
+                var data = {
+                    projectId: vm.project.projectId,
+                    query: (vm.queryString.trim().length > 0) ? vm.queryString : "*"
+                };
+
+                $http.post(REST_ROOT + "projects/query/excel", data)
+                    .then(function(response) {
+                        if (response.status === 204) {
+                            alerts.info("No resources found for query");
+                            return;
+                        }
+
+                        return FileService.download(response.data.url);
+
+                    },
+                        exception.catcher("Failed to download query results as excel file")
+                    )
             }
 
             function downloadKml() {
-                download(REST_ROOT + "projects/query/kml?access_token=" + AuthService.getAccessToken(), getQueryPostParams());
+                var data = {
+                    projectId: vm.project.projectId,
+                    query: (vm.queryString.trim().length > 0) ? vm.queryString : "*"
+                };
+
+                $http.post(REST_ROOT + "projects/query/kml", data)
+                    .then(function(response) {
+                            if (response.status === 204) {
+                                alerts.info("No resources found for query");
+                                return;
+                            }
+
+                            return FileService.download(response.data.url);
+
+                        },
+                        exception.catcher("Failed to download query results as kml file")
+                    );
             }
 
             function downloadCsv() {
-                download(REST_ROOT + "projects/query/csv?access_token=" + AuthService.getAccessToken(), getQueryPostParams());
+                var data = {
+                    projectId: vm.project.projectId,
+                    query: (vm.queryString.trim().length > 0) ? vm.queryString : "*"
+                };
+
+                $http.post(REST_ROOT + "projects/query/csv", data)
+                    .then(function(response) {
+                            if (response.status === 204) {
+                                alerts.info("No resources found for query");
+                                return;
+                            }
+
+                            return FileService.download(response.data.url);
+
+                        },
+                        exception.catcher("Failed to download query results as csv file")
+                    );
             }
 
             function getExpeditions() {
