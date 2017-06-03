@@ -12,7 +12,8 @@
             update: update,
             delete: deleteExpedition,
             userExpeditions: userExpeditions,
-            getExpeditions: getExpeditions,
+            getExpeditions: all, //TODO remove this
+            all: all,
             getExpedition: getExpedition,
             getExpeditionsForUser: getExpeditionsForUser,
             getExpeditionsForAdmin: getExpeditionsForAdmin,
@@ -62,8 +63,15 @@
                 .catch(exception.catcher("Failed to load your expeditions."));
         }
 
-        function getExpeditions(projectId) {
-            return $http.get(REST_ROOT + 'projects/' + projectId + '/expeditions');
+        function all() {
+            var projectId = ProjectService.currentProject.projectId;
+
+            if (!projectId) {
+                return $q.reject({data: {error: "No project is selected"}});
+            }
+
+            return $http.get(REST_ROOT + 'projects/' + projectId + '/expeditions')
+                .catch(exception.catcher("Failed to load project expeditions."));
         }
 
         function getExpedition(projectId, expeditionCode) {

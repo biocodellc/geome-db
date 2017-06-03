@@ -17,7 +17,8 @@
             set: set,
             setFromId: setFromId,
             waitForProject: waitForProject,
-            all: all
+            all: all,
+            update: update
         };
 
         $rootScope.$on("$logoutEvent", function () {
@@ -39,7 +40,7 @@
         function waitForProject() {
             if (_loading) {
                 return $q(function (resolve, reject) {
-                    $rootScope.$on('$projectChangeEvent', function (project) {
+                    $rootScope.$on('$projectChangeEvent', function (event, project) {
                         resolve(project);
                     });
 
@@ -96,6 +97,18 @@
         function all(includePublic) {
             return $http.get(REST_ROOT + 'projects?includePublic=' + includePublic, {cache: PROJECT_CACHE})
                 .catch(exception.catcher("Failed to load projects"));
+        }
+
+        function update(project) {
+            PROJECT_CACHE.removeAll();
+            return $http({
+                method: 'PUT',
+                url: REST_ROOT + 'projects/' + project.projectId,
+                data: project,
+                keepJson: true
+            })
+                .catch(exception.catcher("Failed to update the project."));
+
         }
     }
 })();

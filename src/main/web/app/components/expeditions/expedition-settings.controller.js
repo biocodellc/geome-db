@@ -4,9 +4,9 @@
     angular.module('fims.expeditions')
         .controller('ExpeditionSettingsController', ExpeditionSettingsController);
 
-    ExpeditionSettingsController.$inject = ['$document', '$state', '$uibModal', 'alerts', 'ExpeditionService', 'expedition'];
+    ExpeditionSettingsController.$inject = ['$state', '$uibModal', 'alerts', 'ExpeditionService', 'expedition'];
 
-    function ExpeditionSettingsController($document, $state, $uibModal, alerts, ExpeditionService, expedition) {
+    function ExpeditionSettingsController($state, $uibModal, alerts, ExpeditionService, expedition) {
         var vm = this;
 
         vm.expedition = expedition;
@@ -16,11 +16,10 @@
         vm.delete = deleteExpedition;
 
         function update() {
-            if (!angular.equals(vm.expeditions, vm.editExpeditions)) {
+            if (!angular.equals(vm.expedition, vm.editExpedition)) {
                 ExpeditionService.update(vm.editExpedition)
                     .then(function () {
                         alerts.success("Successfully updated!");
-                        $document[0].body.scrollTop = $document[0].documentElement.scrollTop = 0;
                         angular.extend(expedition, vm.editExpedition);
                     });
             } else {

@@ -32,12 +32,9 @@
                        uib-tooltip="Select a project"
                        tooltip-enable="!vm.project">
                     <i class="fa fa-cog fa-fw"></i> My Expeditions</a></li>
-                <li><a ui-sref="projects"
-                       ng-show="vm.user.projectAdmin"
-                       ng-class="{disabled: !vm.project}"
-                       uib-tooltip="Select a project"
-                       tooltip-enable="!vm.project">
-                    <i class="fa fa-cog fa-fw"></i> Projects</a></li>
+                <li><a ui-sref="project"
+                       ng-show="vm.user.userId === vm.project.user.userId">
+                    <i class="fa fa-wrench fa-fw"></i> Project Settings</a></li>
                 <li><a ui-sref="profile"><i class="fa fa-user fa-fw"></i> User Profile</a></li>
             </ul>
         </div>
