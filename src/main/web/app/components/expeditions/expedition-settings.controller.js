@@ -4,9 +4,9 @@
     angular.module('fims.expeditions')
         .controller('ExpeditionSettingsController', ExpeditionSettingsController);
 
-    ExpeditionSettingsController.$inject = ['$state', '$uibModal', 'alerts', 'ExpeditionService', 'expedition'];
+    ExpeditionSettingsController.$inject = ['$state', '$uibModal', 'alerts', 'ExpeditionService', 'expedition', 'backState'];
 
-    function ExpeditionSettingsController($state, $uibModal, alerts, ExpeditionService, expedition) {
+    function ExpeditionSettingsController($state, $uibModal, alerts, ExpeditionService, expedition, backState) {
         var vm = this;
 
         vm.expedition = expedition;
@@ -46,7 +46,7 @@
                 function() {
                     ExpeditionService.delete(vm.expedition)
                         .then(function() {
-                            $state.go('expeditions.list', {}, {reload:true, inherit: false});
+                            $state.go(backState, {}, {reload:true, inherit: false});
                         });
                 }
             );

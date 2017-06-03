@@ -22,6 +22,12 @@
                     resolve: {
                         expeditions: _resolveExpeditions
                     },
+                    params: {
+                        admin: {
+                            type: "bool",
+                            value: false
+                        }
+                    },
                     projectRequired: true,
                     loginRequired: true
                 }
@@ -44,7 +50,8 @@
                     controller: "ExpeditionController as vm",
                     redirectTo: "expeditions.detail.settings",
                     resolve: {
-                        expedition: _resolveExpedition
+                        expedition: _resolveExpedition,
+                        backState: function() { return "expeditions.list" }
                     },
                     params: {
                         id: {

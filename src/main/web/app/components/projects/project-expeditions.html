@@ -5,9 +5,12 @@
                 <a href="#" data-toggle="dropdown" class="dropdown-toggle settings-toggle"><i
                         class="fa fa-bars fa-lg fa-fw"></i></a>
                 <ul class="dropdown-menu">
-                    <li><a href><i class="fa fa-wrench fa-fw"></i> Edit</a></li>
+                    <li><a href
+                           ui-sref="project.expeditions.detail({ id:expedition.expeditionId, expedition:expedition })">
+                        <i class="fa fa-wrench fa-fw"></i> Edit</a></li>
                     <li><a href ng-click="vm.export(expedition)"><i class="fa fa-download fa-fw"></i> Export</a>
-                    <li><a href ng-click="vm.delete(expedition)"><i class="fa fa-trash text-danger fa-fw"></i> Delete</a>
+                    <li><a href ng-click="vm.delete(expedition)"><i class="fa fa-trash text-danger fa-fw"></i>
+                        Delete</a>
                     </li>
                 </ul>
             </div>

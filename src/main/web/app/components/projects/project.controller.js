@@ -4,15 +4,10 @@
     angular.module('fims.projects')
         .controller('ProjectController', ProjectController);
 
-    ProjectController.$inject = ['$rootScope', 'ProjectService'];
+    ProjectController.$inject = ['project'];
 
-    function ProjectController($rootScope, ProjectService) {
+    function ProjectController(project) {
         var vm = this;
-        vm.project = ProjectService.currentProject;
-
-        $rootScope.$on('$projectChangeEvent', function(event, project) {
-            vm.project = project;
-        });
+        vm.project = project;
     }
-
 })();

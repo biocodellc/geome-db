@@ -14,10 +14,10 @@
         vm.update = update;
         // vm.delete = deleteProject;
 
-        $rootScope.$on('$projectChangeEvent', function(event, project) {
-            vm.project =  project;
-            vm.editProject = angular.copy(project);
-        });
+        // $rootScope.$on('$projectChangeEvent', function(event, project) {
+        //     vm.project =  project;
+        //     vm.editProject = angular.copy(project);
+        // });
 
         function update() {
             if (!angular.equals(vm.project, vm.editProject)) {

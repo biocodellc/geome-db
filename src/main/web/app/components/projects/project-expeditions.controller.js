@@ -4,23 +4,13 @@
     angular.module('fims.projects')
         .controller('ProjectExpeditionsController', ProjectExpeditionsController);
 
-    ProjectExpeditionsController.$inject = ['$rootScope','$uibModal', 'ExpeditionService', 'DataService'];
+    ProjectExpeditionsController.$inject = ['$uibModal', 'ExpeditionService', 'DataService', 'expeditions'];
 
-    function ProjectExpeditionsController($rootScope, $uibModal, ExpeditionService, DataService) {
+    function ProjectExpeditionsController($uibModal, ExpeditionService, DataService, expeditions) {
         var vm = this;
-        vm.expeditions = [];
+        vm.expeditions = expeditions;
         vm.export = exportData;
         vm.delete = deleteExpedition;
-
-        init();
-
-        function init() {
-            _getExpeditions();
-
-            $rootScope.$on('$projectChangeEvent', function () {
-                vm.expeditions = ExpeditionService.all();
-            });
-        }
 
         function exportData(expedition) {
             DataService.export(expedition.expeditionCode);
