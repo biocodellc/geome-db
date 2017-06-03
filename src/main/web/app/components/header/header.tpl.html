@@ -100,7 +100,7 @@
                     <li ng-repeat="project in vm.projects">
                         <a href='#' ng-click="vm.setProject(project); vm.projectSelectorOpen=false;">
                             {{ ::project.projectTitle }} <i ng-show="vm.project.projectId === project.projectId"
-                                                            class="fa fa-check"></i>
+                                                            class="fa fa-check fa-after"></i>
                         </a>
                     </li>
                 </ul>

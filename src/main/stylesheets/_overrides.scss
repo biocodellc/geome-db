@@ -60,8 +60,14 @@
   font-size: 1.5em;
 }
 
-.dropdown-menu a .fa {
-  padding-right: 8px;
+.dropdown-menu a {
+  .fa {
+    padding-right: 8px;
+  }
+
+  .fa-after {
+    padding-left: 8px;
+  }
 }
 
 body {
@@ -78,7 +84,7 @@ body {
 .vertical-align > [class^="col-"],
 .vertical-align > [class*=" col-"] {
   display: flex;
-  align-items: center;     /* Align the flex-items vertically */
+  align-items: center; /* Align the flex-items vertically */
   justify-content: center; /* Optional, to align inner flex-items horizontally within the column  */
   flex-flow: row wrap;
 }
@@ -148,6 +154,8 @@ a {
 
 // admin pages
 
+$adminnav-border-bottom: 1px solid $gray-light;
+
 .admin {
 
   .nav-pills {
@@ -171,6 +179,10 @@ a {
 
   .back {
     margin-bottom: 5px;
+
+    .fa {
+      padding-right: 5px;
+    }
   }
 
   .heading {
@@ -184,8 +196,8 @@ a {
 
   .nav {
     border-top: 1px solid $gray-light;
-    border-bottom: 1px solid $gray-light;
-    margin-bottom: 15px;
+    border-bottom: $adminnav-border-bottom;
+    margin-bottom: $adminnav-margin-bottom;
   }
 
   .right-column .list-group {
@@ -220,6 +232,16 @@ a {
     }
   }
 
+  .dropdown {
+    .dropdown-toggle {
+      color: #000;
+    }
+  }
+
+  .back {
+    margin-top: 10px;
+  }
+
   .panel-danger {
     background-color: hsla(6, 80%, 80%, 0.4);
   }
@@ -231,6 +253,80 @@ a {
 
 }
 
+.settings-bar {
+  @extend .clearfix;
+  margin-top: -$adminnav-margin-bottom;
+  margin-bottom: $adminnav-margin-bottom;
+  border-bottom: $adminnav-border-bottom;
+
+  a:hover,
+  a:focus {
+    text-decoration: none;
+  }
+
+  > ul {
+    @extend .col-xs-12;
+    @extend .col-lg-9;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-bottom: 0;
+
+    > li {
+      padding: $nav-link-padding;
+    }
+  }
+
+  .order-by {
+    text-transform: capitalize;
+    padding-left: 5px;
+    font-weight: 500;
+
+    .fa-angle-down {
+      font-weight: 900;
+    }
+  }
+
+  a {
+    color: #000;
+  }
+  .dropdown-menu {
+    > li {
+      > a {
+        color: #000;
+      }
+    }
+  }
+
+  .add {
+    background-color: hsla(105, 54%, 44%, 0.3);
+  }
+}
+
+.settings-list {
+  @extend .list-group;
+
+  .settings-list-item {
+    @extend .list-group-item;
+    border-left: none;
+    border-right: none;
+    padding: 8px 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .info {
+      margin-left: 20px;
+
+      .title {
+        font-size: $font-size-large;
+        font-weight: 500;
+        margin-bottom: 5px;
+      }
+    }
+  }
+}
+
 // modals
 
 .modal-content {
@@ -240,10 +336,8 @@ a {
 // expeditions
 
 .resources {
-  @extend .list-group;
 
   .resources-heading {
-    @extend .list-group-item;
     border: none;
     font-weight: 700;
     font-size: $font-size-large;
@@ -251,42 +345,55 @@ a {
   }
 
   .resource {
-    @extend .list-group-item;
-    border-left: none;
-    border-right: none;
     padding: 20px 15px;
   }
 }
 
 // project
 
-.expeditions {
-  @extend .list-group;
+.add-member {
+  margin-top: 35px;
+}
 
-  .expedition {
-    @extend .list-group-item;
-    border-left: none;
-    border-right: none;
-    padding: 8px 15px;
+.ui-select-match {
 
-    .setting-menu {
-      float: left;
-      margin-top: 15px;
+  .btn-default {
+    @extend .form-control;
 
-      .settings-toggle {
-        color: #000;
-      }
-    }
-
-    .info {
-      margin-left: 20px;
-      float: left;
-
-      .title {
-        font-size: $font-size-large;
-        font-weight: 500;
-        margin-bottom: 5px;
-      }
+    &:active,
+    &:hover,
+    &:focus {
+      color: inherit;
+      background-color: inherit;
     }
   }
+}
+
+.ui-select-choices-row {
+  @extend .small;
+  padding: 5px;
+  border-bottom: 1px solid $gray-lighter;
+
+  .title {
+    margin-bottom: 5px;
+  }
+
+  .info {
+    @extend .small;
+    font-weight: 300;
+
+    label {
+      font-weight: 400;
+    }
+
+  }
+}
+
+.ui-select-highlight {
+  font-weight: 900;
+}
+
+.ui-select-bootstrap > .ui-select-choices {
+  width: auto;
+  max-height: 300px;
 }

@@ -88,7 +88,9 @@
                     redirectTo: "project.expeditions.detail.settings",
                     resolve: {
                         expedition: _resolveExpedition,
-                        backState: function () { return "project.expeditions" }
+                        backState: function () {
+                            return "project.expeditions"
+                        }
                     },
                     views: {
                         "@": {
@@ -143,18 +145,34 @@
             },
             //- End Expeditions
 
+            // Members
+
             {
                 state: 'project.members',
                 config: {
                     url: '/members',
+                    resolve: {
+                        members: _resolveMembers
+                    },
                     views: {
                         "details": {
                             templateUrl: "app/components/projects/project-members.html",
-                            // controller: "ProjectMembersController as vm"
+                            controller: "ProjectMembersController as vm"
                         }
                     }
                 }
             },
+
+            {
+                state: 'project.members.add',
+                config: {
+                    url: '/add',
+                    templateUrl: "app/components/projects/project-members-add.html",
+                    controller: "ProjectMembersAddController as vm"
+                }
+            },
+
+            //- End Members
 
             // Config
             {
@@ -229,6 +247,18 @@
                     $state.go('project.expeditions');
                 });
         }
+    }
+
+    _resolveMembers.$inject = ['$state', 'ProjectMembersService'];
+
+    function _resolveMembers($state, ProjectMembersService) {
+
+        return ProjectMembersService.all()
+            .then(function (response) {
+                return response.data;
+            }, function () {
+                return $state.go('project');
+            });
     }
 
     _expeditionDetailOnEnter.$inject = ['$rootScope', '$state'];

@@ -58,7 +58,7 @@
         function waitForUser() {
             if (_loading) {
                 return $q(function (resolve, reject) {
-                    $rootScope.$on('$userChangeEvent', function (user) {
+                    $rootScope.$on('$userChangeEvent', function (event, user) {
                         resolve(user);
                     });
 

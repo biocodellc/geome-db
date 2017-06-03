@@ -18,7 +18,8 @@
             setFromId: setFromId,
             waitForProject: waitForProject,
             all: all,
-            update: update
+            update: update,
+            resolveProjectId: resolveProjectId
         };
 
         $rootScope.$on("$logoutEvent", function () {
@@ -109,6 +110,16 @@
             })
                 .catch(exception.catcher("Failed to update the project."));
 
+        }
+
+        function resolveProjectId() {
+            return $q(function (resolve, reject) {
+                if (service.currentProject) {
+                    resolve(service.currentProject.projectId);
+                } else {
+                    reject({data: {error: "No project is selected"}});
+                }
+            });
         }
     }
 })();
