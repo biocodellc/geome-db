@@ -1,6 +1,6 @@
 <div class="settings">
     <ul class="settings-list">
-        <li class="settings-list-item clearfix" ng-repeat="expedition in vm.expeditions">
+        <li class="settings-list-item" ng-repeat="expedition in vm.expeditions">
             <div class="dropdown setting-menu">
                 <a href="#" data-toggle="dropdown" class="dropdown-toggle settings-toggle"><i
                         class="fa fa-bars fa-lg fa-fw"></i></a>
@@ -17,7 +17,7 @@
 
             <div class="info">
                 <div class="title">{{ expedition.expeditionTitle }}</div>
-                <ul class="list-inline">
+                <ul class="list-inline metadata">
                     <li><strong>Code:</strong> {{ expedition.expeditionCode}}</li>
                     <li><strong>Owner:</strong> {{ expedition.user.username }}</li>
                 </ul>

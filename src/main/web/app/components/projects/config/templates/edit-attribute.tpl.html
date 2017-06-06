@@ -1,0 +1,76 @@
+<div>
+    <a class="edit-close" href="#"><i ng-click="attrVm.isOpen = false;" class="fa fa-times"></i></a>
+    <div class="row">
+        <div class="col-xs-12">
+
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Column</label>
+                    <div class="col-xs-9">
+                        <input type="text" class="form-control" placeholder="New Attribute"
+                               ng-model="attrVm.attribute.column"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Group</label>
+                    <div class="col-xs-9">
+                        <input type="text" class="form-control" ng-model="attrVm.attribute.group"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Defined By</label>
+                    <div class="col-xs-9">
+                        <input type="text" class="form-control" ng-model="attrVm.attribute.defined_by"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Data Type</label>
+                    <div class="col-xs-9">
+                        <select class="form-control" ng-options="type for type in attrVm.datatypes"
+                                ng-model="attrVm.attribute.datatype"></select>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-show="attrVm.dataformatTypes.indexOf(attrVm.attribute.datatype) > -1">
+                    <label class="control-label col-xs-3">Data Format</label>
+                    <div class="col-xs-9">
+                        <input type="text" class="form-control" ng-model="attrVm.attribute.dataformat"
+                               placeholder="YYYY-MM-DD hh:mm:sss, YYYY-MM-DD"/>
+                        <span class="help-block">
+                            This is required for DATE, DATETIME, and TIME datatypes. This is a , separated list of
+                            valid input formats.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-3">Definition</label>
+                    <div class="col-xs-9">
+                        <textarea rows="3" class="form-control" ng-model="attrVm.attribute.definition"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-init="delimited = (attrVm.attribute.delimiter)">
+                    <div class="checkbox col-xs-offset-3 col-xs-9">
+                        <label>
+                            <input type="checkbox" ng-model="delimited"/> Delimited Column?
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-show="delimited">
+                    <label class="control-label col-xs-3">Delimiter</label>
+                    <div class="col-xs-2">
+                        <input type="text" class="form-control" ng-model="attrVm.attribute.delimited_by"/>
+                    </div>
+                </div>
+
+
+            </form>
+
+        </div>
+    </div>
+</div>

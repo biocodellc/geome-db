@@ -2,6 +2,7 @@
     'use strict';
 
     angular.module('fims.projects')
+        .config(_config)
         .run(init);
 
     init.$inject = ['$location', 'StorageService', 'ProjectService'];
@@ -16,6 +17,12 @@
         if (projectId) {
             ProjectService.setFromId(projectId);
         }
+    }
+
+    _config.$inject = ['$uibTooltipProvider'];
+
+    function _config($uibTooltipProvider) {
+        $uibTooltipProvider.setTriggers({'none': 'outsideClick'});
     }
 
 })();

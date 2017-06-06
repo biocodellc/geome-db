@@ -2,24 +2,35 @@
     'use strict';
 
     angular.module('fims.projects')
-        .controller('ProjectConfigController', ProjectConfigController);
+        .controller('ConfigController', ConfigController);
 
-    ProjectConfigController.$inject = ['ProjectFactory', 'project'];
+    ConfigController.$inject = ['$scope', '$state', 'project'];
 
-    function ProjectConfigController(ProjectFactory, project) {
+    function ConfigController($scope, $state, project) {
         var vm = this;
 
-        vm.config = undefined;
+        vm.addSref = undefined;
+        vm.addText = undefined;
+        vm.config = project.config;
 
-        init();
+        $scope.$watch(function () {
+            return $state.current.name;
+        }, function (name) {
+            if (name === 'project.config.entities') {
+                vm.addSref = 'project.config.entities.add';
+                vm.addText = 'Entity';
+            } else if (name === 'project.config.lists') {
+                vm.addSref = 'project.config.lists.add';
+                vm.addText = 'List';
+            }
+        });
 
-        function init() {
-            ProjectFactory.getConfig(project.projectId)
-                .then(function(response) {
-                    vm.config = response.data;
-                }, function(response) {
-                    // TODO error alert
-                });
-        }
+        $scope.$watch(function() {
+            return project.config;
+        }, function (newVal, oldVal) {
+            if (!project.config.modified && !angular.equals(newVal, oldVal)) {
+                project.config.modified = true;
+            }
+        }, true);
     }
 })();

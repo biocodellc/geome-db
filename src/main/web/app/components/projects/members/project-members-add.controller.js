@@ -29,7 +29,7 @@
             vm.removeAlerts();
             ProjectMembersService.add(vm.username)
                 .then(function () {
-                    vm.username = vm.users[0].username;
+                    vm.username = undefined;
                     alerts.success("Successfully added user");
                     _filterUsers();
                 });
@@ -61,8 +61,6 @@
                     vm.users.push(u);
                 }
             });
-
-            vm.username = vm.users[0].username;
         }
 
         _removeMemberConfirmationController.$inject = ['$uibModalInstance', 'username'];

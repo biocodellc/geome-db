@@ -1,0 +1,39 @@
+<table class="table attributes-table">
+    <thead>
+        <th></th>
+        <th>Column</th>
+        <th>Group</th>
+        <th>Data Type</th>
+    </thead>
+
+    <tbody dnd-list="vm.attributes">
+        <tr ng-repeat="attribute in vm.attributes track by $index" dnd-draggable="attribute"
+            uib-popover-template="'app/components/projects/config/templates/edit-attribute.tpl.html'"
+            ng-controller="AttributeController as attrVm"
+            popover-is-open="attrVm.isOpen"
+            popover-placement="auto bottom"
+            popover-class="edit-popover"
+            popover-trigger="none"
+            dnd-moved="vm.attributes.splice($index, 1)"
+            id="attribute_{{ $index }}"
+        >
+            <td class="row-actions">
+                <a href="#" uib-tooltip="click and drag to reorder attributes">
+                    <i class="fa fa-arrows fa-fw"></i>
+                </a>
+                <a href="#" ng-click="attrVm.isOpen = !attrVm.isOpen"><i class="fa fa-pencil fa-fw"></i></a>
+                <a href="#" class="delete" ng-click="attrVm.remove($index)"><i
+                        class="fa fa-trash text-danger fa-fw"></i></a>
+            </td>
+            <td ng-click="attrVm.isOpen = !attrVm.isOpen">{{ attribute.column }}</td>
+            <td ng-click="attrVm.isOpen = !attrVm.isOpen"><span ng-show="!attrVm.attribute.group">Default</span>
+                {{ attribute.group }}
+            </td>
+            <td ng-click="attrVm.isOpen = !attrVm.isOpen">{{ attribute.datatype }}</td>
+        </tr>
+        <!--define a custom <tr> placeholder -->
+        <tr class="dndPlaceholder">
+            <td colspan="4"></td>
+        </tr>
+    </tbody>
+</table>

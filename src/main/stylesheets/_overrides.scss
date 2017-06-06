@@ -242,6 +242,19 @@ $adminnav-border-bottom: 1px solid $gray-light;
     margin-top: 10px;
   }
 
+  .row-actions {
+    display: flex;
+
+    a {
+      text-decoration: none;
+      color: $text-color;
+
+      &.delete {
+        @extend .text-danger;
+      }
+    }
+  }
+
   .panel-danger {
     background-color: hsla(6, 80%, 80%, 0.4);
   }
@@ -259,22 +272,36 @@ $adminnav-border-bottom: 1px solid $gray-light;
   margin-bottom: $adminnav-margin-bottom;
   border-bottom: $adminnav-border-bottom;
 
+  .settings-bar-container {
+    @extend .col-xs-12;
+    @extend .col-lg-9;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
   a:hover,
   a:focus {
     text-decoration: none;
   }
 
-  > ul {
-    @extend .col-xs-12;
-    @extend .col-lg-9;
-    padding-left: 0;
-    padding-right: 0;
+  .nav {
+    border: none;
+    margin-bottom: 0;
+  }
+
+  ul {
     margin-left: 0;
     margin-bottom: 0;
 
-    > li {
-      padding: $nav-link-padding;
+    &.actions {
+      @extend .list-unstyled;
+      @extend .list-inline;
+
+      > li {
+        padding: $nav-link-padding;
+      }
     }
+
   }
 
   .order-by {
@@ -290,6 +317,7 @@ $adminnav-border-bottom: 1px solid $gray-light;
   a {
     color: #000;
   }
+
   .dropdown-menu {
     > li {
       > a {
@@ -308,6 +336,7 @@ $adminnav-border-bottom: 1px solid $gray-light;
 
   .settings-list-item {
     @extend .list-group-item;
+    @extend .clearfix;
     border-left: none;
     border-right: none;
     padding: 8px 15px;
@@ -317,11 +346,21 @@ $adminnav-border-bottom: 1px solid $gray-light;
 
     .info {
       margin-left: 20px;
+      width: 100%;
+
+      a {
+        color: #000;
+      }
+
+      .metadata {
+        clear: both;
+      }
 
       .title {
         font-size: $font-size-large;
         font-weight: 500;
         margin-bottom: 5px;
+        float: left;
       }
     }
   }
@@ -353,7 +392,80 @@ $adminnav-border-bottom: 1px solid $gray-light;
 
 .add-member {
   margin-top: 35px;
+
+  .input-group {
+    width: 100%;
+  }
 }
+
+.save-config {
+  @extend .add;
+  margin-left: 30px;
+  margin-right: 30px;
+}
+
+.attributes-table {
+  > thead {
+    > tr {
+      > th {
+        padding: 10px 15px;
+        font-weight: 700;
+        font-size: $font-size-large;
+      }
+    }
+  }
+
+  > tbody {
+    > tr {
+      border-top: 1px solid $list-group-border;
+      border-bottom: 1px solid $list-group-border;
+      > td {
+        padding: 10px 15px;
+      }
+    }
+  }
+}
+
+.entities {
+  .title {
+    margin-top: 5px;
+  }
+}
+
+.edit-popover {
+  min-width: 500px;
+
+  .popover-inner {
+    overflow: hidden;
+  }
+
+  .edit-close {
+    color: $text-color;
+    opacity: .7;
+  }
+
+  .row {
+    margin-top: -2px;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+//.attributes {
+
+//.attributes-heading {
+//  border: none;
+//  font-weight: 700;
+//  font-size: $font-size-large;
+//  padding: 15px 15px 10px;
+//}
+
+//.attribute {
+//  padding: 10px 15px;
+//}
+//}
 
 .ui-select-match {
 
@@ -396,4 +508,10 @@ $adminnav-border-bottom: 1px solid $gray-light;
 .ui-select-bootstrap > .ui-select-choices {
   width: auto;
   max-height: 300px;
+}
+
+//= Angular dragNdrop
+
+.dndDraggingSource {
+  display: none;
 }

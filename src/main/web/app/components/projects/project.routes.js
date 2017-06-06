@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    angular.module('fims.projects.config')
+    angular.module('fims.projects')
         .run(configureRoutes);
 
     configureRoutes.$inject = ['$transitions', 'routerHelper', 'ProjectService'];
@@ -20,18 +20,7 @@
             }
         });
 
-        function _checkProjectRequired(state) {
-            var s = state;
-
-            do {
-                if (s.projectRequired) {
-                    return true;
-                }
-                s = s.parent;
-            } while (s);
-
-            return false;
-        }
+        // $transitions.onExit({ exiting: 'project.config' }, _configExit);
     }
 
     function getStates() {
@@ -94,7 +83,7 @@
                     },
                     views: {
                         "@": {
-                            templateUrl: "app/components/expeditions/expedition-detail.html",
+                            // templateUrl: "app/components/expeditions/expedition-detail.html",
                             template: '<div class="admin" ng-include="\'app/components/expeditions/expedition-detail.html\'"></div>',
                             controller: "ExpeditionController as vm"
                         }
@@ -156,18 +145,17 @@
                     },
                     views: {
                         "details": {
-                            templateUrl: "app/components/projects/project-members.html",
+                            templateUrl: "app/components/projects/members/project-members.html",
                             controller: "ProjectMembersController as vm"
                         }
                     }
                 }
             },
-
             {
                 state: 'project.members.add',
                 config: {
                     url: '/add',
-                    templateUrl: "app/components/projects/project-members-add.html",
+                    templateUrl: "app/components/projects/members/project-members-add.html",
                     controller: "ProjectMembersAddController as vm"
                 }
             },
@@ -178,18 +166,63 @@
             {
                 state: 'project.config',
                 config: {
-                    abstract: true,
                     url: '/config',
-                    redirectTo: 'project.config.entities'
+                    redirectTo: 'project.config.entities',
+                    // onExit: _configExit,
+                    views: {
+                        "details": {
+                            templateUrl: "app/components/projects/config/config.html",
+                            controller: "ConfigController as vm"
+                        }
+                    }
                 }
             },
             {
                 state: 'project.config.entities',
                 config: {
-                    url: '/entities'
-                    // TODO finish this
+                    url: '/entities',
+                    views: {
+                        "objects": {
+                            templateUrl: "app/components/projects/config/entities.html",
+                            controller: "EntitiesController as vm"
+                        }
+                    }
                 }
-            }
+            },
+            {
+                state: 'project.config.entities.detail',
+                config: {
+                    url: '/:alias/',
+                    onEnter: _entitiesDetailOnEnter,
+                    redirectTo: "project.config.entities.detail.attributes",
+                    resolve: {
+                        entity: _resolveEntity
+                    },
+                    views: {
+                        "@project.config": {
+                            templateUrl: "app/components/projects/config/entity.html",
+                            controller: "EntityController as vm"
+                        }
+                    },
+                    params: {
+                        alias: {
+                            type: "string"
+                        }
+                    }
+                }
+            },
+            {
+                state: 'project.config.entities.detail.attributes',
+                config: {
+                    url: 'attributes',
+                    views: {
+                        "objects": {
+                            templateUrl: "app/components/projects/config/entity-attributes.html",
+                            controller: "EntityAttributesController as vm"
+                        }
+                    }
+                }
+            },
             //- End Config
         ];
     }
@@ -267,6 +300,72 @@
         $rootScope.$on('$projectChangeEvent', function () {
             $state.go('project.expeditions', {}, {reload: true, inherit: false});
         });
+    }
+
+    _entitiesDetailOnEnter.$inject = ['$rootScope', '$state'];
+
+    function _entitiesDetailOnEnter($rootScope, $state) {
+        $rootScope.$on('$projectChangeEvent', function () {
+            $state.go('project.config.entities', {}, {reload: true, inherit: false});
+        });
+    }
+
+    _resolveEntity.$inject = ['$transition$', '$state', 'project'];
+
+    function _resolveEntity($transition$, $state, project) {
+        var entity = $transition$.params().entity;
+
+        if (entity) {
+            return entity;
+        } else {
+            var entities = project.config.entities;
+            for (var i = 0; i < entities.length; i++) {
+                if (entities[i].conceptAlias === $transition$.params().alias) {
+                    return entities[i];
+                }
+            }
+
+            return $state.go('project.config.entities');
+        }
+    }
+
+    function _checkProjectRequired(state) {
+        var s = state;
+
+        do {
+            if (s.projectRequired) {
+                return true;
+            }
+            s = s.parent;
+        } while (s);
+
+        return false;
+    }
+
+    function _configExit(trans) {
+        var project = trans.injector().get('project');
+        if (project.config.modified) {
+            var $uibModal = trans.injector().get('$uibModal');
+
+            var modal = $uibModal.open({
+                templateUrl: 'app/components/projects/config/templates/unsaved-config-confirmation.tpl.html',
+                size: 'md',
+                controller: _configConfirmationController,
+                controllerAs: 'vm',
+                windowClass: 'app-modal-window',
+                backdrop: 'static'
+            });
+
+            return modal.result;
+        }
+    }
+
+    _configConfirmationController.$inject = ['$uibModalInstance'];
+
+    function _configConfirmationController($uibModalInstance) {
+        var vm = this;
+        vm.continue = $uibModalInstance.close;
+        vm.cancel = $uibModalInstance.dismiss;
     }
 
 })();

@@ -1,0 +1,39 @@
+<ul class="settings-list entities">
+    <li class="settings-list-item" ng-repeat="entity in vm.entities">
+        <div class="row-actions">
+            <a href="#" ng-click="vm.edit(entity)"><i class="fa fa-pencil fa-fw"></i></a>
+            <a href="#" ng-click="vm.remove(entity)"><i class="fa fa-trash text-danger fa-fw"></i></a>
+        </div>
+
+        <div class="info">
+            <div class="row">
+                <div class="col-xs-6 col-lg-4">
+                    <a ui-sref="project.config.entities.detail({ alias: entity.conceptAlias, entity: entity })"
+                       href class="title">
+                        {{ entity.conceptAlias }}
+                    </a>
+                </div>
+                <div class="col-xs-6 col-lg-2">
+                    <ul class="list-unstyled pull-right">
+                        <li>
+                            <a href ui-sref=".detail.attributes({ alias: entity.conceptAlias, entity: entity })">
+                                <span class="badge">{{ entity.attributes.length }}</span> Attributes
+                            </a>
+                        </li>
+                        <li>
+                            <a href ui-sref=".detail.rules({ alias: entity.conceptAlias, entity: entity })">
+                                <span class="badge">{{ entity.rules.length }}</span> Rules
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-xs-12">
+                    <ul class="list-inline metadata">
+                        <li ng-show="entity.worksheet"><strong>worksheet:</strong> {{ entity.worksheet }}</li>
+                        <li ng-show="entity.parentEntity"><strong>parentEntity:</strong> {{ entity.parentEntity }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </li>
+</ul>
