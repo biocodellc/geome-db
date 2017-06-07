@@ -424,6 +424,11 @@ $adminnav-border-bottom: 1px solid $gray-light;
       }
     }
   }
+
+  .dndPlaceholder {
+    height: 40px;
+  }
+
 }
 
 .entities {
@@ -434,6 +439,7 @@ $adminnav-border-bottom: 1px solid $gray-light;
 
 .edit-popover {
   min-width: 500px;
+  display: block;
 
   .popover-inner {
     overflow: hidden;
@@ -451,6 +457,10 @@ $adminnav-border-bottom: 1px solid $gray-light;
   textarea {
     resize: vertical;
   }
+}
+
+[edit-popover-template-popup].popover {
+  display: block !important;
 }
 
 //.attributes {
