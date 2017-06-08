@@ -9,18 +9,20 @@
     function ConfigController($scope, $state, project) {
         var vm = this;
 
-        vm.addSref = undefined;
+        vm.add = add;
         vm.addText = undefined;
         vm.config = project.config;
+
+        function add() {
+            $scope.$broadcast('$configAddEvent');
+        }
 
         $scope.$watch(function () {
             return $state.current.name;
         }, function (name) {
             if (name === 'project.config.entities') {
-                vm.addSref = 'project.config.entities.add';
                 vm.addText = 'Entity';
             } else if (name === 'project.config.lists') {
-                vm.addSref = 'project.config.lists.add';
                 vm.addText = 'List';
             }
         });

@@ -2,24 +2,22 @@
     'use strict';
 
     angular.module('fims.projects')
-        .directive('editRule', editRule)
-        .directive('editableRule', editableRule);
+        .directive('editEntity', editEntity)
+        .directive('editableEntity', editableEntity);
 
-    editRule.$inject = ['$uibTooltip', 'ProjectService'];
+    editEntity.$inject = ['$location', '$anchorScroll', '$uibTooltip', 'ProjectService'];
 
-    function editRule($uibTooltip, ProjectService) {
+    function editEntity($location, $anchorScroll, $uibTooltip, ProjectService) {
         return {
             restrict: 'A',
             scope: {
-                rule: '=',
-                entity: '<',
-                index: '=',
-                onDelete: '&'
+                entity: '=',
+                index: '='
             },
             bindToController: true,
-            controller: _ruleController,
+            controller: _entityController,
             controllerAs: 'vm',
-            templateUrl: 'app/components/projects/config/templates/rule.tpl.html',
+            templateUrl: 'app/components/projects/config/templates/entity.tpl.html',
             compile: function (el, attrs) {
                 var tooltipLink = $uibTooltip('editPopoverTemplate', 'editPopover', 'none', {
                     useContentExp: true
@@ -28,31 +26,43 @@
                 return function link(scope, element, attrs, ctrl) {
                     tooltipLink.apply(this, arguments);
 
-                    ctrl.lists = [];
-                    angular.forEach(ProjectService.currentProject.config.lists, function (list) {
-                        ctrl.lists.push(list.alias);
+                    ctrl.isChild = (ctrl.entity.parentEntity);
+
+                    if (ctrl.entity.isNew) {
+                        ctrl.editing = true;
+                        $location.hash("entity_" + ctrl.index);
+                        $anchorScroll();
+                    }
+
+                    ctrl.entities = [];
+                    angular.forEach(ProjectService.currentProject.config.entities, function (entity) {
+                        if (entity.conceptAlias !== ctrl.entity.conceptAlias) {
+                            ctrl.entities.push(entity.conceptAlias);
+                        }
                     });
 
                     ctrl.columns = [];
                     angular.forEach(ctrl.entity.attributes, function (attribute) {
                         ctrl.columns.push(attribute.column);
                     });
+
+                    ctrl.existingWorksheets = ProjectService.currentProject.config.worksheets();
+
                 }
             }
         }
     }
 
-    editableRule.$inject = ['$compile'];
+    editableEntity.$inject = ['$compile'];
 
-    function editableRule($compile) {
-
+    function editableEntity($compile) {
         return {
             priority: 1001,
             terminal: true, // don't compile anything else, they will be compiled in the link function
             compile: function (el, attrs) {
-                el.removeAttr('editable-rule');
-                el.attr('edit-rule', "");
-                el.attr('edit-popover-template', "'app/components/projects/config/templates/edit-rule.tpl.html'");
+                el.removeAttr('editable-entity');
+                el.attr('edit-entity', "");
+                el.attr('edit-popover-template', "'app/components/projects/config/templates/edit-entity.tpl.html'");
                 el.attr('edit-popover-is-open', 'vm.editing');
                 el.attr('edit-popover-placement', 'auto bottom');
                 el.attr('edit-popover-class', 'edit-popover');
@@ -64,21 +74,21 @@
         }
     }
 
-    _ruleController.$inject = ['$scope', '$uibModal', 'ProjectService'];
+    _entityController.$inject = ['$scope', '$uibModal', 'ProjectService'];
 
-    function _ruleController($scope, $uibModal, ProjectService) {
+    function _entityController($scope, $uibModal, ProjectService) {
         var vm = this;
         var _broadcaster = false;
+        var _config = ProjectService.currentProject.config;
 
-        vm.levels = ProjectService.currentProject.config.ruleLevels();
         vm.editing = false;
-        vm.isArray = angular.isArray;
         vm.remove = remove;
         vm.toggleEdit = toggleEdit;
+        vm.newWorksheet = newWorksheet;
 
         function remove() {
             var modal = $uibModal.open({
-                templateUrl: 'app/components/projects/config/templates/delete-rule-confirmation.tpl.html',
+                templateUrl: 'app/components/projects/config/templates/delete-entity-confirmation.tpl.html',
                 size: 'md',
                 controller: _deleteConfirmationController,
                 controllerAs: 'vm',
@@ -88,7 +98,8 @@
 
             modal.result.then(
                 function () {
-                    vm.onDelete({index: vm.index});
+                    var i = _config.entities.indexOf(vm.entity);
+                    _config.entities.splice(i, 1);
                 }
             );
         }
@@ -102,12 +113,26 @@
             vm.editing = !vm.editing;
         }
 
+        function newWorksheet(worksheet) {
+            vm.existingWorksheets.push(worksheet);
+            return worksheet;
+        }
+
         $scope.$on("$closeEditPopupEvent", function () {
             if (!_broadcaster) {
                 vm.editing = false;
             }
             _broadcaster = false;
         });
+        
+        $scope.$watch('vm.isChild', function (val) {
+            if (!val) {
+                vm.entity.parentEntity = undefined;
+            }
+        });
+
+        //TODO watch uniqueKey and parentEntity and add required rule if necessary
+        // $scope.$watch('vm.entity.uniqueKey')
     }
 
     _deleteConfirmationController.$inject = ['$uibModalInstance'];

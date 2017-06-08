@@ -171,7 +171,7 @@
                     // onExit: _configExit,
                     views: {
                         "details": {
-                            templateUrl: "app/components/projects/config/config.html",
+                            templateUrl: "app/components/projects/config/templates/config.tpl.html",
                             controller: "ConfigController as vm"
                         }
                     }
@@ -183,8 +183,20 @@
                     url: '/entities',
                     views: {
                         "objects": {
-                            templateUrl: "app/components/projects/config/entities.html",
+                            templateUrl: "app/components/projects/config/templates/entities.tpl.html",
                             controller: "EntitiesController as vm"
+                        }
+                    }
+                }
+            },
+            {
+                state: 'project.config.entities.add',
+                config: {
+                    url: '/add',
+                    views: {
+                        "objects@project.config": {
+                            templateUrl: "app/components/projects/config/templates/add-entity.tpl.html",
+                            controller: "AddEntityController as vm"
                         }
                     }
                 }
@@ -200,7 +212,7 @@
                     },
                     views: {
                         "@project.config": {
-                            templateUrl: "app/components/projects/config/entity.html",
+                            templateUrl: "app/components/projects/config/templates/entity-detail.tpl.html",
                             controller: "EntityController as vm"
                         }
                     },
@@ -217,7 +229,7 @@
                     url: 'attributes',
                     views: {
                         "objects": {
-                            templateUrl: "app/components/projects/config/entity-attributes.html",
+                            templateUrl: "app/components/projects/config/templates/entity-attributes.tpl.html",
                             controller: "EntityAttributesController as vm"
                         }
                     }

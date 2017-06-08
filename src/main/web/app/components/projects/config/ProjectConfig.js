@@ -119,6 +119,27 @@
                 return [];
             },
 
+            getRule: function (conceptAlias, ruleName, level) {
+                var entity,
+                    i;
+
+                for (i = 0; i < this.entities.length; i++) {
+                    if (this.entities[i].conceptAlias === conceptAlias) {
+                        entity = this.entities[i];
+                        break;
+                    }
+                }
+
+                if (entity) {
+                    for (i = 0; i < entity.rules.length; i++) {
+                        var rule = entity.rules[i];
+
+                        if (rule.name === ruleName && rule.level === level) {
+                            return rule;
+                        }
+                    }
+                }
+            },
 
             requiredAttributes: function (sheetName) {
                 return this._requiredValueAttributes(sheetName, 'ERROR');
@@ -128,7 +149,7 @@
                 return this._requiredValueAttributes(sheetName, 'WARNING');
             },
 
-            ruleLevels: function() {
+            ruleLevels: function () {
                 return ['ERROR', 'WARNING'];
             },
 
@@ -157,9 +178,7 @@
 
                 return attributes;
             }
-
-        }
-        ;
+        };
 
         return ProjectConfig;
     }

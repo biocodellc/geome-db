@@ -2,67 +2,64 @@
     'use strict';
 
     angular.module('fims.projects')
-        .directive('editPopoverTemplatePopup', function () {
-            return {
-                replace: true,
-                scope: {
-                    uibTitle: '@', contentExp: '&', placement: '@', popupClass: '@', animation: '&', isOpen: '&',
-                    originScope: '&'
-                },
-                templateUrl: 'uib/template/popover/popover-template.html'
-            };
-        })
+        .directive('editAttribute', editAttribute)
+        .directive('editableAttribute', editableAttribute);
 
-        .directive('editAttribute', ['$location', '$anchorScroll', '$uibTooltip', function ($location, $anchorScroll, $uibTooltip) {
-            return {
-                scope: {
-                    attribute: '=',
-                    index: '=',
-                    onDelete: '&'
-                },
-                bindToController: true,
-                controller: _attributeController,
-                controllerAs: 'vm',
-                templateUrl: 'app/components/projects/config/templates/attribute.tpl.html',
-                compile: function (el, attrs) {
-                    var tooltipLink = $uibTooltip('editPopoverTemplate', 'editPopover', 'none', {
-                        useContentExp: true
-                    }).compile.apply(this, arguments);
+    editAttribute.$inject = ['$location', '$anchorScroll', '$uibTooltip'];
 
-                    return function link(scope, element, attrs, ctrl) {
-                        tooltipLink.apply(this, arguments);
+    function editAttribute($location, $anchorScroll, $uibTooltip) {
+        return {
+            restrict: 'A',
+            scope: {
+                attribute: '=',
+                index: '=',
+                onDelete: '&'
+            },
+            bindToController: true,
+            controller: _attributeController,
+            controllerAs: 'vm',
+            templateUrl: 'app/components/projects/config/templates/attribute.tpl.html',
+            compile: function (el, attrs) {
+                var tooltipLink = $uibTooltip('editPopoverTemplate', 'editPopover', 'none', {
+                    useContentExp: true
+                }).compile.apply(this, arguments);
 
-                        ctrl.delimited = (ctrl.attribute.delimiter);
+                return function link(scope, element, attrs, ctrl) {
+                    tooltipLink.apply(this, arguments);
 
-                        if (ctrl.attribute.isNew) {
-                            ctrl.editing = true;
-                            $location.hash("attribute_" + ctrl.index);
-                            $anchorScroll();
-                            delete ctrl.attribute.isNew;
-                        }
+                    ctrl.delimited = (ctrl.attribute.delimiter);
+
+                    if (ctrl.attribute.isNew) {
+                        ctrl.editing = true;
+                        $location.hash("attribute_" + ctrl.index);
+                        $anchorScroll();
+                        delete ctrl.attribute.isNew;
                     }
                 }
             }
-        }])
+        }
+    }
 
-        .directive('editableAttribute', ['$uibTooltip', '$compile', function ($uibTooltip, $compile) {
-            return {
-                priority: 1001,
-                terminal: true, // don't compile anything else, they will be compiled in the link function
-                compile: function (el, attrs) {
-                    el.removeAttr('editable-attribute');
-                    el.attr('edit-attribute', "");
-                    el.attr('edit-popover-template', "'app/components/projects/config/templates/edit-attribute.tpl.html'");
-                    el.attr('edit-popover-is-open', 'vm.editing');
-                    el.attr('edit-popover-placement', 'auto bottom');
-                    el.attr('edit-popover-class', 'edit-popover');
+    editableAttribute.$inject = ['$compile'];
 
-                    return function link(scope, iElement, iAttrs, ctrl) {
-                        $compile(iElement)(scope);
-                    }
+    function editableAttribute($compile) {
+        return {
+            priority: 1001,
+            terminal: true, // don't compile anything else, they will be compiled in the link function
+            compile: function (el, attrs) {
+                el.removeAttr('editable-attribute');
+                el.attr('edit-attribute', "");
+                el.attr('edit-popover-template', "'app/components/projects/config/templates/edit-attribute.tpl.html'");
+                el.attr('edit-popover-is-open', 'vm.editing');
+                el.attr('edit-popover-placement', 'auto bottom');
+                el.attr('edit-popover-class', 'edit-popover');
+
+                return function link(scope, iElement, iAttrs, ctrl) {
+                    $compile(iElement)(scope);
                 }
             }
-        }]);
+        }
+    }
 
     _attributeController.$inject = ['$scope', '$uibModal'];
 
@@ -88,7 +85,7 @@
 
             modal.result.then(
                 function () {
-                    vm.onDelete({ index: vm.index });
+                    vm.onDelete({index: vm.index});
                 }
             );
         }
@@ -102,12 +99,18 @@
             vm.editing = !vm.editing;
         }
 
-        $scope.$on("$closeEditPopupEvent", function() {
+        $scope.$on("$closeEditPopupEvent", function () {
             if (!_broadcaster) {
                 vm.editing = false;
             }
             _broadcaster = false;
         });
+
+        $scope.$watch('vm.delimited', function(val) {
+            if (!val) {
+                vm.attribute.delimiter = undefined;
+            }
+        })
     }
 
     _deleteConfirmationController.$inject = ['$uibModalInstance'];

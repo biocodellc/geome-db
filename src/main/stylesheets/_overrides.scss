@@ -395,9 +395,11 @@ $adminnav-border-bottom: 1px solid $gray-light;
 
 // project
 
-.add-member {
+.add-view {
   margin-top: 35px;
+}
 
+.add-member {
   .ui-select-bootstrap > .ui-select-choices {
     width: auto;
     max-height: 300px;
@@ -445,10 +447,6 @@ $adminnav-border-bottom: 1px solid $gray-light;
   .title {
     margin-top: 5px;
   }
-}
-
-.add-rule {
-  margin-top: 35px;
 }
 
 .edit-popover {
