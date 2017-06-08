@@ -223,6 +223,30 @@
                     }
                 }
             },
+            {
+                state: 'project.config.entities.detail.rules',
+                config: {
+                    url: 'rules',
+                    views: {
+                        "objects": {
+                            templateUrl: "app/components/projects/config/templates/entity-rules.tpl.html",
+                            controller: "EntityRulesController as vm"
+                        }
+                    }
+                }
+            },
+            {
+                state: 'project.config.entities.detail.rules.add',
+                config: {
+                    url: '/add',
+                    views: {
+                        "objects@project.config.entities.detail": {
+                            templateUrl: "app/components/projects/config/templates/add-rule.tpl.html",
+                            controller: "AddRuleController as vm"
+                        }
+                    }
+                }
+            },
             //- End Config
         ];
     }

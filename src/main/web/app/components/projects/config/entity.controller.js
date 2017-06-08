@@ -21,10 +21,8 @@
             return $state.current.name;
         }, function (name) {
             if (name === 'project.config.entities.detail.attributes') {
-                vm.addSref = 'project.config.entities.detail.attributes.add';
                 vm.addText = 'Attribute';
-            } else if (name === 'project.config.entites.detail.rules') {
-                vm.addSref = 'project.config.entities.detail.rules.add';
+            } else if (name === 'project.config.entities.detail.rules') {
                 vm.addText = 'Rule';
             }
         });

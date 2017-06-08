@@ -4,9 +4,9 @@
     angular.module('fims.projects')
         .factory('ProjectConfig', ProjectConfig);
 
-    ProjectConfig.$inject = [];
+    ProjectConfig.$inject = ['Rule'];
 
-    function ProjectConfig() {
+    function ProjectConfig(Rule) {
 
         function ProjectConfig(config) {
             var self = this;
@@ -14,6 +14,17 @@
             init();
 
             function init() {
+                angular.forEach(config.entities, function (entity) {
+                    var _rules = angular.copy(entity.rules);
+
+                    delete entity.rules;
+                    entity.rules = [];
+
+                    angular.forEach(_rules, function (rule) {
+                        entity.rules.push(new Rule(rule));
+                    });
+                });
+
                 angular.extend(self, config);
             }
         }
@@ -111,13 +122,15 @@
 
             requiredAttributes: function (sheetName) {
                 return this._requiredValueAttributes(sheetName, 'ERROR');
-            }
-            ,
+            },
 
             suggestedAttributes: function (sheetName) {
                 return this._requiredValueAttributes(sheetName, 'WARNING');
-            }
-            ,
+            },
+
+            ruleLevels: function() {
+                return ['ERROR', 'WARNING'];
+            },
 
             _requiredValueAttributes: function (sheetName, level) {
                 var attributes = [];

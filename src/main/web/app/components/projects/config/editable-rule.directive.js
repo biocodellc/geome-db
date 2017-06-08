@@ -2,28 +2,18 @@
     'use strict';
 
     angular.module('fims.projects')
-        .directive('editPopoverTemplatePopup', function () {
-            return {
-                replace: true,
-                scope: {
-                    uibTitle: '@', contentExp: '&', placement: '@', popupClass: '@', animation: '&', isOpen: '&',
-                    originScope: '&'
-                },
-                templateUrl: 'uib/template/popover/popover-template.html'
-            };
-        })
-
-        .directive('editAttribute', ['$location', '$anchorScroll', '$uibTooltip', function ($location, $anchorScroll, $uibTooltip) {
+        .directive('editRule', ['$location', '$anchorScroll', '$uibTooltip', 'ProjectService', function ($location, $anchorScroll, $uibTooltip, ProjectService) {
             return {
                 scope: {
-                    attribute: '=',
+                    rule: '=',
+                    entity: '<',
                     index: '=',
                     onDelete: '&'
                 },
                 bindToController: true,
-                controller: _attributeController,
+                controller: _ruleController,
                 controllerAs: 'vm',
-                templateUrl: 'app/components/projects/config/templates/attribute.tpl.html',
+                templateUrl: 'app/components/projects/config/templates/rule.tpl.html',
                 compile: function (el, attrs) {
                     var tooltipLink = $uibTooltip('editPopoverTemplate', 'editPopover', 'none', {
                         useContentExp: true
@@ -32,27 +22,37 @@
                     return function link(scope, element, attrs, ctrl) {
                         tooltipLink.apply(this, arguments);
 
-                        ctrl.delimited = (ctrl.attribute.delimiter);
+                        ctrl.delimited = (ctrl.rule.delimiter);
 
-                        if (ctrl.attribute.isNew) {
+                        if (ctrl.rule.isNew) {
                             ctrl.editing = true;
-                            $location.hash("attribute_" + ctrl.index);
+                            $location.hash("rule_" + ctrl.index);
                             $anchorScroll();
-                            delete ctrl.attribute.isNew;
+                            delete ctrl.rule.isNew;
                         }
+
+                        ctrl.lists = [];
+                        angular.forEach(ProjectService.currentProject.config.lists, function (list) {
+                            ctrl.lists.push(list.alias);
+                        });
+
+                        ctrl.columns = [];
+                        angular.forEach(ctrl.entity.attributes, function (attribute) {
+                            ctrl.columns.push(attribute.column);
+                        });
                     }
                 }
             }
         }])
 
-        .directive('editableAttribute', ['$uibTooltip', '$compile', function ($uibTooltip, $compile) {
+        .directive('editableRule', ['$uibTooltip', '$compile', function ($uibTooltip, $compile) {
             return {
                 priority: 1001,
                 terminal: true, // don't compile anything else, they will be compiled in the link function
                 compile: function (el, attrs) {
-                    el.removeAttr('editable-attribute');
-                    el.attr('edit-attribute', "");
-                    el.attr('edit-popover-template', "'app/components/projects/config/templates/edit-attribute.tpl.html'");
+                    el.removeAttr('editable-rule');
+                    el.attr('edit-rule', "");
+                    el.attr('edit-popover-template', "'app/components/projects/config/templates/edit-rule.tpl.html'");
                     el.attr('edit-popover-is-open', 'vm.editing');
                     el.attr('edit-popover-placement', 'auto bottom');
                     el.attr('edit-popover-class', 'edit-popover');
@@ -64,21 +64,21 @@
             }
         }]);
 
-    _attributeController.$inject = ['$scope', '$uibModal'];
+    _ruleController.$inject = ['$scope', '$uibModal', 'ProjectService'];
 
-    function _attributeController($scope, $uibModal) {
+    function _ruleController($scope, $uibModal, ProjectService) {
         var vm = this;
         var _broadcaster = false;
 
-        vm.datatypes = ['STRING', 'INTEGER', 'FLOAT', 'DATE', 'DATETIME', 'TIME'];
-        vm.dataformatTypes = ['DATE', 'DATETIME', 'TIME'];
+        vm.levels = ProjectService.currentProject.config.ruleLevels();
         vm.editing = false;
+        vm.isArray = angular.isArray;
         vm.remove = remove;
         vm.toggleEdit = toggleEdit;
 
         function remove() {
             var modal = $uibModal.open({
-                templateUrl: 'app/components/projects/config/templates/delete-attribute-confirmation.tpl.html',
+                templateUrl: 'app/components/projects/config/templates/delete-rule-confirmation.tpl.html',
                 size: 'md',
                 controller: _deleteConfirmationController,
                 controllerAs: 'vm',
@@ -88,7 +88,7 @@
 
             modal.result.then(
                 function () {
-                    vm.onDelete({ index: vm.index });
+                    vm.onDelete({index: vm.index});
                 }
             );
         }
@@ -102,7 +102,7 @@
             vm.editing = !vm.editing;
         }
 
-        $scope.$on("$closeEditPopupEvent", function() {
+        $scope.$on("$closeEditPopupEvent", function () {
             if (!_broadcaster) {
                 vm.editing = false;
             }

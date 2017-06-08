@@ -41,7 +41,7 @@
                                     return $http(origRequestConfig);
                                 }, function () {
                                     triedToRefresh = false;
-                                    return $state.go('login');
+                                    return $state.go('login', {nextState: $state.current.name, nextStateParams: $state.params});
                                 }
                             ));
                 }
