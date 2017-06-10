@@ -24,9 +24,9 @@
 
         function link(scope) {
 
-            scope.$watch("mapVm.invalidateSize", function(val) {
+            scope.$watch("mapVm.invalidateSize", function (val) {
                 if (val) {
-                    $timeout(function() {
+                    $timeout(function () {
                         scope.mapVm.map.refreshSize();
                         scope.mapVm.invalidateSize = false;
                     });
@@ -40,25 +40,26 @@
 
     function MapController($timeout) {
         var vm = this;
-        vm.mapView = true;
+        vm.tiles = 'map';
         vm.mapId = "map-" + parseInt((Math.random() * 100), 10);
         vm.toggleMapView = toggleMapView;
 
         activate();
 
         function activate() {
-            $timeout(function() {
+            $timeout(function () {
                 vm.map.init(vm.mapId);
             }, 0);
         }
 
-        function toggleMapView() {
-            if (vm.mapView) {
-                vm.map.satelliteView();
-                vm.mapView = false;
-            } else {
+        function toggleMapView(tiles) {
+            vm.tiles = tiles;
+            if (tiles === 'map') {
                 vm.map.mapView();
-                vm.mapView = true;
+            } else if (tiles === 'sat') {
+                vm.map.satelliteView();
+            } else if (tiles === 'usgs') {
+                vm.map.usgsView();
             }
         }
     }

@@ -15,11 +15,6 @@
 
         Map.prototype = {
             _markers: [],
-            _clusterLayer: null,
-            _map: null,
-            _mapTiles: null,
-            _satelliteTiles: null,
-            _boundingBox: null,
             /**
              * @param mapId the id of the the div container for the map
              */
@@ -39,9 +34,12 @@
                     {access_token: MAPBOX_TOKEN});
 
                 this._mapTiles.addTo(this._map);
+                this._base = this._mapTiles;
 
                 this._satelliteTiles = L.tileLayer('https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token={access_token}',
                     {access_token: MAPBOX_TOKEN});
+
+                this._usgsTiles = L.tileLayer.wms('https://basemap.nationalmap.gov/arcgis/services/USGSImageryOnly/MapServer/WMSServer', { layers: 0, maxZoom: 8 });
 
                 this._clusterLayer = L.markerClusterGroup({chunkedLoading: true});
             },
@@ -97,13 +95,21 @@
             },
 
             satelliteView: function () {
-                this._map.removeLayer(this._mapTiles);
+                this._map.removeLayer(this._base);
                 this._map.addLayer(this._satelliteTiles);
+                this._base = this._satelliteTiles;
             },
 
             mapView: function () {
-                this._map.removeLayer(this._satelliteTiles);
+                this._map.removeLayer(this._base);
                 this._map.addLayer(this._mapTiles);
+                this._base = this._mapTiles;
+            },
+
+            usgsView: function () {
+                this._map.removeLayer(this._base);
+                this._map.addLayer(this._usgsTiles);
+                this._base = this._usgsTiles;
             },
 
             drawBounds: function (createCallback) {
