@@ -1,18 +1,11 @@
 <div class="settings">
     <ul class="settings-list">
         <li class="settings-list-item" ng-repeat="expedition in vm.expeditions">
-            <div class="dropdown setting-menu">
-                <a href="#" data-toggle="dropdown" class="dropdown-toggle settings-toggle"><i
-                        class="fa fa-bars fa-lg fa-fw"></i></a>
-                <ul class="dropdown-menu">
-                    <li><a href
-                           ui-sref="project.expeditions.detail({ id:expedition.expeditionId, expedition:expedition })">
-                        <i class="fa fa-wrench fa-fw"></i> Edit</a></li>
-                    <li><a href ng-click="vm.export(expedition)"><i class="fa fa-download fa-fw"></i> Export</a>
-                    <li><a href ng-click="vm.delete(expedition)"><i class="fa fa-trash text-danger fa-fw"></i>
-                        Delete</a>
-                    </li>
-                </ul>
+            <div class="row-actions">
+                <a href ui-sref="project.expeditions.detail({ id:expedition.expeditionId, expedition:expedition })">
+                    <i class="fa fa-pencil fa-fw"></i></a>
+                <a href ng-click="vm.export(expedition)" uib-tooltip="export data"><i class="fa fa-download fa-fw"></i></a>
+                <a href="#" ng-click="vm.delete(expedition)"><i class="fa fa-trash text-danger fa-fw"></i></a>
             </div>
 
             <div class="info">
@@ -22,5 +15,6 @@
                     <li><strong>Owner:</strong> {{ expedition.user.username }}</li>
                 </ul>
             </div>
+        </li>
     </ul>
 </div>
