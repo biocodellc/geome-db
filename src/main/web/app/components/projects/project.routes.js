@@ -177,6 +177,18 @@
                     }
                 }
             },
+            {
+                state: 'project.config.metadata',
+                config: {
+                    url: '/metadata',
+                    views: {
+                        "objects": {
+                            templateUrl: "app/components/projects/config/templates/config-metadata.tpl.html",
+                            controller: "ConfigMetadataController as vm"
+                        }
+                    }
+                }
+            },
 
             // Entities
             {

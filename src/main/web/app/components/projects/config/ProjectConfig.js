@@ -32,19 +32,22 @@
         ProjectConfig.prototype = {
 
             worksheets: function () {
-                if (this._worksheets) {
-                    return this._worksheets;
+                // we don't want to compare the $worksheets variable when determining if 2 configs are the same
+                // using angular.equals(); By prefixing the variable with "$", angular will ignore this property
+                // during comparison
+                if (this.$worksheets) {
+                    return this.$worksheets;
                 } else {
-                    this._worksheets = [];
+                    this.$worksheets = [];
 
                     var self = this;
                     angular.forEach(this.entities, function (entity) {
-                        if (entity.worksheet && self._worksheets.indexOf(entity.worksheet) === -1) {
-                            self._worksheets.push(entity.worksheet);
+                        if (entity.worksheet && self.$worksheets.indexOf(entity.worksheet) === -1) {
+                            self.$worksheets.push(entity.worksheet);
                         }
                     });
 
-                    return this._worksheets;
+                    return this.$worksheets;
                 }
             },
 
