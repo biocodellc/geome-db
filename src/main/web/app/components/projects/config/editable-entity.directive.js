@@ -26,20 +26,12 @@
                 return function link(scope, element, attrs, ctrl) {
                     tooltipLink.apply(this, arguments);
 
-                    ctrl.isChild = (ctrl.entity.parentEntity);
-
                     if (ctrl.entity.isNew) {
                         ctrl.editing = true;
                         $location.hash("entity_" + ctrl.index);
                         $anchorScroll();
+                        delete ctrl.entity.isNew;
                     }
-
-                    ctrl.entities = [];
-                    angular.forEach(ProjectService.currentProject.config.entities, function (entity) {
-                        if (entity.conceptAlias !== ctrl.entity.conceptAlias) {
-                            ctrl.entities.push(entity.conceptAlias);
-                        }
-                    });
 
                     ctrl.columns = [];
                     angular.forEach(ctrl.entity.attributes, function (attribute) {
@@ -125,14 +117,15 @@
             _broadcaster = false;
         });
         
-        $scope.$watch('vm.isChild', function (val) {
-            if (!val) {
-                vm.entity.parentEntity = undefined;
+        $scope.$watch('vm.entity.uniqueKey', function (newVal, oldVal) {
+            if (newVal !== oldVal) {
+                var rule = _config.getRule(vm.entity.conceptAlias, 'RequiredValue', 'ERROR');
+
+                if (rule.columns.indexOf(vm.entity.uniqueKey) === -1) {
+                    rule.columns.push(vm.entity.uniqueKey);
+                }
             }
         });
-
-        //TODO watch uniqueKey and parentEntity and add required rule if necessary
-        // $scope.$watch('vm.entity.uniqueKey')
     }
 
     _deleteConfirmationController.$inject = ['$uibModalInstance'];

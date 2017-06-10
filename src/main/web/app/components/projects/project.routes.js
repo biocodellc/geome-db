@@ -232,6 +232,11 @@
                             templateUrl: "app/components/projects/config/templates/entity-attributes.tpl.html",
                             controller: "EntityAttributesController as vm"
                         }
+                    },
+                    params: {
+                        addAttribute: {
+                            type: "bool"
+                        }
                     }
                 }
             },

@@ -47,19 +47,10 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <div class="checkbox col-xs-offset-3 col-xs-9">
-                        <label>
-                            <input type="checkbox" ng-model="vm.isChild"/> Child Entity?
-                        </label>
-                    </div>
-                </div>
-
-                <div class="form-group" ng-show="vm.isChild">
+                <div class="form-group" ng-show="vm.entity.parentEntity">
                     <label class="control-label col-xs-3">Parent Entity</label>
                     <div class="col-xs-9">
-                        <select class="form-control" ng-options="entity for entity in vm.entities"
-                                ng-model="vm.entity.parentEntity"></select>
+                        <input type="text" class="form-control" disabled ng-model="vm.entity.parentEntity"/>
                     </div>
                 </div>
 

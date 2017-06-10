@@ -4,9 +4,9 @@
     angular.module('fims.projects')
         .factory('ProjectConfig', ProjectConfig);
 
-    ProjectConfig.$inject = ['Rule'];
+    ProjectConfig.$inject = ['Rule', 'RuleService'];
 
-    function ProjectConfig(Rule) {
+    function ProjectConfig(Rule, RuleService) {
 
         function ProjectConfig(config) {
             var self = this;
@@ -109,6 +109,15 @@
                 return sheetRules;
             },
 
+            entityUniqueKey: function (conceptAlias) {
+
+                for (var i = 0; i < this.entities.length; i++) {
+                    if (this.entities[i].conceptAlias === conceptAlias) {
+                        return this.entities[i].uniqueKey;
+                    }
+                }
+            },
+
             getList: function (listName) {
                 for (var i = 0; i < this.lists.length; i++) {
                     if (this.lists[i].alias === listName) {
@@ -120,25 +129,26 @@
             },
 
             getRule: function (conceptAlias, ruleName, level) {
-                var entity,
-                    i;
-
-                for (i = 0; i < this.entities.length; i++) {
-                    if (this.entities[i].conceptAlias === conceptAlias) {
-                        entity = this.entities[i];
-                        break;
-                    }
-                }
+                var rule,
+                    i,
+                    entity = this._getEntity(conceptAlias);
 
                 if (entity) {
                     for (i = 0; i < entity.rules.length; i++) {
-                        var rule = entity.rules[i];
+                        rule = entity.rules[i];
 
                         if (rule.name === ruleName && rule.level === level) {
                             return rule;
                         }
                     }
+
+                    rule = RuleService.newRule(ruleName);
+                    rule.level = level;
+                    entity.rules.push(rule);
+
+                    return rule;
                 }
+
             },
 
             requiredAttributes: function (sheetName) {
@@ -151,6 +161,14 @@
 
             ruleLevels: function () {
                 return ['ERROR', 'WARNING'];
+            },
+
+            _getEntity: function (conceptAlias) {
+                for (var i = 0; i < this.entities.length; i++) {
+                    if (this.entities[i].conceptAlias === conceptAlias) {
+                        return this.entities[i];
+                    }
+                }
             },
 
             _requiredValueAttributes: function (sheetName, level) {

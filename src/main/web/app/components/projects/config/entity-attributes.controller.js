@@ -4,14 +4,22 @@
     angular.module('fims.projects')
         .controller('EntityAttributesController', EntityAttributesController);
 
-    EntityAttributesController.$inject = ['$scope', 'entity'];
+    EntityAttributesController.$inject = ['$state', '$scope', 'entity'];
 
-    function EntityAttributesController($scope, entity) {
+    function EntityAttributesController($state, $scope, entity) {
         var vm = this;
         vm.attributes = entity.attributes;
         vm.dndDrop = dndDropCallback;
         vm.dndStart = dndStartCallback;
         vm.deleteAttr = deleteAttr;
+        
+        init();
+
+        function init() {
+            if ($state.params.addAttribute) {
+                _newAttribute();
+            }
+        }
 
         function dndDropCallback(index, item) {
             var i, l,
@@ -59,11 +67,15 @@
         });
 
         $scope.$on('$entityAddEvent', function () {
+            _newAttribute();
+        });
+
+        function _newAttribute() {
             vm.attributes.push({
                 datatype: 'STRING',
                 group: 'Default',
                 isNew: true
             });
-        })
+        }
     }
 })();

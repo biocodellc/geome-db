@@ -10,7 +10,8 @@
         var _availableRules;
 
         var service = {
-            availableRules: availableRules
+            availableRules: availableRules,
+            newRule: newRule
         };
 
         return service;
@@ -21,6 +22,16 @@
             }
 
             return _availableRules;
+        }
+        
+        function newRule(name) {
+            var availableRules = this.availableRules();
+
+            for (var i = 0; i < availableRules.length; i++) {
+                if (availableRules[i].name === name) {
+                    return angular.copy(availableRules[i]);
+                }
+            }
         }
 
         function _setAvailableRules() {
