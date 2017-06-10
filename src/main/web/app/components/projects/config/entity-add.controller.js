@@ -26,12 +26,12 @@
         }
 
         function add() {
-            angular.forEach(project.config.entities, function (entity) {
-                if (entity.conceptAlias.toLowerCase() === vm.conceptAlias.toLowerCase()) {
+            for (var i = 0; i < project.config.entities.length; i++) {
+                if (project.config.entities[i].conceptAlias.toLowerCase() === vm.conceptAlias.toLowerCase()) {
                     vm.addForm.conceptAlias.$setValidity("unique", false);
                     return;
                 }
-            });
+            }
 
             var entity = {
                 attributes: [],

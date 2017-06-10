@@ -177,6 +177,8 @@
                     }
                 }
             },
+
+            // Entities
             {
                 state: 'project.config.entities',
                 config: {
@@ -201,6 +203,7 @@
                     }
                 }
             },
+
             {
                 state: 'project.config.entities.detail',
                 config: {
@@ -223,6 +226,7 @@
                     }
                 }
             },
+
             {
                 state: 'project.config.entities.detail.attributes',
                 config: {
@@ -240,6 +244,7 @@
                     }
                 }
             },
+
             {
                 state: 'project.config.entities.detail.rules',
                 config: {
@@ -264,6 +269,56 @@
                     }
                 }
             },
+            //- End Entities
+
+            {
+                state: 'project.config.lists',
+                config: {
+                    url: '/lists',
+                    views: {
+                        "objects": {
+                            templateUrl: "app/components/projects/config/templates/lists.tpl.html",
+                            controller: "ListsController as vm"
+                        }
+                    }
+                }
+            },
+            {
+                state: 'project.config.lists.detail',
+                config: {
+                    url: '/:alias/',
+                    onEnter: _listsDetailOnEnter,
+                    resolve: {
+                        list: _resolveList
+                    },
+                    views: {
+                        "@project.config": {
+                            templateUrl: "app/components/projects/config/templates/list-detail.tpl.html",
+                            controller: "ListController as vm"
+                        }
+                    },
+                    params: {
+                        alias: {
+                            type: "string"
+                        },
+                        addField: {
+                            type: "bool"
+                        }
+                    }
+                }
+            },
+            {
+                state: 'project.config.lists.add',
+                config: {
+                    url: '/add',
+                    views: {
+                        "objects@project.config": {
+                            templateUrl: "app/components/projects/config/templates/add-list.tpl.html",
+                            controller: "AddListController as vm"
+                        }
+                    }
+                }
+            }
             //- End Config
         ];
     }
@@ -367,6 +422,33 @@
             }
 
             return $state.go('project.config.entities');
+        }
+    }
+
+    _listsDetailOnEnter.$inject = ['$rootScope', '$state'];
+
+    function _listsDetailOnEnter($rootScope, $state) {
+        $rootScope.$on('$projectChangeEvent', function () {
+            $state.go('project.config.lists', {}, {reload: true, inherit: false});
+        });
+    }
+
+    _resolveList.$inject = ['$transition$', '$state', 'project'];
+
+    function _resolveList($transition$, $state, project) {
+        var list = $transition$.params().list;
+
+        if (list) {
+            return list;
+        } else {
+            var lists = project.config.lists;
+            for (var i = 0; i < lists.length; i++) {
+                if (lists[i].alias === $transition$.params().alias) {
+                    return lists[i];
+                }
+            }
+
+            return $state.go('project.config.lists');
         }
     }
 
