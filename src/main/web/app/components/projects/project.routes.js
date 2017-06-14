@@ -37,7 +37,8 @@
                         project: _resolveProject
                     },
                     projectRequired: true,
-                    loginRequired: true
+                    loginRequired: true,
+                    waitForResolves: true
                 }
             },
             {
@@ -66,7 +67,8 @@
                             templateUrl: "app/components/projects/project-expeditions.html",
                             controller: "ProjectExpeditionsController as vm"
                         }
-                    }
+                    },
+                    waitForResolves: true
                 }
             },
             {
@@ -83,7 +85,6 @@
                     },
                     views: {
                         "@": {
-                            // templateUrl: "app/components/expeditions/expedition-detail.html",
                             template: '<div class="admin" ng-include="\'app/components/expeditions/expedition-detail.html\'"></div>',
                             controller: "ExpeditionController as vm"
                         }
@@ -148,7 +149,8 @@
                             templateUrl: "app/components/projects/members/project-members.html",
                             controller: "ProjectMembersController as vm"
                         }
-                    }
+                    },
+                    waitForResolves: true
                 }
             },
             {

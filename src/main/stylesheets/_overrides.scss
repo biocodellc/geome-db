@@ -104,8 +104,17 @@ body {
 .main {
   padding-left: $sidenav-width;
 
-  > .content > .container-fluid {
-    margin: 30px 25px;
+  > .content {
+    position: relative;
+
+    > .modal-backdrop {
+      margin-left: $sidenav-width;
+      margin-top: $navbar-height;
+    }
+
+    > .container-fluid {
+      margin: 30px 25px;
+    }
   }
 
   //@media (min-width: $grid-float-breakpoint-max) {

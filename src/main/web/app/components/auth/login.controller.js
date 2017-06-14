@@ -4,9 +4,9 @@
     angular.module('fims.auth')
         .controller("LoginController", LoginController);
 
-    LoginController.$inject = ['$state', 'UserService', 'LoadingModalFactory', 'exception', 'alerts'];
+    LoginController.$inject = ['$state', 'UserService', 'LoadingModal', 'exception', 'alerts'];
 
-    function LoginController($state, UserService, LoadingModalFactory, exception, alerts) {
+    function LoginController($state, UserService, LoadingModal, exception, alerts) {
         var vm = this;
         vm.credentials = {
             username: '',
@@ -28,7 +28,7 @@
 
         function submit() {
             alerts.removeTmp();
-            LoadingModalFactory.open();
+            LoadingModal.open();
             UserService.signIn(vm.credentials.username, vm.credentials.password)
                 .then(function () {
                     var params = $state.params;
@@ -39,7 +39,7 @@
                     }
                 })
                 .finally(function () {
-                        LoadingModalFactory.close();
+                        LoadingModal.close();
                     }
                 );
         }

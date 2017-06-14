@@ -1,7 +1,7 @@
 angular.module('fims.query')
 
-    .controller('QueryCtrl', ['$rootScope', '$scope', '$http', 'LoadingModalFactory', 'FailModalFactory', 'ProjectService', 'ExpeditionService', 'AuthService', 'FileService', 'exception', 'REST_ROOT',
-        function ($rootScope, $scope, $http, LoadingModalFactory, FailModalFactory, ProjectService, ExpeditionService, AuthService, FileService, exception, REST_ROOT) {
+    .controller('QueryCtrl', ['$rootScope', '$scope', '$http', 'LoadingModal', 'FailModalFactory', 'ProjectService', 'ExpeditionService', 'AuthService', 'FileService', 'exception', 'REST_ROOT',
+        function ($rootScope, $scope, $http, LoadingModal, FailModalFactory, ProjectService, ExpeditionService, AuthService, FileService, exception, REST_ROOT) {
             var defaultFilter = {
                 column: null,
                 value: null
@@ -35,7 +35,7 @@ angular.module('fims.query')
             }
 
             function queryJson() {
-                LoadingModalFactory.open();
+                LoadingModal.open();
                 var data = {
                     projectId: vm.project.projectId,
                     query: (vm.queryString.trim().length > 0) ? vm.queryString : "*"
@@ -55,7 +55,7 @@ angular.module('fims.query')
                         }
                     )
                     .finally(function () {
-                        LoadingModalFactory.close();
+                        LoadingModal.close();
                     })
             }
 

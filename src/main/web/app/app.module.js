@@ -10,6 +10,7 @@ var app = angular.module('biscicolApp', [
     'fims.validation',
     'fims.projects',
     'fims.users',
+    'fims.modals',
     'fims.lookup',
     'fims.creator',
     'utils.autofocus',
@@ -17,12 +18,27 @@ var app = angular.module('biscicolApp', [
     'angularSpinner'
 ]);
 
-app.run(['$http', '$rootScope', function ($http, $rootScope) {
+app.run(['$http', '$rootScope', '$transitions', 'LoadingModal', function ($http, $rootScope, $transitions, LoadingModal) {
     $http.defaults.headers.common = {'Fims-App': 'Biscicol-Fims'};
 
     $rootScope.isEmpty = function (val) {
         return angular.equals({}, val);
     };
+
+    $transitions.onStart({}, function(trans) {
+        // if (trans.$to().resolvables.length > 0 && trans.$to().waitForResolves) {
+            if (trans.$to().resolvables.length > 0) {
+            LoadingModal.open();
+        }
+    });
+
+    $transitions.onFinish({}, function() {
+        LoadingModal.close();
+    });
+
+    $transitions.onError({}, function() {
+        LoadingModal.close(true);
+    });
 }]);
 
 // register an interceptor to convert objects to a form-data like string for $http data attributes and
