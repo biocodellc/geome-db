@@ -11,6 +11,7 @@
 
         vm.isChild = false;
         vm.conceptAlias = undefined;
+        vm.conceptURI = undefined;
         vm.parentEntity = undefined;
         vm.entities = undefined;
         vm.add = add;
@@ -38,20 +39,29 @@
                 rules: [],
                 conceptAlias: vm.conceptAlias.toLowerCase(),
                 parentEntity: vm.parentEntity,
+                conceptURI: vm.conceptURI,
+                editable: true,
                 isNew: true
             };
 
             if (vm.parentEntity) {
                 var rule = RuleService.newRule("RequiredValue");
                 rule.level = 'ERROR';
-                rule.columns.push(project.config.entityUniqueKey(vm.parentEntity));
+                var column = project.config.entityUniqueKey(vm.parentEntity);
+                rule.columns.push(column);
+
+                entity.attributes.push({
+                    column: column,
+                    datatype: 'STRING',
+                    group: 'Default',
+                });
 
                 entity.rules.push(rule);
             }
 
             project.config.entities.push(entity);
 
-            $state.go('^.detail.attributes', { alias: vm.conceptAlias, addAttribute: true });
+            $state.go('^.detail.attributes', { alias: entity.conceptAlias, entity: entity, addAttribute: true });
         }
     }
 

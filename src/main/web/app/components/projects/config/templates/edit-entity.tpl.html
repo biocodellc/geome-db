@@ -7,7 +7,7 @@
                 <div class="form-group">
                     <label class="control-label col-xs-3">Concept Alias</label>
                     <div class="col-xs-9">
-                        <input type="text" class="form-control" ng-disabled="!vm.entity.isNew"
+                        <input type="text" class="form-control" ng-disabled="!vm.entity.editable"
                                ng-model="vm.entity.conceptAlias"/>
                     </div>
                 </div>
@@ -15,15 +15,20 @@
                 <div class="form-group">
                     <label class="control-label col-xs-3">Unique Key Column</label>
                     <div class="col-xs-9">
+                        <input type="text" class="form-control" disabled ng-show="!vm.entity.editable"
+                               ng-model="vm.entity.uniqueKey"/>
                         <select class="form-control" ng-options="column for column in vm.columns"
+                                ng-show="vm.entity.editable"
                                 ng-model="vm.entity.uniqueKey"></select>
+                        <p class="help-block" ng-show="vm.entity.editable">Once saved, this cannot be changed.</p>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="control-label col-xs-3">Worksheet</label>
                     <div class="col-xs-9">
-                        <ui-select ng-model="vm.entity.worksheet" tagging="vm.newWorksheet" tagging-label="false">
+                        <ui-select ng-model="vm.entity.worksheet" tagging="vm.newWorksheet" tagging-label="false"
+                                   ng-disabled="!vm.entity.editable && !vm.entity.uniqueKey">
                             <ui-select-match>{{ $select.selected }}</ui-select-match>
                             <ui-select-choices position="down"
                                                repeat="worksheet in vm.existingWorksheets | filter: $select.search">
