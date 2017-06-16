@@ -291,7 +291,7 @@ public class DatasetController extends FimsService {
         }
 
         Map<String, File> fileMap = new HashMap<>();
-        for (Entity entity: expedition.getProject().getProjectConfig().getEntities()) {
+        for (Entity entity: expedition.getProject().getProjectConfig().entities()) {
             QueryBuilder qb = new QueryBuilder(expedition.getProject(), entity.getConceptAlias());
             Query query = new Query(qb, new ExpeditionExpression(expeditionCode));
 

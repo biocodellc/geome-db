@@ -30,7 +30,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.io.IOException;
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -69,9 +68,8 @@ public class FimsPostgresMigrator {
 
             ProjectConfig config = p.getProjectConfig();
 
-            if (config != null && config.getEntities().size() > 0) {
+            if (config != null && config.entities().size() > 0) {
 
-                createTables(p, config);
                 migrateData(p, p.getProjectConfig());
             } else {
                 logger.error("project id: " + p.getProjectId() + " project_config is null. Not creating schema and entity tables.");
@@ -83,7 +81,7 @@ public class FimsPostgresMigrator {
     private void migrateData(Project p, ProjectConfig config) {
 
         List<Attribute> attributes = new ArrayList<>();
-        config.getEntities().forEach(e -> attributes.addAll(e.getAttributes()));
+        config.entities().forEach(e -> attributes.addAll(e.getAttributes()));
 
         int records = 0;
         for (Expedition e : p.getExpeditions()) {
@@ -95,7 +93,7 @@ public class FimsPostgresMigrator {
 
                 ElasticSearchQuerier querier = new ElasticSearchQuerier(client, query);
 
-                Entity entity = p.getProjectConfig().getEntities().getFirst();
+                Entity entity = p.getProjectConfig().entities().getFirst();
                 RecordSet recordSet = new RecordSet(entity);
 
                 ArrayNode allResults = querier.getAllResults();
@@ -131,7 +129,7 @@ public class FimsPostgresMigrator {
     }
 
     private void insertEntityIdentifiers(Expedition e, ProjectConfig config) {
-        List<String> conceptAliases = config.getEntities()
+        List<String> conceptAliases = config.entities()
                 .stream()
                 .map(Entity::getConceptAlias)
                 .collect(Collectors.toList());
@@ -151,26 +149,6 @@ public class FimsPostgresMigrator {
 
         } catch (Exception exception) {
             logger.error("ENTITY_IDENTIFIER_ERROR\t Error inserting entity_identifiers", exception);
-        }
-    }
-
-    private void createTables(Project p, ProjectConfig config) {
-        recordRepository.createProjectSchema(p.getProjectId());
-
-        for (Entity entity : config.getEntities()) {
-
-            if (entity.isChildEntity()) {
-
-                Entity parentEntity = config.getEntity(entity.getParentEntity());
-                String parentColumnUri = entity.getAttributeUri(parentEntity.getUniqueKey());
-                recordRepository.createChildEntityTable(p.getProjectId(), entity.getConceptAlias(), entity.getParentEntity(), parentColumnUri);
-
-            } else {
-
-                recordRepository.createEntityTable(p.getProjectId(), entity.getConceptAlias());
-
-            }
-
         }
     }
 

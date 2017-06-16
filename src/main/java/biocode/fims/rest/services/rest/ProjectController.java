@@ -88,7 +88,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         List<String> columns = new ArrayList<>();
 
         // TODO don't default to first entity
-        for (Attribute a: project.getProjectConfig().getEntities().get(0).getAttributes()) {
+        for (Attribute a: project.getProjectConfig().entities().get(0).getAttributes()) {
             columns.add(a.getColumn());
         }
 

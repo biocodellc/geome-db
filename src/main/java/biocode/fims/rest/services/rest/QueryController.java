@@ -35,8 +35,6 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -414,7 +412,7 @@ public class QueryController extends FimsService {
         Project project = projectService.getProject(projectId);
 
         // TODO currently assuming that each project only has 1 entity, need to pass entity as param
-        QueryBuilder queryBuilder = new QueryBuilder(project, project.getProjectConfig().getEntities().get(0).getConceptAlias());
+        QueryBuilder queryBuilder = new QueryBuilder(project, project.getProjectConfig().entities().get(0).getConceptAlias());
 
         QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder);
         try {
