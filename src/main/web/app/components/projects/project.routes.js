@@ -170,7 +170,10 @@
                 config: {
                     url: '/config',
                     redirectTo: 'project.config.entities',
-                    // onExit: _configExit,
+                    onExit: _configExit,
+                    resolve: {
+                        config: _resolveConfig
+                    },
                     views: {
                         "details": {
                             templateUrl: "app/components/projects/config/templates/config.tpl.html",
@@ -412,6 +415,12 @@
         });
     }
 
+    _resolveConfig.$inject = ['project'];
+
+    function _resolveConfig(project) {
+        return angular.copy(project.config);
+    }
+
     _entitiesDetailOnEnter.$inject = ['$rootScope', '$state'];
 
     function _entitiesDetailOnEnter($rootScope, $state) {
@@ -420,15 +429,15 @@
         });
     }
 
-    _resolveEntity.$inject = ['$transition$', '$state', 'project'];
+    _resolveEntity.$inject = ['$transition$', '$state', 'config'];
 
-    function _resolveEntity($transition$, $state, project) {
+    function _resolveEntity($transition$, $state, config) {
         var entity = $transition$.params().entity;
 
         if (entity) {
             return entity;
         } else {
-            var entities = project.config.entities;
+            var entities = config.entities;
             for (var i = 0; i < entities.length; i++) {
                 if (entities[i].conceptAlias === $transition$.params().alias) {
                     return entities[i];
@@ -447,15 +456,15 @@
         });
     }
 
-    _resolveList.$inject = ['$transition$', '$state', 'project'];
+    _resolveList.$inject = ['$transition$', '$state', 'config'];
 
-    function _resolveList($transition$, $state, project) {
+    function _resolveList($transition$, $state, config) {
         var list = $transition$.params().list;
 
         if (list) {
             return list;
         } else {
-            var lists = project.config.lists;
+            var lists = config.lists;
             for (var i = 0; i < lists.length; i++) {
                 if (lists[i].alias === $transition$.params().alias) {
                     return lists[i];
@@ -479,9 +488,12 @@
         return false;
     }
 
-    function _configExit(trans) {
-        var project = trans.injector().get('project');
-        if (project.config.modified) {
+
+    _configExit.$inject = ['$transition$', 'config'];
+
+    function _configExit(trans, config) {
+        // var config = trans.injector().get('config');
+        if (config.modified) {
             var $uibModal = trans.injector().get('$uibModal');
 
             var modal = $uibModal.open({

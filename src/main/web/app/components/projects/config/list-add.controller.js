@@ -4,9 +4,9 @@
     angular.module('fims.projects')
         .controller('AddListController', AddListController);
 
-    AddListController.$inject = ['$state', 'project'];
+    AddListController.$inject = ['$state', 'config'];
 
-    function AddListController($state, project) {
+    function AddListController($state, config) {
         var vm = this;
 
         vm.caseSensitive = false;
@@ -14,14 +14,14 @@
         vm.add = add;
 
         function add() {
-            for (var i = 0; i < project.config.lists.length; i++) {
-                if (project.config.lists[i].alias === vm.alias) {
+            for (var i = 0; i < config.lists.length; i++) {
+                if (config.lists[i].alias === vm.alias) {
                     vm.addForm.alias.$setValidity("unique", false);
                     return;
                 }
             }
 
-            project.config.lists.push({
+            config.lists.push({
                 fields: [],
                 alias: vm.alias,
                 caseInsensitive: !vm.caseSensitive,

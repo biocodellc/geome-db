@@ -4,21 +4,21 @@
     angular.module('fims.projects')
         .controller('AddRuleController', AddRuleController);
 
-    AddRuleController.$inject = ['$state', 'ProjectService', 'RuleService', 'alerts', 'entity'];
+    AddRuleController.$inject = ['$state', 'RuleService', 'alerts', 'config', 'entity'];
 
-    function AddRuleController($state, ProjectService, RuleService, alerts, entity) {
+    function AddRuleController($state, RuleService, alerts, config, entity) {
         var vm = this;
 
         vm.availableRules = RuleService.availableRules();
         vm.rule = undefined;
-        vm.levels = ProjectService.currentProject.config.ruleLevels();
+        vm.levels = config.ruleLevels();
         vm.add = add;
 
         init();
 
         function init() {
             vm.lists = [];
-            angular.forEach(ProjectService.currentProject.config.lists, function (list) {
+            angular.forEach(config.lists, function (list) {
                 vm.lists.push(list.alias);
             });
 

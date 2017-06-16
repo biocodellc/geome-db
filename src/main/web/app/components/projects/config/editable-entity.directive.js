@@ -5,14 +5,15 @@
         .directive('editEntity', editEntity)
         .directive('editableEntity', editableEntity);
 
-    editEntity.$inject = ['$location', '$anchorScroll', '$uibTooltip', 'ProjectService'];
+    editEntity.$inject = ['$location', '$anchorScroll', '$uibTooltip'];
 
-    function editEntity($location, $anchorScroll, $uibTooltip, ProjectService) {
+    function editEntity($location, $anchorScroll, $uibTooltip) {
         return {
             restrict: 'A',
             scope: {
                 entity: '=',
-                index: '='
+                index: '=',
+                config: '='
             },
             bindToController: true,
             controller: _entityController,
@@ -38,7 +39,7 @@
                         ctrl.columns.push(attribute.column);
                     });
 
-                    ctrl.existingWorksheets = ProjectService.currentProject.config.worksheets();
+                    ctrl.existingWorksheets = ctrl.config.worksheets();
 
                 }
             }
@@ -66,12 +67,11 @@
         }
     }
 
-    _entityController.$inject = ['$scope', '$uibModal', 'ProjectService'];
+    _entityController.$inject = ['$scope', '$uibModal'];
 
-    function _entityController($scope, $uibModal, ProjectService) {
+    function _entityController($scope, $uibModal) {
         var vm = this;
         var _broadcaster = false;
-        var _config = ProjectService.currentProject.config;
 
         vm.editing = false;
         vm.remove = remove;
@@ -90,8 +90,8 @@
 
             modal.result.then(
                 function () {
-                    var i = _config.entities.indexOf(vm.entity);
-                    _config.entities.splice(i, 1);
+                    var i = vm.config.entities.indexOf(vm.entity);
+                    vm.config.entities.splice(i, 1);
                 }
             );
         }
@@ -119,7 +119,7 @@
         
         $scope.$watch('vm.entity.uniqueKey', function (newVal, oldVal) {
             if (newVal !== oldVal) {
-                var rule = _config.getRule(vm.entity.conceptAlias, 'RequiredValue', 'ERROR');
+                var rule = vm.config.getRule(vm.entity.conceptAlias, 'RequiredValue', 'ERROR');
 
                 if (rule.columns.indexOf(vm.entity.uniqueKey) === -1) {
                     rule.columns.push(vm.entity.uniqueKey);

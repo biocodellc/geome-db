@@ -5,16 +5,17 @@
         .directive('editRule', editRule)
         .directive('editableRule', editableRule);
 
-    editRule.$inject = ['$uibTooltip', 'ProjectService'];
+    editRule.$inject = ['$uibTooltip'];
 
-    function editRule($uibTooltip, ProjectService) {
+    function editRule($uibTooltip) {
         return {
             restrict: 'A',
             scope: {
                 rule: '=',
                 entity: '<',
                 index: '=',
-                onDelete: '&'
+                onDelete: '&',
+                config: '<'
             },
             bindToController: true,
             controller: _ruleController,
@@ -29,7 +30,7 @@
                     tooltipLink.apply(this, arguments);
 
                     ctrl.lists = [];
-                    angular.forEach(ProjectService.currentProject.config.lists, function (list) {
+                    angular.forEach(ctrl.config.lists, function (list) {
                         ctrl.lists.push(list.alias);
                     });
 
@@ -64,13 +65,12 @@
         }
     }
 
-    _ruleController.$inject = ['$scope', '$uibModal', 'ProjectService'];
+    _ruleController.$inject = ['$scope', '$uibModal'];
 
-    function _ruleController($scope, $uibModal, ProjectService) {
+    function _ruleController($scope, $uibModal) {
         var vm = this;
         var _broadcaster = false;
 
-        vm.levels = ProjectService.currentProject.config.ruleLevels();
         vm.editing = false;
         vm.isArray = angular.isArray;
         vm.remove = remove;

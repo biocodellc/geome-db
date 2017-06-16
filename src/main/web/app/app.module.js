@@ -25,18 +25,17 @@ app.run(['$http', '$rootScope', '$transitions', 'LoadingModal', function ($http,
         return angular.equals({}, val);
     };
 
-    $transitions.onStart({}, function(trans) {
-        // if (trans.$to().resolvables.length > 0 && trans.$to().waitForResolves) {
-            if (trans.$to().resolvables.length > 0) {
+    $transitions.onStart({}, function (trans) {
+        if (trans.$to().resolvables.length > 0) {
             LoadingModal.open();
         }
     });
 
-    $transitions.onFinish({}, function() {
+    $transitions.onFinish({}, function () {
         LoadingModal.close();
     });
 
-    $transitions.onError({}, function() {
+    $transitions.onError({}, function () {
         LoadingModal.close(true);
     });
 }]);

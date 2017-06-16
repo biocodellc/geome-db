@@ -4,11 +4,12 @@
     angular.module('fims.projects')
         .controller('EntityRulesController', EntityRulesController);
 
-    EntityRulesController.$inject = ['$scope', '$state', 'entity'];
+    EntityRulesController.$inject = ['$scope', '$state', 'entity', 'config'];
 
-    function EntityRulesController($scope, $state, entity) {
+    function EntityRulesController($scope, $state, entity, config) {
         var vm = this;
         vm.entity = entity;
+        vm.config = config;
         vm.deleteRule = deleteRule;
 
         function deleteRule(i) {

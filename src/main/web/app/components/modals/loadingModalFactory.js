@@ -16,8 +16,11 @@
 
         function close() {
             if (_modalInstance) {
-                _modalInstance.close();
-                _modalInstance = undefined;
+                _modalInstance.opened
+                    .finally(function () {
+                        _modalInstance.close();
+                        _modalInstance = undefined;
+                    });
             }
         }
 

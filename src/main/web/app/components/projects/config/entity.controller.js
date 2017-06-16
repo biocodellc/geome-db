@@ -4,15 +4,15 @@
     angular.module('fims.projects')
         .controller('EntityController', EntityController);
 
-    EntityController.$inject = ['$scope', '$state', 'project', 'ProjectConfigService', 'alerts'];
+    EntityController.$inject = ['$scope', '$state', 'project', 'ProjectConfigService', 'alerts', 'config'];
 
-    function EntityController($scope, $state, project, ProjectConfigService, alerts) {
+    function EntityController($scope, $state, project, ProjectConfigService, alerts, config) {
         var vm = this;
 
         vm.save = save;
         vm.add = add;
         vm.addText = undefined;
-        vm.config = project.config;
+        vm.config = config;
 
         function add() {
             $scope.$broadcast('$entityAddEvent');
@@ -23,7 +23,6 @@
             ProjectConfigService.save(vm.config, project.projectId)
                 .then(function(config) {
                     project.config = config;
-                    vm.config = config;
                     alerts.success("Successfully updated project configuration!");
                 }, function (response) {
                     if (response.status === 400) {
@@ -44,11 +43,10 @@
             }
         });
 
-        $scope.$watch(function() {
-            return project.config;
-        }, function (newVal, oldVal) {
-            if (!project.config.modified && !angular.equals(newVal, oldVal)) {
-                project.config.modified = true;
+        $scope.$watch('vm.config'
+        , function (newVal, oldVal) {
+            if (!vm.config.modified && !angular.equals(newVal, oldVal)) {
+                vm.config.modified = true;
             }
         }, true);
     }

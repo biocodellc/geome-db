@@ -12,7 +12,8 @@
             restrict: 'A',
             scope: {
                 list: '=',
-                index: '='
+                index: '=',
+                config: '<'
             },
             bindToController: true,
             controller: _listController,
@@ -53,12 +54,11 @@
         }
     }
 
-    _listController.$inject = ['$scope', '$uibModal', 'ProjectService'];
+    _listController.$inject = ['$scope', '$uibModal'];
 
-    function _listController($scope, $uibModal, ProjectService) {
+    function _listController($scope, $uibModal) {
         var vm = this;
         var _broadcaster = false;
-        var _config = ProjectService.currentProject.config;
 
         vm.editing = false;
         vm.remove = remove;
@@ -76,8 +76,8 @@
 
             modal.result.then(
                 function () {
-                    var i = _config.lists.indexOf(vm.list);
-                    _config.lists.splice(i, 1);
+                    var i = vm.config.lists.indexOf(vm.list);
+                    vm.config.lists.splice(i, 1);
                 }
             );
         }
@@ -105,7 +105,7 @@
 
         function _existingLists() {
             var lists = [];
-            angular.forEach(ProjectService.currentProject.config.lists, function (list) {
+            angular.forEach(vm.config.lists, function (list) {
                 lists.push(list.alias);
             });
 

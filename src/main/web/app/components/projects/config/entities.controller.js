@@ -4,11 +4,11 @@
     angular.module('fims.projects')
         .controller('EntitiesController', EntitiesController);
 
-    EntitiesController.$inject = ['$scope', '$state', 'project'];
+    EntitiesController.$inject = ['$scope', '$state', 'config'];
 
-    function EntitiesController($scope, $state, project) {
+    function EntitiesController($scope, $state, config) {
         var vm = this;
-        vm.entities = project.config.entities;
+        vm.config = config;
 
         /**
          * catch child emit event and rebroadcast to all children. This is the only way to broadcast to sibling elements

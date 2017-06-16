@@ -4,9 +4,9 @@
     angular.module('fims.projects')
         .controller('AddEntityController', AddEntityController);
 
-    AddEntityController.$inject = ['$state', 'RuleService', 'project'];
+    AddEntityController.$inject = ['$state', 'RuleService', 'config'];
 
-    function AddEntityController($state, RuleService, project) {
+    function AddEntityController($state, RuleService, config) {
         var vm = this;
 
         vm.isChild = false;
@@ -21,14 +21,14 @@
         function init() {
             vm.entities = [];
 
-            angular.forEach(project.config.entities, function(entity) {
+            angular.forEach(config.entities, function(entity) {
                 vm.entities.push(entity.conceptAlias);
             });
         }
 
         function add() {
-            for (var i = 0; i < project.config.entities.length; i++) {
-                if (project.config.entities[i].conceptAlias.toLowerCase() === vm.conceptAlias.toLowerCase()) {
+            for (var i = 0; i < config.entities.length; i++) {
+                if (config.entities[i].conceptAlias.toLowerCase() === vm.conceptAlias.toLowerCase()) {
                     vm.addForm.conceptAlias.$setValidity("unique", false);
                     return;
                 }
@@ -47,7 +47,7 @@
             if (vm.parentEntity) {
                 var rule = RuleService.newRule("RequiredValue");
                 rule.level = 'ERROR';
-                var column = project.config.entityUniqueKey(vm.parentEntity);
+                var column = config.entityUniqueKey(vm.parentEntity);
                 rule.columns.push(column);
 
                 entity.attributes.push({
@@ -59,7 +59,7 @@
                 entity.rules.push(rule);
             }
 
-            project.config.entities.push(entity);
+            config.entities.push(entity);
 
             $state.go('^.detail.attributes', { alias: entity.conceptAlias, entity: entity, addAttribute: true });
         }

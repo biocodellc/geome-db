@@ -10,7 +10,7 @@
         <label class="control-label col-xs-3">Level</label>
         <div class="col-xs-9">
             <select class="form-control" ng-model="vm.rule.level" name="level"
-                    ng-options="level for level in vm.levels"></select>
+                    ng-options="level for level in vm.config.ruleLevels()"></select>
         </div>
     </div>
 

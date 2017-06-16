@@ -4,11 +4,11 @@
     angular.module('fims.projects')
         .controller('ListsController', ListsController);
 
-    ListsController.$inject = ['$scope', '$state', 'project'];
+    ListsController.$inject = ['$scope', '$state', 'config'];
 
-    function ListsController($scope, $state, project) {
+    function ListsController($scope, $state, config) {
         var vm = this;
-        vm.lists = project.config.lists;
+        vm.config = config;
 
         /**
          * catch child emit event and rebroadcast to all children. This is the only way to broadcast to sibling elements
