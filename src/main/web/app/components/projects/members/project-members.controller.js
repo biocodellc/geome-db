@@ -21,7 +21,7 @@
 
         function remove(user) {
             var modal = $uibModal.open({
-                templateUrl: 'app/components/projects/remove-member-confirmation.tpl.html',
+                templateUrl: 'app/components/projects/members/remove-member-confirmation.tpl.html',
                 size: 'md',
                 controller: _removeMemberConfirmationController,
                 controllerAs: 'vm',

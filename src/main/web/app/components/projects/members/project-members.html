@@ -30,16 +30,9 @@
 
         <ul class="settings-list">
             <li class="settings-list-item" ng-repeat="member in vm.members | orderBy:vm.orderBy">
-                <div class="dropdown setting-menu">
-                    <a href="#" data-toggle="dropdown" class="dropdown-toggle"><i
-                            class="fa fa-bars fa-lg fa-fw"></i></a>
-                    <ul class="dropdown-menu">
-                        <li><a href
-                               ui-sref="project.members.detail({ id:expedition.expeditionId, expedition:expedition })">
-                            <i class="fa fa-user fa-fw"></i> View</a></li>
-                        <li><a href ng-show="member.username !== vm.user.username" ng-click="vm.remove(member)">
-                            <i class="fa fa-ban text-danger fa-fw"></i>Remove</a></li>
-                    </ul>
+                <div class="row-actions">
+                    <a href ng-class="{disabled: member.username === vm.user.username}" ng-click="vm.remove(member)">
+                        <i class="fa fa-ban text-danger fa-fw"></i></a>
                 </div>
 
                 <div class="info">
