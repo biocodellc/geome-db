@@ -20,6 +20,7 @@
             all: all,
             create: create,
             get: get,
+            updatePassword: updatePassword,
             resetPassword: resetPassword,
             sendResetPasswordToken: sendResetPasswordToken
         };
@@ -125,6 +126,16 @@
                 }
             ).catch(
                 exception.catcher("Error saving user.")
+            );
+        }
+
+        function updatePassword(username, currentPassword, newPassword) {
+            return $http.put(REST_ROOT + 'users/' + username + '/password', {
+                    currentPassword: currentPassword,
+                    newPassword: newPassword
+                }
+            ).catch(
+                exception.catcher("Error updating password.")
             );
         }
 

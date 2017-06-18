@@ -30,9 +30,9 @@
             {
                 state: 'profile',
                 config: {
-                    url: "/secure/profile",
-                    templateUrl: "app/components/users/profile.html",
-                    controller: "UserCtrl as vm",
+                    url: "/user/profile",
+                    templateUrl: "app/components/users/profile.tpl.html",
+                    controller: "ProfileController as vm",
                     loginRequired: true
                 }
             }

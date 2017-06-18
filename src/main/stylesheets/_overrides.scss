@@ -132,6 +132,7 @@ body {
     background-color: #fff;
     border: 1px solid hsla(184, 6%, 85%, 1);
     padding: 15px;
+    padding-bottom: 50px;
   }
 }
 
@@ -542,4 +543,44 @@ $adminnav-border-bottom: 1px solid $gray-light;
 
 .dndDraggingSource {
   display: none;
+}
+
+// Profile
+
+.profile {
+
+  .heading {
+    margin-top: 10px;
+
+    .username {
+      margin-top: 0px;
+
+      .fa {
+        margin-right: 10px;
+      }
+    }
+  }
+
+  .settings {
+    margin-top: 35px;
+    border-top: 1px solid $gray-lighter;
+
+    .section {
+      border-bottom: 1px solid $gray-lighter;
+
+      .title {
+        font-weight: 500;
+        margin-bottom: $line-height-computed;
+      }
+    }
+  }
+}
+
+.change-password-form {
+  display: flex;
+
+  .form-group {
+    margin-bottom: $form-group-margin-bottom;
+    margin-right: 15px;
+  }
 }

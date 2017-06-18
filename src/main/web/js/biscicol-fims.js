@@ -103,23 +103,6 @@ function isTokenExpired() {
     return false;
 }
 
-function getQueryParam(sParam) {
-    var sPageURL = window.location.search.substring(1);
-    var sURLVariables = sPageURL.split('&');
-    for (var i = 0; i < sURLVariables.length; i++) {
-        var sParameterName = sURLVariables[i].split('=');
-        if (sParameterName[0] == sParam) {
-            if (sParam == "return_to") {
-                // if we want the return_to query param, we need to return everything after "return_to="
-                // this is assuming that "return_to" is the last query param, which it should be
-                return decodeURIComponent(sPageURL.slice(sPageURL.indexOf(sParameterName[1])));
-            } else {
-                return decodeURIComponent(sParameterName[1]);
-            }
-        }
-    }
-}
-
 // Populate Div element from a REST service with HTML
 function populateDivFromService(url, elementID, failMessage) {
     if (elementID.indexOf('#') == -1) {
@@ -215,70 +198,4 @@ function bcidCreatorSubmit() {
         }).fail(function (jqxhr) {
             failError(jqxhr);
         });
-}
-/* ====== profile.jsp Functions ======= */
-
-// function to submit the user's profile editor form
-function profileSubmit(divId) {
-    if ($("input.pwcheck", divId).val().length > 0 && $(".label", "#pwindicator").text() == "weak") {
-        $(".error", divId).html("password too weak");
-    } else if ($("input[name='newPassword']").val().length > 0 &&
-        ($("input[name='oldPassword']").length > 0 && $("input[name='oldPassword']").val().length == 0)) {
-        $(".error", divId).html("Old Password field required to change your Password");
-    } else {
-        var postURL = biocodeFimsRestRoot + "users/profile/update/";
-        var return_to = getQueryParam("return_to");
-        if (return_to != null) {
-            postURL += "?return_to=" + encodeURIComponent(return_to);
-        }
-        var jqxhr = $.post(postURL, $("form", divId).serialize(), 'json'
-        ).done(function (data) {
-            // if adminAccess == true, an admin updated the user's password, so no need to redirect
-            if (data.adminAccess == true) {
-                populateProjectSubsections(divId);
-            } else {
-                if (data.returnTo) {
-                    $(location).attr("href", data.returnTo);
-                } else {
-                    var jqxhr2 = populateDivFromService(
-                        biocodeFimsRestRoot + "users/profile/listAsTable",
-                        "listUserProfile",
-                        "Unable to load this user's profile from the Server")
-                        .done(function () {
-                            $("a", "#profile").click(function () {
-                                getProfileEditor();
-                            });
-                        });
-                }
-            }
-        }).fail(function (jqxhr) {
-            var json = $.parseJSON(jqxhr.responseText);
-            $(".error", divId).html(json.usrMessage);
-        });
-    }
-}
-
-// get profile editor
-function getProfileEditor(username) {
-    var jqxhr = populateDivFromService(
-        biocodeFimsRestRoot + "users/profile/listEditorAsTable",
-        "listUserProfile",
-        "Unable to load this user's profile editor from the Server"
-    ).done(function () {
-        $(".error").text(getQueryParam("error"));
-        $("#cancelButton").click(function () {
-            var jqxhr2 = populateDivFromService(
-                biocodeFimsRestRoot + "users/profile/listAsTable",
-                "listUserProfile",
-                "Unable to load this user's profile from the Server")
-                .done(function () {
-                    $("a", "#profile").click(function () {
-                        getProfileEditor();
-                    });
-                });
-        });
-        $("#profile_submit").click(function () {
-            profileSubmit('div#listUserProfile');
-        });
-    });
 }

@@ -14,7 +14,6 @@
         vm.members = members;
         vm.remove = remove;
         vm.user = UserService.currentUser;
-        // vm.add = add;
 
         $scope.$on('$userChangeEvent', function(event, user) {
             vm.user = user;
@@ -44,10 +43,6 @@
                 }
             );
         }
-
-        // function _filterMembers() {
-        //     vm.members = $filter('orderBy')(members, )
-        // }
 
         _removeMemberConfirmationController.$inject = ['$uibModalInstance', 'username'];
 
