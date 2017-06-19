@@ -18,7 +18,7 @@
                 state: 'expeditions',
                 config: {
                     abstract: true,
-                    template: '<ui-view class="admin"/>',
+                    template: '<div ui-view class="admin"></div>',
                     resolve: {
                         expeditions: _resolveExpeditions
                     },
