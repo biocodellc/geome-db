@@ -23,7 +23,7 @@
                     <select class="form-control"
                             ng-disabled="vm.templates.length <= 1"
                             ng-model="vm.template"
-                            ng-options="t as t.name for t in vm.templates"
+                            ng-options="t as t.name for t in vm.templates track by t.name"
                             ng-change="vm.templateChange()">
                     </select>
 

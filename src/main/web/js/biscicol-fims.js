@@ -103,20 +103,6 @@ function isTokenExpired() {
     return false;
 }
 
-// Populate Div element from a REST service with HTML
-function populateDivFromService(url, elementID, failMessage) {
-    if (elementID.indexOf('#') == -1) {
-        elementID = '#' + elementID
-    }
-    return jqxhr = $.ajax(url, function () {
-    })
-        .done(function (data) {
-            $(elementID).html(data);
-        })
-        .fail(function () {
-            $(elementID).html(failMessage);
-        });
-}
 
 function failError(jqxhr) {
     var buttons = {

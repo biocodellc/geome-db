@@ -4,15 +4,16 @@
     angular.module('fims.projects')
         .controller('ProjectMembersAddController', ProjectMembersAddController);
 
-    ProjectMembersAddController.$inject = ['UserService', 'ProjectMembersService', 'alerts', 'members'];
+    ProjectMembersAddController.$inject = ['UserService', 'ProjectMembersService', 'alerts', 'members', 'project'];
 
-    function ProjectMembersAddController(UserService, ProjectMembersService, alerts, members) {
+    function ProjectMembersAddController(UserService, ProjectMembersService, alerts, members, project) {
         var vm = this;
         var _allUsers = [];
 
         vm.users = [];
         vm.username = undefined;
         vm.removeAlerts = alerts.removeTmp;
+        vm.inviteUser = inviteUser;
         vm.add = add;
 
         init();
@@ -33,6 +34,29 @@
                     alerts.success("Successfully added user");
                     _filterUsers();
                 });
+        }
+
+        function inviteUser(email) {
+            if (_isMemberEmail(email)) {
+                alerts.error('A user with the email is already a member of this project.');
+                return;
+            }
+
+            alerts.removeTmp();
+            UserService.invite(email, project.projectId)
+                .then(function() {
+                    alerts.success(email + ' has been sent an invitation to create an account.');
+                });
+        }
+
+        function _isMemberEmail(email) {
+            for (var i = 0; i < members.length; i++) {
+                if (members[i].email === email) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         function _filterUsers() {

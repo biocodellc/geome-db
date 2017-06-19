@@ -18,6 +18,9 @@ wadlPath = /wadl.xsl
 # the login page to redirect to when a user needs to login
 loginPageUrl = http://www.biscicol.org/login.jsp
 
+# the relative path from the appRoot where a user can create an account
+accountCreatePath = user/create?id=${id}&email=${email}
+
 # the webapp directory to use for caching config file, and storing templates for download
 uploadDir = tripleOutput
 

@@ -9,6 +9,7 @@
     function TemplateController($scope, UserService, TemplateService, ProjectService, exception) {
         var DEFAULT_TEMPLATE = {name: 'DEFAULT'};
         var config = undefined;
+        var _templates = [];
         var vm = this;
 
         vm.isAuthenticated = false;
@@ -60,11 +61,12 @@
 
         function sheetChange() {
             _getAttributes();
+            _filterTemplates();
             vm.template = DEFAULT_TEMPLATE;
         }
 
         function templateChange() {
-            if (vm.template === DEFAULT_TEMPLATE) {
+            if (angular.equals(vm.template, DEFAULT_TEMPLATE)) {
                 vm.selected = vm.required.concat(config.suggestedAttributes(vm.sheetName));
             } else {
                 vm.selected = vm.required;
@@ -78,7 +80,7 @@
         }
 
         function canRemoveTemplate() {
-            return vm.template && vm.template !== DEFAULT_TEMPLATE &&
+            return vm.template && !angular.equals(vm.template, DEFAULT_TEMPLATE) &&
                 vm.template.user.userId === UserService.currentUser.userId;
         }
         
@@ -92,10 +94,22 @@
             TemplateService.generate(ProjectService.currentProject.projectId, vm.sheetName, columns);
         }
 
+        function _filterTemplates() {
+            vm.templates = [DEFAULT_TEMPLATE];
+
+            angular.forEach(_templates, function(t) {
+                if (t.sheetName === vm.sheetName) {
+                    vm.templates.push(t);
+                }
+            })
+
+        }
+
         function _getTemplates() {
             TemplateService.all(ProjectService.currentProject.projectId)
                 .then(function (response) {
-                    vm.templates = [DEFAULT_TEMPLATE].concat(response.data);
+                    _templates = response.data;
+                    _filterTemplates();
                     templateChange();
                 },
                     exception.catcher("Failed to load templates")

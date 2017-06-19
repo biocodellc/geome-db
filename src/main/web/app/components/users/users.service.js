@@ -19,6 +19,7 @@
             save: save,
             all: all,
             create: create,
+            invite: invite,
             get: get,
             updatePassword: updatePassword,
             resetPassword: resetPassword,
@@ -103,17 +104,26 @@
                 );
         }
 
-        function create(user) {
+        function create(inviteId, user) {
             return $http(
                 {
                     method: 'POST',
-                    url: REST_ROOT + 'users/',
+                    url: REST_ROOT + 'users?id=' + inviteId,
                     data: user,
                     keepJson: true
                 }
-            ).catch(
-                exception.catcher("Error creating user.")
+            ).then(function () {
+                    // need to authenticate so we can get an accessToken
+                    signIn(user.username, user.password);
+                }, exception.catcher("Error creating user.")
             );
+        }
+
+        function invite(email, projectId) {
+            return $http.post(REST_ROOT + 'users/invite', {email: email, projectId: projectId})
+                .catch(
+                    exception.catcher("Error inviting user.")
+                )
         }
 
         function save(user) {
@@ -155,18 +165,17 @@
                     var user = response.data;
                     _loading = false;
                     if (user) {
-                        service.currentUser = new User(user);
-                        $rootScope.$broadcast("$userChangeEvent", service.currentUser);
-
-                        if (user.hasSetPassword === false) {
-                            alerts.info("Please update your password.");
-                            return $state.go("profile");
-                        }
+                        return _setUser(user);
                     }
                 }, function (response) {
                     _loading = false;
                     exception.catcher("Failed to load user.")(response);
                 });
+        }
+
+        function _setUser(user) {
+            service.currentUser = new User(user);
+            $rootScope.$broadcast("$userChangeEvent", service.currentUser);
         }
 
         function _authTimeout() {
