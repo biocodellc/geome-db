@@ -1,6 +1,7 @@
 package biocode.fims.run;
 
 import biocode.fims.application.config.BiscicolAppConfig;
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.entities.User;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
@@ -9,7 +10,6 @@ import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.UserService;
 import biocode.fims.settings.FimsPrinter;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.settings.StandardPrinter;
 import org.apache.commons.cli.*;
 import org.springframework.context.ApplicationContext;
@@ -102,7 +102,7 @@ public class Run {
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(BiscicolAppConfig.class);
         UserService userService = applicationContext.getBean(UserService.class);
         FimsMetadataFileManager FimsMetadataFileManager = applicationContext.getBean(FimsMetadataFileManager.class);
-        SettingsManager settingsManager = applicationContext.getBean(SettingsManager.class);
+        FimsProperties fimsProperties = applicationContext.getBean(FimsProperties.class);
         ExpeditionService expeditionService = applicationContext.getBean(ExpeditionService.class);
 
         String defaultOutputDirectory = System.getProperty("user.dir") + File.separator + "tripleOutput";
@@ -269,8 +269,7 @@ public class Run {
             ProcessController processController = new ProcessController(projectId, dataset_code);
             processController.setOutputFolder(output_directory);
 
-            boolean ignoreUser = Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser"));
-            Run run = new Run(expeditionService, processController, ignoreUser);
+            Run run = new Run(expeditionService, processController, fimsProperties.ignoreUser());
             Map<String, Map<String, Object>> fmProps = new HashMap<>();
             Map<String, Object> props = new HashMap<>();
             props.put("filename", input_file);

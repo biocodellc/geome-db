@@ -1,11 +1,11 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.bcid.ExpeditionMinter;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,8 +27,8 @@ import java.util.ArrayList;
 public class ExpeditionController extends FimsAbstractExpeditionController {
 
     @Autowired
-    public ExpeditionController(ExpeditionService expeditionService, ProjectService projectService, SettingsManager settingsManager) {
-        super(expeditionService, projectService, settingsManager);
+    public ExpeditionController(ExpeditionService expeditionService, ProjectService projectService, FimsProperties props) {
+        super(expeditionService, projectService, props);
     }
 
     @GET
@@ -52,7 +52,7 @@ public class ExpeditionController extends FimsAbstractExpeditionController {
             JSONObject resource = (JSONObject) r;
             sb.append("\t<tr>\n");
             sb.append("\t\t<td>");
-            sb.append("<a href=\"" + appRoot + "lookup?id=");
+            sb.append("<a href=\"" + props.appRoot() + "lookup?id=");
             sb.append(resource.get("identifier"));
             sb.append("\">");
             sb.append("http://n2t.net/");
@@ -82,7 +82,7 @@ public class ExpeditionController extends FimsAbstractExpeditionController {
     public Response listDatasetsAsTable(@PathParam("expeditionId") int expeditionId) {
         ExpeditionMinter expeditionMinter = new ExpeditionMinter();
 
-        if (!ignoreUser && !expeditionMinter.userOwnsExpedition(userContext.getUser().getUserId(), expeditionId)) {
+        if (!props.ignoreUser() && !expeditionMinter.userOwnsExpedition(userContext.getUser().getUserId(), expeditionId)) {
             throw new ForbiddenRequestException("You must own this expedition in order to view its datasets.");
         }
 
@@ -103,7 +103,7 @@ public class ExpeditionController extends FimsAbstractExpeditionController {
                 sb.append("\t\t</td>");
 
                 sb.append("\t\t<td>");
-                sb.append("<a href=\"" + appRoot + "lookup?id=");
+                sb.append("<a href=\"" + props.appRoot() + "lookup?id=");
                 sb.append(dataset.get("identifier"));
                 sb.append("\">");
                 sb.append("http://n2t.net/");
@@ -125,7 +125,7 @@ public class ExpeditionController extends FimsAbstractExpeditionController {
     public Response listMetadataAsTable(@PathParam("expeditionId") int expeditionId) {
         ExpeditionMinter e = new ExpeditionMinter();
 
-        if (!ignoreUser && !e.userOwnsExpedition(userContext.getUser().getUserId(), expeditionId)) {
+        if (!props.ignoreUser() && !e.userOwnsExpedition(userContext.getUser().getUserId(), expeditionId)) {
             throw new ForbiddenRequestException("You must own this expedition in order to view its datasets.");
         }
 
@@ -140,7 +140,7 @@ public class ExpeditionController extends FimsAbstractExpeditionController {
         sb.append("Identifier:");
         sb.append("\t\t</td>\n");
         sb.append("\t\t<td>");
-        sb.append("<a href=\"" + appRoot + "lookup?id=");
+        sb.append("<a href=\"" + props.appRoot() + "lookup?id=");
         sb.append(metadata.get("identifier"));
         sb.append("\">");
         sb.append("http://n2t.net/");

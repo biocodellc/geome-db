@@ -109,11 +109,12 @@ startScripts {
     classpath = files(jar.archivePath, configurations.server, configurations.runtime)
 }
 
-task ezidUpdate(type: JavaExec) {
+task generateUUIDs(type: JavaExec) {
     classpath = configurations.server + configurations.compile + sourceSets.main.runtimeClasspath
 
-    main = "biocode.fims.run.EzidUpdator"
+    main = "biocode.fims.run.UserUUIDGenerator"
 }
+
 
 //=============================
 //= deployment configuration

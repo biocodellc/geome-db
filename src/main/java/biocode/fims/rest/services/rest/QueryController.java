@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.Attribute;
@@ -18,7 +19,6 @@ import biocode.fims.query.*;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.lucene.search.join.ScoreMode;
@@ -70,9 +70,9 @@ public class QueryController extends FimsService {
     private final ExpeditionService expeditionService;
 
     @Autowired
-    QueryController(SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer,
+    QueryController(FimsProperties props, Client esClient, QueryAuthorizer queryAuthorizer,
                     ExpeditionService expeditionService) {
-        super(settingsManager);
+        super(props);
         this.esClient = esClient;
         this.queryAuthorizer = queryAuthorizer;
         this.expeditionService = expeditionService;
@@ -597,7 +597,7 @@ public class QueryController extends FimsService {
             logger.error("failed to open excel file", e);
         }
 
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData);
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData, props.naan());
         file = t.createExcelFileFromExistingSources("Samples", defaultOutputDirectory());
         Response.ResponseBuilder response = Response.ok(file);
 

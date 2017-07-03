@@ -1,13 +1,11 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.entities.User;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.rest.filters.Admin;
 import biocode.fims.rest.filters.Authenticated;
-import biocode.fims.service.ExpeditionService;
-import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.EmailUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -28,8 +26,8 @@ import javax.ws.rs.core.Response;
 public class UserController extends FimsAbstractUserController {
 
     @Autowired
-    UserController(UserService userService, SettingsManager settingsManager) {
-        super(userService, settingsManager);
+    UserController(UserService userService, FimsProperties props) {
+        super(userService, props);
     }
 
     /**
@@ -48,7 +46,7 @@ public class UserController extends FimsAbstractUserController {
         User user = userService.generateResetToken(username);
         if (user != null) {
 
-            String resetTokenURL = appRoot + "resetPass?resetToken=" +
+            String resetTokenURL = props.appRoot() + "resetPass?resetToken=" +
                     user.getPasswordResetToken();
 
             String emailBody = "You requested a password reset for your Biocode-Fims account.\n\n" +

@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.bcid.ProjectMinter;
 import biocode.fims.biscicol.query.BiscicolQueryUtils;
 import biocode.fims.config.ConfigurationFileEsMapper;
@@ -19,11 +20,9 @@ import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
-import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.elasticsearch.client.Client;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,9 +53,9 @@ public class ProjectController extends FimsAbstractProjectsController {
     private final Client esClient;
 
     @Autowired
-    ProjectController(ExpeditionService expeditionService, SettingsManager settingsManager,
+    ProjectController(ExpeditionService expeditionService, FimsProperties props,
                       ProjectService projectService, UserService userService, Client esClient) {
-        super(expeditionService, settingsManager, projectService);
+        super(expeditionService, props, projectService);
         this.userService = userService;
         this.esClient = esClient;
     }
@@ -120,7 +119,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDefinitions(@PathParam("projectId") int projectId,
                                    @PathParam("columnName") String columnName) {
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), props.naan());
         StringBuilder output = new StringBuilder();
 
         Iterator attributes = t.getMapping().getAllAttributes(t.getMapping().getDefaultSheetName()).iterator();
@@ -281,7 +280,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Path("/{projectId}/attributes")
     @Produces(MediaType.TEXT_HTML)
     public Response getAttributes(@PathParam("projectId") int projectId) {
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), props.naan());
         LinkedList<String> requiredColumns = t.getRequiredColumns("error");
         LinkedList<String> desiredColumns = t.getRequiredColumns("warning");
         // Use TreeMap for natural sorting of groups
@@ -637,7 +636,7 @@ public class ProjectController extends FimsAbstractProjectsController {
             @FormParam("projectId") Integer projectId) {
 
         // Create the template processor which handles all functions related to the template, reading, generation
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), props.naan());
 
         // Set the default sheet-name
         String defaultSheetname = t.getMapping().getDefaultSheetName();

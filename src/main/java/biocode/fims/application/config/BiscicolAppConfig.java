@@ -3,14 +3,11 @@ package biocode.fims.application.config;
 import biocode.fims.elasticSearch.ESFimsMetadataPersistenceManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataPersistenceManager;
 import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
-import biocode.fims.run.EzidUpdator;
 import biocode.fims.service.ProjectService;
 import org.elasticsearch.client.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
-
-import java.io.FileNotFoundException;
 
 /**
  * Configuration class for Biscicol-Fims applications. Including cli and webapps
@@ -33,12 +30,7 @@ public class BiscicolAppConfig {
     @Bean
     @Scope("prototype")
     public FimsMetadataFileManager fimsMetadataFileManager() {
-        FimsMetadataPersistenceManager persistenceManager = new ESFimsMetadataPersistenceManager(esClient, fimsAppConfig.settingsManager);
-        return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService, messageSource);
-    }
-
-    @Bean
-    public EzidUpdator ezidUpdator() throws FileNotFoundException {
-        return new EzidUpdator(fimsAppConfig.bcidService, fimsAppConfig.settingsManager);
+        FimsMetadataPersistenceManager persistenceManager = new ESFimsMetadataPersistenceManager(esClient, fimsAppConfig.fimsProperties());
+        return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.fimsProperties(), fimsAppConfig.expeditionService, fimsAppConfig.bcidService, messageSource);
     }
 }

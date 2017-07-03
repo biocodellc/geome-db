@@ -1,12 +1,11 @@
 package biocode.fims.rest.versioning.transformers;
 
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.service.BcidService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -171,9 +170,9 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
             graphs.remove("all");
 
             if (graphs.size() > 0) {
-                for (Bcid bcid : bcidService.getBcids(graphs)) {
-                    if (bcid.getExpedition() != null) {
-                        expeditions.add(bcid.getExpedition().getExpeditionCode());
+                for (BcidTmp bcidTmp : bcidService.getBcids(graphs)) {
+                    if (bcidTmp.getExpedition() != null) {
+                        expeditions.add(bcidTmp.getExpedition().getExpeditionCode());
                     }
                 }
             }
