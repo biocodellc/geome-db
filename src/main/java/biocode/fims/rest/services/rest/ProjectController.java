@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.config.ConfigurationFileEsMapper;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
@@ -24,7 +25,6 @@ import biocode.fims.run.ProcessController;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -74,8 +74,8 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Autowired
     ProjectController(Client esClient, FimsMetadataFileManager fimsMetadataFileManager,
                       ProjectService projectService, ExpeditionService expeditionService,
-                      SettingsManager settingsManager) {
-        super(expeditionService, settingsManager, projectService);
+                      FimsProperties props) {
+        super(expeditionService, props, projectService);
         this.esClient = esClient;
         this.fimsMetadataFileManager = fimsMetadataFileManager;
     }
@@ -172,7 +172,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getDefinitions(@PathParam("projectId") int projectId,
                                    @PathParam("columnName") String columnName) {
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), props.naan());
         StringBuilder output = new StringBuilder();
 
         Iterator attributes = t.getMapping().getDefaultSheetAttributes().iterator();
@@ -334,7 +334,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Path("/{projectId}/attributes")
     @Produces(MediaType.TEXT_HTML)
     public Response getAttributes(@PathParam("projectId") int projectId) {
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), props.naan());
         LinkedList<String> requiredColumns = t.getRequiredColumns("error");
         LinkedList<String> desiredColumns = t.getRequiredColumns("warning");
         Map<String, StringBuilder> groups = new LinkedHashMap<>();
@@ -498,7 +498,7 @@ public class ProjectController extends FimsAbstractProjectsController {
             @FormParam("projectId") Integer projectId) {
 
         // Create the template processor which handles all functions related to the template, reading, generation
-        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory());
+        TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), props.naan());
 
         // Set the default sheet-name
         String defaultSheetname = t.getMapping().getDefaultSheetName();
@@ -581,7 +581,7 @@ public class ProjectController extends FimsAbstractProjectsController {
             b.put("resourceCount", bucket.getDocCount());
             b.put("expeditionCode", String.valueOf(bucket.getKey()));
             b.put("expeditionTitle", expedition != null ? expedition.getExpeditionTitle() : "");
-            b.put("expeditionIdentifier", expedition != null ? String.valueOf(expedition.getExpeditionBcid().getIdentifier()) : "");
+            b.put("expeditionIdentifier", expedition != null ? String.valueOf(expedition.getExpeditionBcidTmp().getIdentifier()) : "");
             b.put("fastaSequenceCount", ((Nested) bucket.getAggregations().get("fastaSequenceCount")).getDocCount());
             b.put("fastqMetadataCount", ((InternalFilter) bucket.getAggregations().get("fastqMetadataCount")).getDocCount());
 

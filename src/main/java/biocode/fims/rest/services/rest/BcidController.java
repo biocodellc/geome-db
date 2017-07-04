@@ -1,16 +1,16 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.bcid.BcidMetadataSchema;
 import biocode.fims.bcid.Identifier;
 import biocode.fims.bcid.Renderer.JSONRenderer;
-import biocode.fims.entities.Bcid;
+import biocode.fims.entities.BcidTmp;
 import biocode.fims.entities.Expedition;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.BcidService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +34,8 @@ public class BcidController extends FimsAbstractBcidController {
     private final ProjectService projectService;
 
     @Autowired
-    BcidController(BcidService bcidService, ProjectService projectService, SettingsManager settingsManager) {
-        super(bcidService, projectService, settingsManager);
+    BcidController(BcidService bcidService, ProjectService projectService, FimsProperties props) {
+        super(bcidService, projectService, props);
         this.bcidService = bcidService;
         this.projectService = projectService;
     }
@@ -47,9 +47,8 @@ public class BcidController extends FimsAbstractBcidController {
     @Path("metadata/{identifier: .+}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response metadata (@PathParam("identifier") String identifierString) {
-        Bcid bcid;
-        String divider = settingsManager.retrieveValue("divider");
-        Identifier identifier = new Identifier(identifierString, divider);
+        BcidTmp bcid;
+        Identifier identifier = new Identifier(identifierString, props.divider());
 
         try {
             bcid = bcidService.getBcid(identifier.getBcidIdentifier());
@@ -57,8 +56,8 @@ public class BcidController extends FimsAbstractBcidController {
             throw new BadRequestException("Invalid Identifier");
         }
 
-        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, appRoot);
-        BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(bcid, settingsManager, identifier);
+        ProjectAuthorizer projectAuthorizer = new ProjectAuthorizer(projectService, props.appRoot());
+        BcidMetadataSchema bcidMetadataSchema = new BcidMetadataSchema(bcid, props, identifier);
 
         JSONRenderer renderer = new JSONRenderer(
                 userContext.getUser(),
@@ -66,7 +65,7 @@ public class BcidController extends FimsAbstractBcidController {
                 projectAuthorizer,
                 bcidService,
                 bcidMetadataSchema,
-                appRoot
+                props.appRoot()
         );
 
         ObjectNode metadata = renderer.getMetadata();

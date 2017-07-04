@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.entities.Project;
 import biocode.fims.fasta.FastaData;
@@ -17,7 +18,6 @@ import biocode.fims.run.Process;
 import biocode.fims.run.ProcessController;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.utils.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.*;
@@ -47,8 +47,8 @@ public class ValidateController extends FimsService {
     @Autowired
     public ValidateController(ExpeditionService expeditionService,
                               List<AuxilaryFileManager> fileManagers, FimsMetadataFileManager fimsMetadataFileManager,
-                              SettingsManager settingsManager, ElasticSearchIndexer esIndexer, ProjectService projectService) {
-        super(settingsManager);
+                              FimsProperties props, ElasticSearchIndexer esIndexer, ProjectService projectService) {
+        super(props);
         this.expeditionService = expeditionService;
         this.fileManagers = fileManagers;
         this.fimsMetadataFileManager = fimsMetadataFileManager;
@@ -88,7 +88,7 @@ public class ValidateController extends FimsService {
         boolean closeProcess = true;
         boolean removeController = true;
 
-        Project project = projectService.getProject(projectId, appRoot);
+        Project project = projectService.getProject(projectId, props.appRoot());
 
         if (project == null) {
             throw new BadRequestException("Project not found");
@@ -273,7 +273,7 @@ public class ValidateController extends FimsService {
             }
 
             try {
-                p.upload(createExpedition, Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")), expeditionService);
+                p.upload(createExpedition, props.ignoreUser(), expeditionService);
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode() == UploadCode.EXPEDITION_CREATE) {
                     JSONObject message = new JSONObject();

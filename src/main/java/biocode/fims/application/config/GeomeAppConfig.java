@@ -40,8 +40,8 @@ public class GeomeAppConfig {
     @Bean
     @Scope("prototype")
     public FimsMetadataFileManager fimsMetadataFileManager() {
-        FimsMetadataPersistenceManager persistenceManager = new ESFimsMetadataPersistenceManager(esClient, fimsAppConfig.settingsManager);
-        return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.settingsManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService, messageSource);
+        FimsMetadataPersistenceManager persistenceManager = new ESFimsMetadataPersistenceManager(esClient, geomeProperties());
+        return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.fimsProperties(), fimsAppConfig.expeditionService, fimsAppConfig.bcidService, messageSource);
     }
 
     @Bean
@@ -62,7 +62,13 @@ public class GeomeAppConfig {
 
     @Bean
     public SraAccessionHarvester sraAccessionHarvester() {
-        return new SraAccessionHarvester(geomeResourceRepository(), bioSampleRepository(), projectService, fimsAppConfig.settingsManager);
+        return new SraAccessionHarvester(geomeResourceRepository(), bioSampleRepository(), projectService, geomeProperties());
+    }
+
+    @Primary
+    @Bean
+    public GeomeProperties geomeProperties() {
+        return new GeomeProperties(fimsAppConfig.env);
     }
 
 }

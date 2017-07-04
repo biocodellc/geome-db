@@ -32,7 +32,7 @@ public class GeomeWebAppConfig {
     @Scope("prototype")
     public FastaFileManager fastaFileManager() {
         FastaPersistenceManager persistenceManager = new ESFastaPersistenceManager(geomeAppConfig.esClient);
-        return new FastaFileManager(persistenceManager, fimsAppConfig.settingsManager, 
+        return new FastaFileManager(persistenceManager, geomeAppConfig.geomeProperties(),
                 fimsAppConfig.bcidService, fimsAppConfig.expeditionService);
     }
 
@@ -41,7 +41,7 @@ public class GeomeWebAppConfig {
     public FastqFileManager fastqFileManager() {
         FastqPersistenceManager persistenceManager = new ESFastqPersistenceManager(geomeAppConfig.esClient);
         return new FastqFileManager(persistenceManager, fimsAppConfig.expeditionService, fimsAppConfig.bcidService,
-                fimsAppConfig.settingsManager);
+                geomeAppConfig.geomeProperties());
     }
 
     @Bean
@@ -60,7 +60,7 @@ public class GeomeWebAppConfig {
 
     @Bean
     public QueryAuthorizer queryAuthorizer() {
-        return new QueryAuthorizer(geomeAppConfig.projectService, fimsAppConfig.settingsManager);
+        return new QueryAuthorizer(geomeAppConfig.projectService, geomeAppConfig.geomeProperties());
     }
 
 }

@@ -1,6 +1,6 @@
 package biocode.fims.rest.services.rest;
 
-import biocode.fims.settings.SettingsManager;
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.tools.FileCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -19,15 +19,15 @@ import javax.ws.rs.core.Response;
 public class UtilsController extends FimsAbstractUtilsController {
 
     @Autowired
-    UtilsController(FileCache fileCache, SettingsManager settingsManager) {
-        super(fileCache, settingsManager);
+    UtilsController(FileCache fileCache, FimsProperties props) {
+        super(fileCache, props);
     }
 
     @GET
     @Path("/getMapboxToken")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMapboxToken() {
-        String token = settingsManager.retrieveValue("mapboxAccessToken");
+        String token = props.mapboxAccessToken();
 
         return Response.ok("{\"accessToken\": \"" + token + "\"}").build();
     }

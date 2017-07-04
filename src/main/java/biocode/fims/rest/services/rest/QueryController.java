@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.GeomeProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.DataType;
@@ -25,7 +26,6 @@ import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.tools.CachedFile;
 import biocode.fims.tools.FileCache;
 import biocode.fims.utils.FileUtils;
@@ -66,7 +66,7 @@ import java.util.stream.Collectors;
 public class QueryController extends FimsService {
     private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
 
-    private static Integer projectId = Integer.parseInt(SettingsManager.getInstance().retrieveValue("projectId"));
+    private final int projectId;
     private Mapping mapping;
 
     private final Client esClient;
@@ -75,13 +75,14 @@ public class QueryController extends FimsService {
     private final FileCache fileCache;
 
     @Autowired
-    QueryController(SettingsManager settingsManager, Client esClient, QueryAuthorizer queryAuthorizer,
+    QueryController(GeomeProperties props, Client esClient, QueryAuthorizer queryAuthorizer,
                     ExpeditionService expeditionService, FileCache fileCache) {
-        super(settingsManager);
+        super(props);
         this.esClient = esClient;
         this.queryAuthorizer = queryAuthorizer;
         this.expeditionService = expeditionService;
         this.fileCache = fileCache;
+        this.projectId = props.projectId();
     }
 
     /**
@@ -125,7 +126,7 @@ public class QueryController extends FimsService {
 
         List<JsonFieldTransform> writerColumns = GeomeQueryUtils.getJsonFieldTransforms(getMapping());
         writerColumns.add(
-                new JsonFieldTransform("fastqMetadata", FastqFileManager.CONCEPT_ALIAS, DataType.STRING, true)
+                new JsonFieldTransform("fastqMetadata", FastqFileManager.CONCEPT_ALIAS, DataType.STRING, true, null)
         );
 
         List<JsonFieldTransform> filteredWriterColumns;
@@ -358,7 +359,7 @@ public class QueryController extends FimsService {
                 logger.error("failed to open excel file", e);
             }
 
-            TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData);
+            TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData, props.naan());
             file = t.createExcelFileFromExistingSources("Samples", defaultOutputDirectory());
             Response.ResponseBuilder response = Response.ok(file);
 

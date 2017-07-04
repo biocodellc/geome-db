@@ -11,7 +11,6 @@ import biocode.fims.fastq.fileManagers.FastqFileManager;
 import biocode.fims.query.writers.JsonFieldTransform;
 import com.fasterxml.jackson.core.JsonPointer;
 import org.apache.commons.lang.StringUtils;
-import org.glassfish.hk2.external.org.objectweb.asm.commons.Method;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -148,7 +147,8 @@ public class GeomeQueryUtils {
                             a.getColumn(),
                             a.getUri(),
                             a.getDatatype(),
-                            false
+                            false,
+                            a.getDelimited_by()
                     )
             );
         }
@@ -158,7 +158,8 @@ public class GeomeQueryUtils {
                         "bcid",
                         "bcid",
                         DataType.STRING,
-                        false
+                        false,
+                         null
                 )
         );
 
@@ -189,7 +190,8 @@ public class GeomeQueryUtils {
                         a.getColumn(),
                         a.getUri(),
                         a.getDatatype(),
-                        true
+                        true,
+                        a.getDelimited_by()
                 ));
             }
         }
@@ -200,7 +202,8 @@ public class GeomeQueryUtils {
                         a.getColumn(),
                         a.getUri(),
                         a.getDatatype(),
-                        false
+                        false,
+                        a.getDelimited_by()
                 ));
             }
         }
@@ -238,7 +241,8 @@ public class GeomeQueryUtils {
                         "fastqLibraryStrategy",
                         FastqFileManager.CONCEPT_ALIAS + ".libraryStrategy",
                         DataType.STRING,
-                        true
+                        true,
+                        null
                 )
         );
         jsonFieldTransforms.add(
@@ -246,7 +250,8 @@ public class GeomeQueryUtils {
                         "fastqLibrarySource",
                         FastqFileManager.CONCEPT_ALIAS + ".librarySource",
                         DataType.STRING,
-                        true
+                        true,
+                        null
                 )
         );
         jsonFieldTransforms.add(
@@ -254,7 +259,8 @@ public class GeomeQueryUtils {
                         "fastqLibrarySelection",
                         FastqFileManager.CONCEPT_ALIAS + ".librarySelection",
                         DataType.STRING,
-                        true
+                        true,
+                        null
                 )
         );
         jsonFieldTransforms.add(
@@ -262,7 +268,8 @@ public class GeomeQueryUtils {
                         "fastqLibraryLayout",
                         FastqFileManager.CONCEPT_ALIAS + ".libraryLayout",
                         DataType.STRING,
-                        true
+                        true,
+                        null
                 )
         );
         jsonFieldTransforms.add(
@@ -270,7 +277,8 @@ public class GeomeQueryUtils {
                         "fastqPlatform",
                         FastqFileManager.CONCEPT_ALIAS + ".platform",
                         DataType.STRING,
-                        true
+                        true,
+                        null
                 )
         );
         jsonFieldTransforms.add(
@@ -278,7 +286,8 @@ public class GeomeQueryUtils {
                         "fastqInstrumentModel",
                         FastqFileManager.CONCEPT_ALIAS + ".instrumentModel",
                         DataType.STRING,
-                        true
+                        true,
+                        null
                 )
         );
         jsonFieldTransforms.add(
@@ -286,7 +295,8 @@ public class GeomeQueryUtils {
                         "fastqDesignDescription",
                         FastqFileManager.CONCEPT_ALIAS + ".designDescription",
                         DataType.STRING,
-                        true
+                        true,
+                        null
                 )
         );
         jsonFieldTransforms.add(
@@ -294,7 +304,8 @@ public class GeomeQueryUtils {
                         "bioSample Accession",
                         FastqFileManager.CONCEPT_ALIAS + ".bioSample.accession",
                         DataType.STRING,
-                        true
+                        true,
+                        null
                 )
         );
         jsonFieldTransforms.add(
@@ -302,7 +313,8 @@ public class GeomeQueryUtils {
                         "bioProject Accession",
                         FastqFileManager.CONCEPT_ALIAS + ".bioSample.bioProjectAccession",
                         DataType.STRING,
-                        true
+                        true,
+                        null
                 )
         );
         jsonFieldTransforms.add(
@@ -310,7 +322,8 @@ public class GeomeQueryUtils {
                         "Experiment Accession",
                         FastqFileManager.CONCEPT_ALIAS + ".bioSample.experiment.experimentAccession",
                         DataType.STRING,
-                        true
+                        true,
+                        null
                 )
         );
         jsonFieldTransforms.add(
@@ -318,7 +331,8 @@ public class GeomeQueryUtils {
                         "Study Accession",
                         FastqFileManager.CONCEPT_ALIAS + ".bioSample.experiment.studyAccession",
                         DataType.STRING,
-                        true
+                        true,
+                        null
                 )
         );
         jsonFieldTransforms.add(
@@ -327,7 +341,8 @@ public class GeomeQueryUtils {
                         "Run Accessions",
                         FastqFileManager.CONCEPT_ALIAS + "/bioSample/experiment/runAccessions/0",
                         DataType.STRING,
-                        true
+                        true,
+                        null
                 )
         );
 
