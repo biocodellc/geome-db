@@ -65,7 +65,6 @@ public class GeomeAppConfig {
         return new SraAccessionHarvester(geomeResourceRepository(), bioSampleRepository(), projectService, geomeProperties());
     }
 
-    @Primary
     @Bean
     public GeomeProperties geomeProperties() {
         return new GeomeProperties(fimsAppConfig.env);
