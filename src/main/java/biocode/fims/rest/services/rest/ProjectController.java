@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.config.ConfigurationFileFetcher;
 import biocode.fims.digester.*;
 import biocode.fims.fimsExceptions.*;
@@ -7,7 +8,6 @@ import biocode.fims.models.Project;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
-import biocode.fims.settings.SettingsManager;
 import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,13 +32,10 @@ public class ProjectController extends FimsAbstractProjectsController {
 
     private static Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
-    private final UserService userService;
-
     @Autowired
-    ProjectController(ExpeditionService expeditionService, SettingsManager settingsManager,
+    ProjectController(ExpeditionService expeditionService, FimsProperties props,
                       ProjectService projectService, UserService userService) {
-        super(expeditionService, settingsManager, projectService);
-        this.userService = userService;
+        super(expeditionService, props, projectService);
     }
 
     @GET
@@ -79,7 +76,7 @@ public class ProjectController extends FimsAbstractProjectsController {
     @Path("/{projectId}/filterOptions")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFilterOptions(@PathParam("projectId") int projectId) {
-        Project project = projectService.getProject(projectId, settingsManager.retrieveValue("appRoot"));
+        Project project = projectService.getProject(projectId, props.appRoot());
 
         if (project == null) {
             throw new biocode.fims.fimsExceptions.BadRequestException("Invalid projectId");

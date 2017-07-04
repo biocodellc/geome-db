@@ -148,26 +148,6 @@ function dialog(msg, title, buttons) {
 
 /* ====== bcidCreator.jsp Functions ======= */
 
-// Populate the SELECT box with resourceTypes from the server
-function getResourceTypesMinusDataset(id) {
-    var url = biocodeFimsRestRoot + "resourceTypes/minusDataset/";
-
-    // get JSON from server and loop results
-    var jqxhr = $.getJSON(url, function () {
-    })
-        .done(function (data) {
-            var options = '<option value=0>Select a Concept</option>';
-            $.each(data, function (key, val) {
-                options += '<option value="' + val.resourceType + '">' + val.string + '</option>';
-            });
-            $("#" + id).html(options);
-            if (id == "adminProjects") {
-                $("." + id).html(options);
-            }
-        });
-    return jqxhr;
-}
-
 /** Process submit button for Data Group Creator **/
 function bcidCreatorSubmit() {
     /* Send the data using post */

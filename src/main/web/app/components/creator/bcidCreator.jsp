@@ -24,7 +24,7 @@
                 </tr>
                  <tr>
                         <td align=right><a ui-sref="resourceTypes">ResourceType*</a></td>
-                        <td><select name=resourceTypesMinusDataset id=resourceTypesMinusDataset class=""></select></td>
+                     <td><input name=resourceType type="text" id=resourceTypesMinusDataset /></td>
                     </tr>
                 <tr>
                     <td align=right>Target URL</td>

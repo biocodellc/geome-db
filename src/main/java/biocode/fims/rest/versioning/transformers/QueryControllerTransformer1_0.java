@@ -1,6 +1,6 @@
 package biocode.fims.rest.versioning.transformers;
 
-import biocode.fims.models.Bcid;
+import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.service.BcidService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -131,7 +131,7 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
         }
 
         if (argMap.containsKey("limit")) {
-            argMap.put("limit", Integer.parseInt(queryParameters.getOrDefault("limit", Collections.singletonList("10000")).get(0)));
+            argMap.put("limit", Integer.parseInt(queryParameters.getOrDefault("limit", Collections.singletonList("500000")).get(0)));
         }
 
         List<String> expeditions = null;
@@ -155,7 +155,7 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
         MultivaluedMap<String, String> form = (MultivaluedMap<String, String>) argMap.get("form");
 
         if (argMap.containsKey("limit")) {
-            argMap.put("limit", Integer.parseInt(queryParameters.getOrDefault("limit", Collections.singletonList("10000")).get(0)));
+            argMap.put("limit", Integer.parseInt(queryParameters.getOrDefault("limit", Collections.singletonList("500000")).get(0)));
         }
 
         form.put("projectId", form.remove("project_id"));
@@ -169,13 +169,15 @@ public class QueryControllerTransformer1_0 extends FimsAbstractTransformer {
 
             graphs.remove("all");
 
-            if (graphs.size() > 0) {
-                for (Bcid bcid : bcidService.getBcids(graphs)) {
-                    if (bcid.getExpedition() != null) {
-                        expeditions.add(bcid.getExpedition().getExpeditionCode());
-                    }
-                }
-            }
+            //TODO fix me
+            throw new FimsRuntimeException(500, null);
+//            if (graphs.size() > 0) {
+//                for (BcidTmp bcidTmp : bcidService.getBcids(graphs)) {
+//                    if (bcidTmp.getExpedition() != null) {
+//                        expeditions.add(bcidTmp.getExpedition().getExpeditionCode());
+//                    }
+//                }
+//            }
         }
     }
 }

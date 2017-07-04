@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.digester.Entity;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
@@ -26,7 +27,6 @@ import biocode.fims.run.DatasetProcessor;
 import biocode.fims.run.ProcessorStatus;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import biocode.fims.tools.UploadStore;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.run.DataSourceMetadata;
@@ -66,8 +66,8 @@ public class DatasetController extends FimsService {
     public DatasetController(ExpeditionService expeditionService, DataReaderFactory readerFactory,
                              RecordValidatorFactory validatorFactory, RecordRepository recordRepository,
                              ProjectService projectService, QueryAuthorizer queryAuthorizer, FileCache fileCache,
-                             SettingsManager settingsManager) {
-        super(settingsManager);
+                             FimsProperties props) {
+        super(props);
         this.expeditionService = expeditionService;
         this.readerFactory = readerFactory;
         this.validatorFactory = validatorFactory;
@@ -106,7 +106,7 @@ public class DatasetController extends FimsService {
             // by calling biocode.fims.rest/validate/status
             session.setAttribute("processorStatus", processorStatus);
 
-            Project project = projectService.getProject(projectId, appRoot);
+            Project project = projectService.getProject(projectId, props.appRoot());
 
             if (project == null) {
                 throw new BadRequestException("Project not found");
@@ -119,9 +119,9 @@ public class DatasetController extends FimsService {
                     .recordRepository(recordRepository)
                     .validatorFactory(validatorFactory)
                     .expeditionService(expeditionService)
-                    .ignoreUser(Boolean.parseBoolean(settingsManager.retrieveValue("ignoreUser")))
+                    .ignoreUser(props.ignoreUser())
                     .publicStatus(isPublic)
-                    .serverDataDir(settingsManager.retrieveValue("serverRoot"))
+                    .serverDataDir(props.serverRoot())
                     .reloadDataset(false);
 
             // update the status

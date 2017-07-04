@@ -22,7 +22,7 @@ apply plugin: "org.biocode.fims-web"
 import org.biocode.gradle.web.tasks.RestartRemoteJettyTask
 import org.biocode.gradle.web.tasks.HotDeployRemoteJettyTask
 
-ext.fimsCommonsVersion = "0.2.3"
+ext.fimsCommonsVersion = "0.1.3"
 
 fims {
     maven {
@@ -113,11 +113,12 @@ startScripts {
     classpath = files(jar.archivePath, configurations.server, configurations.runtime)
 }
 
-task ezidUpdate(type: JavaExec) {
+task generateUUIDs(type: JavaExec) {
     classpath = configurations.server + configurations.compile + sourceSets.main.runtimeClasspath
 
-    main = "biocode.fims.run.EzidUpdator"
+    main = "biocode.fims.run.UserUUIDGenerator"
 }
+
 
 //=============================
 //= deployment configuration

@@ -1,5 +1,6 @@
 package biocode.fims.rest.services.rest;
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.digester.Attribute;
 import biocode.fims.digester.Entity;
@@ -17,7 +18,6 @@ import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.settings.SettingsManager;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.parboiled.Parboiled;
 import org.parboiled.errors.ParserRuntimeException;
@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * Query interface for Biocode-fims expedition
  *
- * @resourceDescription Query a project's resources. See <a href='http://fims.readthedocs.io/en/stable/fims/query.html'>Fims Docs</a>
+ * @resourceDescription Query a project's resources. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>
  * for more detailed information regarding queries.
  * @resourceTag Resources
  */
@@ -55,9 +55,9 @@ public class QueryController extends FimsService {
     private final ProjectService projectService;
 
     @Autowired
-    QueryController(SettingsManager settingsManager, RecordRepository recordRepository, QueryAuthorizer queryAuthorizer,
+    QueryController(FimsProperties props, RecordRepository recordRepository, QueryAuthorizer queryAuthorizer,
                     ExpeditionService expeditionService, ProjectService projectService) {
-        super(settingsManager);
+        super(props);
         this.recordRepository = recordRepository;
         this.queryAuthorizer = queryAuthorizer;
         this.expeditionService = expeditionService;
@@ -379,7 +379,7 @@ public class QueryController extends FimsService {
                 logger.error("failed to open excel file", e);
             }
 
-            TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData);
+            TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData, props.naan());
             file = t.createExcelFileFromExistingSources(queryResult.entity().getWorksheet(), defaultOutputDirectory());
 
             Response.ResponseBuilder response = Response.ok(file);

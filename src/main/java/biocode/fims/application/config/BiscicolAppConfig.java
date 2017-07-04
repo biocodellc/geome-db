@@ -1,11 +1,8 @@
 package biocode.fims.application.config;
 
-import biocode.fims.run.EzidUpdator;
 import biocode.fims.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
-
-import java.io.FileNotFoundException;
 
 /**
  * Configuration class for Biscicol-Fims applications. Including cli and webapps
@@ -18,11 +15,7 @@ import java.io.FileNotFoundException;
 public class BiscicolAppConfig {
     @Autowired
     FimsAppConfig fimsAppConfig;
+
     @Autowired
     ProjectService projectService;
-
-    @Bean
-    public EzidUpdator ezidUpdator() throws FileNotFoundException {
-        return new EzidUpdator(fimsAppConfig.bcidService, fimsAppConfig.settingsManager);
-    }
 }
