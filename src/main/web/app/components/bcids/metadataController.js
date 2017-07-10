@@ -21,7 +21,7 @@ angular.module('fims.bcids')
             }
 
             function submitForm() {
-                $window.location = 'http://biscicol.org/id/' + vm.identifier;
+                $window.location = 'http://n2t.net/id/' + vm.identifier;
             }
 
             function filterMetadata(metadata) {

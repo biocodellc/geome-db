@@ -172,7 +172,7 @@ public class ValidateController extends FimsService {
             File configFile = new ConfigurationFileFetcher(projectId, defaultOutputDirectory(), true).getOutputFile();
 
             // Create the process object --- this is done each time to orient the application
-            Process process = new Process.ProcessBuilder(fimsMetadataFileManager, processController)
+            Process process = new Process.ProcessBuilder(fimsMetadataFileManager, processController, props)
                     .addFileManagers(fileManagers)
                     .addFmProperties(fmProps)
                     .configFile(configFile)
