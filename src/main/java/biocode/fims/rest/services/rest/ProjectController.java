@@ -581,7 +581,7 @@ public class ProjectController extends FimsAbstractProjectsController {
             b.put("resourceCount", bucket.getDocCount());
             b.put("expeditionCode", String.valueOf(bucket.getKey()));
             b.put("expeditionTitle", expedition != null ? expedition.getExpeditionTitle() : "");
-            b.put("expeditionIdentifier", expedition != null ? String.valueOf(expedition.getExpeditionBcidTmp().getIdentifier()) : "");
+            b.put("expeditionIdentifier", expedition != null ? String.valueOf(expedition.getExpeditionBcid().getIdentifier()) : "");
             b.put("fastaSequenceCount", ((Nested) bucket.getAggregations().get("fastaSequenceCount")).getDocCount());
             b.put("fastqMetadataCount", ((InternalFilter) bucket.getAggregations().get("fastqMetadataCount")).getDocCount());
 
