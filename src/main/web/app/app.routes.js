@@ -106,6 +106,11 @@ angular.module('geomeApp')
                     controller: "ExpeditionCtrl as vm",
                     parent: "main"
                 })
+                .state('contact', {
+                    url: "/contact",
+                    templateUrl: "app/partials/contact-us.html",
+                    parent: "main"
+                })
                 .state('notFound', {
                     url: '*path',
                     templateUrl: "app/partials/page-not-found.html",

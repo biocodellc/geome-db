@@ -11,7 +11,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.github.fgiannesini.libsass.gradle.plugin:libsass-gradle-plugin:+'
-        classpath "org.biocode:gradle-fims:1.1.5"
+        classpath "org.biocode:gradle-fims:1.1.8"
     }
 }
 
@@ -139,6 +139,22 @@ task restartFimsDev(type: RestartRemoteJettyTask) {
     group = 'Fims'
     jettyPath = biscicolJettyDevPath
     remote = remotes.biscicol
+}
+
+//=============================
+//= war configuration
+//=============================
+
+war {
+    from ("${projectDir}/docs/helpDocumentation.pdf", {
+        into 'docs'
+    })
+}
+
+fatWar {
+    from ("${projectDir}/docs/helpDocumentation.pdf", {
+        into 'docs'
+    })
 }
 
 //===========================

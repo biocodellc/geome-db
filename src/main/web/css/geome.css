@@ -1095,3 +1095,25 @@ td.hideOverflow {
 .ui-select-search {
     font-size: 12px;
 }
+
+/* contact us page */
+
+.contact-list {
+    margin-top: 30px;
+}
+
+.contact-list > li {
+    margin-bottom: 20px;
+}
+
+.contact-info {
+    padding-left: 20px;
+}
+
+.contact-name {
+    padding-left: 10px;
+}
+
+.contact-info > .glyphicon {
+    margin-right: 5px;
+}
