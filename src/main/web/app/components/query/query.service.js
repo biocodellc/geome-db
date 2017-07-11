@@ -47,7 +47,7 @@
                         results.totalElements = response.data.totalElements;
                     }
 
-                    if (results.totalElements == 0) {
+                    if (results.totalElements === 0) {
                         alerts.info("No results found.")
                     }
 

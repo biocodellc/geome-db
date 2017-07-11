@@ -18,6 +18,7 @@
         vm.queryMap = queryMap;
         vm.invalidSize = false;
 
+        vm.hasFastqData = hasFastqData;
         vm.downloadExcel = function () {
             queryService.downloadExcel(queryParams.build())
         };
@@ -39,6 +40,16 @@
         function activate() {
             queryParams.clear();
             queryResults.clear();
+        }
+
+        function hasFastqData() {
+            for (var i = 0; i < queryResults.totalElements; i++) {
+                if (queryResults.data[i].fastqMetadata) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         $scope.$watch('vm.showSidebar', function () {

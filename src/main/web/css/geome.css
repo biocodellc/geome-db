@@ -995,6 +995,7 @@ td.hideOverflow {
 .download-btn > .dropdown-menu {
     min-width: 120px;
     text-align: center;
+    z-index: 1001;
 }
 
 .query-view-toggle > .btn:focus,
