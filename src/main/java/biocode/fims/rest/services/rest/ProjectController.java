@@ -29,6 +29,7 @@ import biocode.fims.utils.FileUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -317,9 +318,20 @@ public class ProjectController extends FimsAbstractProjectsController {
 
         if (it != null) {
             while (it.hasNext()) {
-                String field = ((Field) it.next()).getValue();
-                //String field = (String) it.next();
-                output.append("\t\t\t<li>" + field + "</li>\n");
+                Field field = (Field) it.next();
+                String val = field.getValue();
+
+                output.append("\t\t\t<li>");
+                if (StringUtils.isNotBlank(field.getDefined_by())) {
+                    output.append("<a href=\"");
+                    output.append(field.getDefined_by());
+                    output.append("\" target=\"_blank\">");
+                    output.append(val);
+                    output.append("</a>");
+                } else {
+                    output.append(val);
+                }
+                output.append("</li>\n");
             }
         }
         output.append("\t\t</ul>\n");
