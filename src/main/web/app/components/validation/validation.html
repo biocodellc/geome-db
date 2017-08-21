@@ -7,9 +7,12 @@
         (in tab delimited text format) while the upload tab will also validate your files and ensure that each
         materialSampleID is accompanied by a fasta/fastq file of the same name.</p>
 
-    <p ng-show="!vm.isAuthenticated"><strong>The Upload option is available only to GeOMe members.</strong> I you are
-        not yet a member visit
-        <a href="http://diversityindopacific.net">www.diversityindopacific.net</a> to find out how to join.</p>
+    <p ng-show="!vm.isAuthenticated"><strong>To upload data users must have an account.</strong> To set up an account
+        send an email with you name, title and affiliation to <a href="mailto:geome.database@gmail.com">geome.database@gmail.com</a>
+    </p>
+
+    <p style="margin-top:20px;">Data is subject to our data usage policy found
+        <a target="_blank" href="http://diversityindopacific.net/data-usage-agreement/">here</a></p>
 
     <div class="col-xs-12">
         <uib-tabset active="vm.activeTab">
@@ -17,7 +20,8 @@
 
             <!-- Validation Tab -->
             <uib-tab index="0" heading="Validate">
-                <p class="text-center">The validate option checks that all required fields are complete and that each materialSampleID is
+                <p class="text-center">The validate option checks that all required fields are complete and that each
+                    materialSampleID is
                     unique</p>
                 <form role="form" name="validateForm" class="form-horizontal"
                       ng-submit="vm.fimsMetadata && vm.validate()">
@@ -33,7 +37,8 @@
             <!-- Upload Tab -->
             <uib-tab index="1" heading="Upload" disable="!vm.isAuthenticated">
                 <form role="form" name="vm.uploadForm" class="form-horizontal" novalidate ng-submit="vm.upload()">
-                    <div class="form-group" show-errors ng-class="{'has-error': vm.newExpedition && !vm.dataTypes.fims}">
+                    <div class="form-group" show-errors
+                         ng-class="{'has-error': vm.newExpedition && !vm.dataTypes.fims}">
                         <label class="col-xs-2 control-label">Data Type(s)</label>
                         <div class="col-xs-8">
                             <label class="checkbox-inline">
@@ -41,7 +46,7 @@
                                        name="fimsData"
                                        ng-required="vm.newExpedition || (!vm.dataTypes.fasta && !vm.dataTypes.fastq)"
                                        ng-click="vm.checkDataTypes()"/>
-                                FIMS Metadata
+                                Metadata
                             </label>
                             <label class="checkbox-inline">
                                 <input type="checkbox" ng-model="vm.dataTypes.fasta"
@@ -55,11 +60,11 @@
                                        name="fastqData"
                                        ng-required="!vm.dataTypes.fims && !vm.dataTypes.fasta"
                                        ng-click="vm.dataTypes.fasta = false && vm.checkDataTypes()"/>
-                                Fastq Metadata
+                                Fastq
                             </label>
                             <p class="help-block col-xs-12" style="padding-left:0px;"
                                ng-show="vm.newExpedition && !vm.dataTypes.fims">
-                                FIMS Metadata is required if you are creating a new expedition.
+                                Metadata is required if you are creating a new expedition.
                             </p>
                         </div>
                     </div>
@@ -114,7 +119,8 @@
                                    is-required="vm.dataTypes.fims"
                                    change="vm.fimsMetadataChange()"></fims-data>
                         <div class="form-group">
-                        <div class="col-xs-offset-2" ng-show="vm.verifyDataPoints" ng-class="vm.coordinatesErrorClass">
+                            <div class="col-xs-offset-2" ng-show="vm.verifyDataPoints"
+                                 ng-class="vm.coordinatesErrorClass">
                                 <div class="col-xs-8 checkbox">
                                     <label>
                                         <input type="checkbox" name="coordinatesVerified"
@@ -153,7 +159,8 @@
                     <button type="button" ng-click="vm.downloadFastqFiles()" class="btn btn-primary">Download Genbank
                         Files
                     </button>
-                    <a target="_blank" href="https://submit.ncbi.nlm.nih.gov/subs/sra/" class="btn btn-default">Genbank Submission
+                    <a target="_blank" href="https://submit.ncbi.nlm.nih.gov/subs/sra/" class="btn btn-default">Genbank
+                        Submission
                         Portal</a>
                 </div>
             </uib-tab>
