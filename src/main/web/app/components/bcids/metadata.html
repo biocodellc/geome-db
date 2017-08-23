@@ -11,7 +11,7 @@
                     <input id="identifier" ng-model="vm.identifier" size="40"/>
                 </td>
                 <td>
-                    <a href="http://biscicol.org/id/{{vm.identifier}}" target="_self"
+                    <a href="https://biscicol.org/id/{{vm.identifier}}" target="_self"
                        class="btn btn-primary pull-right">Resolve</a>
                 </td>
             </tr>
@@ -76,7 +76,7 @@
         <!-- loop through each dataset -->
         <tr ng-repeat="dataset in vm.metadata.datasets.datasets">
             <td>{{ dataset.ts }}</td>
-            <td><a href="http://biscicol.org/id/{{ dataset.identifier }}">
+            <td><a href="https://biscicol.org/id/{{ dataset.identifier }}">
                 {{ dataset.identifier}}
             </a></td>
             <td>{{ dataset.subResourceType }}</td>
