@@ -23,8 +23,8 @@
                         samples. GeOMe provides instant feedback to users on the quality of their data and packages data
                         for further analysis for use in a laboratory information system (LIMS) using the <a
                             href="http://software.mooreabiocode.org/">Biocode LIMS plugin</a>. GeOMe also packages
-                        submissions for easy delivery to the Sequence Read Archive (SRA) and Genbank's Nucleotide
-                        database.
+		    FASTQ submissions for easy delivery to the Sequence Read Archive (<a href="#whyfastq">Why only FASTQ 
+			    and not VCF or other formats?</a>)
                     </p>
                     <p>
                         GeOMe is supported by a grant from the National Science Foundation (<a
@@ -96,12 +96,17 @@
 
     <div class="row">
         <h3 class="page-header">Query GeOMe using "R"</h3>
-
         <p>You can query datasets that have been loaded to the GeOMe database using our <a
                 href="https://github.com/DIPnet/fimsR-access">R package</a></p>
     </div>
-    <div class="row">
 
+    <div class="row">
+        <h3 id="whyfastq" class="page-header">Why do we require FASTQ submissions for next generation sequence data?</h3>
+        <p>GeOMe accepts FASTQ submissions because we want to archive unmanipulated sequence data that is free of filtering biases. By doing this we are reducing ascertainment bias (a site that is not a SNP in your dataset may be a SNP when combined with data from a different population). We are also avoiding the subjective choices that go into calling SNPs, such as thresholds for trimming, filtering, coverage and likelihood. Our objective is for future users of your data to be able to make these choices in the context of their own question and dataset.
+        </p>
+    </div>
+
+    <div class="row">
 	    <p><i>Development of the initial GeOMe site was supported by an National Science Foundation grant for the <a
 	 href="https://nsf.gov/awardsearch/showAward?AWD_ID=1457848">DIPNet project (DEB#1457848)</a></i></p>
     </div>
