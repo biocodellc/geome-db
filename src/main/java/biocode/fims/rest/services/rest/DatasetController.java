@@ -255,7 +255,7 @@ public class DatasetController extends FimsService {
             session.setAttribute("processorStatus", processor.status());
 
             try {
-                processor.upload(createExpedition);
+                processor.upload(createExpedition, props.expeditionResolverTarget());
             } catch (FimsRuntimeException e) {
                 if (e.getErrorCode() == UploadCode.EXPEDITION_CREATE) {
                     String message = "The expedition code \"" + processor.expeditionCode() + "\" does not exist.";

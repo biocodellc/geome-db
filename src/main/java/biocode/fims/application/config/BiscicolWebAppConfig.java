@@ -15,7 +15,7 @@ public class BiscicolWebAppConfig {
     private BiscicolAppConfig biscicolAppConfig;
 
     @Bean
-    public QueryAuthorizer queryAuthorizer() {
-        return new QueryAuthorizer(biscicolAppConfig.projectService, biscicolAppConfig.fimsAppConfig.fimsProperties());
+    public QueryAuthorizer queryAuthorizer(FimsProperties fimsProperties) {
+        return new QueryAuthorizer(biscicolAppConfig.projectService, fimsProperties);
     }
 }

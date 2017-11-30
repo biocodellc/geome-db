@@ -113,6 +113,16 @@ startScripts {
     classpath = files(jar.archivePath, configurations.server, configurations.runtime)
 }
 
+task postgresMigration(type: JavaExec) {
+    classpath = configurations.server + configurations.compile + sourceSets.main.runtimeClasspath
+
+    if (project.hasProperty("appArgs")) {
+        args Eval.me(appArgs)
+    }
+
+    main = "biocode.fims.run.FimsPostgresMigrator"
+}
+
 task generateUUIDs(type: JavaExec) {
     classpath = configurations.server + configurations.compile + sourceSets.main.runtimeClasspath
 

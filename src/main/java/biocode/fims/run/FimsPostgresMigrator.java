@@ -115,6 +115,10 @@ public class FimsPostgresMigrator {
                 dataset.add(recordSet);
 
                 recordRepository.save(dataset, p.getProjectId(), e.getExpeditionId());
+                if (recordSet.records().size() != allResults.size()) {
+                    throw new Exception("INVALID_SIZES " + dataset.size() + " != " + allResults.size());
+                }
+                records += recordSet.records().size();
 
             } catch (Exception exception) {
                 if (exception instanceof FimsRuntimeException && ((FimsRuntimeException) exception).getErrorCode() == QueryCode.NO_RESOURCES) {
@@ -137,7 +141,7 @@ public class FimsPostgresMigrator {
         try {
             String sql = "INSERT INTO entity_identifiers (expedition_id, concept_alias, identifier) " +
                     "select " + e.getExpeditionId() + ", b.title, b.identifier " +
-                    "from bcids b " +
+                    "from bcids_tmp b " +
                     "join expedition_bcids eb on b.id = eb.bcid_id " +
                     "where eb.expedition_id = " + e.getExpeditionId() + " AND b.title in ('" + String.join("', '", conceptAliases) + "');";
 
@@ -174,9 +178,6 @@ public class FimsPostgresMigrator {
         // Create the commands parser and parse the command line arguments.
         try {
             cl = clp.parse(options, args);
-        } catch (UnrecognizedOptionException e) {
-            FimsPrinter.out.println("Error: " + e.getMessage());
-            return;
         } catch (ParseException e) {
             FimsPrinter.out.println("Error: " + e.getMessage());
             return;
