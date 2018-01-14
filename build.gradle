@@ -21,7 +21,7 @@ import org.biocode.gradle.web.tasks.RestartRemoteJettyTask
 import org.biocode.gradle.web.tasks.HotDeployRemoteJettyTask
 
 ext.fimsCommonsVersion = "0.2.11"
-ext.fimsSequencesVersion = "0.1.4"
+ext.fimsSequencesVersion = "0.1.5"
 
 fims {
     maven {
