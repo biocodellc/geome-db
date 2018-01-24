@@ -90,12 +90,17 @@ public class DatasetController extends FimsService {
                                        @FormDataParam("dataSourceFiles") List<FormDataBodyPart> dataSourceFiles,
                                        @FormDataParam("workbooks") List<FormDataBodyPart> workbooks,
                                        @FormDataParam("upload") boolean upload,
-                                       @FormDataParam("public") @DefaultValue("false") boolean isPublic) {
+                                       @FormDataParam("reload") @DefaultValue("true") boolean reloadDataset) {
 
+        //TODO need to handle un-authenticated & missing expeditionCode validation cases. We can still attempt to validate, but can't fethch any parent entities that don't exist on the sheet
+        //TODO return validation id & make this async. then use the validation id to poll for the status instead of placing the session object
+        if (workbooks == null) workbooks = Collections.emptyList();
+        if (dataSourceFiles == null) dataSourceFiles = Collections.emptyList();
+        if (dataSourceMetadata == null) dataSourceMetadata = Collections.emptyList();
         try {
-            if (projectId == null || expeditionCode == null ||
-                    (workbooks.isEmpty() && dataSourceFiles.isEmpty() && dataSourceMetadata.isEmpty())) {
-                throw new BadRequestException("projectId, expeditionCode, and either workbooks or dataSourFiles are required.");
+            if (projectId == null ||
+                    (workbooks.isEmpty() && dataSourceFiles.isEmpty() )){ //&& dataSourceMetadata.isEmpty())) {
+                throw new BadRequestException("projectId, and either workbooks or dataSourceFiles are required.");
 
             }
 
@@ -120,9 +125,8 @@ public class DatasetController extends FimsService {
                     .validatorFactory(validatorFactory)
                     .expeditionService(expeditionService)
                     .ignoreUser(props.ignoreUser())
-                    .publicStatus(isPublic)
                     .serverDataDir(props.serverRoot())
-                    .reloadDataset(false);
+                    .reloadDataset(reloadDataset);
 
             // update the status
             processorStatus.appendStatus("Initializing...");
@@ -139,8 +143,7 @@ public class DatasetController extends FimsService {
                 }
             }
 
-            if ((dataSourceMetadata != null && dataSourceMetadata.size() > 0)
-                    || (dataSourceFiles != null && dataSourceFiles.size() > 0)) {
+            if (dataSourceMetadata.size() > 0 || dataSourceFiles.size() > 0) {
 
                 for (FormDataBodyPart dataSourceFile : dataSourceFiles) {
                     RecordMetadata recordMetadata = null;
@@ -227,16 +230,14 @@ public class DatasetController extends FimsService {
     /**
      * Service to upload a dataset to an expedition. The validate service must be called before this service.
      *
-     * @param id               required. The dataset id returned from the validate service
-     * @param createExpedition Do you want to create the expedition if it does not exist?
+     * @param id    required. The dataset id returned from the validate service
      * @return
      */
     @Authenticated
     @PUT
     @Path("/upload/{id}")
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
-    public UploadResponse upload(@PathParam("id") UUID id,
-                                 @QueryParam("createExpedition") @DefaultValue("false") Boolean createExpedition) {
+    public Response upload(@PathParam("id") UUID id) {
         if (id == null) {
             throw new BadRequestException("id queryParam is required");
         }
@@ -255,19 +256,21 @@ public class DatasetController extends FimsService {
             session.setAttribute("processorStatus", processor.status());
 
             try {
-                processor.upload(createExpedition, props.expeditionResolverTarget());
+                processor.upload();
             } catch (FimsRuntimeException e) {
-                if (e.getErrorCode() == UploadCode.EXPEDITION_CREATE) {
+                if (e.getErrorCode() == UploadCode.INVALID_EXPEDITION) {
                     String message = "The expedition code \"" + processor.expeditionCode() + "\" does not exist.";
 
-                    return new UploadResponse(false, message);
+                    return Response.status(400)
+                            .entity(new UploadResponse(false, message))
+                            .build();
                 } else {
                     throw e;
                 }
             }
 
             uploadStore.invalidate(id);
-            return new UploadResponse(true, "Successfully Uploaded!");
+            return Response.ok(new UploadResponse(true, "Successfully Uploaded!")).build();
 
         } finally {
             session.removeAttribute("processorStatus");
@@ -291,7 +294,7 @@ public class DatasetController extends FimsService {
         }
 
         Map<String, File> fileMap = new HashMap<>();
-        for (Entity entity: expedition.getProject().getProjectConfig().entities()) {
+        for (Entity entity : expedition.getProject().getProjectConfig().entities()) {
             QueryBuilder qb = new QueryBuilder(expedition.getProject(), entity.getConceptAlias());
             Query query = new Query(qb, new ExpeditionExpression(expeditionCode));
 

@@ -38,6 +38,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         super(expeditionService, props, projectService);
     }
 
+    @Deprecated
     @GET
     @Path("/{projectId}/getLatLongColumns")
     @Produces(MediaType.APPLICATION_JSON)
