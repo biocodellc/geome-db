@@ -11,12 +11,10 @@ buildscript {
     }
     dependencies {
         classpath "org.biocode:gradle-fims:1.1.6"
-        classpath 'com.github.fgiannesini.libsass.gradle.plugin:libsass-gradle-plugin:+'
     }
 }
 
 apply plugin: "application"
-apply plugin: 'com.github.fgiannesini.libsass.gradle.plugin'
 apply plugin: "org.biocode.fims-web"
 
 import org.biocode.gradle.web.tasks.RestartRemoteJettyTask
@@ -56,6 +54,7 @@ dependencies {
         exclude module: 'asm'
     }
     server 'commons-cli:commons-cli:1.2'
+//    server group: 'org.eclipse.jetty', name: 'jetty-servlets', version: '9.3.8.v20160314'
 
     server group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
     compile composite.resolveDependency("org.biocode:biocode-fims-commons:${fimsCommonsVersion}", ":biocode-fims-commons")
@@ -188,6 +187,7 @@ task restartFimsDev(type: RestartRemoteJettyTask) {
 //= Rest api docs configuration
 //=============================
 
+// TODO move this from the web plugin to the fims plugin
 generateRestApiDocs {
     swagger {
         apiInfo = "${projectDir}/swagger/api-info.json"
@@ -196,97 +196,3 @@ generateRestApiDocs {
     }
 }
 
-//===========================
-//= js configuration
-//===========================
-
-// specify files that require a specific loading order
-ext.externLibsOrdered = ["${webAppDir}/js/externalLibs/lodash.js", "${webAppDir}/js/externalLibs/papaparse.min.js",
-                         "${webAppDir}/js/externalLibs/xlsx.min.js", "${webAppDir}/js/externalLibs/xlsx-reader.js"]
-javascript.source {
-    externLibs {
-        js {
-            srcDir "src/main/web/js/externalLibs"
-            include "*.js"
-            // exclude any file that is in the externLibsOrdered list
-            exclude {
-                it.file in files(externLibsOrdered).files
-            }
-        }
-    }
-    app {
-        js {
-            srcDir "src/main/web/app"
-            include "**/*.js"
-            exclude "app.js"
-            exclude "app.module.js"
-            exclude "**/module.js"
-            exclude "**/*.module.js"
-        }
-    }
-    js {
-        js {
-            srcDir "src/main/web/js"
-            include "*.js"
-            exclude "fims-analytics.js"
-            exclude "autotrack.js"
-        }
-    }
-    modules {
-        js {
-            srcDir "src/main/web/app"
-            include "**/module.js"
-            include "**/*.module.js"
-        }
-    }
-}
-
-combineJs {
-    encoding = "UTF-8"
-    source = files("${webAppDirName}/app/app.module.js", javascript.source.modules.js.files, javascript.source.app.js.files, javascript.source.js.js.files)
-    dest = file("${webAppDirName}/js/all.js")
-}
-
-jsExternalLibs {
-    source = externLibsOrdered + javascript.source.externLibs.js.files
-    closure {
-        compilerOptions.language = "ECMASCRIPT5"
-        warningLevel = "QUIET"
-    }
-}
-
-jsApp {
-    source = files("src/main/web/app/app.module.js", javascript.source.modules.js.files, javascript.source.app.js.files, javascript.source.js.js.files)
-    closure {
-        compilerOptions.language = "ECMASCRIPT5"
-    }
-}
-
-//=================================
-//= angular constants configuration
-//=================================
-
-populateJsProps {
-    propsFile file("src/main/resources/biscicol-fims.props")
-    templateFile file("${webAppDir}/app/app.constants.js.template")
-    constantsFile file("${webAppDir}/app/app.constants.js")
-    propsMap = ['mapboxToken': 'mapboxAccessToken',
-                'naan'  : 'naan']
-}
-
-//===========================
-//= libsass configuration
-//===========================
-
-libSassParameters {
-    inputFilePath = "${projectDir}/src/main/stylesheets/style.scss"
-    outputFilePath = "${buildDir}/css/style.css"
-    watchedDirectoryPath = "${projectDir}/src/main/stylesheets"
-    sourceMapEmbed = true
-    libSassProductionParameters {
-        outputStyle "compressed"
-    }
-}
-
-fatWar.dependsOn compileLibSassProduction
-war.dependsOn compileLibSassProduction
