@@ -90,7 +90,7 @@ public class DatasetController extends FimsService {
                                        @FormDataParam("dataSourceFiles") List<FormDataBodyPart> dataSourceFiles,
                                        @FormDataParam("workbooks") List<FormDataBodyPart> workbooks,
                                        @FormDataParam("upload") boolean upload,
-                                       @FormDataParam("reload") @DefaultValue("true") boolean reloadDataset) {
+                                       @FormDataParam("reload") @DefaultValue("false") boolean reloadDataset) {
 
         //TODO need to handle un-authenticated & missing expeditionCode validation cases. We can still attempt to validate, but can't fethch any parent entities that don't exist on the sheet
         //TODO return validation id & make this async. then use the validation id to poll for the status instead of placing the session object
