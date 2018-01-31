@@ -1,2 +1,18 @@
-biocodeFimsCommonsDir = /path/to/biocode-fims-commons
-biocodeFimsFusekiDir = /path/to/biocode-fims-fuseki
+#biocodeFimsCommonsDir =
+#gradleFimsDir =
+
+mavenUser =
+mavenPass =
+
+#file paths should end with /
+remoteWarDirectory =
+remoteLibsDirectory =
+remoteWarDevDirectory =
+remoteDevLibsDirectory =
+localWarDirectory =
+
+biscicolUser =
+biscicolPassword =
+biscicolJettyPath = /etc/init.d/jetty
+biscicolJettyDevPath = /etc/init.d/jettydev
+
