@@ -94,7 +94,7 @@ public class FimsPostgresMigrator {
                 ElasticSearchQuerier querier = new ElasticSearchQuerier(client, query);
 
                 Entity entity = p.getProjectConfig().entities().getFirst();
-                RecordSet recordSet = new RecordSet(entity);
+                RecordSet recordSet = new RecordSet(entity, false);
 
                 ArrayNode allResults = querier.getAllResults();
                 for (JsonNode node : allResults) {

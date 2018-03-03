@@ -1,7 +1,7 @@
 package biocode.fims.rest.versioning.transformers;
 
 import biocode.fims.models.Project;
-import biocode.fims.rest.SpringObjectMapper;
+import biocode.fims.rest.FimsObjectMapper;
 import biocode.fims.rest.versioning.Transformer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,7 +33,7 @@ public class ProjectsResourceTransformer1_0 extends FimsAbstractTransformer impl
             return returnVal;
         }
 
-        ObjectMapper mapper = new SpringObjectMapper();
+        ObjectMapper mapper = new FimsObjectMapper();
         List<ObjectNode> v1_0Response = new ArrayList<>();
 
         for (Project project: entity) {
