@@ -25,7 +25,8 @@ jobs:
       - checkout
 
       # git clone & co same branch on biocode-fims-commons
-      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-commons; cd repo
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-commons; cd repo; git checkout ${CIRCLE_BRANCH}
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-sequences; cd repo; git checkout ${CIRCLE_BRANCH}
 
       # Download and cache dependencies
       - restore_cache:
@@ -53,5 +54,5 @@ jobs:
           name: Deploy
           command: |
             if [ "${CIRCLE_BRANCH}" == "psql" ]; then
-            ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/biocode-fims-commons/; git checkout psql; git pull; cd /home/deploy/code/biscicol-fims/; git checkout psql; git pull; ./gradlew clean; ./gradlew -Penvironment=development fatWar; sudo cp /home/deploy/code/biscicol-fims/dist/biscicol-fims-fat.war /opt/webdev/mybase/webapps/biocode-fims.war; sudo /bin/touch /opt/webdev/mybase/webapps/biocode-fims.xml'
+            ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/biocode-fims-commons/; git checkout psql; git pull; cd /home/deploy/code/biocode-fims-commons/; git checkout psql; git pull; cd /home/deploy/code/biscicol-fims/; git checkout psql; git pull; ./gradlew clean; ./gradlew -Penvironment=development fatWar; sudo cp /home/deploy/code/biscicol-fims/dist/biscicol-fims-fat.war /opt/webdev/mybase/webapps/biocode-fims.war; sudo /bin/touch /opt/webdev/mybase/webapps/biocode-fims.xml'
             fi
