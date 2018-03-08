@@ -10,22 +10,15 @@ import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.models.Project;
-import biocode.fims.query.QueryBuilder;
-import biocode.fims.query.QueryResult;
+import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
-import biocode.fims.query.dsl.QueryParser;
 import biocode.fims.query.writers.*;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
-import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.utils.FileUtils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ParserRuntimeException;
-import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +31,10 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Query interface for Biocode-fims expedition
@@ -57,7 +50,6 @@ public class QueryController extends FimsService {
 
     private final RecordRepository recordRepository;
     private final QueryAuthorizer queryAuthorizer;
-    private final ExpeditionService expeditionService;
     private final ProjectService projectService;
 
     @PathParam("projectId")
@@ -67,17 +59,16 @@ public class QueryController extends FimsService {
 
     @Autowired
     QueryController(FimsProperties props, RecordRepository recordRepository, QueryAuthorizer queryAuthorizer,
-                    ExpeditionService expeditionService, ProjectService projectService) {
+                    ProjectService projectService) {
         super(props);
         this.recordRepository = recordRepository;
         this.queryAuthorizer = queryAuthorizer;
-        this.expeditionService = expeditionService;
         this.projectService = projectService;
     }
 
     /**
      * @param projectId   the project to query
-     * @param entity      the project entity to query
+     * @param entity      the project queryEntity to query
      * @param queryString the query to run
      * @param page        the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
      *                    limit=10, results 21-30 will be returned
@@ -151,15 +142,21 @@ public class QueryController extends FimsService {
     }
 
     private Response csv(String queryString) {
-        QueryResult queryResult = run(queryString);
+        QueryResults queryResults = run(queryString);
 
         try {
-            QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResult, ",");
+            QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, ",");
 
-            Response.ResponseBuilder response = Response.ok(queryWriter.write());
+            File file = queryWriter.write();
+            Response.ResponseBuilder response = Response.ok(file);
 
-            response.header("Content-Disposition",
-                    "attachment; filename=biocode-fims-output.csv");
+            if (file.getName().endsWith("zip")) {
+                response.header("Content-Disposition",
+                        "attachment; filename=biocode-fims-output.zip");
+            } else {
+                response.header("Content-Disposition",
+                        "attachment; filename=biocode-fims-output.csv");
+            }
 
             return response.build();
         } catch (FimsRuntimeException e) {
@@ -202,16 +199,20 @@ public class QueryController extends FimsService {
 
     private Response kml(String queryString) {
         Query query = buildQuery(queryString);
-        QueryResult queryResult = recordRepository.query(query);
+        QueryResults queryResults = recordRepository.query(query);
+
+        if (queryResults.results().size() > 1) {
+            throw new FimsRuntimeException(QueryCode.UNSUPPORTED_QUERY, "Multi-select queries not supported", 400);
+        }
 
         try {
             // TODO centralize this definedBy and point this method and ProjectController.getLatLongColumns to it
             String decimalLongDefinedBy = "http://rs.tdwg.org/dwc/terms/decimalLongitude";
             String decimalLatDefinedBy = "http://rs.tdwg.org/dwc/terms/decimalLatitude";
 
-            Entity entity = query.entity();
+            Entity entity = query.queryEntity();
 
-            QueryWriter queryWriter = new KmlQueryWriter.Builder(queryResult)
+            QueryWriter queryWriter = new KmlQueryWriter.Builder(queryResults.results().get(0))
                     .latColumn(getColumn(entity.getAttributes(), decimalLongDefinedBy))
                     .latColumn(getColumn(entity.getAttributes(), decimalLatDefinedBy))
                     .nameColumn(entity.getUniqueKey())
@@ -254,11 +255,15 @@ public class QueryController extends FimsService {
     @Produces(MediaType.APPLICATION_XML)
     public Response queryCspace(@QueryParam("q") String queryString) {
 
-        QueryResult queryResult = run(queryString);
+        QueryResults queryResults = run(queryString);
+
+        if (queryResults.results().size() > 1) {
+            throw new FimsRuntimeException(QueryCode.UNSUPPORTED_QUERY, "Multi-select queries not supported", 400);
+        }
 
         try {
             Project project = projectService.getProject(projectId);
-            QueryWriter queryWriter = new CspaceQueryWriter(queryResult, project.getProjectConfig());
+            QueryWriter queryWriter = new CspaceQueryWriter(queryResults.results().get(0), project.getProjectConfig());
 
             Response.ResponseBuilder response = Response.ok(queryWriter.write());
 
@@ -288,46 +293,26 @@ public class QueryController extends FimsService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response queryFasta(@QueryParam("q") String queryString) {
-        // TODO need to fetch parent entity metadata for query results & return zip file
+        // TODO need to fetch parent queryEntity metadata for query results & return zip file
         // of csv metadata output along w/ fasta file
 
         Project project = projectService.getProject(projectId);
 
         Entity e = project.getProjectConfig().entity(entity);
         if (!(e instanceof FastaEntity)) {
-            throw new BadRequestException("entity is not a FastaEntity");
+            throw new BadRequestException("queryEntity is not a FastaEntity");
         }
-
-        QueryResult queryResult = run(queryString);
 
         Entity parentEntity = project.getProjectConfig().entity(e.getParentEntity());
-        List<String> parentIdentifiers = queryResult.get(false).stream()
-                .map(r -> r.get(parentEntity.getUniqueKey()))
-                .collect(Collectors.toList());
-        // Hacky way to fetch parent metadata.
-        // TODO improve this.
-        // Probably best to be able to return parent entity data in a single query
-        //   -- childEntity queries don't have to be directly related, maybe we can specify
-        //      the entity to return (parent, grandParent, etc) or return multiple
-        // Another option is to implement an InExpression for the query
 
-        StringBuilder parentQueryBuilder = new StringBuilder();
-        for (String parentIdentifier : parentIdentifiers) {
-            parentQueryBuilder
-                    .append(parentEntity.getUniqueKey())
-                    .append(" = ")
-                    .append(parentIdentifier)
-                    .append(" or ");
-        }
-        String parentQuery = parentQueryBuilder.toString();
-        // remote the last " or "
-        parentQuery = parentQuery.substring(parentQuery.length() - 4);
+        queryString += " _select_:" + parentEntity.getConceptAlias();
 
-        QueryResult parentQueryResult = recordRepository.query(buildQuery(parentQuery));
+        QueryResults queryResults = run(queryString);
 
         try {
-            QueryWriter queryWriter = new FastaQueryWriter(queryResult, project.getProjectConfig());
-            QueryWriter parentQueryWriter = new DelimitedTextQueryWriter(parentQueryResult, ",");
+            QueryWriter queryWriter = new FastaQueryWriter(queryResults.getResult(e.getConceptAlias()), project.getProjectConfig());
+            QueryResults parentQueryResults = new QueryResults(Arrays.asList(queryResults.getResult(e.getParentEntity())));
+            QueryWriter parentQueryWriter = new DelimitedTextQueryWriter(parentQueryResults, ",");
 
             File fastaFile = queryWriter.write();
             File metadataFile = parentQueryWriter.write();
@@ -352,7 +337,7 @@ public class QueryController extends FimsService {
                 return Response.noContent().build();
             }
 
-            throw e;
+            throw err;
         }
     }
 
@@ -386,15 +371,21 @@ public class QueryController extends FimsService {
     }
 
     private Response tsv(String queryString) {
-        QueryResult queryResult = run(queryString);
+        QueryResults queryResults = run(queryString);
 
         try {
-            QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResult, "\t");
+            QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, "\t");
 
-            Response.ResponseBuilder response = Response.ok(queryWriter.write());
+            File file = queryWriter.write();
+            Response.ResponseBuilder response = Response.ok(file);
 
-            response.header("Content-Disposition",
-                    "attachment; filename=biocode-fims-output.txt");
+            if (file.getName().endsWith("zip")) {
+                response.header("Content-Disposition",
+                        "attachment; filename=biocode-fims-output.zip");
+            } else {
+                response.header("Content-Disposition",
+                        "attachment; filename=biocode-fims-output.txt");
+            }
 
             return response.build();
         } catch (FimsRuntimeException e) {
@@ -436,14 +427,17 @@ public class QueryController extends FimsService {
     }
 
     private Response excel(String queryString) {
-        //TODO verify that only 1 expedition is included
-//        throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
+        Query query = buildQuery(queryString);
 
-        QueryResult queryResult = run(queryString);
+        if (query.expeditions().size() > 0) {
+            throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
+        }
+
+        QueryResults queryResults = recordRepository.query(query);
 
         try {
             //TODO refactor the templateProcessor code to be done inside the ExcelQueryWriter
-            QueryWriter queryWriter = new ExcelQueryWriter(queryResult);
+            QueryWriter queryWriter = new ExcelQueryWriter(queryResults);
 
             File file = queryWriter.write();
 
@@ -456,7 +450,7 @@ public class QueryController extends FimsService {
             }
 
             TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData, props.naan());
-            file = t.createExcelFileFromExistingSources(queryResult.entity().getWorksheet(), defaultOutputDirectory());
+            file = t.createExcelFileFromExistingSources(queryResults.getResult(entity).entity().getWorksheet(), defaultOutputDirectory());
 
             Response.ResponseBuilder response = Response.ok(file);
 
@@ -473,7 +467,7 @@ public class QueryController extends FimsService {
         }
     }
 
-    private QueryResult run(String queryString) {
+    private QueryResults run(String queryString) {
         return recordRepository.query(
                 buildQuery(queryString)
         );
@@ -487,28 +481,13 @@ public class QueryController extends FimsService {
 
         Project project = projectService.getProject(projectId);
 
-        QueryBuilder queryBuilder = new QueryBuilder(project, entity);
+        Query query = Query.factory(project, entity, queryString);
 
-        QueryParser parser = Parboiled.createParser(QueryParser.class, queryBuilder);
-        try {
-            ParsingResult<Query> result = new ReportingParseRunner<Query>(parser.Parse()).run(queryString);
-
-            if (result.hasErrors() || result.resultValue == null) {
-                throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, result.parseErrors.toString());
-            }
-
-            Query query = result.resultValue;
-
-            // commenting this out for now until biocode-lims releases a new plugin
+        // commenting this out for now until biocode-lims releases a new plugin
 //            if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), new ArrayList<>(query.expeditions()), userContext.getUser())) {
 //                throw new ForbiddenRequestException("unauthorized query.");
 //            }
-
-            return query;
-        } catch (ParserRuntimeException e) {
-            String parsedMsg = e.getMessage().replaceFirst(" action '(.*)'", "");
-            throw new FimsRuntimeException(QueryCode.INVALID_QUERY, 400, parsedMsg.substring(0, (parsedMsg.indexOf("^"))));
-        }
+        return query;
     }
 }
 

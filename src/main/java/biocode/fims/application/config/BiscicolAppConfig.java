@@ -4,7 +4,13 @@ import biocode.fims.fasta.FastaRecord;
 import biocode.fims.fasta.FastaValidator;
 import biocode.fims.fasta.reader.FastaDataReaderType;
 import biocode.fims.fasta.reader.FastaReader;
+import biocode.fims.fastq.FastqRecord;
+import biocode.fims.fastq.FastqRecordRowMapper;
+import biocode.fims.fastq.FastqValidator;
+import biocode.fims.fastq.reader.FastqDataReaderType;
+import biocode.fims.fastq.reader.FastqReader;
 import biocode.fims.models.records.GenericRecord;
+import biocode.fims.models.records.GenericRecordRowMapper;
 import biocode.fims.models.records.Record;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.DataReaderFactory;
@@ -12,12 +18,17 @@ import biocode.fims.reader.TabularDataReaderType;
 import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
+import biocode.fims.repositories.PostgresRecordRepository;
+import biocode.fims.repositories.RecordRepository;
 import biocode.fims.service.ProjectService;
 import biocode.fims.validation.RecordValidator;
 import biocode.fims.validation.RecordValidatorFactory;
 import biocode.fims.validation.ValidatorInstantiator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.RowMapper;
 
 import java.util.*;
 
@@ -48,6 +59,10 @@ public class BiscicolAppConfig {
                 FastaDataReaderType.READER_TYPE,
                 Collections.singletonList(new FastaReader())
         );
+        dataReaders.put(
+                FastqDataReaderType.READER_TYPE,
+                Collections.singletonList(new FastqReader())
+        );
         return new DataReaderFactory(dataReaders);
     }
 
@@ -57,7 +72,20 @@ public class BiscicolAppConfig {
 
         validators.put(GenericRecord.class, new RecordValidator.DefaultValidatorInstantiator());
         validators.put(FastaRecord.class, new FastaValidator.FastaValidatorInstantiator());
+        validators.put(FastqRecord.class, new FastqValidator.FastqValidatorInstantiator());
 
         return new RecordValidatorFactory(validators);
+    }
+
+    @Bean
+    public RecordRepository recordRepository() {
+        YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
+        yaml.setResources(new ClassPathResource("record-repository-sql.yml"));
+
+        Map<Class<? extends Record>, RowMapper<? extends Record>> rowMappers = new HashMap<>();
+        rowMappers.put(GenericRecord.class, new GenericRecordRowMapper());
+        rowMappers.put(FastqRecord.class, new FastqRecordRowMapper());
+
+        return new PostgresRecordRepository(fimsAppConfig.jdbcTemplate, yaml.getObject(), rowMappers);
     }
 }

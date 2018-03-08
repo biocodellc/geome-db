@@ -63,7 +63,7 @@ public class FimsPostgresMigrator {
     void migrate() throws IOException {
         configConverter.storeConfigs();
 
-        // create entity tables and migrate data from elasticsearch
+        // create queryEntity tables and migrate data from elasticsearch
         for (Project p : projectService.getProjectsWithExpeditions(projectUrl)) {
 
             ProjectConfig config = p.getProjectConfig();
@@ -72,7 +72,7 @@ public class FimsPostgresMigrator {
 
                 migrateData(p, p.getProjectConfig());
             } else {
-                logger.error("project id: " + p.getProjectId() + " project_config is null. Not creating schema and entity tables.");
+                logger.error("project id: " + p.getProjectId() + " project_config is null. Not creating schema and queryEntity tables.");
             }
 
         }
@@ -148,7 +148,7 @@ public class FimsPostgresMigrator {
             int rows = jdbcTemplate.update(sql, new HashMap<>());
 
             if (rows != conceptAliases.size()) {
-                logger.warn("MISSING_ENTITY_IDENTIFIERS\tDidn't find bcids for every entity for expedition: " + e.getExpeditionId());
+                logger.warn("MISSING_ENTITY_IDENTIFIERS\tDidn't find bcids for every queryEntity for expedition: " + e.getExpeditionId());
             }
 
         } catch (Exception exception) {

@@ -10,8 +10,10 @@ import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.records.RecordMetadata;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryBuilder;
 import biocode.fims.query.QueryResult;
+import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.*;
 import biocode.fims.query.writers.DelimitedTextQueryWriter;
 import biocode.fims.query.writers.QueryWriter;
@@ -294,11 +296,12 @@ public class DatasetController extends FimsService {
         }
 
         Map<String, File> fileMap = new HashMap<>();
-        for (Entity entity : expedition.getProject().getProjectConfig().entities()) {
+        ProjectConfig config = expedition.getProject().getProjectConfig();
+        for (Entity entity : config.entities()) {
             QueryBuilder qb = new QueryBuilder(expedition.getProject(), entity.getConceptAlias());
-            Query query = new Query(qb, new ExpeditionExpression(expeditionCode));
+            Query query = new Query(qb, config, new ExpeditionExpression(expeditionCode));
 
-            QueryResult result = recordRepository.query(query);
+            QueryResults result = recordRepository.query(query);
             QueryWriter queryWriter = new DelimitedTextQueryWriter(result, ",");
 
             try {

@@ -73,6 +73,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         return Response.ok(response.toJSONString()).build();
     }
 
+    @Deprecated
     @GET
     @Path("/{projectId}/filterOptions")
     @Produces(MediaType.APPLICATION_JSON)
@@ -93,6 +94,7 @@ public class ProjectController extends FimsAbstractProjectsController {
         return Response.ok(columns).build();
     }
 
+    @Deprecated
     @GET
     @Path("/{projectId}/uniqueKey")
     @Produces(MediaType.APPLICATION_JSON)
