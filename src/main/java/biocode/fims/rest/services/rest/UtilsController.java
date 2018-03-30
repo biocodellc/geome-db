@@ -22,12 +22,4 @@ public class UtilsController extends FimsAbstractUtilsController {
     UtilsController(FileCache fileCache, FimsProperties props) {
         super(fileCache, props);
     }
-
-    @GET
-    @Path("/getMapboxToken")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getMapboxToken() {
-
-        return Response.ok("{\"accessToken\": \"" + props.mapboxAccessToken() + "\"}").build();
-    }
 }
