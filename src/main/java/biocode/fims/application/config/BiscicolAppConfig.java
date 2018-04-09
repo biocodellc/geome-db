@@ -9,6 +9,7 @@ import biocode.fims.fastq.FastqRecordRowMapper;
 import biocode.fims.fastq.FastqValidator;
 import biocode.fims.fastq.reader.FastqDataReaderType;
 import biocode.fims.fastq.reader.FastqReader;
+import biocode.fims.models.records.FimsRowMapper;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.GenericRecordRowMapper;
 import biocode.fims.models.records.Record;
@@ -28,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.RowMapper;
 
 import java.util.*;
 
@@ -82,7 +82,7 @@ public class BiscicolAppConfig {
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
         yaml.setResources(new ClassPathResource("record-repository-sql.yml"));
 
-        Map<Class<? extends Record>, RowMapper<? extends Record>> rowMappers = new HashMap<>();
+        Map<Class<? extends Record>, FimsRowMapper<? extends Record>> rowMappers = new HashMap<>();
         rowMappers.put(GenericRecord.class, new GenericRecordRowMapper());
         rowMappers.put(FastqRecord.class, new FastqRecordRowMapper());
 
