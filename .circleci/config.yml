@@ -54,5 +54,5 @@ jobs:
           name: Deploy
           command: |
             if [ "${CIRCLE_BRANCH}" == "psql" ]; then
-            ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/biocode-fims-commons/; git checkout psql; git pull; cd /home/deploy/code/biocode-fims-commons/; git checkout psql; git pull; cd /home/deploy/code/biscicol-fims/; git checkout psql; git pull; ./gradlew clean; ./gradlew -Penvironment=development fatWar; sudo cp /home/deploy/code/biscicol-fims/dist/biscicol-fims-fat.war /opt/webdev/mybase/webapps/biocode-fims.war; sudo /bin/touch /opt/webdev/mybase/webapps/biocode-fims.xml'
+            ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/biocode-fims-commons/ && git checkout psql && git pull && cd /home/deploy/code/biocode-fims-commons/ && git checkout psql && git pull && cd /home/deploy/code/biscicol-fims/ && git checkout psql && git pull && ./gradlew clean && ./gradlew -Penvironment=development fatWar && sudo cp /home/deploy/code/biscicol-fims/dist/biscicol-fims-fat.war /opt/webdev/mybase/webapps/biocode-fims.war && sudo /bin/touch /opt/webdev/mybase/webapps/biocode-fims.xml'
             fi
