@@ -14,6 +14,7 @@ import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.query.writers.*;
 import biocode.fims.repositories.RecordRepository;
+import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ProjectService;
@@ -31,10 +32,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Query interface for Biocode-fims expedition
@@ -76,6 +74,7 @@ public class QueryController extends FimsService {
      * @summary Query project resources, returning JSON
      * @responseType org.springframework.data.domain.Page<>
      */
+    @Compress
     @POST
     @Path("/json/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -83,8 +82,9 @@ public class QueryController extends FimsService {
     public Page queryJsonAsPost(
             @FormParam("query") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("limit") @DefaultValue("100") int limit) {
-        return json(queryString, page, limit);
+            @QueryParam("limit") @DefaultValue("100") int limit,
+            @QueryParam("source") String s) {
+        return json(queryString, page, limit, s);
     }
 
     /**
@@ -97,19 +97,23 @@ public class QueryController extends FimsService {
      * @summary Query project resources, returning JSON
      * @responseType org.springframework.data.domain.Page<>
      */
+    @Compress
     @GET
     @Path("/json/")
     @Produces(MediaType.APPLICATION_JSON)
     public Page queryJson(
             @QueryParam("q") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
-            @QueryParam("limit") @DefaultValue("100") int limit) {
-        return json(queryString, page, limit);
+            @QueryParam("limit") @DefaultValue("100") int limit,
+            @QueryParam("source") String s) {
+        return json(queryString, page, limit, s);
     }
 
-    private Page json(String queryString, int page, int limit) {
+    private Page json(String queryString, int page, int limit, String s) {
+        List<String> source = s != null ? Arrays.asList(s.split(",")) : Collections.emptyList();
+
         Query query = buildQuery(queryString);
-        return recordRepository.query(query, page, limit, true);
+        return recordRepository.query(query, page, limit, source, true);
     }
 
     /**
