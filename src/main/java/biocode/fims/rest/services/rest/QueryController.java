@@ -18,7 +18,10 @@ import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsService;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ProjectService;
+import biocode.fims.tools.CachedFile;
+import biocode.fims.tools.FileCache;
 import biocode.fims.utils.FileUtils;
+import biocode.fims.utils.StringGenerator;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +35,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 
 /**
@@ -49,6 +53,7 @@ public class QueryController extends FimsService {
     private final RecordRepository recordRepository;
     private final QueryAuthorizer queryAuthorizer;
     private final ProjectService projectService;
+    private final FileCache fileCache;
 
     @PathParam("projectId")
     private Integer projectId;
@@ -57,11 +62,12 @@ public class QueryController extends FimsService {
 
     @Autowired
     QueryController(FimsProperties props, RecordRepository recordRepository, QueryAuthorizer queryAuthorizer,
-                    ProjectService projectService) {
+                    ProjectService projectService, FileCache fileCache) {
         super(props);
         this.recordRepository = recordRepository;
         this.queryAuthorizer = queryAuthorizer;
         this.projectService = projectService;
+        this.fileCache = fileCache;
     }
 
     /**
@@ -152,17 +158,12 @@ public class QueryController extends FimsService {
             QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, ",");
 
             File file = queryWriter.write();
-            Response.ResponseBuilder response = Response.ok(file);
 
             if (file.getName().endsWith("zip")) {
-                response.header("Content-Disposition",
-                        "attachment; filename=biocode-fims-output.zip");
-            } else {
-                response.header("Content-Disposition",
-                        "attachment; filename=biocode-fims-output.csv");
+                return returnFileResults(file, "geome-fims-output.zip");
             }
 
-            return response.build();
+            return returnFileResults(file, "geome-fims-output.csv");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
@@ -222,12 +223,7 @@ public class QueryController extends FimsService {
                     .nameColumn(entity.getUniqueKey())
                     .build();
 
-            Response.ResponseBuilder response = Response.ok(queryWriter.write());
-
-            response.header("Content-Disposition",
-                    "attachment; filename=biocode-fims-output.kml");
-
-            return response.build();
+            return returnFileResults(queryWriter.write(), "geome-fims-output.kml");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
@@ -269,12 +265,7 @@ public class QueryController extends FimsService {
             Project project = projectService.getProject(projectId);
             QueryWriter queryWriter = new CspaceQueryWriter(queryResults.results().get(0), project.getProjectConfig());
 
-            Response.ResponseBuilder response = Response.ok(queryWriter.write());
-
-            response.header("Content-Disposition",
-                    "attachment; filename=biocode-fims-output.cspace.xmll");
-
-            return response.build();
+            return returnFileResults(queryWriter.write(), "geome-fims-output.cspace.xml");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
@@ -330,12 +321,8 @@ public class QueryController extends FimsService {
                 fileMap.put("biocode-fims-output.fasta", fastaFile);
             }
 
-            Response.ResponseBuilder response = Response.ok(FileUtils.zip(fileMap, defaultOutputDirectory()));
-
-            response.header("Content-Disposition",
-                    "attachment; filename=biocode-fims-output.zip");
-
-            return response.build();
+            File file = FileUtils.zip(fileMap, defaultOutputDirectory());
+            return returnFileResults(file, "geome-fims-output.zip");
         } catch (FimsRuntimeException err) {
             if (err.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
@@ -381,17 +368,11 @@ public class QueryController extends FimsService {
             QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, "\t");
 
             File file = queryWriter.write();
-            Response.ResponseBuilder response = Response.ok(file);
 
             if (file.getName().endsWith("zip")) {
-                response.header("Content-Disposition",
-                        "attachment; filename=biocode-fims-output.zip");
-            } else {
-                response.header("Content-Disposition",
-                        "attachment; filename=biocode-fims-output.txt");
+                return returnFileResults(file, "geome-fims-output.zip");
             }
-
-            return response.build();
+            return returnFileResults(file, "geome-fims-output.txt");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
@@ -456,12 +437,7 @@ public class QueryController extends FimsService {
             TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData, props.naan());
             file = t.createExcelFileFromExistingSources(queryResults.getResult(entity).entity().getWorksheet(), defaultOutputDirectory());
 
-            Response.ResponseBuilder response = Response.ok(file);
-
-            response.header("Content-Disposition",
-                    "attachment; filename=biocode-fims-output.xlsx");
-
-            return response.build();
+            return returnFileResults(file, "geome-fims-output.xlsx");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return Response.noContent().build();
@@ -469,6 +445,17 @@ public class QueryController extends FimsService {
 
             throw e;
         }
+    }
+
+    private Response returnFileResults(File file, String name) {
+        int userId = userContext.getUser() != null ? userContext.getUser().getUserId() : 0;
+        String fileId = StringGenerator.generateString(20);
+        CachedFile cf = new CachedFile(fileId, file.getAbsolutePath(), userId, name);
+        fileCache.addFile(cf);
+
+        URI fileURI = uriInfo.getBaseUriBuilder().path(UtilsController.class).path("file").queryParam("id", fileId).build();
+
+        return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
     }
 
     private QueryResults run(String queryString) {
@@ -487,10 +474,10 @@ public class QueryController extends FimsService {
 
         Query query = Query.factory(project, entity, queryString);
 
-        // commenting this out for now until biocode-lims releases a new plugin
-//            if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), new ArrayList<>(query.expeditions()), userContext.getUser())) {
-//                throw new ForbiddenRequestException("unauthorized query.");
-//            }
+        // may break biocode-lims plugin
+        if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), new ArrayList<>(query.expeditions()), userContext.getUser())) {
+            throw new ForbiddenRequestException("unauthorized query.");
+        }
         return query;
     }
 }
