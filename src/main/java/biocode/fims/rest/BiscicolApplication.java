@@ -11,5 +11,6 @@ public class BiscicolApplication extends FimsApplication {
         super();
         packages("biocode.fims.rest.services.rest");
         register(MultiPartFeature.class);
+        register(GZIPWriterInterceptor.class);
     }
 }
