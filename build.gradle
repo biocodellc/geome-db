@@ -10,7 +10,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "org.biocode:gradle-fims:1.3.1"
+        classpath "org.biocode:gradle-fims:1.3.2"
     }
 }
 
@@ -198,6 +198,7 @@ generateRestApiDocs {
         apiInfo = "${projectDir}/swagger/api-info.json"
         apiVersions = ["v1.1", "v2"]
         apiBasePath = "/biocode-fims/rest/"
+        apiSchemes = ["https", "http"]
     }
 }
 

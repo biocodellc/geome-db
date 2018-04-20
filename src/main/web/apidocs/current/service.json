@@ -40,6 +40,7 @@
         }
     ],
     "schemes": [
+        "https",
         "http"
     ],
     "paths": {
