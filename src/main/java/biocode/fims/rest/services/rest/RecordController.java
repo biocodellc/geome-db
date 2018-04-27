@@ -1,7 +1,7 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.application.config.FimsProperties;
-import biocode.fims.rest.FimsService;
+import biocode.fims.rest.FimsController;
 import biocode.fims.rest.services.rest.subResources.QueryController;
 import biocode.fims.rest.services.rest.subResources.RecordsResource;
 import org.glassfish.jersey.server.model.Resource;
@@ -15,7 +15,7 @@ import javax.ws.rs.*;
  */
 @Controller
 @Path("/records")
-public class RecordController extends FimsService {
+public class RecordController extends FimsController {
 
     @Autowired
     RecordController(FimsProperties props) {

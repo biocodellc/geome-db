@@ -12,18 +12,17 @@ import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryBuilder;
-import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.*;
 import biocode.fims.query.writers.DelimitedTextQueryWriter;
 import biocode.fims.query.writers.QueryWriter;
 import biocode.fims.reader.DataReaderFactory;
+import biocode.fims.rest.FimsController;
 import biocode.fims.tools.CachedFile;
 import biocode.fims.tools.FileCache;
 import biocode.fims.utils.StringGenerator;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.repositories.RecordRepository;
-import biocode.fims.rest.FimsService;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.DatasetProcessor;
 import biocode.fims.run.ProcessorStatus;
@@ -53,7 +52,7 @@ import java.util.*;
  */
 @Controller
 @Path("data")
-public class DatasetController extends FimsService {
+public class DatasetController extends FimsController {
 
     private final ExpeditionService expeditionService;
     private final RecordValidatorFactory validatorFactory;
@@ -324,7 +323,7 @@ public class DatasetController extends FimsService {
         CachedFile cf = new CachedFile(fileId, zFile.getAbsolutePath(), userId, expeditionCode + "-export.zip");
         fileCache.addFile(cf);
 
-        URI fileURI = uriInfo.getBaseUriBuilder().path(UtilsController.class).path("file").queryParam("id", fileId).build();
+        URI fileURI = uriInfo.getBaseUriBuilder().path(FileController.class).path("file").queryParam("id", fileId).build();
 
         return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
     }

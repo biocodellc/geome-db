@@ -1,28 +1,13 @@
-###########  biscicol-fims settings  ##########
+###########  biocode-fims-commons settings  ##########
 
 # location to store uploaded spreadsheets for backup
 serverRoot = /location/on/server/
 
-# get you're access token by visiting https://www.mapbox.com/account/apps/
-mapboxAccessToken = your_access_token
-
-###########  biocode-fims-fuseki settings  ##########
-
-deepRoots = true
-
-###########  biocode-fims-commons settings  ##########
-
-# the path to the wadl stylesheet
-wadlPath = /wadl.xsl
-
-# the login page to redirect to when a user needs to login
-loginPageUrl = http://www.biscicol.org/login.jsp
-
 # the relative path from the appRoot where a user can create an account
 accountCreatePath = user/create?id=${id}&email=${email}
 
-# the webapp directory to use for caching config file, and storing templates for download
-uploadDir = tripleOutput
+# the relative path from the appRoot where a user can reset their password
+resetPasswordPath = resetPass?resetToken=${token}
 
 # the url where the webapp is deployed
 appRoot = http://www.biscicol.org/
@@ -58,12 +43,3 @@ mailPassword = mypassword
 
 # The divider to use that separates the ARK portion and the Suffix Portion
 divider = _
-
-# The license used for the bcids that are created
-rights = http://creativecommons.org/licenses/by/3.0/
-
-# The bcid resolver service
-resolverTargetPrefix = http://www.biscicol.org/id/
-
-# The bcid metadata service
-resolverMetadataPrefix = http://www.biscicol.org/id/metadata/

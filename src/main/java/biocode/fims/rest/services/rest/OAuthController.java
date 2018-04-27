@@ -12,10 +12,10 @@ import javax.ws.rs.Path;
  * @author RJ Ewing
  */
 @Controller
-@Path("authenticationService")
-public class AuthenticationController extends FimsAbstractAuthenticationController {
+@Path("oauth")
+public class OAuthController extends BaseOAuthController {
     @Autowired
-    public AuthenticationController(OAuthProviderService oAuthProviderService, UserService userService, FimsProperties props) {
+    public OAuthController(OAuthProviderService oAuthProviderService, UserService userService, FimsProperties props) {
         super(oAuthProviderService, userService, props);
     }
 }

@@ -15,8 +15,8 @@ import biocode.fims.query.dsl.Query;
 import biocode.fims.query.writers.*;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.Compress;
-import biocode.fims.rest.FimsService;
-import biocode.fims.rest.services.rest.UtilsController;
+import biocode.fims.rest.FimsController;
+import biocode.fims.rest.services.rest.FileController;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tools.CachedFile;
@@ -45,7 +45,7 @@ import java.util.*;
  * @resourceTag Records
  */
 @Controller
-public class QueryController extends FimsService {
+public class QueryController extends FimsController {
     private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
 
     private final RecordRepository recordRepository;
@@ -451,7 +451,7 @@ public class QueryController extends FimsService {
         CachedFile cf = new CachedFile(fileId, file.getAbsolutePath(), userId, name);
         fileCache.addFile(cf);
 
-        URI fileURI = uriInfo.getBaseUriBuilder().path(UtilsController.class).path("file").queryParam("id", fileId).build();
+        URI fileURI = uriInfo.getBaseUriBuilder().path(FileController.class).path("file").queryParam("id", fileId).build();
 
         return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
     }
