@@ -1,4 +1,4 @@
-package biocode.fims.rest.services.rest;
+package biocode.fims.rest.services.rest.subResources;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
@@ -16,6 +16,7 @@ import biocode.fims.query.writers.*;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsService;
+import biocode.fims.rest.services.rest.UtilsController;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tools.CachedFile;
@@ -39,14 +40,11 @@ import java.net.URI;
 import java.util.*;
 
 /**
- * Query interface for Biocode-fims expedition
- *
- * @resourceDescription Query a project's resources. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>
+ * @resourceDescription Query a project's records. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>
  * for more detailed information regarding queries.
- * @resourceTag Resources
+ * @resourceTag Records
  */
 @Controller
-@Path("/projects/{projectId}/query/{entity}")
 public class QueryController extends FimsService {
     private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
 

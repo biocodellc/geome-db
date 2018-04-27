@@ -1,6 +1,7 @@
 package biocode.fims.rest.versioning.transformers;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.rest.services.rest.subResources.QueryController;
 import biocode.fims.service.BcidService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +18,7 @@ import javax.ws.rs.core.Response;
 import java.util.*;
 
 /**
- * class to transform requests to {@link biocode.fims.rest.services.rest.QueryController} resource methods from
+ * class to transform requests to {@link QueryController} resource methods from
  * {@link biocode.fims.rest.versioning.APIVersion}v1_0 to APIVersion v1_1, and responses from v1_1 to v1_0.
  */
 @Component
