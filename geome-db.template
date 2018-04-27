@@ -1,31 +1,22 @@
-###########  geome-db-fims settings  ##########
-
-projectId = biscicol_project_id
-
-# location to store uploaded spreadsheets for backup
-serverRoot = path_to_directory
-
-# get you're access token by visiting https://www.mapbox.com/account/apps/
-mapboxAccessToken = your_token
-
 ###########  biocode-fims-commons settings  ##########
 
-## elasticSearch ##
-clusterName = elasticsearch
-clusterNodes = 127.0.0.1:9300
-clientIgnoreClusterName = false
-clientNodesSamplerInterval = 5s
-clientPingTimeout = 5s
-clientTransportSniff = true
+# location to store uploaded spreadsheets for backup
+serverRoot = /location/on/server/
 
-# the naan to use for the bcid rootIdentifier
-naan = 99999
+# the relative path from the appRoot where a user can create an account
+accountCreatePath = user/create?id=${id}&email=${email}
+
+# the relative path from the appRoot where a user can reset their password
+resetPasswordPath = resetPass?resetToken=${token}
 
 # the url where the webapp is deployed
-appRoot = http://www.geome-db.org/
+appRoot = http://www.biscicol.org/
 
-# ignoreUser defaults to false. If set to true then application does not run check to see if userId is unique
-# for a particular dataset.  That is, it allows users besides the dataset creator to load data to this dataset
+# the naan to use for the bcid identifier
+naan = 99999
+
+# ignore_user defaults to false. If set to true then application does not run check to see if user is unique
+# for a particular expedition.  That is, it allows users besides the expedition creator to load data to this expedition
 ignoreUser = false
 
 # when set to true, stack traces will be returned form the server when exceptions occur.
@@ -33,25 +24,22 @@ ignoreUser = false
 debug = false
 
 # turn on or off ezid request mechanism (the part that actually creates the EZID)
-ezidRequests = false
+ezidRequests = true
 
 #EZID credentials under bcid sub-account to UCB Library
-eziduser = userId
+eziduser = user
 ezidpass = pass
 
 # MySql database settings
 bcidUser = user
 bcidPassword = pass
-bcidUrl = jdbc:mysql://127.0.0.1:3306/db_name
+bcidUrl = jdbc:mysql://host:3306/mydb
 bcidClass = com.mysql.jdbc.Driver
 
 # Mail settings
-mailUser =
-mailFrom =
-mailPassword =
+mailUser = someone@gmail.com
+mailFrom = someone@gmail.com
+mailPassword = mypassword
 
 # The divider to use that separates the ARK portion and the Suffix Portion
 divider = _
-
-# The license used for the bcids that are created
-rights = http://creativecommons.org/licenses/by/3.0/

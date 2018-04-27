@@ -1,5 +1,6 @@
 buildscript {
     repositories {
+        mavenLocal()
         maven {
             url "http://repo.biocodellc.com/repository/maven-private/"
             credentials {
@@ -7,21 +8,20 @@ buildscript {
                 password mavenPass
             }
         }
-        mavenLocal()
     }
     dependencies {
-        classpath 'com.github.fgiannesini.libsass.gradle.plugin:libsass-gradle-plugin:+'
-        classpath "org.biocode:gradle-fims:1.1.8"
+        classpath "org.biocode:gradle-fims:1.3.2"
     }
 }
 
+apply plugin: "application"
 apply plugin: "org.biocode.fims-web"
 
 import org.biocode.gradle.web.tasks.RestartRemoteJettyTask
 import org.biocode.gradle.web.tasks.HotDeployRemoteJettyTask
 
-ext.fimsCommonsVersion = "0.2.11"
-ext.fimsSequencesVersion = "0.1.5"
+ext.fimsCommonsVersion = "1.0.0-beta.2"
+ext.fimsSequencesVersion = "1.0.0-beta.2"
 
 fims {
     maven {
@@ -31,14 +31,16 @@ fims {
 }
 
 repositories {
-    add(fims.mavenFims())
     mavenLocal()
+    add(fims.mavenFims())
 }
 
 // need to evaluate childProjects first so we can add the childProject server dependencies to the server configuration
 evaluationDependsOnChildren()
 
 dependencies {
+    server 'org.glassfish.jersey.media:jersey-media-multipart:2.25'
+
     server('org.glassfish.jersey.ext:jersey-spring3:2.25') {
         exclude module: 'bean-validator'
         exclude module: 'asm-all-repackaged'
@@ -49,7 +51,7 @@ dependencies {
     server 'org.springframework.data:spring-data-jpa:1.10.1.RELEASE'
     server group: 'org.hibernate.javax.persistence', name: 'hibernate-jpa-2.1-api', version: '1.0.0.Final'
 
-    server 'javax.servlet:servlet-api:2.4'
+    server 'javax.servlet:javax.servlet-api:3.1.0'
     server 'org.slf4j:slf4j-log4j12:1.7.19'
     server 'com.googlecode.json-simple:json-simple:1.1.1'
 
@@ -57,16 +59,26 @@ dependencies {
         exclude module: 'asm'
     }
     server 'commons-cli:commons-cli:1.2'
-    server group: 'org.apache.commons', name: 'commons-exec', version: '1.3'
 
     server group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
+    compile composite.resolveDependency("org.biocode:biocode-fims-commons:${fimsCommonsVersion}", ":biocode-fims-commons")
+    compile composite.resolveDependency("org.biocode:biocode-fims-sequences:${fimsSequencesVersion}", ":biocode-fims-sequences")
 
-    provided 'org.eclipse.jetty:jetty-servlet:9.3.3.v20150827'
-
-    compile composite.resolveDependency("org.biocode:biocode-fims-commons:${fimsCommonsVersion}", "biocode-fims-commons")
-    compile composite.resolveDependency("org.biocode:biocode-fims-sequences:${fimsSequencesVersion}", "biocode-fims-sequences")
+    additionalSources(group: 'org.springframework.data', name: 'spring-data-commons', version: '1.10.1.RELEASE', classifier: 'sources') {
+        transitive = false
+    }
+    additionalSources(group: 'org.biocode', name: 'biocode-fims-commons', version: "${fimsCommonsVersion}", classifier: 'sources') {
+        transitive = false
+    }
+    additionalSources(group: 'org.biocode', name: 'biocode-fims-sequences', version: "${fimsSequencesVersion}", classifier: 'sources') {
+        transitive = false
+    }
 
     testCompile "junit:junit-dep:4.10"
+    integrationTestRuntime group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.9'
+    // need to use the following until https://github.com/gradle/gradle/issues/1553 is resolved. Then we can update DependencyResolver dependency substitution code
+    integrationTestCompile project(path: ":biocode-fims-commons", configuration: "integrationTestOutput")
+//    integrationTestCompile composite.resolveDependency("org.biocode:biocode-fims-commons:${fimsCommonsVersion}", "biocode-fims-commons", "integrationTestOutput")
 
     subprojects.each {
         project.configurations.server.dependencies.addAll(it.configurations.server.dependencies)
@@ -85,6 +97,41 @@ remotes {
         user = biscicolUser
         password = biscicolPassword
     }
+}
+
+//=============================
+//= application configuration
+//=============================
+mainClassName = "biocode.fims.run.FimsPostgresMigrator"
+
+distributions {
+    main {
+        contents {
+            into('lib') {
+                from configurations.server
+            }
+        }
+    }
+}
+
+startScripts {
+    classpath = files(jar.archivePath, configurations.server, configurations.runtime)
+}
+
+task postgresMigration(type: JavaExec) {
+    classpath = configurations.server + configurations.compile + sourceSets.main.runtimeClasspath
+
+    if (project.hasProperty("appArgs")) {
+        args Eval.me(appArgs)
+    }
+
+    main = "biocode.fims.run.FimsPostgresMigrator"
+}
+
+task generateUUIDs(type: JavaExec) {
+    classpath = configurations.server + configurations.compile + sourceSets.main.runtimeClasspath
+
+    main = "biocode.fims.run.UserUUIDGenerator"
 }
 
 //=============================
@@ -157,81 +204,18 @@ fatWar {
     })
 }
 
-//===========================
-//= js configuration
-//===========================
+//= Rest api docs configuration
+//=============================
 
-// specify files that require a specific loading order
-ext.externLibsOrdered = ["${webAppDir}/js/externalLibs/lodash.js", "${webAppDir}/js/externalLibs/papaparse.min.js",
-                         "${webAppDir}/js/externalLibs/xlsx.min.js", "${webAppDir}/js/externalLibs/xlsx-reader.js",
-                         "${webAppDir}/js/externalLibs/leaflet.js"]
-javascript.source {
-    externLibs {
-        js {
-            srcDir "src/main/web/js/externalLibs"
-            include "*.js"
-            // exclude any file that is in the externLibsOrdered list
-            exclude {
-                it.file in files(externLibsOrdered).files
-            }
-        }
-    }
-    app {
-        js {
-            srcDir "src/main/web/app"
-            include "**/*.js"
-            exclude "app.js"
-            exclude "app.module.js"
-            exclude "app.constants.js.template"
-            exclude "**/module.js"
-            exclude "**/*.module.js"
-        }
-    }
-    js {
-        js {
-            srcDir "src/main/web/js"
-            include "*.js"
-            exclude "fims-analytics.js"
-            exclude "autotrack.js"
-        }
-    }
-    modules {
-        js {
-            srcDir "src/main/web/app"
-            include "**/module.js"
-            include "**/*.module.js"
-        }
-    }
-}
+// TODO move this from the web plugin to the fims plugin
+generateRestApiDocs {
+    additionalSourcesInclude 'org/springframework/data/domain/*.java', 'biocode/fims/**/*.java'
+    additionalSourcesExclude 'org/springframework', 'biocode/fims/rest/FimsDefaultServlet.java', 'biocode/fims/validation/rules/ControlledVocabularyRule.java'
 
-combineJs {
-    encoding = "UTF-8"
-    source = files("${webAppDirName}/app/app.module.js", javascript.source.modules.js.files, javascript.source.app.js.files, javascript.source.js.js.files)
-    dest = file("${webAppDirName}/js/all.js")
-}
-
-jsExternalLibs {
-    source = externLibsOrdered + javascript.source.externLibs.js.files
-    closure {
-        compilerOptions.language = "ECMASCRIPT5"
-        warningLevel = "QUIET"
+    swagger {
+        apiInfo = "${projectDir}/swagger/api-info.json"
+        apiVersions = ["v1"]
+        apiBasePath = "/"
+        apiSchemes = ["https", "http"]
     }
-}
-jsApp {
-    source = files("src/main/web/app/app.module.js", javascript.source.modules.js.files, javascript.source.app.js.files, javascript.source.js.js.files)
-    closure {
-        compilerOptions.language = "ECMASCRIPT5"
-    }
-}
-
-//=================================
-//= angular constants configuration
-//=================================
-
-populateJsProps {
-    propsFile file("src/main/resources/geome-db.props")
-    templateFile file("${webAppDir}/app/app.constants.js.template")
-    constantsFile file("${webAppDir}/app/app.constants.js")
-    propsMap = ['mapboxToken': 'mapboxAccessToken',
-                'projectId'  : 'projectId']
 }

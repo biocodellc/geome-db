@@ -1,0 +1,58 @@
+# Java Gradle CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-java/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      - image: circleci/openjdk:8-jdk
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/mongo:3.4.4
+
+    working_directory: ~/repo
+
+    environment:
+          # Customize the JVM maximum heap limit
+          JVM_OPTS: -Xmx3200m
+          TERM: dumb
+
+    steps:
+      - checkout
+
+      # git clone & co same branch on biocode-fims-commons
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-commons; cd repo; git checkout ${CIRCLE_BRANCH}
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-sequences; cd repo; git checkout ${CIRCLE_BRANCH}
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "build.gradle" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      # set gradlew as executable
+      - run:
+          name: chmod permissions
+          command: chmod +x ./gradlew
+
+
+      # setup gradle.properties
+      - run: cp gradle.template gradle.properties
+      - run: ./gradlew -PbiocodeFimsCommonsDir=../biocode-fims-commons -PmavenUser=${MAVEN_USER} -PmavenPass=${MAVEN_PASS} dependencies
+
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+
+      - deploy:
+          name: Deploy
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "psql" ]; then
+            ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/biocode-fims-commons/ && git checkout psql && git pull && cd /home/deploy/code/biocode-fims-commons/ && git checkout psql && git pull && cd /home/deploy/code/biscicol-fims/ && git checkout psql && git pull && ./gradlew clean && ./gradlew -Penvironment=development fatWar && sudo cp /home/deploy/code/biscicol-fims/dist/biscicol-fims-fat.war /opt/webdev/mybase/webapps/biocode-fims.war && sudo /bin/touch /opt/webdev/mybase/webapps/biocode-fims.xml'
+            fi

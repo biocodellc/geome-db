@@ -1,23 +1,36 @@
 package biocode.fims.application.config;
 
-import biocode.fims.geome.repositories.GeomeResourceRepository;
-import biocode.fims.fastq.EsFastqMetadataRepository;
-import biocode.fims.elasticSearch.ESFimsMetadataPersistenceManager;
-import biocode.fims.fastq.FastqMetadataRepository;
-import biocode.fims.fileManagers.fimsMetadata.FimsMetadataFileManager;
-import biocode.fims.fileManagers.fimsMetadata.FimsMetadataPersistenceManager;
-import biocode.fims.ncbi.entrez.BioSampleRepository;
-import biocode.fims.ncbi.entrez.EntrezApiFactory;
-import biocode.fims.ncbi.entrez.EntrezApiFactoryImpl;
-import biocode.fims.ncbi.entrez.EntrezApiService;
-import biocode.fims.ncbi.sra.SraAccessionHarvester;
+import biocode.fims.fasta.FastaRecord;
+import biocode.fims.fasta.FastaValidator;
+import biocode.fims.fasta.reader.FastaDataReaderType;
+import biocode.fims.fasta.reader.FastaReader;
+import biocode.fims.fastq.FastqRecord;
+import biocode.fims.fastq.FastqRecordRowMapper;
+import biocode.fims.fastq.FastqValidator;
+import biocode.fims.fastq.reader.FastqDataReaderType;
+import biocode.fims.fastq.reader.FastqReader;
+import biocode.fims.models.records.FimsRowMapper;
+import biocode.fims.models.records.GenericRecord;
+import biocode.fims.models.records.GenericRecordRowMapper;
+import biocode.fims.models.records.Record;
+import biocode.fims.reader.DataReader;
+import biocode.fims.reader.DataReaderFactory;
+import biocode.fims.reader.TabularDataReaderType;
+import biocode.fims.reader.plugins.CSVReader;
+import biocode.fims.reader.plugins.ExcelReader;
+import biocode.fims.reader.plugins.TabReader;
+import biocode.fims.repositories.PostgresRecordRepository;
+import biocode.fims.repositories.RecordRepository;
 import biocode.fims.service.ProjectService;
-import org.elasticsearch.client.Client;
+import biocode.fims.validation.RecordValidator;
+import biocode.fims.validation.RecordValidatorFactory;
+import biocode.fims.validation.ValidatorInstantiator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
+import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
+import org.springframework.core.io.ClassPathResource;
 
-import javax.ws.rs.client.ClientBuilder;
+import java.util.*;
 
 /**
  * Configuration class for and GeOMe-db-Fims application. Including cli and webapps
@@ -29,45 +42,56 @@ import javax.ws.rs.client.ClientBuilder;
 @PropertySource("classpath:geome-db.props")
 public class GeomeAppConfig {
     @Autowired
-    private FimsAppConfig fimsAppConfig;
+    FimsAppConfig fimsAppConfig;
+
     @Autowired
     ProjectService projectService;
-    @Autowired
-    Client esClient;
-    @Autowired
-    private MessageSource messageSource;
 
     @Bean
-    @Scope("prototype")
-    public FimsMetadataFileManager fimsMetadataFileManager() {
-        FimsMetadataPersistenceManager persistenceManager = new ESFimsMetadataPersistenceManager(esClient, geomeProperties());
-        return new FimsMetadataFileManager(persistenceManager, fimsAppConfig.fimsProperties(), fimsAppConfig.expeditionService, fimsAppConfig.bcidService, messageSource);
-    }
+    public DataReaderFactory dataReaderFactory() {
+        Map<DataReader.DataReaderType, List<DataReader>> dataReaders = new HashMap<>();
 
-    @Bean
-    public FastqMetadataRepository fastqMetadataRepository() {
-        return new EsFastqMetadataRepository(esClient);
-    }
-
-    @Bean
-    public GeomeResourceRepository geomeResourceRepository() {
-        return new GeomeResourceRepository(esClient, fastqMetadataRepository());
-    }
-    @Bean
-    public BioSampleRepository bioSampleRepository() {
-        EntrezApiFactory apiFactory = new EntrezApiFactoryImpl(ClientBuilder.newClient());
-        EntrezApiService entrezApiService = new EntrezApiService(apiFactory);
-        return new BioSampleRepository(entrezApiService);
+        dataReaders.put(
+                TabularDataReaderType.READER_TYPE,
+                Arrays.asList(new CSVReader(), new TabReader(), new ExcelReader())
+        );
+        dataReaders.put(
+                FastaDataReaderType.READER_TYPE,
+                Collections.singletonList(new FastaReader())
+        );
+        dataReaders.put(
+                FastqDataReaderType.READER_TYPE,
+                Collections.singletonList(new FastqReader())
+        );
+        return new DataReaderFactory(dataReaders);
     }
 
     @Bean
-    public SraAccessionHarvester sraAccessionHarvester() {
-        return new SraAccessionHarvester(geomeResourceRepository(), bioSampleRepository(), projectService, geomeProperties());
+    public RecordValidatorFactory recordValidatorFactory() {
+        Map<Class<? extends Record>, ValidatorInstantiator> validators = new HashMap<>();
+
+        validators.put(GenericRecord.class, new RecordValidator.DefaultValidatorInstantiator());
+        validators.put(FastaRecord.class, new FastaValidator.FastaValidatorInstantiator());
+        validators.put(FastqRecord.class, new FastqValidator.FastqValidatorInstantiator());
+
+        return new RecordValidatorFactory(validators);
     }
 
     @Bean
-    public GeomeProperties geomeProperties() {
-        return new GeomeProperties(fimsAppConfig.env);
+    public RecordRepository recordRepository() {
+        YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
+        yaml.setResources(new ClassPathResource("record-repository-sql.yml"));
+
+        Map<Class<? extends Record>, FimsRowMapper<? extends Record>> rowMappers = new HashMap<>();
+        rowMappers.put(GenericRecord.class, new GenericRecordRowMapper());
+        rowMappers.put(FastqRecord.class, new FastqRecordRowMapper());
+
+        return new PostgresRecordRepository(fimsAppConfig.jdbcTemplate, yaml.getObject(), rowMappers);
     }
+
+//    @Bean
+//    public SraAccessionHarvester sraAccessionHarvester() {
+//        return new SraAccessionHarvester(geomeResourceRepository(), bioSampleRepository(), projectService, geomeProperties());
+//    }
 
 }

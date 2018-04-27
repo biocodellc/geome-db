@@ -1,9 +1,20 @@
+#biocodeFimsCommonsDir =
+#gradleFimsDir =
+
 defaultEnvironment = local
 
+mavenUser =
+mavenPass =
+
+#file paths should end with /
 remoteWarDirectory =
+remoteLibsDirectory =
 remoteWarDevDirectory =
+remoteDevLibsDirectory =
 localWarDirectory = /usr/local/opt/jetty/libexec/webapps
+
 biscicolUser =
 biscicolPassword
 biscicolJettyPath = /etc/init.d/jetty
-biscicolJettyDevPath
+biscicolJettyDevPath = /etc/init.d/jettydev
+

@@ -1,7 +1,7 @@
 package biocode.fims.rest.services.rest;
 
 import biocode.fims.application.config.FimsProperties;
-import biocode.fims.service.ProjectService;
+import biocode.fims.service.OAuthProviderService;
 import biocode.fims.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,16 +9,13 @@ import org.springframework.stereotype.Controller;
 import javax.ws.rs.Path;
 
 /**
- * user API endpoints
- *
- * @resourceTag Users
+ * @author RJ Ewing
  */
 @Controller
-@Path("users")
-public class UserController extends BaseUserController {
-
+@Path("oauth")
+public class OAuthController extends BaseOAuthController {
     @Autowired
-    UserController(UserService userService, ProjectService projectService, FimsProperties props) {
-        super(userService, projectService, props);
+    public OAuthController(OAuthProviderService oAuthProviderService, UserService userService, FimsProperties props) {
+        super(oAuthProviderService, userService, props);
     }
 }
