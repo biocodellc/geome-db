@@ -34,7 +34,7 @@ public class RecordController extends FimsService {
      * @responseType biocode.fims.rest.services.rest.subResources.QueryController
      */
     // note: we use the regex for projectId here so the path doesn't collide w/ RecordsResource get by arkID
-    @Path("{projectId: [0-9]+}/{entity}")
+    @Path("{entity}")
     public Resource getQueryController() {
         return Resource.from(QueryController.class);
     }

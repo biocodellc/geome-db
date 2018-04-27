@@ -53,7 +53,7 @@ public class QueryController extends FimsService {
     private final ProjectService projectService;
     private final FileCache fileCache;
 
-    @PathParam("projectId")
+    @QueryParam("projectId")
     private Integer projectId;
     @PathParam("entity")
     private String entity;
