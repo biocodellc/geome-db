@@ -103,7 +103,10 @@ public class FimsPostgresMigrator {
                     Iterator<String> it = node.fieldNames();
                     while (it.hasNext()) {
                         String field = it.next();
-                        record.set(field, node.get(field).asText());
+                        // we added bcid and expedition.expeditionCode properties, they are no longer needed
+                        if (!field.equals("bcid") && !field.equals("expedition.expeditionCode")) {
+                            record.set(field, node.get(field).asText());
+                        }
                     }
 
                     recordSet.add(record);
