@@ -39,11 +39,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
-/**
- * @resourceDescription Query a project's records. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>
- * for more detailed information regarding queries.
- * @resourceTag Records
- */
 @Controller
 public class QueryController extends FimsController {
     private static final Logger logger = LoggerFactory.getLogger(QueryController.class);

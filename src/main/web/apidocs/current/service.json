@@ -19,22 +19,32 @@
             "name": "Records"
         },
         {
+            "name": "Records_-_Query",
+            "description": "Query a project's records. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>\n for more detailed information regarding queries."
+        },
+        {
             "name": "Projects"
+        },
+        {
+            "name": "Templates"
         },
         {
             "name": "Expeditions"
         },
         {
-            "name": "Misc"
+            "name": "Members"
+        },
+        {
+            "name": "Config"
+        },
+        {
+            "name": "Files"
         },
         {
             "name": "OAuth"
         },
         {
             "name": "Users"
-        },
-        {
-            "name": ""
         }
     ],
     "schemes": [
@@ -42,44 +52,12 @@
         "http"
     ],
     "paths": {
-        "": {
-            "get": {
-                "tags": [
-                    ""
-                ],
-                "operationId": "getTemplates",
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "projectId",
-                        "in": "path",
-                        "description": "",
-                        "required": true,
-                        "type": "integer",
-                        "format": "int32"
-                    }
-                ],
-                "responses": {
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "type": "array",
-                            "uniqueItems": true,
-                            "items": {
-                                "$ref": "#/definitions/ProjectTemplate-Views.Detailed"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/data/export/{projectId}/{expeditionCode}": {
             "get": {
                 "tags": [
                     "Data"
                 ],
+                "summary": "Export all data for a given expedition",
                 "operationId": "export",
                 "produces": [
                     "application/json"
@@ -167,6 +145,7 @@
                 "tags": [
                     "Data"
                 ],
+                "summary": "Validate a dataset",
                 "operationId": "validate",
                 "consumes": [
                     "multipart/form-data"
@@ -255,56 +234,6 @@
                         "description": "",
                         "schema": {
                             "$ref": "#/definitions/DatasetController-ValidationResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/generate": {
-            "post": {
-                "tags": [
-                    ""
-                ],
-                "operationId": "createExcel",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "columns",
-                        "in": "formData",
-                        "description": "",
-                        "required": false,
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "multi"
-                    },
-                    {
-                        "name": "sheetName",
-                        "in": "formData",
-                        "description": "",
-                        "required": false,
-                        "type": "string"
-                    },
-                    {
-                        "name": "projectId",
-                        "in": "path",
-                        "description": "",
-                        "required": true,
-                        "type": "integer",
-                        "format": "int32"
-                    }
-                ],
-                "responses": {
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
                         }
                     }
                 }
@@ -603,8 +532,9 @@
         "/projects/{projectId}/config": {
             "get": {
                 "tags": [
-                    "Projects"
+                    "Config"
                 ],
+                "summary": "Get a project config",
                 "operationId": "getConfig",
                 "produces": [
                     "application/json"
@@ -630,10 +560,9 @@
             },
             "put": {
                 "tags": [
-                    "Projects"
+                    "Config"
                 ],
-                "summary": "Update the Project#projectConfig",
-                "description": "Update the {@link Project#projectConfig}",
+                "summary": "Update the project config",
                 "operationId": "update",
                 "consumes": [
                     "application/json"
@@ -665,46 +594,6 @@
                         "description": "",
                         "schema": {
                             "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/projects/{projectId}/config/lists/{listName}/fields": {
-            "get": {
-                "tags": [
-                    "Projects"
-                ],
-                "summary": "Retrieve a list of valid values for a given column",
-                "operationId": "getListFields",
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "projectId",
-                        "in": "path",
-                        "description": "",
-                        "required": true,
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    {
-                        "name": "listName",
-                        "in": "path",
-                        "description": "",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Field"
-                            }
                         }
                     }
                 }
@@ -840,6 +729,7 @@
                 "tags": [
                     "Expeditions"
                 ],
+                "summary": "Get an expedition",
                 "operationId": "getExpedition",
                 "produces": [
                     "application/json"
@@ -1036,7 +926,7 @@
         "/projects/{projectId}/members": {
             "get": {
                 "tags": [
-                    "Projects"
+                    "Members"
                 ],
                 "summary": "get project members",
                 "operationId": "getMembers",
@@ -1075,7 +965,7 @@
         "/projects/{projectId}/members/{username}": {
             "put": {
                 "tags": [
-                    "Projects"
+                    "Members"
                 ],
                 "summary": "add a member user",
                 "operationId": "addMember",
@@ -1125,7 +1015,7 @@
             },
             "delete": {
                 "tags": [
-                    "Projects"
+                    "Members"
                 ],
                 "summary": "remove a member user",
                 "operationId": "removeMember",
@@ -1177,13 +1067,10 @@
         "/projects/{projectId}/templates": {
             "get": {
                 "tags": [
-                    "Expeditions"
+                    "Templates"
                 ],
-                "summary": "Get a list of a Projects Expeditions",
-                "operationId": "listExpeditions",
-                "consumes": [
-                    "application/json"
-                ],
+                "summary": "Get a template",
+                "operationId": "getTemplates",
                 "produces": [
                     "application/json"
                 ],
@@ -1191,34 +1078,10 @@
                     {
                         "name": "projectId",
                         "in": "path",
-                        "description": "The project to get expeditions for",
+                        "description": "",
                         "required": true,
                         "type": "integer",
                         "format": "int32"
-                    },
-                    {
-                        "name": "admin",
-                        "in": "query",
-                        "description": "If present, all expeditions will be returned, regardless of the expedition owner. Note: this flag\n                       takes precedence over all other query params",
-                        "required": false,
-                        "type": "Flag",
-                        "default": "false"
-                    },
-                    {
-                        "name": "user",
-                        "in": "query",
-                        "description": "If present, only the expeditions for the authenticated user will be returned",
-                        "required": false,
-                        "type": "Flag",
-                        "default": "false"
-                    },
-                    {
-                        "name": "includePrivate",
-                        "in": "query",
-                        "description": "Include the authenticated users private expeditions in the results",
-                        "required": false,
-                        "type": "boolean",
-                        "default": false
                     }
                 ],
                 "responses": {
@@ -1226,127 +1089,47 @@
                         "description": "",
                         "schema": {
                             "type": "array",
+                            "uniqueItems": true,
                             "items": {
-                                "$ref": "#/definitions/Expedition-Views.Detailed"
+                                "$ref": "#/definitions/ProjectTemplate-Views.Detailed"
                             }
-                        }
-                    },
-                    "403": {
-                        "description": "Invalid request. Either using admin flag and user is not the project admin, or requesting\n expeditions for a private project that the user is not a member of.",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorInfo"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "Expeditions"
-                ],
-                "summary": "Bulk update expeditions",
-                "description": "<p>\n Project Admin access only",
-                "operationId": "updateExpeditions",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "projectId",
-                        "in": "path",
-                        "description": "The projectId of the expeditions to be updated",
-                        "required": true,
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    {
-                        "in": "body",
-                        "name": "expeditions",
-                        "description": "The Expeditions to be updated. Note: The expeditions must already belong to the projectId",
-                        "required": true,
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Expedition"
-                            }
-                        }
-                    }
-                ],
-                "responses": {
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Expedition"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "A given expedition does not belong to the project",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorInfo"
-                        }
-                    },
-                    "403": {
-                        "description": "not the project's admin",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorInfo"
                         }
                     }
                 }
             }
         },
-        "/projects/{projectId}/templates/{expeditionCode}": {
-            "get": {
-                "tags": [
-                    "Expeditions"
-                ],
-                "operationId": "getExpedition",
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "projectId",
-                        "in": "path",
-                        "description": "",
-                        "required": true,
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    {
-                        "name": "expeditionCode",
-                        "in": "path",
-                        "description": "",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/Expedition-Views.Detailed"
-                        }
-                    }
-                }
-            },
+        "/projects/{projectId}/templates/": {
             "post": {
                 "tags": [
-                    "Expeditions"
+                    "Templates"
                 ],
-                "summary": "create a new expedition.",
-                "operationId": "createExpedition",
+                "summary": "Create a template",
+                "operationId": "createExcel",
                 "consumes": [
-                    "application/json"
+                    "application/x-www-form-urlencoded"
                 ],
                 "produces": [
                     "application/json"
                 ],
                 "parameters": [
+                    {
+                        "name": "columns",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi"
+                    },
+                    {
+                        "name": "sheetName",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
                     {
                         "name": "projectId",
                         "in": "path",
@@ -1354,144 +1137,13 @@
                         "required": true,
                         "type": "integer",
                         "format": "int32"
-                    },
-                    {
-                        "name": "expeditionCode",
-                        "in": "path",
-                        "description": "",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "in": "body",
-                        "name": "expedition",
-                        "description": "",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/Expedition"
-                        }
                     }
                 ],
                 "responses": {
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Expedition-Views.Detailed"
-                        }
-                    },
-                    "400": {
-                        "description": "invalid expedition object<br>duplicate expeditionCode",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorInfo"
-                        }
-                    },
-                    "403": {
-                        "description": "not allowed to create expedition in this project",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorInfo"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "Expeditions"
-                ],
-                "summary": "update Expedition",
-                "operationId": "updateExpedition",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "projectId",
-                        "in": "path",
-                        "description": "The projectId the expedition belongs to",
-                        "required": true,
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    {
-                        "name": "expeditionCode",
-                        "in": "path",
-                        "description": "The expeditionCode of the expedition to update",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "in": "body",
-                        "name": "expedition",
-                        "description": "The Expedition to be updated. Note: The expedition must already belong to the projectId",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/Expedition"
-                        }
-                    }
-                ],
-                "responses": {
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/Expedition"
-                        }
-                    },
-                    "400": {
-                        "description": "A given expedition does not belong to the project",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorInfo"
-                        }
-                    },
-                    "403": {
-                        "description": "not the expedition owner or the project's admin",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorInfo"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "Expeditions"
-                ],
-                "summary": "delete an expedition",
-                "operationId": "deleteExpedition",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "projectId",
-                        "in": "path",
-                        "description": "The projectId the expedition belongs to",
-                        "required": true,
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    {
-                        "name": "expeditionCode",
-                        "in": "path",
-                        "description": "The expeditionCode of the expedition to delete",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/ConfirmationResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "not the project's admin",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorInfo"
+                            "$ref": "#/definitions/Response"
                         }
                     }
                 }
@@ -1538,7 +1190,7 @@
         "/records/{entity}/cspace": {
             "get": {
                 "tags": [
-                    "Records"
+                    "Records_-_Query"
                 ],
                 "summary": "Query project resources, returning CSPACE file",
                 "operationId": "queryCspace",
@@ -1567,7 +1219,7 @@
         "/records/{entity}/csv": {
             "get": {
                 "tags": [
-                    "Records"
+                    "Records_-_Query"
                 ],
                 "summary": "Query project resources, returning CSV file",
                 "operationId": "queryCSV",
@@ -1597,7 +1249,7 @@
             },
             "post": {
                 "tags": [
-                    "Records"
+                    "Records_-_Query"
                 ],
                 "summary": "Query project resources, returning a CSV file",
                 "operationId": "queryCSVAsPost",
@@ -1629,7 +1281,7 @@
         "/records/{entity}/excel": {
             "get": {
                 "tags": [
-                    "Records"
+                    "Records_-_Query"
                 ],
                 "summary": "Query project resources, returning excel workbook",
                 "operationId": "queryExcel",
@@ -1659,7 +1311,7 @@
             },
             "post": {
                 "tags": [
-                    "Records"
+                    "Records_-_Query"
                 ],
                 "summary": "Query project resources, returning a excel workbook",
                 "operationId": "queryExcelAsPost",
@@ -1691,7 +1343,7 @@
         "/records/{entity}/fasta": {
             "get": {
                 "tags": [
-                    "Records"
+                    "Records_-_Query"
                 ],
                 "summary": "Query project resources, returning FASTA file",
                 "operationId": "queryFasta",
@@ -1723,7 +1375,7 @@
         "/records/{entity}/json": {
             "get": {
                 "tags": [
-                    "Records"
+                    "Records_-_Query"
                 ],
                 "summary": "Query project resources, returning JSON",
                 "operationId": "queryJson",
@@ -1775,7 +1427,7 @@
             },
             "post": {
                 "tags": [
-                    "Records"
+                    "Records_-_Query"
                 ],
                 "summary": "Query project resources, returning JSON",
                 "operationId": "queryJsonAsPost",
@@ -1832,7 +1484,7 @@
         "/records/{entity}/kml": {
             "get": {
                 "tags": [
-                    "Records"
+                    "Records_-_Query"
                 ],
                 "summary": "Query project resources, returning KML file",
                 "operationId": "queryKML",
@@ -1862,7 +1514,7 @@
             },
             "post": {
                 "tags": [
-                    "Records"
+                    "Records_-_Query"
                 ],
                 "summary": "Query project resources, returning a KML file",
                 "operationId": "queryKMLAsPost",
@@ -1894,7 +1546,7 @@
         "/records/{entity}/tab": {
             "post": {
                 "tags": [
-                    "Records"
+                    "Records_-_Query"
                 ],
                 "summary": "Query project resources, returning a TAB delimited text file",
                 "operationId": "queryTABAsPost",
@@ -1926,7 +1578,7 @@
         "/records/{entity}/tsv": {
             "get": {
                 "tags": [
-                    "Records"
+                    "Records_-_Query"
                 ],
                 "summary": "Query project resources, returning TAB delimited text file",
                 "operationId": "queryTAB",
@@ -2033,6 +1685,7 @@
                 "tags": [
                     "Users"
                 ],
+                "summary": "Send a user invite via email notification",
                 "operationId": "inviteUser",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -2274,8 +1927,9 @@
         "/{id}": {
             "get": {
                 "tags": [
-                    "Misc"
+                    "Files"
                 ],
+                "summary": "Retrieve a file",
                 "operationId": "getFile",
                 "produces": [
                     "application/file"
@@ -3058,6 +2712,29 @@
                 }
             }
         },
+        "ProjectTemplate-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "sheetName": {
+                    "type": "string"
+                },
+                "attributeUris": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "project": {
+                    "$ref": "#/definitions/Project-Views.Detailed"
+                },
+                "user": {
+                    "$ref": "#/definitions/User-Views.Detailed"
+                }
+            }
+        },
         "Expedition-Views.Detailed": {
             "type": "object",
             "properties": {
@@ -3341,29 +3018,6 @@
             "properties": {
                 "acknowledged": {
                     "type": "boolean"
-                }
-            }
-        },
-        "ProjectTemplate-Views.Detailed": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "sheetName": {
-                    "type": "string"
-                },
-                "attributeUris": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "project": {
-                    "$ref": "#/definitions/Project-Views.Detailed"
-                },
-                "user": {
-                    "$ref": "#/definitions/User-Views.Detailed"
                 }
             }
         }

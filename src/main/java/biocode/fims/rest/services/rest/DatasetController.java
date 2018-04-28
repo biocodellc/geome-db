@@ -81,6 +81,18 @@ public class DatasetController extends FimsController {
     }
 
 
+    /**
+     * Validate a dataset
+     *
+     * @param projectId
+     * @param expeditionCode
+     * @param dataSourceMetadata
+     * @param dataSourceFiles
+     * @param workbooks
+     * @param upload
+     * @param reloadWorkbooks
+     * @return
+     */
     @POST
     @Path("validate")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -232,7 +244,7 @@ public class DatasetController extends FimsController {
      * Service to upload a dataset to an expedition. The validate service must be called before this service.
      *
      * @param id    required. The dataset id returned from the validate service
-     * @return
+     * @responseType biocode.fims.rest.services.rest.DatasetController.UploadResponse
      */
     @Authenticated
     @PUT
@@ -278,6 +290,13 @@ public class DatasetController extends FimsController {
         }
     }
 
+    /**
+     * Export all data for a given expedition
+     *
+     * @param projectId
+     * @param expeditionCode
+     * @return
+     */
     @GET
     @Path("/export/{projectId}/{expeditionCode}")
     @Produces(MediaType.APPLICATION_JSON)

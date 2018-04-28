@@ -20,7 +20,7 @@ apply plugin: "org.biocode.fims-web"
 import org.biocode.gradle.web.tasks.RestartRemoteJettyTask
 import org.biocode.gradle.web.tasks.HotDeployRemoteJettyTask
 
-ext.fimsCommonsVersion = "1.0.0-beta.2"
+ext.fimsCommonsVersion = "1.0.0-beta.3"
 ext.fimsSequencesVersion = "1.0.0-beta.2"
 
 fims {

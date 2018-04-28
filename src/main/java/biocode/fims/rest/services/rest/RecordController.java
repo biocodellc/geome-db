@@ -32,6 +32,9 @@ public class RecordController extends FimsController {
 
     /**
      * @responseType biocode.fims.rest.services.rest.subResources.QueryController
+     * @resourceDescription Query a project's records. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>
+     * for more detailed information regarding queries.
+     * @resourceTag Records - Query
      */
     @Path("{entity}")
     public Resource getQueryController() {
