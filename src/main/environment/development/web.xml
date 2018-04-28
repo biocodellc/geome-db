@@ -24,14 +24,14 @@
         </cookie-config>
     </session-config>
 
-    <servlet>
-        <servlet-name>FimsDefaultServlet</servlet-name>
-        <servlet-class>biocode.fims.rest.FimsDefaultServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>FimsDefaultServlet</servlet-name>
-        <url-pattern>/*</url-pattern>
-    </servlet-mapping>
+    <!--<servlet>-->
+        <!--<servlet-name>FimsDefaultServlet</servlet-name>-->
+        <!--<servlet-class>biocode.fims.rest.FimsDefaultServlet</servlet-class>-->
+    <!--</servlet>-->
+    <!--<servlet-mapping>-->
+        <!--<servlet-name>FimsDefaultServlet</servlet-name>-->
+        <!--<url-pattern>/*</url-pattern>-->
+    <!--</servlet-mapping>-->
 
     <filter>
         <filter-name>ClickjackFilterDeny</filter-name>
@@ -80,6 +80,6 @@
     </filter>
     <filter-mapping>
         <filter-name>Jersey Web Application Rest</filter-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/rest/*</url-pattern>
     </filter-mapping>
 </web-app>
