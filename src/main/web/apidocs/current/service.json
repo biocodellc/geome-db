@@ -1069,7 +1069,7 @@
                 "tags": [
                     "Templates"
                 ],
-                "summary": "Get a template",
+                "summary": "fetch all templates for a project",
                 "operationId": "getTemplates",
                 "produces": [
                     "application/json"
@@ -1098,12 +1098,12 @@
                 }
             }
         },
-        "/projects/{projectId}/templates/": {
+        "/projects/{projectId}/templates/generate": {
             "post": {
                 "tags": [
                     "Templates"
                 ],
-                "summary": "Create a template",
+                "summary": "generate an excel template",
                 "operationId": "createExcel",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -1144,6 +1144,146 @@
                         "description": "",
                         "schema": {
                             "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectId}/templates/{configName}": {
+            "post": {
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "create a fims template generator configuration",
+                "operationId": "create",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "columns",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi"
+                    },
+                    {
+                        "name": "worksheet",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "configName",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ProjectTemplate"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Templates"
+                ],
+                "operationId": "update",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "columns",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi"
+                    },
+                    {
+                        "name": "configName",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ProjectTemplate"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Templates"
+                ],
+                "operationId": "delete",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "configName",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/void"
                         }
                     }
                 }
@@ -2718,10 +2858,10 @@
                 "name": {
                     "type": "string"
                 },
-                "sheetName": {
+                "worksheet": {
                     "type": "string"
                 },
-                "attributeUris": {
+                "columns": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2732,6 +2872,29 @@
                 },
                 "user": {
                     "$ref": "#/definitions/User-Views.Detailed"
+                }
+            }
+        },
+        "ProjectTemplate": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "worksheet": {
+                    "type": "string"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "project": {
+                    "$ref": "#/definitions/Project"
+                },
+                "user": {
+                    "$ref": "#/definitions/User"
                 }
             }
         },
