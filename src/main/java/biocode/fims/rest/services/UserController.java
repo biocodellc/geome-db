@@ -1,6 +1,7 @@
-package biocode.fims.rest.services.rest;
+package biocode.fims.rest.services;
 
 import biocode.fims.application.config.FimsProperties;
+import biocode.fims.rest.services.BaseUserController;
 import biocode.fims.service.ProjectService;
 import biocode.fims.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

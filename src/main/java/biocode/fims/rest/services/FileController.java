@@ -1,6 +1,7 @@
-package biocode.fims.rest.services.rest;
+package biocode.fims.rest.services;
 
 import biocode.fims.application.config.FimsProperties;
+import biocode.fims.rest.services.BaseFileController;
 import biocode.fims.tools.FileCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

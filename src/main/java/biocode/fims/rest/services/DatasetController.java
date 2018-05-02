@@ -1,4 +1,4 @@
-package biocode.fims.rest.services.rest;
+package biocode.fims.rest.services;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
@@ -244,7 +244,7 @@ public class DatasetController extends FimsController {
      * Service to upload a dataset to an expedition. The validate service must be called before this service.
      *
      * @param id    required. The dataset id returned from the validate service
-     * @responseType biocode.fims.rest.services.rest.DatasetController.UploadResponse
+     * @responseType biocode.fims.rest.services.DatasetController.UploadResponse
      */
     @Authenticated
     @PUT

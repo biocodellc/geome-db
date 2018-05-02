@@ -1,4 +1,4 @@
-package biocode.fims.rest.services.rest.subResources;
+package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
@@ -16,7 +16,7 @@ import biocode.fims.query.writers.*;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsController;
-import biocode.fims.rest.services.rest.FileController;
+import biocode.fims.rest.services.FileController;
 import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tools.CachedFile;

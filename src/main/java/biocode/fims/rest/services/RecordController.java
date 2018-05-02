@@ -1,9 +1,9 @@
-package biocode.fims.rest.services.rest;
+package biocode.fims.rest.services;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.rest.FimsController;
-import biocode.fims.rest.services.rest.subResources.QueryController;
-import biocode.fims.rest.services.rest.subResources.RecordsResource;
+import biocode.fims.rest.services.subResources.QueryController;
+import biocode.fims.rest.services.subResources.RecordsResource;
 import org.glassfish.jersey.server.model.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,7 +23,7 @@ public class RecordController extends FimsController {
     }
 
     /**
-     * @responseType biocode.fims.rest.services.rest.subResources.RecordsResource
+     * @responseType biocode.fims.rest.services.subResources.RecordsResource
      */
     @Path("/")
     public Resource getRecordsResource() {
@@ -31,7 +31,7 @@ public class RecordController extends FimsController {
     }
 
     /**
-     * @responseType biocode.fims.rest.services.rest.subResources.QueryController
+     * @responseType biocode.fims.rest.services.subResources.QueryController
      * @resourceDescription Query a project's records. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>
      * for more detailed information regarding queries.
      * @resourceTag Records - Query
