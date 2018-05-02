@@ -38,5 +38,8 @@ if [ ! -z "$sequencesVersion" ]; then
     args="$args -PfimsSequencesVersion=$sequencesVersion"
 fi;
 
-echo "running    ->    ./gradlew ${args} generateRestApiDocs \n\n"
+echo "running    ->    ./gradlew ${args} generateRestApiDocs"
+echo ""
+echo ""
+
 ./gradlew ${args} generateRestApiDocs

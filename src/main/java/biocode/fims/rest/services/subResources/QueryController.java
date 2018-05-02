@@ -16,14 +16,9 @@ import biocode.fims.query.writers.*;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.FimsController;
-import biocode.fims.rest.services.FileController;
-import biocode.fims.run.TemplateProcessor;
 import biocode.fims.service.ProjectService;
-import biocode.fims.tools.CachedFile;
 import biocode.fims.tools.FileCache;
 import biocode.fims.utils.FileUtils;
-import biocode.fims.utils.StringGenerator;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +29,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
@@ -406,29 +399,11 @@ public class QueryController extends FimsController {
 
     private Response excel(String queryString) {
         Query query = buildQuery(queryString);
-
-        if (query.expeditions().size() > 0) {
-            throw new BadRequestException("Invalid Arguments. Only 1 expedition can be specified");
-        }
-
         QueryResults queryResults = recordRepository.query(query);
 
         try {
-            //TODO refactor the templateProcessor code to be done inside the ExcelQueryWriter
-            QueryWriter queryWriter = new ExcelQueryWriter(queryResults);
-
+            QueryWriter queryWriter = new ExcelQueryWriter(projectService.getProject(projectId), queryResults, props.naan());
             File file = queryWriter.write();
-
-            // Here we attach the other components of the excel sheet found with
-            XSSFWorkbook justData = null;
-            try {
-                justData = new XSSFWorkbook(new FileInputStream(file));
-            } catch (IOException e) {
-                logger.error("failed to open excel file", e);
-            }
-
-            TemplateProcessor t = new TemplateProcessor(projectId, defaultOutputDirectory(), justData, props.naan());
-            file = t.createExcelFileFromExistingSources(queryResults.getResult(entity).entity().getWorksheet(), defaultOutputDirectory());
 
             return returnFileResults(file, "geome-fims-output.xlsx");
         } catch (FimsRuntimeException e) {
@@ -441,12 +416,8 @@ public class QueryController extends FimsController {
     }
 
     private Response returnFileResults(File file, String name) {
-        int userId = userContext.getUser() != null ? userContext.getUser().getUserId() : 0;
-        String fileId = StringGenerator.generateString(20);
-        CachedFile cf = new CachedFile(fileId, file.getAbsolutePath(), userId, name);
-        fileCache.addFile(cf);
-
-        URI fileURI = uriInfo.getBaseUriBuilder().path(FileController.class).path("file").queryParam("id", fileId).build();
+        String fileId = fileCache.cacheFileForUser(file, userContext.getUser(), name);
+        URI fileURI = uriInfo.getBaseUriBuilder().path("files/" + fileId).build();
 
         return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
     }

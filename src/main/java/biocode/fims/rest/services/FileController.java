@@ -12,7 +12,7 @@ import javax.ws.rs.Path;
  * File API endpoint
  */
 @Controller
-@Path("/")
+@Path("/files")
 public class FileController extends BaseFileController {
 
     @Autowired

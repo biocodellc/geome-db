@@ -337,12 +337,8 @@ public class DatasetController extends FimsController {
 
         File zFile = FileUtils.zip(fileMap, defaultOutputDirectory());
 
-        int userId = userContext.getUser() != null ? userContext.getUser().getUserId() : 0;
-        String fileId = StringGenerator.generateString(20);
-        CachedFile cf = new CachedFile(fileId, zFile.getAbsolutePath(), userId, expeditionCode + "-export.zip");
-        fileCache.addFile(cf);
-
-        URI fileURI = uriInfo.getBaseUriBuilder().path(FileController.class).path("file").queryParam("id", fileId).build();
+        String fileId = fileCache.cacheFileForUser(zFile, userContext.getUser(), expeditionCode + "-export.zip");
+        URI fileURI = uriInfo.getBaseUriBuilder().path("files/" + fileId).build();
 
         return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
     }
