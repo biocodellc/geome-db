@@ -17,10 +17,9 @@ import biocode.fims.query.dsl.*;
 import biocode.fims.query.writers.DelimitedTextQueryWriter;
 import biocode.fims.query.writers.QueryWriter;
 import biocode.fims.reader.DataReaderFactory;
+import biocode.fims.rest.FileResponse;
 import biocode.fims.rest.FimsController;
-import biocode.fims.tools.CachedFile;
 import biocode.fims.tools.FileCache;
-import biocode.fims.utils.StringGenerator;
 import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.filters.Authenticated;
@@ -112,7 +111,7 @@ public class DatasetController extends FimsController {
         if (dataSourceMetadata == null) dataSourceMetadata = Collections.emptyList();
         try {
             if (projectId == null ||
-                    (workbooks.isEmpty() && dataSourceFiles.isEmpty() )){ //&& dataSourceMetadata.isEmpty())) {
+                    (workbooks.isEmpty() && dataSourceFiles.isEmpty())) { //&& dataSourceMetadata.isEmpty())) {
                 throw new BadRequestException("projectId, and either workbooks or dataSourceFiles are required.");
 
             }
@@ -243,7 +242,7 @@ public class DatasetController extends FimsController {
     /**
      * Service to upload a dataset to an expedition. The validate service must be called before this service.
      *
-     * @param id    required. The dataset id returned from the validate service
+     * @param id required. The dataset id returned from the validate service
      * @responseType biocode.fims.rest.services.DatasetController.UploadResponse
      */
     @Authenticated
@@ -300,8 +299,8 @@ public class DatasetController extends FimsController {
     @GET
     @Path("/export/{projectId}/{expeditionCode}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response export(@PathParam("projectId") int projectId,
-                           @PathParam("expeditionCode") String expeditionCode) {
+    public FileResponse export(@PathParam("projectId") int projectId,
+                               @PathParam("expeditionCode") String expeditionCode) {
 
         if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), Collections.singletonList(expeditionCode), userContext.getUser())) {
             throw new ForbiddenRequestException("You are not authorized to access this expeditions data.");
@@ -332,15 +331,14 @@ public class DatasetController extends FimsController {
         }
 
         if (fileMap.isEmpty()) {
-            return Response.noContent().build();
+            return null;
         }
 
         File zFile = FileUtils.zip(fileMap, defaultOutputDirectory());
 
         String fileId = fileCache.cacheFileForUser(zFile, userContext.getUser(), expeditionCode + "-export.zip");
-        URI fileURI = uriInfo.getBaseUriBuilder().path("files/" + fileId).build();
 
-        return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
+        return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
     }
 
     /**

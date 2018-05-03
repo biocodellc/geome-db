@@ -30,12 +30,6 @@ ezidRequests = true
 eziduser = user
 ezidpass = pass
 
-# MySql database settings
-bcidUser = user
-bcidPassword = pass
-bcidUrl = jdbc:mysql://host:3306/mydb
-bcidClass = com.mysql.jdbc.Driver
-
 # Mail settings
 mailUser = someone@gmail.com
 mailFrom = someone@gmail.com

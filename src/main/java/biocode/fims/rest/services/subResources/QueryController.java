@@ -15,6 +15,7 @@ import biocode.fims.query.dsl.Query;
 import biocode.fims.query.writers.*;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.Compress;
+import biocode.fims.rest.FileResponse;
 import biocode.fims.rest.FimsController;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tools.FileCache;
@@ -27,9 +28,7 @@ import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.File;
-import java.net.URI;
 import java.util.*;
 
 @Controller
@@ -118,7 +117,7 @@ public class QueryController extends FimsController {
     @Path("/csv/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("text/csv")
-    public Response queryCSVAsPost(@FormParam("query") String queryString) {
+    public FileResponse queryCSVAsPost(@FormParam("query") String queryString) {
         return csv(queryString);
     }
 
@@ -133,11 +132,11 @@ public class QueryController extends FimsController {
     @Path("/csv/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("text/csv")
-    public Response queryCSV(@QueryParam("q") String queryString) {
+    public FileResponse queryCSV(@QueryParam("q") String queryString) {
         return csv(queryString);
     }
 
-    private Response csv(String queryString) {
+    private FileResponse csv(String queryString) {
         QueryResults queryResults = run(queryString);
 
         try {
@@ -152,7 +151,7 @@ public class QueryController extends FimsController {
             return returnFileResults(file, "geome-fims-output.csv");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
-                return Response.noContent().build();
+                return null;
             }
 
             throw e;
@@ -169,7 +168,7 @@ public class QueryController extends FimsController {
     @Path("/kml/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.google-earth.kml+xml")
-    public Response queryKMLAsPost(@FormParam("query") String queryString) {
+    public FileResponse queryKMLAsPost(@FormParam("query") String queryString) {
         return kml(queryString);
     }
 
@@ -184,11 +183,11 @@ public class QueryController extends FimsController {
     @Path("/kml/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.google-earth.kml+xml")
-    public Response queryKML(@QueryParam("q") String queryString) {
+    public FileResponse queryKML(@QueryParam("q") String queryString) {
         return kml(queryString);
     }
 
-    private Response kml(String queryString) {
+    private FileResponse kml(String queryString) {
         Query query = buildQuery(queryString);
         QueryResults queryResults = recordRepository.query(query);
 
@@ -212,7 +211,7 @@ public class QueryController extends FimsController {
             return returnFileResults(queryWriter.write(), "geome-fims-output.kml");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
-                return Response.noContent().build();
+                return null;
             }
 
             throw e;
@@ -239,7 +238,7 @@ public class QueryController extends FimsController {
     @GET
     @Path("/cspace/")
     @Produces(MediaType.APPLICATION_XML)
-    public Response queryCspace(@QueryParam("q") String queryString) {
+    public FileResponse queryCspace(@QueryParam("q") String queryString) {
 
         QueryResults queryResults = run(queryString);
 
@@ -254,7 +253,7 @@ public class QueryController extends FimsController {
             return returnFileResults(queryWriter.write(), "geome-fims-output.cspace.xml");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
-                return Response.noContent().build();
+                return null;
             }
 
             throw e;
@@ -273,7 +272,7 @@ public class QueryController extends FimsController {
     @Path("/fasta/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response queryFasta(@QueryParam("q") String queryString) {
+    public FileResponse queryFasta(@QueryParam("q") String queryString) {
         // TODO need to fetch parent queryEntity metadata for query results & return zip file
         // of csv metadata output along w/ fasta file
 
@@ -311,7 +310,7 @@ public class QueryController extends FimsController {
             return returnFileResults(file, "geome-fims-output.zip");
         } catch (FimsRuntimeException err) {
             if (err.getErrorCode() == QueryCode.NO_RESOURCES) {
-                return Response.noContent().build();
+                return null;
             }
 
             throw err;
@@ -328,7 +327,7 @@ public class QueryController extends FimsController {
     @Path("/tab/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("text/txt")
-    public Response queryTABAsPost(@FormParam("query") String queryString) {
+    public FileResponse queryTABAsPost(@FormParam("query") String queryString) {
         return tsv(queryString);
     }
 
@@ -343,11 +342,11 @@ public class QueryController extends FimsController {
     @Path("/tsv/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("text/txt")
-    public Response queryTAB(@QueryParam("q") String queryString) {
+    public FileResponse queryTAB(@QueryParam("q") String queryString) {
         return tsv(queryString);
     }
 
-    private Response tsv(String queryString) {
+    private FileResponse tsv(String queryString) {
         QueryResults queryResults = run(queryString);
 
         try {
@@ -361,7 +360,7 @@ public class QueryController extends FimsController {
             return returnFileResults(file, "geome-fims-output.txt");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
-                return Response.noContent().build();
+                return null;
             }
 
             throw e;
@@ -378,7 +377,7 @@ public class QueryController extends FimsController {
     @Path("/excel/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.ms-excel")
-    public Response queryExcelAsPost(@FormParam("query") String queryString) {
+    public FileResponse queryExcelAsPost(@FormParam("query") String queryString) {
         return excel(queryString);
     }
 
@@ -393,11 +392,11 @@ public class QueryController extends FimsController {
     @Path("/excel/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces("application/vnd.ms-excel")
-    public Response queryExcel(@QueryParam("q") String queryString) {
+    public FileResponse queryExcel(@QueryParam("q") String queryString) {
         return excel(queryString);
     }
 
-    private Response excel(String queryString) {
+    private FileResponse excel(String queryString) {
         Query query = buildQuery(queryString);
         QueryResults queryResults = recordRepository.query(query);
 
@@ -408,18 +407,18 @@ public class QueryController extends FimsController {
             return returnFileResults(file, "geome-fims-output.xlsx");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
-                return Response.noContent().build();
+                return null;
             }
 
             throw e;
         }
     }
 
-    private Response returnFileResults(File file, String name) {
+    private FileResponse returnFileResults(File file, String name) {
+        if (file == null) return null;
+        
         String fileId = fileCache.cacheFileForUser(file, userContext.getUser(), name);
-        URI fileURI = uriInfo.getBaseUriBuilder().path("files/" + fileId).build();
-
-        return Response.ok("{\"url\": \"" + fileURI + "\"}").build();
+        return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
     }
 
     private QueryResults run(String queryString) {
