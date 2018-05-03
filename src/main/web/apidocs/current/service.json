@@ -83,27 +83,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/status": {
-            "get": {
-                "tags": [
-                    "Data"
-                ],
-                "summary": "Service used for getting the current status of the dataset validation/upload.",
-                "operationId": "status",
-                "produces": [
-                    "application/json;charset=utf-8"
-                ],
-                "responses": {
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/FileResponse"
                         }
                     }
                 }
@@ -227,13 +207,81 @@
                             "type": "boolean",
                             "default": "false"
                         }
+                    },
+                    {
+                        "name": "waitForCompletion",
+                        "in": "query",
+                        "description": "If false, the request will be processed aschronyously. The response will contain a validation Id\n                           that can be used to fetch the current status of the validation including the results when finished.",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true
                     }
                 ],
                 "responses": {
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/DatasetController-ValidationResponse"
+                            "$ref": "#/definitions/ValidationResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/validate/{id}": {
+            "get": {
+                "tags": [
+                    "Data"
+                ],
+                "summary": "Get the status/results of a dataset validation.",
+                "description": "<p>\n The results are removed after 2hrs",
+                "operationId": "status",
+                "produces": [
+                    "application/json;charset=utf-8"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ValidationResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/{id}": {
+            "get": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Retrieve a file",
+                "operationId": "getFile",
+                "produces": [
+                    "application/file"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
                         }
                     }
                 }
@@ -1143,7 +1191,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Response"
+                            "$ref": "#/definitions/FileResponse"
                         }
                     }
                 }
@@ -1210,6 +1258,7 @@
                 "tags": [
                     "Templates"
                 ],
+                "summary": "update a template configuration",
                 "operationId": "update",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -1258,6 +1307,7 @@
                 "tags": [
                     "Templates"
                 ],
+                "summary": "delete a template configuration",
                 "operationId": "delete",
                 "produces": [
                     "application/json"
@@ -1350,7 +1400,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Response"
+                            "$ref": "#/definitions/FileResponse"
                         }
                     }
                 }
@@ -1382,7 +1432,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Response"
+                            "$ref": "#/definitions/FileResponse"
                         }
                     }
                 }
@@ -1412,7 +1462,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Response"
+                            "$ref": "#/definitions/FileResponse"
                         }
                     }
                 }
@@ -1444,7 +1494,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Response"
+                            "$ref": "#/definitions/FileResponse"
                         }
                     }
                 }
@@ -1474,7 +1524,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Response"
+                            "$ref": "#/definitions/FileResponse"
                         }
                     }
                 }
@@ -1506,7 +1556,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Response"
+                            "$ref": "#/definitions/FileResponse"
                         }
                     }
                 }
@@ -1647,7 +1697,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Response"
+                            "$ref": "#/definitions/FileResponse"
                         }
                     }
                 }
@@ -1677,7 +1727,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Response"
+                            "$ref": "#/definitions/FileResponse"
                         }
                     }
                 }
@@ -1709,7 +1759,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Response"
+                            "$ref": "#/definitions/FileResponse"
                         }
                     }
                 }
@@ -1741,7 +1791,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Response"
+                            "$ref": "#/definitions/FileResponse"
                         }
                     }
                 }
@@ -2063,35 +2113,6 @@
                     }
                 }
             }
-        },
-        "/{id}": {
-            "get": {
-                "tags": [
-                    "Files"
-                ],
-                "summary": "Retrieve a file",
-                "operationId": "getFile",
-                "produces": [
-                    "application/file"
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -2294,18 +2315,18 @@
                 }
             }
         },
-        "DatasetController-ValidationResponse": {
+        "ValidationResponse": {
             "type": "object",
             "properties": {
-                "processId": {
-                    "type": "string",
-                    "format": "uuid"
-                },
                 "isValid": {
                     "type": "boolean"
                 },
                 "hasError": {
                     "type": "boolean"
+                },
+                "exception": {
+                    "type": "string",
+                    "description": "The exception that occurred during validation."
                 },
                 "messages": {
                     "type": "array",
@@ -2314,14 +2335,17 @@
                     }
                 },
                 "uploadUrl": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "api endpoint to upload the validated dataset"
+                },
+                "status": {
+                    "type": "string",
+                    "description": "current status of the validation"
                 },
                 "id": {
                     "type": "string",
-                    "format": "uuid"
-                },
-                "valid": {
-                    "type": "boolean"
+                    "format": "uuid",
+                    "description": "id for the validation process.\n <p>\n Used to continue the upload after validating. If the validation was called with waitForCompletion = false, this id is used to fetch the validation status & results"
                 }
             }
         },
@@ -2386,6 +2410,14 @@
             "type": "object",
             "properties": {
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "FileResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
                     "type": "string"
                 }
             }

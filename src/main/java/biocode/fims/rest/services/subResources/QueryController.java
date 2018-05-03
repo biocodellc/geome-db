@@ -15,7 +15,7 @@ import biocode.fims.query.dsl.Query;
 import biocode.fims.query.writers.*;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.Compress;
-import biocode.fims.rest.FileResponse;
+import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.rest.FimsController;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tools.FileCache;

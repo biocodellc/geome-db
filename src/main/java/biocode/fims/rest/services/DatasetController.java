@@ -3,12 +3,14 @@ package biocode.fims.rest.services;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.digester.Entity;
+import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
+import biocode.fims.models.User;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryBuilder;
@@ -17,10 +19,11 @@ import biocode.fims.query.dsl.*;
 import biocode.fims.query.writers.DelimitedTextQueryWriter;
 import biocode.fims.query.writers.QueryWriter;
 import biocode.fims.reader.DataReaderFactory;
-import biocode.fims.rest.FileResponse;
+import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.rest.FimsController;
+import biocode.fims.rest.responses.ValidationResponse;
 import biocode.fims.tools.FileCache;
-import biocode.fims.validation.messages.EntityMessages;
+import biocode.fims.tools.ValidationStore;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.run.DatasetProcessor;
@@ -31,19 +34,23 @@ import biocode.fims.tools.UploadStore;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.run.DataSourceMetadata;
 import biocode.fims.validation.RecordValidatorFactory;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @resourceTag Data
@@ -52,6 +59,7 @@ import java.util.*;
 @Controller
 @Path("data")
 public class DatasetController extends FimsController {
+    private final static Logger logger = LoggerFactory.getLogger(DatasetController.class);
 
     private final ExpeditionService expeditionService;
     private final RecordValidatorFactory validatorFactory;
@@ -62,6 +70,7 @@ public class DatasetController extends FimsController {
     private final FileCache fileCache;
 
     private final UploadStore uploadStore;
+    private final ValidationStore validationStore;
 
     public DatasetController(ExpeditionService expeditionService, DataReaderFactory readerFactory,
                              RecordValidatorFactory validatorFactory, RecordRepository recordRepository,
@@ -77,6 +86,7 @@ public class DatasetController extends FimsController {
         this.fileCache = fileCache;
 
         this.uploadStore = new UploadStore();
+        this.validationStore = new ValidationStore();
     }
 
 
@@ -90,6 +100,8 @@ public class DatasetController extends FimsController {
      * @param workbooks
      * @param upload
      * @param reloadWorkbooks
+     * @param waitForCompletion  If false, the request will be processed aschronyously. The response will contain a validation Id
+     *                           that can be used to fetch the current status of the validation including the results when finished.
      * @return
      */
     @POST
@@ -102,49 +114,51 @@ public class DatasetController extends FimsController {
                                        @FormDataParam("dataSourceFiles") List<FormDataBodyPart> dataSourceFiles,
                                        @FormDataParam("workbooks") List<FormDataBodyPart> workbooks,
                                        @FormDataParam("upload") boolean upload,
-                                       @FormDataParam("reloadWorkbooks") @DefaultValue("false") boolean reloadWorkbooks) {
+                                       @FormDataParam("reloadWorkbooks") @DefaultValue("false") boolean reloadWorkbooks,
+                                       @QueryParam("waitForCompletion") @DefaultValue("true") boolean waitForCompletion) {
 
         //TODO need to handle un-authenticated & missing expeditionCode validation cases. We can still attempt to validate, but can't fetch any parent entities that don't exist on the sheet
-        //TODO return validation id & make this async. then use the validation id to poll for the status instead of placing the session object
-        if (workbooks == null) workbooks = Collections.emptyList();
-        if (dataSourceFiles == null) dataSourceFiles = Collections.emptyList();
-        if (dataSourceMetadata == null) dataSourceMetadata = Collections.emptyList();
-        try {
-            if (projectId == null ||
-                    (workbooks.isEmpty() && dataSourceFiles.isEmpty())) { //&& dataSourceMetadata.isEmpty())) {
-                throw new BadRequestException("projectId, and either workbooks or dataSourceFiles are required.");
 
-            }
+        if (projectId == null || (workbooks == null && dataSourceFiles == null)) {
+            throw new BadRequestException("projectId, and either workbooks or dataSourceFiles are required.");
+        }
 
-            // create a new processorStatus
-            ProcessorStatus processorStatus = new ProcessorStatus();
+        // create a new processorStatus
+        ProcessorStatus processorStatus = new ProcessorStatus();
 
-            // place the processorStatus in the session here so that we can track the status of the validation process
-            // by calling biocode.fims.rest/validate/status
-            session.setAttribute("processorStatus", processorStatus);
+        Project project = projectService.getProject(projectId, props.appRoot());
 
-            Project project = projectService.getProject(projectId, props.appRoot());
+        if (project == null) {
+            throw new FimsRuntimeException(ProjectCode.INVALID_PROJECT, 400);
+        }
 
-            if (project == null) {
-                throw new BadRequestException("Project not found");
-            }
+        DatasetProcessor.Builder builder = new DatasetProcessor.Builder(projectId, expeditionCode, processorStatus)
+                .user(userContext.getUser())
+                .projectConfig(project.getProjectConfig())
+                .readerFactory(readerFactory)
+                .recordRepository(recordRepository)
+                .validatorFactory(validatorFactory)
+                .expeditionService(expeditionService)
+                .ignoreUser(props.ignoreUser())
+                .serverDataDir(props.serverRoot())
+                .reloadWorkbooks(reloadWorkbooks);
 
-            DatasetProcessor.Builder builder = new DatasetProcessor.Builder(projectId, expeditionCode, processorStatus)
-                    .user(userContext.getUser())
-                    .projectConfig(project.getProjectConfig())
-                    .readerFactory(readerFactory)
-                    .recordRepository(recordRepository)
-                    .validatorFactory(validatorFactory)
-                    .expeditionService(expeditionService)
-                    .ignoreUser(props.ignoreUser())
-                    .serverDataDir(props.serverRoot())
-                    .reloadWorkbooks(reloadWorkbooks);
+        UUID processId = UUID.randomUUID();
 
+        // need to copy params to effectively final variables to using inside lambda function
+        List<FormDataBodyPart> finalWorkbooks = workbooks == null ? Collections.emptyList() : workbooks;
+        List<DataSourceMetadata> finalDataSourceMetadata = dataSourceMetadata == null ? Collections.emptyList() : dataSourceMetadata;
+        List<FormDataBodyPart> finalDataSourceFiles = dataSourceFiles == null ? Collections.emptyList() : dataSourceFiles;
+        User user = userContext.getUser();
+        UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
+
+        // run validation asynchronously
+        CompletableFuture<ValidationResponse> future = CompletableFuture.supplyAsync(() -> {
             // update the status
             processorStatus.appendStatus("Initializing...");
 
-            if (workbooks.size() > 0) {
-                for (FormDataBodyPart workbookData : workbooks) {
+            if (finalWorkbooks.size() > 0) {
+                for (FormDataBodyPart workbookData : finalWorkbooks) {
                     String workbookFilename = workbookData.getContentDisposition().getFileName();
                     processorStatus.appendStatus("\nExcel workbook filename = " + workbookFilename);
 
@@ -155,21 +169,21 @@ public class DatasetController extends FimsController {
                 }
             }
 
-            if (dataSourceMetadata.size() > 0 || dataSourceFiles.size() > 0) {
+            if (finalDataSourceMetadata.size() > 0 || finalDataSourceFiles.size() > 0) {
 
-                for (FormDataBodyPart dataSourceFile : dataSourceFiles) {
+                for (FormDataBodyPart dataSourceFile : finalDataSourceFiles) {
                     RecordMetadata recordMetadata = null;
 
                     String dataSourceFilename = dataSourceFile.getContentDisposition().getFileName();
                     processorStatus.appendStatus("\nDataSourceMetadata filename = " + dataSourceFilename);
 
-                    for (DataSourceMetadata metadata : dataSourceMetadata) {
+                    for (DataSourceMetadata metadata : finalDataSourceMetadata) {
                         if (StringUtils.equals(dataSourceFilename, metadata.getFilename())) {
 
                             recordMetadata = metadata.toRecordMetadata(readerFactory.getReaderTypes());
 
                             // remove the metadata so we can later verify that every dataSourceMetadata contains a matching dataSourceFile
-                            dataSourceMetadata.remove(metadata);
+                            finalDataSourceMetadata.remove(metadata);
                             break;
                         }
                     }
@@ -190,7 +204,7 @@ public class DatasetController extends FimsController {
             DatasetProcessor processor = builder.build();
 
             if (upload) {
-                if (userContext.getUser() == null) {
+                if (user == null) {
                     throw new UnauthorizedRequestException("You must be logged in to upload.");
                 }
 
@@ -206,15 +220,14 @@ public class DatasetController extends FimsController {
                     );
                 } else {
 
-                    UUID id = uploadStore.put(processor, userContext.getUser().getUserId());
+                    uploadStore.put(processId, processor, user.getUserId());
 
-                    URI uploadUri = uriInfo
-                            .getBaseUriBuilder()
-                            .path("v2/data/upload/{id}") //TODO find a better way to do this
-                            .build(id);
+                    URI uploadUri = uriBuilder
+                            .path("data/upload/{id}") //TODO find a better way to do this
+                            .build(processId);
 
                     return new ValidationResponse(
-                            id,
+                            processId,
                             isvalid,
                             processor.hasError(),
                             processor.messages(),
@@ -233,10 +246,67 @@ public class DatasetController extends FimsController {
                         null
                 );
             }
+        });
 
-        } finally {
-            session.removeAttribute("processorStatus");
+        if (waitForCompletion) {
+            try {
+                // waits for validation to complete
+                return future.get();
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+
+                int status = cause instanceof FimsAbstractException ? ((FimsAbstractException) cause).getHttpStatusCode() : 500;
+                throw new FimsRuntimeException(status, cause);
+            } catch (InterruptedException e) {
+                throw new FimsRuntimeException(500, e);
+            }
         }
+
+        int userId = user == null ? 0 : user.getUserId();
+        UUID id = validationStore.put(processId, processorStatus, userId);
+
+        future.whenCompleteAsync(((validationResponse, throwable) -> {
+            logger.error("Exception during dataset validation", throwable);
+            validationStore.update(id, validationResponse, throwable);
+        }));
+
+        return new ValidationResponse(id);
+    }
+
+    /**
+     * Get the status/results of a dataset validation.
+     * <p>
+     * The results are removed after 2hrs
+     *
+     * @return
+     */
+    @GET
+    @Path("/validate/{id}")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
+    public ValidationResponse status(@PathParam("id") UUID id) {
+        int userId = userContext.getUser() == null ? 0 : userContext.getUser().getUserId();
+        ValidationStore.ValidationResult result = validationStore.get(id, userId);
+
+        // if no result is found, we can't do anything
+        if (result == null) {
+            throw new FimsRuntimeException("Could not find a dataset validation with the id \"" + id + "\"." +
+                    " Validation results expire after 2 hrs.", 400);
+        }
+
+        if (result.exception() != null) {
+            String msg = result.exception() instanceof FimsAbstractException
+                    ? ((FimsAbstractException) result.exception()).getUsrMessage()
+                    : "Server Error";
+
+            return ValidationResponse.withException(msg);
+
+        }
+
+        if (result.response() != null) {
+            return result.response();
+        }
+
+        return ValidationResponse.withStatus(result.status().statusHtml());
     }
 
     /**
@@ -257,36 +327,28 @@ public class DatasetController extends FimsController {
         int userId = userContext.getUser() != null ? userContext.getUser().getUserId() : 0;
         DatasetProcessor processor = uploadStore.get(id, userId);
 
-        // if no processorStatus is found, we can't do anything
+        // if no processor is found, we can't do anything
         if (processor == null) {
             throw new FimsRuntimeException("Could not find a validated dataset with the id \"" + id + "\"." +
                     " Validated datasets expire after 5 mins.", 400);
         }
 
         try {
-            // place the processorStatus in the session here so that we can track the status of upload process
-            session.setAttribute("processorStatus", processor.status());
+            processor.upload();
+        } catch (FimsRuntimeException e) {
+            if (e.getErrorCode() == UploadCode.INVALID_EXPEDITION) {
+                String message = "The expedition code \"" + processor.expeditionCode() + "\" does not exist.";
 
-            try {
-                processor.upload();
-            } catch (FimsRuntimeException e) {
-                if (e.getErrorCode() == UploadCode.INVALID_EXPEDITION) {
-                    String message = "The expedition code \"" + processor.expeditionCode() + "\" does not exist.";
-
-                    return Response.status(400)
-                            .entity(new UploadResponse(false, message))
-                            .build();
-                } else {
-                    throw e;
-                }
+                return Response.status(400)
+                        .entity(new UploadResponse(false, message))
+                        .build();
+            } else {
+                throw e;
             }
-
-            uploadStore.invalidate(id);
-            return Response.ok(new UploadResponse(true, "Successfully Uploaded!")).build();
-
-        } finally {
-            session.removeAttribute("processorStatus");
         }
+
+        uploadStore.invalidate(id);
+        return Response.ok(new UploadResponse(true, "Successfully Uploaded!")).build();
     }
 
     /**
@@ -341,23 +403,6 @@ public class DatasetController extends FimsController {
         return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
     }
 
-    /**
-     * Service used for getting the current status of the dataset validation/upload.
-     *
-     * @return
-     */
-    @GET
-    @Path("/status")
-    @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
-    public String status() {
-        ProcessorStatus processorStatus = (ProcessorStatus) session.getAttribute("processorStatus");
-
-        if (processorStatus == null) {
-            throw new BadRequestException("No dataset is being validated");
-        }
-
-        return "{\"status\": \"" + processorStatus.statusHtml() + "\"}";
-    }
 
     private String saveFile(InputStream is, String filename, String defaultExt) {
         String ext = FileUtils.getExtension(filename, defaultExt);
@@ -367,45 +412,6 @@ public class DatasetController extends FimsController {
         }
 
         return tempFilename;
-    }
-
-
-    private static class ValidationResponse {
-        private UUID processId;
-        private boolean isValid;
-        private boolean hasError;
-        private List<EntityMessages> messages;
-        private String uploadUrl;
-
-        public ValidationResponse(UUID id, boolean isValid, boolean hasError, List<EntityMessages> messages, String uploadUrl) {
-            this.processId = id;
-            this.isValid = isValid;
-            this.hasError = hasError;
-            this.messages = messages;
-            this.uploadUrl = uploadUrl;
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        public UUID getId() {
-            return processId;
-        }
-
-        public boolean isValid() {
-            return isValid;
-        }
-
-        public boolean isHasError() {
-            return hasError;
-        }
-
-        public List<EntityMessages> getMessages() {
-            return messages;
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        public String getUploadUrl() {
-            return uploadUrl;
-        }
     }
 
     private static class UploadResponse {
