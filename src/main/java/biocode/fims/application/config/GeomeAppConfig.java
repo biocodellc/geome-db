@@ -89,6 +89,13 @@ public class GeomeAppConfig {
         return new PostgresRecordRepository(fimsAppConfig.jdbcTemplate, yaml.getObject(), rowMappers);
     }
 
+    @Bean
+    public GeomeSql geomeSql() {
+        YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
+        yaml.setResources(new ClassPathResource("geome-sql.yml"));
+        return new GeomeSql(yaml.getObject());
+    }
+
 //    @Bean
 //    public SraAccessionHarvester sraAccessionHarvester() {
 //        return new SraAccessionHarvester(geomeResourceRepository(), bioSampleRepository(), projectService, geomeProperties());
