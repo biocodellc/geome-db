@@ -2,7 +2,7 @@ expeditionStats: >
   SELECT e.expedition_code AS "expeditionCode", e.expedition_title AS "expeditionTitle", e.identifier as "expeditionIdentifier" ${entityCounts}
   FROM expeditions AS e
   ${entityJoins}
-  WHERE e.project_id = ${projectId} AND e.public = true
+  WHERE e.project_id = ${projectId} AND (e.public = true OR public <> ${includePrivate})
   GROUP BY e.expedition_code, e.expedition_title, e.identifier
 
 expeditionStatsEntityCounts: >

@@ -58,6 +58,7 @@ import java.util.concurrent.ExecutionException;
  */
 @Controller
 @Path("data")
+@Produces({MediaType.APPLICATION_JSON})
 public class DatasetController extends FimsController {
     private final static Logger logger = LoggerFactory.getLogger(DatasetController.class);
 
@@ -107,7 +108,6 @@ public class DatasetController extends FimsController {
     @POST
     @Path("validate")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
     public ValidationResponse validate(@FormDataParam("projectId") Integer projectId,
                                        @FormDataParam("expeditionCode") String expeditionCode,
                                        @FormDataParam("dataSourceMetadata") List<DataSourceMetadata> dataSourceMetadata,
@@ -282,7 +282,6 @@ public class DatasetController extends FimsController {
      */
     @GET
     @Path("/validate/{id}")
-    @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
     public ValidationResponse status(@PathParam("id") UUID id) {
         int userId = userContext.getUser() == null ? 0 : userContext.getUser().getUserId();
         ValidationStore.ValidationResult result = validationStore.get(id, userId);
@@ -318,7 +317,6 @@ public class DatasetController extends FimsController {
     @Authenticated
     @PUT
     @Path("/upload/{id}")
-    @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
     public Response upload(@PathParam("id") UUID id) {
         if (id == null) {
             throw new BadRequestException("id queryParam is required");
@@ -360,7 +358,6 @@ public class DatasetController extends FimsController {
      */
     @GET
     @Path("/export/{projectId}/{expeditionCode}")
-    @Produces(MediaType.APPLICATION_JSON)
     public FileResponse export(@PathParam("projectId") int projectId,
                                @PathParam("expeditionCode") String expeditionCode) {
 

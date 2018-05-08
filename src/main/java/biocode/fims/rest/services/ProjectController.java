@@ -50,6 +50,7 @@ import java.util.function.Supplier;
  */
 @Controller
 @Path("projects")
+@Produces({MediaType.APPLICATION_JSON})
 public class ProjectController extends BaseProjectsController {
 
     @Context
@@ -78,7 +79,6 @@ public class ProjectController extends BaseProjectsController {
      */
     @GET
     @Path("/{projectId}/expeditions/{expeditionCode}/generateSraFiles")
-    @Produces({MediaType.APPLICATION_JSON})
     public FileResponse generateSraFiles(@PathParam("projectId") int projectId,
                                          @PathParam("expeditionCode") String expeditionCode) {
 
@@ -139,7 +139,6 @@ public class ProjectController extends BaseProjectsController {
      */
     @GET
     @Path("/{projectId}/expeditions/stats")
-    @Produces({MediaType.APPLICATION_JSON})
     public List<Map> expeditionStats(@PathParam("projectId") Integer projectId) {
         Project project = projectService.getProject(projectId);
 
@@ -168,6 +167,7 @@ public class ProjectController extends BaseProjectsController {
         params.put("entityJoins", entityJoinsSql.toString());
         params.put("entityCounts", entityCountsSql.toString());
         params.put("projectId", String.valueOf(projectId));
+        params.put("includePrivate", String.valueOf(userContext.getUser() != null));
 
         return recordRepository.query(
                 StrSubstitutor.replace(sql, params),

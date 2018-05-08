@@ -32,6 +32,7 @@ import java.io.File;
 import java.util.*;
 
 @Controller
+@Produces(MediaType.APPLICATION_JSON)
 public class QueryController extends FimsController {
     private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
 
@@ -69,7 +70,6 @@ public class QueryController extends FimsController {
     @POST
     @Path("/json/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.APPLICATION_JSON)
     public Page queryJsonAsPost(
             @FormParam("query") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
@@ -91,7 +91,6 @@ public class QueryController extends FimsController {
     @Compress
     @GET
     @Path("/json/")
-    @Produces(MediaType.APPLICATION_JSON)
     public Page queryJson(
             @QueryParam("q") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
@@ -116,7 +115,6 @@ public class QueryController extends FimsController {
     @POST
     @Path("/csv/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("text/csv")
     public FileResponse queryCSVAsPost(@FormParam("query") String queryString) {
         return csv(queryString);
     }
@@ -131,7 +129,6 @@ public class QueryController extends FimsController {
     @GET
     @Path("/csv/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("text/csv")
     public FileResponse queryCSV(@QueryParam("q") String queryString) {
         return csv(queryString);
     }
@@ -167,7 +164,6 @@ public class QueryController extends FimsController {
     @POST
     @Path("/kml/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("application/vnd.google-earth.kml+xml")
     public FileResponse queryKMLAsPost(@FormParam("query") String queryString) {
         return kml(queryString);
     }
@@ -182,7 +178,6 @@ public class QueryController extends FimsController {
     @GET
     @Path("/kml/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("application/vnd.google-earth.kml+xml")
     public FileResponse queryKML(@QueryParam("q") String queryString) {
         return kml(queryString);
     }
@@ -237,7 +232,6 @@ public class QueryController extends FimsController {
      */
     @GET
     @Path("/cspace/")
-    @Produces(MediaType.APPLICATION_XML)
     public FileResponse queryCspace(@QueryParam("q") String queryString) {
 
         QueryResults queryResults = run(queryString);
@@ -271,7 +265,6 @@ public class QueryController extends FimsController {
     @GET
     @Path("/fasta/")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public FileResponse queryFasta(@QueryParam("q") String queryString) {
         // TODO need to fetch parent queryEntity metadata for query results & return zip file
         // of csv metadata output along w/ fasta file
@@ -326,7 +319,6 @@ public class QueryController extends FimsController {
     @POST
     @Path("/tab/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("text/txt")
     public FileResponse queryTABAsPost(@FormParam("query") String queryString) {
         return tsv(queryString);
     }
@@ -341,7 +333,6 @@ public class QueryController extends FimsController {
     @GET
     @Path("/tsv/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("text/txt")
     public FileResponse queryTAB(@QueryParam("q") String queryString) {
         return tsv(queryString);
     }
@@ -376,7 +367,6 @@ public class QueryController extends FimsController {
     @POST
     @Path("/excel/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("application/vnd.ms-excel")
     public FileResponse queryExcelAsPost(@FormParam("query") String queryString) {
         return excel(queryString);
     }
@@ -391,7 +381,6 @@ public class QueryController extends FimsController {
     @GET
     @Path("/excel/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces("application/vnd.ms-excel")
     public FileResponse queryExcel(@QueryParam("q") String queryString) {
         return excel(queryString);
     }
