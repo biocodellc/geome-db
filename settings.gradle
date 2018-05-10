@@ -13,3 +13,8 @@ if (hasProperty("biocodeFimsSequencesDir")) {
     include ":biocode-fims-sequences"
     project(":biocode-fims-sequences").projectDir = file(biocodeFimsSequencesDir)
 }
+
+if (hasProperty("biocodeFimsPhotosDir")) {
+    include ":biocode-fims-photos"
+    project(":biocode-fims-photos").projectDir = file(biocodeFimsPhotosDir)
+}

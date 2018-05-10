@@ -13,6 +13,11 @@ import biocode.fims.models.records.FimsRowMapper;
 import biocode.fims.models.records.GenericRecord;
 import biocode.fims.models.records.GenericRecordRowMapper;
 import biocode.fims.models.records.Record;
+import biocode.fims.photos.PhotoRecord;
+import biocode.fims.photos.PhotoValidator;
+import biocode.fims.photos.application.config.PhotosAppConfig;
+import biocode.fims.photos.reader.PhotoDataReaderType;
+import biocode.fims.photos.reader.PhotoReader;
 import biocode.fims.reader.DataReader;
 import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.reader.TabularDataReaderType;
@@ -36,16 +41,19 @@ import java.util.*;
  * Configuration class for and GeOMe-db-Fims application. Including cli and webapps
  */
 @Configuration
-@Import({FimsAppConfig.class, ElasticSearchAppConfig.class})
+@Import({FimsAppConfig.class, ElasticSearchAppConfig.class, PhotosAppConfig.class})
 // declaring this here allows us to override any properties that are also included in geome-db.props
 @PropertySource(value = "classpath:biocode-fims.props", ignoreResourceNotFound = true)
 @PropertySource("classpath:geome-db.props")
 public class GeomeAppConfig {
     @Autowired
     FimsAppConfig fimsAppConfig;
+    @Autowired
+    PhotosAppConfig photosAppConfig;
 
     @Autowired
     ProjectService projectService;
+
 
     @Bean
     public DataReaderFactory dataReaderFactory() {
@@ -63,6 +71,16 @@ public class GeomeAppConfig {
                 FastqDataReaderType.READER_TYPE,
                 Collections.singletonList(new FastqReader())
         );
+        dataReaders.put(
+                PhotoDataReaderType.READER_TYPE,
+                Collections.singletonList(
+                        new PhotoReader(
+                                photosAppConfig.photosSql(),
+                                recordRepository(),
+                                Arrays.asList(new CSVReader(), new TabReader(), new ExcelReader())
+                        )
+                )
+        );
         return new DataReaderFactory(dataReaders);
     }
 
@@ -73,6 +91,7 @@ public class GeomeAppConfig {
         validators.put(GenericRecord.class, new RecordValidator.DefaultValidatorInstantiator());
         validators.put(FastaRecord.class, new FastaValidator.FastaValidatorInstantiator());
         validators.put(FastqRecord.class, new FastqValidator.FastqValidatorInstantiator());
+        validators.put(PhotoRecord.class, new PhotoValidator.PhotoValidatorInstantiator());
 
         return new RecordValidatorFactory(validators);
     }

@@ -130,6 +130,7 @@ public class ProjectController extends BaseProjectsController {
 
     /**
      * Fetch an overview of all expeditions in a project.
+	 *  TODO this isn't in the generated swagger docs
      *
      * @return List of json objects containing the following information for each expedition:
      * - expeditionCode

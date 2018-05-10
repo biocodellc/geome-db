@@ -31,5 +31,4 @@ public class GeomeSql {
         Assert.notNull(result, "Missing " + prop + " sql.");
         return result;
     }
-
 }
