@@ -15,7 +15,8 @@ import biocode.fims.models.records.GenericRecordRowMapper;
 import biocode.fims.models.records.Record;
 import biocode.fims.photos.PhotoRecord;
 import biocode.fims.photos.PhotoValidator;
-import biocode.fims.photos.application.config.PhotosAppConfig;
+import biocode.fims.photos.processing.PhotoProcessingTaskExecutor;
+import biocode.fims.photos.processing.PhotoProcessingTaskScheduler;
 import biocode.fims.photos.reader.PhotoDataReaderType;
 import biocode.fims.photos.reader.PhotoReader;
 import biocode.fims.reader.DataReader;
@@ -35,7 +36,9 @@ import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
 import org.springframework.core.io.ClassPathResource;
 
+import javax.ws.rs.client.ClientBuilder;
 import java.util.*;
+import java.util.concurrent.Executors;
 
 /**
  * Configuration class for and GeOMe-db-Fims application. Including cli and webapps
@@ -53,6 +56,8 @@ public class GeomeAppConfig {
 
     @Autowired
     ProjectService projectService;
+    @Autowired
+    PhotosProperties photosProperties;
 
 
     @Bean
@@ -113,6 +118,12 @@ public class GeomeAppConfig {
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
         yaml.setResources(new ClassPathResource("geome-sql.yml"));
         return new GeomeSql(yaml.getObject());
+    }
+
+    @Bean
+    public PhotoProcessingTaskScheduler photoProcessingTaskScheduler() {
+        PhotoProcessingTaskExecutor executor = new PhotoProcessingTaskExecutor(recordRepository(), Executors.newFixedThreadPool(5));
+        return new PhotoProcessingTaskScheduler(projectService, recordRepository(), photosAppConfig.photosSql(), executor, ClientBuilder.newClient(), photosProperties);
     }
 
 //    @Bean
