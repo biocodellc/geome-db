@@ -117,7 +117,7 @@ public class FimsPostgresMigrator {
                 Dataset dataset = new Dataset();
                 dataset.add(recordSet);
 
-                recordRepository.save(dataset, p.getProjectId(), e.getExpeditionId());
+                recordRepository.saveDataset(dataset, p.getProjectId(), e.getExpeditionId());
                 if (recordSet.records().size() != allResults.size()) {
                     throw new Exception("INVALID_SIZES " + dataset.size() + " != " + allResults.size());
                 }
