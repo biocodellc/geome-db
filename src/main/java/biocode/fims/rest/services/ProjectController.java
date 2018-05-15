@@ -171,6 +171,7 @@ public class ProjectController extends BaseProjectsController {
 
         return recordRepository.query(
                 StrSubstitutor.replace(sql, params),
+                new HashMap<>(),
                 Map.class
         );
     }
