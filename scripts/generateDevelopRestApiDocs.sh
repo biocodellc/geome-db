@@ -6,6 +6,8 @@
 # you're local mvn repository and generate the docs using that
 # version.
 
+set -e
+
 scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 function publishLocal()

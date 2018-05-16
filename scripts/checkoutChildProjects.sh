@@ -6,6 +6,10 @@
 # current branch of the parent project.
 # version.
 
+set -e
+
+scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 git fetch
 
 if [ ! -z "$GIT_BRANCH" ]; then
