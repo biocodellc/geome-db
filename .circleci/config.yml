@@ -55,13 +55,31 @@ jobs:
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
-      - run: ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/geome-db/ && git pull && GIT_BRANCH=test bash -c "./scripts/checkoutChildProjects.sh"'
+      - run:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/geome-db/ && git fetch && git checkout develop && git pull && bash -c "./scripts/checkoutChildProjects.sh"'
+             fi
+
+  generate_api_docs:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - run:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/geome-db/ ./gradlew clean && ./scripts/generateDevelopRestApiDocs.sh"'
+             fi
 
   deploy_fims:
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
-      - run: ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/geome-db/ && ./gradlew clean && ./scripts/generateDevelopRestApiDocs.sh && ./gradlew -Penvironment=development fatWar && sudo cp /home/deploy/code/geome-db/dist/geome-db-fat.war /opt/webdev/mybase/webapps/geome-db.war && sudo /bin/touch /opt/webdev/mybase/webapps/geome-db.xml'
+      - run:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/geome-db/ && ./gradlew -Penvironment=development fatWar && sudo cp /home/deploy/code/geome-db/dist/geome-db-fat.war /opt/webdev/mybase/webapps/geome-db.war && sudo /bin/touch /opt/webdev/mybase/webapps/geome-db.xml'
+            fi
 
 workflows:
   version: 2
@@ -69,14 +87,13 @@ workflows:
     jobs:
       - build
       - checkout_code
-#      - deploy_fims
-#        requires:
-#          - build
-#          - checkout_commons
-#          - checkout_sequences
-#          - checkout_photos
-#          - checkout_geome
-
+      - generate_api_docs:
+          requires:
+            - checkout_code
+      - deploy_fims:
+          requires:
+            - build
+            - checkout_code
 #      - deploy_fims:
 #        requires: build
 #        filters:

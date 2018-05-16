@@ -29,6 +29,7 @@ function checkout()
     local dir=$(cat ${scriptDir}/../gradle.properties | awk -F '[ ]+' "$cmd")
 
     if [ ! -z "$dir" ]; then
+        echo "$(tput setaf 1)$dir$(tput sgr 0)"
         cd "$dir"
         git fetch
         git checkout $branch
