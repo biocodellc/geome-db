@@ -51,9 +51,34 @@ jobs:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
-      - deploy:
-          name: Deploy
-          command: |
-            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
-            ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/biocode-fims-commons/ && git fetch && git checkout develop && git pull && cd /home/deploy/code/biocode-fims-sequences/ && git fetch && git checkout develop && git pull && cd /home/deploy/code/biocode-fims-photos/ && git fetch && git checkout develop && git pull && cd /home/deploy/code/geome-db/ && git checkout src/main/web/apidocs && git fetch && git checkout develop && git pull && ./gradlew clean && ./scripts/generateDevelopRestApiDocs.sh && ./gradlew -Penvironment=development fatWar && sudo cp /home/deploy/code/geome-db/dist/geome-db-fat.war /opt/webdev/mybase/webapps/geome-db.war && sudo /bin/touch /opt/webdev/mybase/webapps/geome-db.xml'
-            fi
+  checkout_code:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - run: ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/geome-db/ && git pull && GIT_BRANCH=test bash -c "./scripts/checkoutChildProjects.sh"'
+
+  deploy_fims:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - run: ssh -o "StrictHostKeyChecking no" deploy@biscicol.org 'cd /home/deploy/code/geome-db/ && ./gradlew clean && ./scripts/generateDevelopRestApiDocs.sh && ./gradlew -Penvironment=development fatWar && sudo cp /home/deploy/code/geome-db/dist/geome-db-fat.war /opt/webdev/mybase/webapps/geome-db.war && sudo /bin/touch /opt/webdev/mybase/webapps/geome-db.xml'
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build
+      - checkout_code
+#      - deploy_fims
+#        requires:
+#          - build
+#          - checkout_commons
+#          - checkout_sequences
+#          - checkout_photos
+#          - checkout_geome
+
+#      - deploy_fims:
+#        requires: build
+#        filters:
+#          branches:
+#            only: develop
