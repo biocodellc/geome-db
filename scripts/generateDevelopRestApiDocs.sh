@@ -23,11 +23,11 @@ function publishLocal()
     fi;
 }
 
-echo "$(tput setaf 1)attempting to run publishToMavenLocal task for biocode-fims-commons subproject$(tput sgr 0)"
+echo "attempting to run publishToMavenLocal task for biocode-fims-commons subproject"
 commonsVersion=$(publishLocal "biocodeFimsCommonsDir")
-echo "$(tput setaf 1)attempting to run publishToMavenLocal task for biocode-fims-sequences subproject$(tput sgr 0)"
+echo "attempting to run publishToMavenLocal task for biocode-fims-sequences subproject"
 sequencesVersion=$(publishLocal "biocodeFimsSequencesDir")
-echo "$(tput setaf 1)attempting to run publishToMavenLocal task for biocode-fims-photos subproject$(tput sgr 0)"
+echo "attempting to run publishToMavenLocal task for biocode-fims-photos subproject"
 photosVersion=$(publishLocal "biocodeFimsPhotosDir")
 
 cd "${scriptDir}/../"
