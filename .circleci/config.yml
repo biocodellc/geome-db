@@ -93,7 +93,7 @@ workflows:
       - deploy_fims:
           requires:
             - build
-            - checkout_code
+            - generate_api_docs
 #      - deploy_fims:
 #        requires: build
 #        filters:
