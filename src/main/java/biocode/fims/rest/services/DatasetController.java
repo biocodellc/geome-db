@@ -98,7 +98,7 @@ public class DatasetController extends FimsController {
      * @param expeditionCode
      * @param dataSourceMetadata
      * @param dataSourceFiles
-     * @param workbooks
+     * @param workbookFiles
      * @param upload
      * @param reloadWorkbooks
      * @param waitForCompletion  If false, the request will be processed aschronyously. The response will contain a validation Id
@@ -112,14 +112,14 @@ public class DatasetController extends FimsController {
                                        @FormDataParam("expeditionCode") String expeditionCode,
                                        @FormDataParam("dataSourceMetadata") List<DataSourceMetadata> dataSourceMetadata,
                                        @FormDataParam("dataSourceFiles") List<FormDataBodyPart> dataSourceFiles,
-                                       @FormDataParam("workbooks") List<FormDataBodyPart> workbooks,
+                                       @FormDataParam("workbooks") List<FormDataBodyPart> workbookFiles,
                                        @FormDataParam("upload") boolean upload,
                                        @FormDataParam("reloadWorkbooks") @DefaultValue("false") boolean reloadWorkbooks,
                                        @QueryParam("waitForCompletion") @DefaultValue("true") boolean waitForCompletion) {
 
         //TODO need to handle un-authenticated & missing expeditionCode validation cases. We can still attempt to validate, but can't fetch any parent entities that don't exist on the sheet
 
-        if (projectId == null || (workbooks == null && dataSourceFiles == null)) {
+        if (projectId == null || (workbookFiles == null && dataSourceFiles == null)) {
             throw new BadRequestException("projectId, and either workbooks or dataSourceFiles are required.");
         }
 
@@ -145,10 +145,14 @@ public class DatasetController extends FimsController {
 
         UUID processId = UUID.randomUUID();
 
+        // we need to save all files before async processing. If we attempt to save
+        // the files in the async code, Jersey will sporadically throw the error
+        // No such MIME Part: Part=4:binary
+        Map<String, String> workbooks = saveFiles(workbookFiles);
+        Map<String, String> dataSources = saveFiles(dataSourceFiles);
+
         // need to copy params to effectively final variables to using inside lambda function
-        List<FormDataBodyPart> finalWorkbooks = workbooks == null ? Collections.emptyList() : workbooks;
         List<DataSourceMetadata> finalDataSourceMetadata = dataSourceMetadata == null ? Collections.emptyList() : dataSourceMetadata;
-        List<FormDataBodyPart> finalDataSourceFiles = dataSourceFiles == null ? Collections.emptyList() : dataSourceFiles;
         User user = userContext.getUser();
         UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
 
@@ -157,28 +161,22 @@ public class DatasetController extends FimsController {
             // update the status
             processorStatus.appendStatus("Initializing...");
 
-            if (finalWorkbooks.size() > 0) {
-                for (FormDataBodyPart workbookData : finalWorkbooks) {
-                    String workbookFilename = workbookData.getContentDisposition().getFileName();
-                    processorStatus.appendStatus("\nExcel workbook filename = " + workbookFilename);
-
-                    InputStream is = workbookData.getEntityAs(InputStream.class);
-                    String tmpFilename = saveFile(is, workbookFilename, "");
-
-                    builder.workbook(tmpFilename);
+            if (workbooks.size() > 0) {
+                for (Map.Entry<String, String> e: workbooks.entrySet()) {
+                    processorStatus.appendStatus("\nExcel workbook filename = " + e.getKey());
+                    builder.workbook(e.getValue());
                 }
             }
 
-            if (finalDataSourceMetadata.size() > 0 || finalDataSourceFiles.size() > 0) {
+            if (finalDataSourceMetadata.size() > 0 || dataSources.size() > 0) {
 
-                for (FormDataBodyPart dataSourceFile : finalDataSourceFiles) {
+                for (Map.Entry<String, String> e : dataSources.entrySet()) {
                     RecordMetadata recordMetadata = null;
 
-                    String dataSourceFilename = dataSourceFile.getContentDisposition().getFileName();
-                    processorStatus.appendStatus("\nDataSourceMetadata filename = " + dataSourceFilename);
+                    processorStatus.appendStatus("\nDataSourceMetadata filename = " + e.getKey());
 
                     for (DataSourceMetadata metadata : finalDataSourceMetadata) {
-                        if (StringUtils.equals(dataSourceFilename, metadata.getFilename())) {
+                        if (StringUtils.equals(e.getKey(), metadata.getFilename())) {
 
                             recordMetadata = metadata.toRecordMetadata(readerFactory.getReaderTypes());
 
@@ -189,14 +187,11 @@ public class DatasetController extends FimsController {
                     }
 
                     if (recordMetadata == null) {
-                        throw new BadRequestException("could not find a matching DataSourceMetadata object for dataSourceFile: " + dataSourceFilename,
+                        throw new BadRequestException("could not find a matching DataSourceMetadata object for dataSourceFile: " + e.getKey(),
                                 "Make sure every dataSourceFile has a corresponding dataSourceMetadata object with the correct DataSourceMetadata.filename");
                     }
 
-                    InputStream is = dataSourceFile.getEntityAs(InputStream.class);
-                    String tmpFilename = saveFile(is, dataSourceFilename, "");
-
-                    builder.addDataset(tmpFilename, recordMetadata);
+                    builder.addDataset(e.getValue(), recordMetadata);
                 }
 
             }
@@ -400,6 +395,20 @@ public class DatasetController extends FimsController {
         return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
     }
 
+    private Map<String, String> saveFiles(List<FormDataBodyPart> sources) {
+        Map<String, String> files = new HashMap<>();
+
+        if (sources != null) {
+            for (FormDataBodyPart data: sources) {
+                String fileName = data.getContentDisposition().getFileName();
+                InputStream is = data.getEntityAs(InputStream.class);
+                String tmpFilename = saveFile(is, fileName, "");
+                files.put(fileName, tmpFilename);
+            }
+        }
+
+        return files;
+    }
 
     private String saveFile(InputStream is, String filename, String defaultExt) {
         String ext = FileUtils.getExtension(filename, defaultExt);
