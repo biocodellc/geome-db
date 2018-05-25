@@ -36,7 +36,8 @@ public class RecordController extends FimsController {
      * for more detailed information regarding queries.
      * @resourceTag Records - Query
      */
-    @Path("{entity}")
+    // note: we use the regex for entity here so the paths don't collide w/ RecordsResource get by arkID
+    @Path("{entity: [a-zA-Z0-9_]+}")
     public Resource getQueryController() {
         return Resource.from(QueryController.class);
     }
