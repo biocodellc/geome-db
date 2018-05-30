@@ -44,7 +44,7 @@ import java.util.concurrent.Executors;
  * Configuration class for and GeOMe-db-Fims application. Including cli and webapps
  */
 @Configuration
-@Import({FimsAppConfig.class, ElasticSearchAppConfig.class, PhotosAppConfig.class})
+@Import({FimsAppConfig.class, PhotosAppConfig.class})
 // declaring this here allows us to override any properties that are also included in geome-db.props
 @PropertySource(value = "classpath:biocode-fims.props", ignoreResourceNotFound = true)
 @PropertySource("classpath:geome-db.props")

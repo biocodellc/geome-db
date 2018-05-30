@@ -1,6 +1,6 @@
 package biocode.fims.geome.sra;
 
-import biocode.fims.digester.Entity;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.exceptions.SraCode;
 import biocode.fims.fastq.FastqRecord;
 import biocode.fims.fimsExceptions.FimsRuntimeException;

@@ -2,14 +2,14 @@ package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
-import biocode.fims.digester.Attribute;
-import biocode.fims.digester.Entity;
-import biocode.fims.digester.FastaEntity;
+import biocode.fims.projectConfig.models.Attribute;
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fasta.FastaQueryWriter;
 import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.models.Project;
+import biocode.fims.projectConfig.models.FastaEntity;
 import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.query.writers.*;
