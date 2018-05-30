@@ -215,7 +215,7 @@ public class QueryController extends FimsController {
 
     private String getColumn(List<Attribute> attributes, String definedBy) {
         for (Attribute a : attributes) {
-            if (a.getDefined_by().equals(definedBy)) {
+            if (a.getDefinedBy().equals(definedBy)) {
                 return a.getColumn();
             }
         }
