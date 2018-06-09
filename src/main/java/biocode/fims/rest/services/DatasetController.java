@@ -18,6 +18,7 @@ import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.*;
 import biocode.fims.query.writers.DelimitedTextQueryWriter;
 import biocode.fims.query.writers.QueryWriter;
+import biocode.fims.reader.DataConverterFactory;
 import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.rest.FimsController;
@@ -67,6 +68,7 @@ public class DatasetController extends FimsController {
     private final RecordRepository recordRepository;
     private final ProjectService projectService;
     private final DataReaderFactory readerFactory;
+    private final DataConverterFactory dataConverterFactory;
     private final QueryAuthorizer queryAuthorizer;
     private final FileCache fileCache;
 
@@ -76,7 +78,7 @@ public class DatasetController extends FimsController {
     public DatasetController(ExpeditionService expeditionService, DataReaderFactory readerFactory,
                              RecordValidatorFactory validatorFactory, RecordRepository recordRepository,
                              ProjectService projectService, QueryAuthorizer queryAuthorizer, FileCache fileCache,
-                             FimsProperties props) {
+                             DataConverterFactory dataConverterFactory, FimsProperties props) {
         super(props);
         this.expeditionService = expeditionService;
         this.readerFactory = readerFactory;
@@ -85,6 +87,7 @@ public class DatasetController extends FimsController {
         this.projectService = projectService;
         this.queryAuthorizer = queryAuthorizer;
         this.fileCache = fileCache;
+        this.dataConverterFactory = dataConverterFactory;
 
         this.uploadStore = new UploadStore();
         this.validationStore = new ValidationStore();
@@ -123,6 +126,11 @@ public class DatasetController extends FimsController {
             throw new BadRequestException("projectId, and either workbooks or dataSourceFiles are required.");
         }
 
+        if (upload && userContext.getUser() == null) {
+            throw new UnauthorizedRequestException("You must be logged in to upload.");
+        }
+
+
         // create a new processorStatus
         ProcessorStatus processorStatus = new ProcessorStatus();
 
@@ -136,6 +144,7 @@ public class DatasetController extends FimsController {
                 .user(userContext.getUser())
                 .projectConfig(project.getProjectConfig())
                 .readerFactory(readerFactory)
+                .dataConverterFactory(dataConverterFactory)
                 .recordRepository(recordRepository)
                 .validatorFactory(validatorFactory)
                 .expeditionService(expeditionService)
@@ -162,7 +171,7 @@ public class DatasetController extends FimsController {
             processorStatus.appendStatus("Initializing...");
 
             if (workbooks.size() > 0) {
-                for (Map.Entry<String, String> e: workbooks.entrySet()) {
+                for (Map.Entry<String, String> e : workbooks.entrySet()) {
                     processorStatus.appendStatus("\nExcel workbook filename = " + e.getKey());
                     builder.workbook(e.getValue());
                 }
@@ -199,10 +208,6 @@ public class DatasetController extends FimsController {
             DatasetProcessor processor = builder.build();
 
             if (upload) {
-                if (user == null) {
-                    throw new UnauthorizedRequestException("You must be logged in to upload.");
-                }
-
                 boolean isvalid = processor.validate();
 
                 if (processor.hasError()) {
@@ -261,7 +266,7 @@ public class DatasetController extends FimsController {
         UUID id = validationStore.put(processId, processorStatus, userId);
 
         future.whenCompleteAsync(((validationResponse, throwable) -> {
-            logger.error("Exception during dataset validation", throwable);
+            if (throwable != null) logger.error("Exception during dataset validation", throwable);
             validationStore.update(id, validationResponse, throwable);
         }));
 
@@ -399,7 +404,7 @@ public class DatasetController extends FimsController {
         Map<String, String> files = new HashMap<>();
 
         if (sources != null) {
-            for (FormDataBodyPart data: sources) {
+            for (FormDataBodyPart data : sources) {
                 String fileName = data.getContentDisposition().getFileName();
                 InputStream is = data.getEntityAs(InputStream.class);
                 String tmpFilename = saveFile(is, fileName, "");

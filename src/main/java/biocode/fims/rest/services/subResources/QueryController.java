@@ -57,12 +57,13 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @param projectId   the project to query
-     * @param entity      the project queryEntity to query
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
      * @param queryString the query to run
      * @param page        the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
      *                    limit=10, results 21-30 will be returned
      * @param limit       the number of results to return
+     * @param source      comma separated list of columns to return
      * @summary Query project resources, returning JSON
      * @responseType org.springframework.data.domain.Page<>
      */
@@ -79,11 +80,13 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @param projectId the project to query
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam q|string|query|true|||||false|the query to run
      * @param page      the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
      *                  limit=10, results 21-30 will be returned
      * @param limit     the number of results to return
-     * @implicitParam q|string|query|true|||||false|the query to run
+     * @param source    comma separated list of columns to return
      * @excludeParams queryString
      * @summary Query project resources, returning JSON
      * @responseType org.springframework.data.domain.Page<>
@@ -107,20 +110,23 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @param projectId   the project to query
-     * @param queryString the query to run
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam q|string|form|true|||||false|the query to run
+     * @excludeParam queryString
      * @summary Query project resources, returning a CSV file
      * @responseType java.io.File
      */
     @POST
     @Path("/csv/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public FileResponse queryCSVAsPost(@FormParam("query") String queryString) {
+    public FileResponse queryCSVAsPost(@FormParam("q") String queryString) {
         return csv(queryString);
     }
 
     /**
-     * @param projectId the project to query
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
      * @summary Query project resources, returning CSV file
@@ -156,20 +162,23 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @param projectId   the project to query
-     * @param queryString the query to run
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam q|string|form|true|||||false|the query to run
+     * @excludeParams queryString
      * @summary Query project resources, returning a KML file
      * @responseType java.io.File
      */
     @POST
     @Path("/kml/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public FileResponse queryKMLAsPost(@FormParam("query") String queryString) {
+    public FileResponse queryKMLAsPost(@FormParam("q") String queryString) {
         return kml(queryString);
     }
 
     /**
-     * @param projectId the project to query
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
      * @summary Query project resources, returning KML file
@@ -224,7 +233,8 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @param projectId the project to query
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
      * @summary Query project resources, returning CSPACE file
@@ -256,7 +266,8 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @param projectId the project to query
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
      * @summary Query project resources, returning FASTA file
@@ -311,20 +322,23 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @param projectId   the project to query
-     * @param queryString the query to run
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam q|string|form|true|||||false|the query to run
+     * @excludeParam queryString
      * @summary Query project resources, returning a TAB delimited text file
      * @responseType java.io.File
      */
     @POST
     @Path("/tab/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public FileResponse queryTABAsPost(@FormParam("query") String queryString) {
+    public FileResponse queryTABAsPost(@FormParam("q") String queryString) {
         return tsv(queryString);
     }
 
     /**
-     * @param projectId the project to query
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
      * @summary Query project resources, returning TAB delimited text file
@@ -359,20 +373,23 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @param projectId   the project to query
-     * @param queryString the query to run
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam q|string|form|true|||||false|the query to run
+     * @excludeParam queryString
      * @summary Query project resources, returning a excel workbook
      * @responseType java.io.File
      */
     @POST
     @Path("/excel/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public FileResponse queryExcelAsPost(@FormParam("query") String queryString) {
+    public FileResponse queryExcelAsPost(@FormParam("q") String queryString) {
         return excel(queryString);
     }
 
     /**
-     * @param projectId the project to query
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
      * @summary Query project resources, returning excel workbook
