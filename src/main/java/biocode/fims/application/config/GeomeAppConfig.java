@@ -18,8 +18,6 @@ import biocode.fims.photos.PhotoValidator;
 import biocode.fims.photos.processing.PhotoProcessingTaskExecutor;
 import biocode.fims.photos.processing.PhotoProcessingTaskScheduler;
 import biocode.fims.photos.reader.PhotoConverter;
-import biocode.fims.photos.reader.PhotoDataReaderType;
-import biocode.fims.photos.reader.PhotoReader;
 import biocode.fims.projectConfig.models.PhotoEntity;
 import biocode.fims.reader.*;
 import biocode.fims.reader.plugins.CSVReader;
@@ -75,20 +73,6 @@ public class GeomeAppConfig {
         dataReaders.put(
                 FastqDataReaderType.READER_TYPE,
                 Collections.singletonList(new FastqReader())
-        );
-
-        dataReaders.put(
-                PhotoDataReaderType.READER_TYPE,
-                Collections.singletonList(
-                        new PhotoReader(
-                                photosAppConfig.photosSql(),
-                                recordRepository(),
-                                // We don't include ExcelReader here b/c that is only used for workbooks.
-                                // If the photos file is a workbook, the TabularDataReaderType will create
-                                // the RecordSet and the PhotoConverter will be called to conver to PhotoRecords
-                                Arrays.asList(new CSVReader(), new TabReader())
-                        )
-                )
         );
 
         return new DataReaderFactory(dataReaders);
