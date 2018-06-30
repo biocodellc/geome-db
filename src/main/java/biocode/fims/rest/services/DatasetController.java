@@ -255,8 +255,15 @@ public class DatasetController extends FimsController {
             } catch (ExecutionException e) {
                 Throwable cause = e.getCause();
 
-                int status = cause instanceof FimsAbstractException ? ((FimsAbstractException) cause).getHttpStatusCode() : 500;
-                throw new FimsRuntimeException(status, cause);
+                int status = 500;
+                String userMessage = "Server Error";
+                String developerMessage = "Server Error";
+                if (cause instanceof FimsAbstractException) {
+                    status = ((FimsAbstractException) cause).getHttpStatusCode();
+                    userMessage = ((FimsAbstractException) cause).getUsrMessage();
+                    developerMessage = ((FimsAbstractException) cause).getDeveloperMessage();
+                }
+                throw new FimsRuntimeException(userMessage, developerMessage, status, cause);
             } catch (InterruptedException e) {
                 throw new FimsRuntimeException(500, e);
             }
