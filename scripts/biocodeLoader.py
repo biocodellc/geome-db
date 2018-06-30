@@ -4,8 +4,7 @@ import sys, argparse, requests, json
 from os import listdir, path
 from os.path import isfile, join
 
-# ENDPOINT = 'https://api.develop.geome-db.org/'
-ENDPOINT = 'http://localhost:8080/'
+ENDPOINT = 'https://api.develop.geome-db.org/'
 
 EVENTS_FILE = "{}_Collecting_Events.txt"
 SPECIMENS_FILE = "{}_Specimens.txt"
