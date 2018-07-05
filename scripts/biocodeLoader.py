@@ -101,7 +101,6 @@ def upload_data(project_id, code, access_token, base_dir):
     h = dict(headers)
     h['Content-Type'] = None
     r = requests.post(validate_url, data=data, files=files, headers=h)
-    print(r.request.headers)
     if r.status_code >= 400:
         try:
             print('\nERROR: ' + r.json().get('usrMessage'))
