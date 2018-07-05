@@ -103,7 +103,10 @@ def upload_data(project_id, code, access_token, base_dir):
     r = requests.post(validate_url, data=data, files=files, headers=h)
     print(r.request.headers)
     if r.status_code >= 400:
-        print('\nERROR: ' + r.json().get('usrMessage'))
+        try:
+            print('\nERROR: ' + r.json().get('usrMessage'))
+        except ValueError:
+            print('\nERROR: ' + r.text)
     print('\n')
     r.raise_for_status()
 
