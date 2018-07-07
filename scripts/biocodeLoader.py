@@ -68,7 +68,7 @@ def upload_data(project_id, code, access_token, base_dir):
         ('dataSourceFiles',
          ('Collecting_Events.txt', open(join(base_dir, EVENTS_FILE.format(code)), 'rb'), 'text/plain')),
         ('dataSourceFiles', ('Specimens.txt', open(join(base_dir, SPECIMENS_FILE.format(code)), 'rb'), 'text/plain')),
-        ('dataSourceFiles', ('Tissues.txt', open(join(base_dir, EVENTS_FILE.format(code)), 'rb'), 'text/plain')),
+        ('dataSourceFiles', ('Tissues.txt', open(join(base_dir, TISSUES_FILE.format(code)), 'rb'), 'text/plain')),
         ('dataSourceMetadata', (None, json.dumps([
             {
                 "dataType": 'TABULAR',
