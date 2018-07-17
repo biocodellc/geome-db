@@ -134,7 +134,7 @@ public class DatasetController extends FimsController {
         // create a new processorStatus
         ProcessorStatus processorStatus = new ProcessorStatus();
 
-        Project project = projectService.getProject(projectId, props.appRoot());
+        Project project = projectService.getProject(projectId);
 
         if (project == null) {
             throw new FimsRuntimeException(ProjectCode.INVALID_PROJECT, 400);
