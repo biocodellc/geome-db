@@ -2,6 +2,7 @@ package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
+import biocode.fims.models.records.RecordSources;
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fasta.FastaQueryWriter;
@@ -17,6 +18,7 @@ import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.Compress;
 import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.rest.FimsController;
+import biocode.fims.rest.responses.PaginatedResponse;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tools.FileCache;
 import biocode.fims.utils.FileUtils;
@@ -57,13 +59,14 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @param source      comma separated list of columns to return. If you are selecting seperate entities, you can prefix
+     *                    the column with the entity to filter the parent/child entity source. (ex. Sample.materialSampleID, Event.eventID)
      * @param queryString the query to run
      * @param page        the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
      *                    limit=10, results 21-30 will be returned
      * @param limit       the number of results to return
-     * @param source      comma separated list of columns to return
+     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the project entity to query
      * @summary Query project resources, returning JSON
      * @responseType org.springframework.data.domain.Page<>
      */
@@ -71,7 +74,7 @@ public class QueryController extends FimsController {
     @POST
     @Path("/json/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Page queryJsonAsPost(
+    public PaginatedResponse<Map<String, List<Map<String, String>>>> queryJsonAsPost(
             @FormParam("query") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
@@ -80,13 +83,13 @@ public class QueryController extends FimsController {
     }
 
     /**
+     * @param source comma separated list of columns to return
+     * @param page   the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
+     *               limit=10, results 21-30 will be returned
+     * @param limit  the number of results to return
      * @implicitParam projectId|integer|query|true|||||false|the project to query
      * @implicitParam entity|string|path|true|||||false|the project entity to query
      * @implicitParam q|string|query|true|||||false|the query to run
-     * @param page      the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
-     *                  limit=10, results 21-30 will be returned
-     * @param limit     the number of results to return
-     * @param source    comma separated list of columns to return
      * @excludeParams queryString
      * @summary Query project resources, returning JSON
      * @responseType org.springframework.data.domain.Page<>
@@ -94,7 +97,7 @@ public class QueryController extends FimsController {
     @Compress
     @GET
     @Path("/json/")
-    public Page queryJson(
+    public PaginatedResponse<Map<String, List<Map<String, String>>>> queryJson(
             @QueryParam("q") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
@@ -102,11 +105,11 @@ public class QueryController extends FimsController {
         return json(queryString, page, limit, s);
     }
 
-    private Page json(String queryString, int page, int limit, String s) {
-        List<String> source = s != null ? Arrays.asList(s.split(",")) : Collections.emptyList();
+    private PaginatedResponse<Map<String, List<Map<String, String>>>> json(String queryString, int page, int limit, String s) {
+        List<String> sources = s != null ? Arrays.asList(s.split(",")) : Collections.emptyList();
 
-        Query query = buildQuery(queryString);
-        return recordRepository.query(query, page, limit, source, true);
+        Query query = buildQuery(queryString, page, limit);
+        return recordRepository.query(query, RecordSources.factory(sources, entity), true);
     }
 
     /**
@@ -422,7 +425,7 @@ public class QueryController extends FimsController {
 
     private FileResponse returnFileResults(File file, String name) {
         if (file == null) return null;
-        
+
         String fileId = fileCache.cacheFileForUser(file, userContext.getUser(), name);
         return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
     }
@@ -434,6 +437,10 @@ public class QueryController extends FimsController {
     }
 
     private Query buildQuery(String queryString) {
+        return buildQuery(queryString, null, null);
+    }
+
+    private Query buildQuery(String queryString, Integer page, Integer limit) {
         // Make sure projectId is set
         if (projectId == null) {
             throw new BadRequestException("ERROR: incomplete arguments");
@@ -441,7 +448,7 @@ public class QueryController extends FimsController {
 
         Project project = projectService.getProject(projectId);
 
-        Query query = Query.factory(project, entity, queryString);
+        Query query = Query.factory(project, entity, queryString, page, limit);
 
         // may break biocode-lims plugin
         if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), new ArrayList<>(query.expeditions()), userContext.getUser())) {
