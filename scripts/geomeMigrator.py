@@ -5,7 +5,7 @@ backup your db before running this script
 
 import psycopg2
 from mysql import connector
-import sys, argparse, requests, json, tempfile, os, csv
+import sys, argparse, requests, json, tempfile, os, csv, io
 from os.path import isfile, join
 from elasticsearch import Elasticsearch
 
@@ -25,7 +25,6 @@ headers = {
 
 expedition_data = {}
 config = {}
-
 
 def migrate_project(psql, mysql, old_project_id, access_token, entities, client_id, client_secret,
                     config_file=None):
@@ -49,15 +48,22 @@ def migrate_project(psql, mysql, old_project_id, access_token, entities, client_
 
             update_config(project['id'], access_token, config_file)
             project['config'] = get_project_config(psql, project)
+        elif config_file and os.path.exists(config_file):
+            update_project_user(psql, project['id'], tmp_user_id)
+            update_config(project['id'], access_token, config_file)
+            project['config'] = get_project_config(psql, project)
 
         set_user_projects(psql, project)
         create_project_expeditions(psql, project, client_id, client_secret)
 
-        # TODO need to create missing entity identifiers
+        uri_mapping = get_uri_mapping(project)
+
+        data = {}
+        for expedition in project['expeditions']:
+            data[expedition['expedition_code']] = fetch_expedition_data(old_project_id, expedition['expedition_code'], uri_mapping)
 
         for expedition in project['expeditions']:
-            data = fetch_expedition_data(old_project_id, expedition['expedition_code'])
-            migrate(project['id'], expedition['expeditionCode'], access_token, data)
+            migrate(psql, project['id'], expedition, access_token, data[expedition['expedition_code']], project['config'])
 
         update_project_and_expedition_users(psql, project)
     except Exception as e:
@@ -188,9 +194,9 @@ def get_project_expeditions(mysql, project_id, entities):
         })
 
     for entity in entities:
-        if not foundEntityIdentifier[entity]:
+        if entity not in foundEntityIdentifier or not foundEntityIdentifier[entity]:
             raise Exception(
-                'Failed to locate a single entity bcid for entity: "' + entity + "'. Are you sure you spelled the conceptAlias correctly'"
+                'Failed to locate a single entity bcid for entity: "' + entity + '". Are you sure you spelled the conceptAlias correctly'
             )
 
     cursor.close()
@@ -200,9 +206,9 @@ def get_project_expeditions(mysql, project_id, entities):
 def get_entity_identifiers(mysql, expedition_id, entities):
     cursor = mysql.cursor()
     query = (
-        "SELECT b.title AS conceptAlias, b.identifier AS identifier FROM bcids b JOIN expeditionBcids eb ON b.bcidId = eb.bcidId WHERE eb.expeditionId = %s AND b.title IN ( %s )"
+        "SELECT b.title, b.identifier FROM bcids b JOIN expeditionBcids eb ON b.bcidId = eb.bcidId WHERE eb.expeditionId = %s AND b.title IN ( {} )".format("'" + "', '".join(entities) + "'")
     )
-    cursor.execute(query, (expedition_id, ",".join(entities),))
+    cursor.execute(query, (expedition_id,))
 
     entity_identifiers = []
     for (conceptAlias, identifier) in cursor:
@@ -416,9 +422,9 @@ def mint_bcid(access_token, entity, user):
 
 
 def update_project_and_expedition_users(psql, project):
+    update_project_user(psql, project['id'], project['user_id'])
+
     cursor = psql.cursor()
-    sql = "UPDATE projects SET user_id = %s WHERE id = %s"
-    cursor.execute(sql, [project['user_id'], project['id']])
     for expedition in project['expeditions']:
         sql = "UPDATE expeditions SET user_id = %s WHERE id = %s"
         cursor.execute(sql, [expedition['user_id'], expedition['id']])
@@ -426,7 +432,16 @@ def update_project_and_expedition_users(psql, project):
     cursor.close()
 
 
+def update_project_user(psql, project_id, user_id):
+    cursor = psql.cursor()
+    sql = "UPDATE projects SET user_id = %s WHERE id = %s"
+    cursor.execute(sql, [user_id, project_id])
+    psql.commit()
+    cursor.close()
+
+
 def update_config(project_id, access_token, config_file):
+    print("Updating project config")
     url = "{}projects/{}/config?access_token={}".format(ENDPOINT, project_id, access_token)
 
     with open(config_file) as f:
@@ -437,7 +452,15 @@ def update_config(project_id, access_token, config_file):
             response.raise_for_status()
 
 
-def fetch_expedition_data(project_id, expeditionCode):
+def get_uri_mapping(project):
+    uri_mapping = {}
+    for entity in project['config']['entities']:
+        for attribute in entity['attributes']:
+            uri_mapping[attribute['uri']] = attribute['column']
+    return uri_mapping
+
+
+def fetch_expedition_data(project_id, expeditionCode, uri_mapping):
     def get_cached_samples():
         file = os.path.join(WORKING_DIR, project_id, expeditionCode + "_sample.csv")
         if os.path.exists(file):
@@ -459,7 +482,7 @@ def fetch_expedition_data(project_id, expeditionCode):
             with open(file, 'r') as f:
                 reader = csv.DictReader(f)
                 data['fastq'] = [row for row in reader]
-        if data['sample'] and data['fasta'] and data['fastq']:
+        if len(data['sample']) > 0:
             print('Using existing data in output dir for expedition: ', expeditionCode)
             return data
     else:
@@ -468,31 +491,49 @@ def fetch_expedition_data(project_id, expeditionCode):
             print('Using existing data in output dir for expedition: ', expeditionCode)
             return {'sample': data}
 
+    print('Fetching data for expedition: ', expeditionCode)
     es = Elasticsearch(ES_ENDPOINT)
     query = {
         "query": {
-            "expedition.expeditionCode.keyword": expeditionCode
+            "term": {
+                "expedition.expeditionCode.keyword": expeditionCode
+            }
         }
     }
 
-    entity_data = {}
+    entity_data = {'sample': []}
     res = es.search(index=project_id, doc_type="resource", body=query, size=10000)
+    if res['hits']['total'] >= 10000:
+        print("More then 10k records. Need to fix this script and paginate response")
     for doc in res['hits']['hits']:
         data = doc['_source']
 
-        if source['fastaSequence']:
-            entity_data['fasta'] = source['fastaSequence']
-            del source['fastaSequence']
-        if source['fastqMetadata']:
-            entity_data['fastq'] = source['fastqMetadata']
-            del source['fastqMetadata']
+        if 'fastaSequence' in data:
+            if 'fasta' not in entity_data:
+                entity_data['fasta'] = []
+            for d in data['fastaSequence']:
+                entity_data['fasta'].append({
+                    'marker': d['urn:marker'],
+                    'sequence': d['urn:sequence'],
+                    'urn:materialSampleID': data['urn:materialSampleID'],
+                })
+            del data['fastaSequence']
+        if 'fastqMetadata' in data:
+            if 'fastq' not in entity_data:
+                entity_data['fastq'] = []
+            data['fastqMetadata']['urn:materialSampleID'] = data['urn:materialSampleID']
+            entity_data['fastq'].append(data['fastqMetadata'])
+            del data['fastqMetadata']
 
         # TODO what about > 10k results
-        del source['expedition.expeditionCode']
-        del source['bcid']
-        entity_data['sample'] = source
+        del data['expedition.expeditionCode']
+        del data['bcid']
+        entity_data['sample'].append(data)
 
-    def write_file(records, file):
+    def write_file(data, file):
+        directory = os.path.dirname(file)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
         with open(file, 'w') as f:
             columns = [x for row in data for x in row.keys()]
             columns = list(set(columns))
@@ -503,23 +544,40 @@ def fetch_expedition_data(project_id, expeditionCode):
             for i_r in data:
                 csv_w.writerow(map(lambda x: i_r.get(x, ""), columns))
 
-    if entity_data['sample']:
+    if 'sample' in entity_data:
         file = os.path.join(WORKING_DIR, project_id, expeditionCode + "_sample.csv")
-        write_file(entity_data['sample'], file)
-    if entity_data['fasta']:
+        write_file(transform_data(entity_data['sample'], uri_mapping), file)
+    if 'fasta' in entity_data:
         file = os.path.join(WORKING_DIR, project_id, expeditionCode + "_fasta.csv")
-        write_file(entity_data['fasta'], file)
-    if entity_data['fastq']:
+        d = entity_data['fasta']
+        write_file(d, file)
+    if 'fastq' in entity_data:
         file = os.path.join(WORKING_DIR, project_id, expeditionCode + "_fastq.csv")
         write_file(entity_data['fastq'], file)
 
     return entity_data
 
 
-def migrate(project_id, code, access_token, data):
-    # TODO finish this part. need to transform data to new entities and upload
+def transform_data(data, uri_mapping):
+    transformed = []
+
+    for d in data:
+        t = {}
+        for key in d.keys():
+            if key in uri_mapping:
+                t[uri_mapping[key]] = d[key]
+            else:
+                t[key] = d[key]
+        transformed.append(t)
+
+    return transformed
+
+
+def migrate(psql, project_id, expedition, access_token, old_data, config):
+    code = expedition['expedition_code']
     print('Migrating data for expedition: ', code)
-    return
+
+    transformed_data = data_to_entities(old_data, config)
 
     validate_url = "{}data/validate?access_token={}".format(ENDPOINT, access_token)
 
@@ -528,36 +586,32 @@ def migrate(project_id, code, access_token, data):
         'expeditionCode': code,
         'upload': True,
     }
-    files = [
-        ('dataSourceFiles',
-         ('Collecting_Events.txt', open(join(base_dir, EVENTS_FILE.format(code)), 'rb'), 'text/plain')),
-        ('dataSourceFiles', ('Specimens.txt', open(join(base_dir, SPECIMENS_FILE.format(code)), 'rb'), 'text/plain')),
-        ('dataSourceFiles', ('Tissues.txt', open(join(base_dir, TISSUES_FILE.format(code)), 'rb'), 'text/plain')),
-        ('dataSourceMetadata', (None, json.dumps([
-            {
-                "dataType": 'TABULAR',
-                "filename": "Collecting_Events.txt",
-                "metadata": {
-                    "sheetName": "Events"
-                }
-            },
-            {
-                "dataType": 'TABULAR',
-                "filename": "Specimens.txt",
-                "metadata": {
-                    "sheetName": "Samples"
-                }
 
-            },
-            {
-                "dataType": 'TABULAR',
-                "filename": 'Tissues.txt',
-                "metadata": {
-                    "sheetName": "Tissues"
+    files = []
+    metadata = []
+
+    def sheetName(entity):
+        for e in config['entities']:
+            if e['conceptAlias'] == entity:
+                return e['worksheet']
+
+    for entity in transformed_data.keys():
+        if entity not in ['fastaSequence', 'fastqMetadata']:
+            files.append(
+                ('dataSourceFiles', ("{}.csv".format(entity), data_to_filelike_csv(transformed_data[entity]), 'text/plain'))
+            )
+            metadata.append(
+                {
+                    "dataType": 'TABULAR',
+                    "filename": "{}.csv".format(entity),
+                    "metadata": {
+                        "sheetName": sheetName(entity)
+                    },
+                    "reload": True
                 }
-            }
-        ]), 'application/json')),
-    ]
+            )
+
+    files.append(('dataSourceMetadata', (None, json.dumps(metadata), 'application/json')))
 
     h = dict(headers)
     h['Content-Type'] = None
@@ -580,7 +634,6 @@ def migrate(project_id, code, access_token, data):
 
         print('\n')
 
-    # print(json.dumps(response.get('messages'), indent=4))
     for entityResults in response.get('messages'):
         level = 'Errors' if len(entityResults.get('errors')) > 0 else 'Warnings'
         print("\n\n{} found on worksheet: \"{}\" for entity: \"{}\"\n\n".format(level, entityResults.get('sheetName'),
@@ -607,25 +660,108 @@ def migrate(project_id, code, access_token, data):
         print('\n')
         r.raise_for_status()
 
+    if 'fastaSequence' in transformed_data:
+        insert_fasta_data(psql, project_id, expedition['id'], transformed_data['fastaSequence'])
+    if 'fastqMetadata' in transformed_data:
+        insert_fastq_data(psql, project_id, expedition['id'], transformed_data['fastqMetadata'])
+
     print('Successfully uploaded expedition: ', code)
+
+
+def insert_fastq_data(psql, project_id, expedition_id, data):
+    cursor = psql.cursor()
+    sql = "INSERT INTO project_{}.fastqMetadata (local_identifier, expedition_id, data, parent_identifier) VALUES ".format(project_id)
+
+    for row in data:
+        row['identifier'] = row['urn:materialSampleID']
+        row['bioSample'] = json.loads(row['bioSample'])
+        del row['urn:materialSampleID']
+        sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
+            row['identifier'],
+            expedition_id,
+            json.dumps(data),
+            row['identifier']
+        )
+
+    sql = sql[:-2] + " ON CONFLICT (local_identifier, expedition_id) DO NOTHING"
+    cursor.execute(sql)
+    psql.commit()
+    cursor.close()
+
+
+def insert_fasta_data(psql, project_id, expedition_id, data):
+    cursor = psql.cursor()
+    sql = "INSERT INTO project_{}.fastaSequence (local_identifier, expedition_id, data, parent_identifier) VALUES ".format(project_id)
+
+    for row in data:
+        row['identifier'] = row['urn:materialSampleID']
+        del row['urn:materialSampleID']
+        sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
+            "{}_{}".format(row['urn:materialSampleID'], row['marker']),
+            expedition_id,
+            json.dumps(data),
+            row['urn:materialSampleID']
+        )
+
+    sql = sql[:-2] + " ON CONFLICT (local_identifier, expedition_id) DO NOTHING"
+    cursor.execute(sql)
+    psql.commit()
+    cursor.close()
+
+
+def data_to_entities(old_data, config):
+    data = {}
+
+    if 'fasta' in old_data:
+        data['fastaSequence'] = old_data['fasta']
+    if 'fastq' in old_data:
+        data['fastqMetadata'] = old_data['fastq']
+
+    sample = old_data['sample']
+    for s in sample:
+        for entity in config['entities']:
+            if entity['conceptAlias'] in ['fastaSequence', 'fastqMetadata']:
+                continue
+            ed = {}
+            for attribute in entity['attributes']:
+                col = attribute['column']
+                if col in s:
+                    ed[col] = s[col]
+            if entity['conceptAlias'] not in data:
+                data[entity['conceptAlias']] = []
+
+            data[entity['conceptAlias']].append(ed)
+
+    return data
+
+
+def data_to_filelike_csv(data):
+    # header
+    str = ",".join(data[0].keys())
+    str += "\n"
+
+    for d in data:
+        str += "{}\n".format(",".join([json.dumps(v) for v in d.values()]))
+
+    return io.StringIO(str)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Migrate geome data from single entity config to a multi entity config')
-    parser.add_argument("project_id", help="The old id of the project we are migrating")
-    parser.add_argument("access_token", help="Access Token of the user to upload under")
-    parser.add_argument("psql_connection_string",
-                        help="psycopg2 connection info for the postgres db. Ex. 'host=biscicol4.acis.ufl.edu user=bisicoldev password=pass dbname=biscicoldev")
-    parser.add_argument("mysql_user", help="mysql db user")
-    parser.add_argument("mysql_password", help="mysql db password")
-    parser.add_argument("mysql_host", help="mysql db host")
-    parser.add_argument("mysql_db", help="mysql db name")
+    parser.add_argument("--project_id", help="The old id of the project we are migrating", required=True)
+    parser.add_argument("--access_token", help="Access Token of the user to upload under", required=True)
+    parser.add_argument("--psql_connection_string",
+                        help="psycopg2 connection info for the postgres db. Ex. 'host=biscicol4.acis.ufl.edu user=bisicoldev password=pass dbname=biscicoldev", required=True)
+    parser.add_argument("--mysql_user", help="mysql db user", required=True)
+    parser.add_argument("--mysql_password", help="mysql db password", required=True)
+    parser.add_argument("--mysql_host", help="mysql db host", required=True)
+    parser.add_argument("--mysql_db", help="mysql db name", required=True)
     parser.add_argument("--old_entities", help="entites in the old config in order to migrate the entity identifiers",
                         nargs='+', required=True)
     parser.add_argument("--bcid_client_id", help="client_id for the bcid system")
     parser.add_argument("--bcid_client_secret", help="client_secret for the bcid system")
-    parser.add_argument("config_file", help="Project configuration JSON to set the project to before uploading data")
+    parser.add_argument("--config_file", help="Project configuration JSON to set the project to before uploading data", required=True)
     args = parser.parse_args()
 
     # if not args.psql_connection_string():
