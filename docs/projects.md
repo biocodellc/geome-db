@@ -4,8 +4,8 @@
 
 Issue the following sql cmd against the db you wish to create the project in:
 
-    insert into projects(project_code, project_title, project_url, config, user_id, public) 
-        VALUES ('MBIO', 'Moorea Biocode Project', 'http://www.biscicol.org/', '{}', ${USER_ID}, true);
+    insert into projects(project_code, project_title, config, user_id, public) 
+        VALUES ('MBIO', 'Moorea Biocode Project', '{}', ${USER_ID}, true);
         
 Then add user_projects table entry:
 

@@ -13,6 +13,7 @@ from elasticsearch import Elasticsearch
 # BCID_URL = 'https://develop.bcid.biocode-fims.org'
 ENDPOINT = 'http://localhost:8080/'
 BCID_URL = 'http://localhost:8080/bcid'
+ES_ENDPOINT = 'https://localhost:9200'
 
 EXPEDITION_RESOURCE_TYPE = "http://purl.org/dc/dcmitype/Collection"
 WORKING_DIR = "output"
@@ -467,7 +468,7 @@ def fetch_expedition_data(project_id, expeditionCode):
             print('Using existing data in output dir for expedition: ', expeditionCode)
             return {'sample': data}
 
-    es = Elasticsearch()
+    es = Elasticsearch(ES_ENDPOINT)
     query = {
         "query": {
             "expedition.expeditionCode.keyword": expeditionCode
@@ -487,7 +488,6 @@ def fetch_expedition_data(project_id, expeditionCode):
             del source['fastqMetadata']
 
         # TODO what about > 10k results
-        # TODO any other data cleanup?
         del source['expedition.expeditionCode']
         del source['bcid']
         entity_data['sample'] = source
