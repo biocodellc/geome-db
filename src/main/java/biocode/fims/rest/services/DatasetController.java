@@ -2,6 +2,7 @@ package biocode.fims.rest.services;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
+import biocode.fims.projectConfig.ColumnComparator;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
@@ -134,7 +135,7 @@ public class DatasetController extends FimsController {
         // create a new processorStatus
         ProcessorStatus processorStatus = new ProcessorStatus();
 
-        Project project = projectService.getProject(projectId, props.appRoot());
+        Project project = projectService.getProject(projectId);
 
         if (project == null) {
             throw new FimsRuntimeException(ProjectCode.INVALID_PROJECT, 400);
@@ -385,7 +386,7 @@ public class DatasetController extends FimsController {
             Query query = new Query(qb, config, new ExpeditionExpression(expeditionCode));
 
             QueryResults result = recordRepository.query(query);
-            QueryWriter queryWriter = new DelimitedTextQueryWriter(result, ",");
+            QueryWriter queryWriter = new DelimitedTextQueryWriter(result, ",", config);
 
             try {
                 fileMap.put(expeditionCode + "_" + entity.getConceptAlias() + "-export.csv", queryWriter.write());
