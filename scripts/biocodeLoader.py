@@ -17,7 +17,8 @@ headers = {
 
 
 def upload_files(project_id, access_token, dir):
-    expeditions = {f.split('_')[0] for f in listdir(dir)}
+    #expeditions = {f.split('_')[0] for f in listdir(dir)}
+    expeditions = {f.replace("_Specimens.txt","").replace("_Collecting_Events.txt","").replace("_Tissues.txt","") for f in listdir(dir)}
 
     for code in expeditions:
         if not isfile(join(dir, EVENTS_FILE.format(code))) or \
@@ -135,7 +136,7 @@ def upload_data(project_id, code, access_token, base_dir):
         print("Validation error(s) attempting to upload expedition: {}".format(code))
         sys.exit()
     elif not response.get('isValid'):
-        cont = input("Warnings found during validation. Would you like to continue? (y/n)   ")
+        cont = raw_input("Warnings found during validation. Would you like to continue? (y/n)   ")
         if cont.lower() != 'y':
             sys.exit()
 
