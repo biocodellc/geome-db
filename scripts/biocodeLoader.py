@@ -120,17 +120,17 @@ def upload_data(project_id, code, access_token, base_dir):
 
         print('\n')
 
-    # print(json.dumps(response.get('messages'), indent=4))
-    for entityResults in response.get('messages'):
-        level = 'Errors' if len(entityResults.get('errors')) > 0 else 'Warnings'
-        print("\n\n{} found on worksheet: \"{}\" for entity: \"{}\"\n\n".format(level, entityResults.get('sheetName'),
-                                                                                entityResults.get('entity')))
+    if 'messages' in response:
+        for entityResults in response.get('messages'):
+            level = 'Errors' if len(entityResults.get('errors')) > 0 else 'Warnings'
+            print("\n\n{} found on worksheet: \"{}\" for entity: \"{}\"\n\n".format(level, entityResults.get('sheetName'),
+                                                                                    entityResults.get('entity')))
 
-        for group in entityResults.get('warnings'):
-            print_messages(group.get('groupMessage'), group.get('messages'))
+            for group in entityResults.get('warnings'):
+                print_messages(group.get('groupMessage'), group.get('messages'))
 
-        for group in entityResults.get('errors'):
-            print_messages(group.get('groupMessage'), group.get('messages'))
+            for group in entityResults.get('errors'):
+                print_messages(group.get('groupMessage'), group.get('messages'))
 
     if response.get('hasError'):
         print("Validation error(s) attempting to upload expedition: {}".format(code))
