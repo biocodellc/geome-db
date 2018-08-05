@@ -65,29 +65,31 @@ def upload_data(project_id, code, access_token, base_dir):
         'upload': True,
         'reloadWorkbooks': True,
     }
-    files = [
-        ('dataSourceFiles',
-         ('Collecting_Events.txt', open(join(base_dir, EVENTS_FILE.format(code)), 'rb'), 'text/plain')),
-        ('dataSourceFiles', ('Specimens.txt', open(join(base_dir, SPECIMENS_FILE.format(code)), 'rb'), 'text/plain')),
-        ('dataSourceFiles', ('Tissues.txt', open(join(base_dir, TISSUES_FILE.format(code)), 'rb'), 'text/plain')),
-        ('dataSourceMetadata', (None, json.dumps([
-            {
-                "dataType": 'TABULAR',
-                "filename": "Collecting_Events.txt",
-                "reload": True,
-                "metadata": {
-                    "sheetName": "Events"
-                }
-            },
-            {
-                "dataType": 'TABULAR',
-                "filename": "Specimens.txt",
-                "reload": True,
-                "metadata": {
-                    "sheetName": "Samples"
-                }
 
-            },
+    hasTissues = sum(1 for line in open(join(base_dir, TISSUES_FILE.format(code)))) > 1
+
+    metadata = [
+        {
+            "dataType": 'TABULAR',
+            "filename": "Collecting_Events.txt",
+            "reload": True,
+            "metadata": {
+                "sheetName": "Events"
+            }
+        },
+        {
+            "dataType": 'TABULAR',
+            "filename": "Specimens.txt",
+            "reload": True,
+            "metadata": {
+                "sheetName": "Samples"
+            }
+
+        }
+    ]
+
+    if hasTissues:
+        metadata.append(
             {
                 "dataType": 'TABULAR',
                 "filename": 'Tissues.txt',
@@ -96,8 +98,19 @@ def upload_data(project_id, code, access_token, base_dir):
                     "sheetName": "Tissues"
                 }
             }
-        ]), 'application/json')),
+        )
+
+    files = [
+        ('dataSourceFiles',
+         ('Collecting_Events.txt', open(join(base_dir, EVENTS_FILE.format(code)), 'rb'), 'text/plain')),
+        ('dataSourceFiles', ('Specimens.txt', open(join(base_dir, SPECIMENS_FILE.format(code)), 'rb'), 'text/plain')),
+        ('dataSourceMetadata', (None, json.dumps(metadata), 'application/json'))
     ]
+
+    if hasTissues:
+        files.append(
+            ('dataSourceFiles', ('Tissues.txt', open(join(base_dir, TISSUES_FILE.format(code)), 'rb'), 'text/plain')),
+        )
 
     h = dict(headers)
     h['Content-Type'] = None

@@ -611,7 +611,10 @@ def transform_data(data, uri_mapping):
     for d in data:
         t = {}
         for key in d.keys():
-            if key in uri_mapping:
+            if key == 'urn:yearCollected' and d[key] == '2005-2007':
+                t[uri_mapping[key]] = '2006'
+                t['eventRemarks'] = "verbatimYear = {}".format(d[key])
+            elif key in uri_mapping:
                 t[uri_mapping[key]] = d[key]
             else:
                 t[key] = d[key]
