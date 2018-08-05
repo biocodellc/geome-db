@@ -85,17 +85,26 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
-      - build
-      - checkout_code
+      - build:
+          filters:
+            branches:
+              only: develop
+      - checkout_code:
+          filters:
+            branches:
+              only: develop
       - generate_api_docs:
           requires:
             - checkout_code
+          filters:
+            branches:
+              only: develop
       - deploy_fims:
           requires:
             - build
             - generate_api_docs
+          filters:
+            branches:
+              only: develop
 #      - deploy_fims:
 #        requires: build
-#        filters:
-#          branches:
-#            only: develop

@@ -6,14 +6,56 @@ backup your db before running this script
 import psycopg2
 from mysql import connector
 import sys, argparse, requests, json, tempfile, os, csv, io
-from os.path import isfile, join
 from elasticsearch import Elasticsearch
 
 # ENDPOINT = 'https://api.develop.geome-db.org/'
 # BCID_URL = 'https://develop.bcid.biocode-fims.org'
+# ES_ENDPOINT = 'http://esr.biocodellc.com:80/'
 ENDPOINT = 'http://localhost:8080/'
 BCID_URL = 'http://localhost:8080/bcid'
 ES_ENDPOINT = 'https://localhost:9200'
+
+COLUMN_MAPPING = {
+    'Event': { 'eventID': 'specimenID'},
+    'Sample': { 'eventID': 'specimenID'},
+    'Tissue': { 'tissueID': 'specimenID'},
+    'fastaSequence': { 'tissueID': 'specimenID'},
+    'fastqMetadata': { 'tissueID': 'specimenID'},
+}
+
+VALUE_MAPPINGS = {
+    'Event': {
+        'country': {
+            'United States of America': 'USA',
+            'Cocos (Keeling) Islands': 'Cocos Islands',
+            "Timor L'este": 'East Timor',
+            'Brunei Darussalam': 'Brunei'
+        },
+        'yearCollected': {
+            '': 'Unknown',
+            '-': 'Unknown',
+            '?': 'Unknown'
+        }
+    }
+}
+
+EXCLUDE_EXPEDITIONS = []
+
+
+MONTH_MAP = {
+    'january': 1,
+    'february': 2,
+    'march': 3,
+    'april': 4,
+    'may': 5,
+    'june': 6,
+    'july': 7,
+    'august': 8,
+    'september': 9,
+    'october': 10,
+    'november': 11,
+    'december': 12
+}
 
 EXPEDITION_RESOURCE_TYPE = "http://purl.org/dc/dcmitype/Collection"
 WORKING_DIR = "output"
@@ -27,7 +69,7 @@ expedition_data = {}
 config = {}
 
 def migrate_project(psql, mysql, old_project_id, access_token, entities, client_id, client_secret,
-                    config_file=None):
+                    config_file=None, accept_warnings=False):
     project = get_project_data(mysql, old_project_id, entities)
 
     tmp_user_id = get_tmp_user_id(psql, access_token)
@@ -63,10 +105,13 @@ def migrate_project(psql, mysql, old_project_id, access_token, entities, client_
             data[expedition['expedition_code']] = fetch_expedition_data(old_project_id, expedition['expedition_code'], uri_mapping)
 
         for expedition in project['expeditions']:
-            migrate(psql, project['id'], expedition, access_token, data[expedition['expedition_code']], project['config'])
+            if expedition['expedition_code'] in EXCLUDE_EXPEDITIONS:
+                print('SKIPPING EXPEDITION:', expedition['expedition_code'])
+            else:
+                migrate(psql, project['id'], expedition, access_token, data[expedition['expedition_code']], project['config'], accept_warnings)
 
         update_project_and_expedition_users(psql, project)
-    except Exception as e:
+    except BaseException as e:
         enable_triggers(psql)
         raise e
 
@@ -320,7 +365,7 @@ def create_project_expeditions(psql, project, client_id, client_secret):
             True if expedition['public'] == 1 else False
         ])
 
-    sql = sql[:-2] + " ON CONFLICT (id) DO NOTHING"
+    sql = sql[:-2] + " ON CONFLICT (id) DO UPDATE SET user_id = {}".format(project['tmp_user_id'])
     cursor.execute(sql, params)
     psql.commit()
     cursor.close()
@@ -508,6 +553,7 @@ def fetch_expedition_data(project_id, expeditionCode, uri_mapping):
     for doc in res['hits']['hits']:
         data = doc['_source']
 
+        data['urn:materialSampleID'] = data['urn:materialSampleID'].replace('-', '_')
         if 'fastaSequence' in data:
             if 'fasta' not in entity_data:
                 entity_data['fasta'] = []
@@ -546,7 +592,8 @@ def fetch_expedition_data(project_id, expeditionCode, uri_mapping):
 
     if 'sample' in entity_data:
         file = os.path.join(WORKING_DIR, project_id, expeditionCode + "_sample.csv")
-        write_file(transform_data(entity_data['sample'], uri_mapping), file)
+        entity_data['sample'] = transform_data(entity_data['sample'], uri_mapping)
+        write_file(entity_data['sample'], file)
     if 'fasta' in entity_data:
         file = os.path.join(WORKING_DIR, project_id, expeditionCode + "_fasta.csv")
         d = entity_data['fasta']
@@ -573,7 +620,7 @@ def transform_data(data, uri_mapping):
     return transformed
 
 
-def migrate(psql, project_id, expedition, access_token, old_data, config):
+def migrate(psql, project_id, expedition, access_token, old_data, config, accept_warnings):
     code = expedition['expedition_code']
     print('Migrating data for expedition: ', code)
 
@@ -635,27 +682,31 @@ def migrate(psql, project_id, expedition, access_token, old_data, config):
         print('\n')
 
     for entityResults in response.get('messages'):
-        level = 'Errors' if len(entityResults.get('errors')) > 0 else 'Warnings'
-        print("\n\n{} found on worksheet: \"{}\" for entity: \"{}\"\n\n".format(level, entityResults.get('sheetName'),
-                                                                                entityResults.get('entity')))
+        if len(entityResults.get('errors')) > 0:
+            print("\n\n{} found on worksheet: \"{}\" for entity: \"{}\"\n\n".format('Errors', entityResults.get('sheetName'),
+                                                                                    entityResults.get('entity')))
 
-        for group in entityResults.get('warnings'):
-            print_messages(group.get('groupMessage'), group.get('messages'))
+            for group in entityResults.get('errors'):
+                print_messages(group.get('groupMessage'), group.get('messages'))
 
-        for group in entityResults.get('errors'):
-            print_messages(group.get('groupMessage'), group.get('messages'))
+        if len(entityResults.get('warnings')) > 0:
+            print("\n\n{} found on worksheet: \"{}\" for entity: \"{}\"\n\n".format('Warnings', entityResults.get('sheetName'),
+                                                                                    entityResults.get('entity')))
+
+            for group in entityResults.get('warnings'):
+                print_messages(group.get('groupMessage'), group.get('messages'))
 
     if response.get('hasError'):
         print("Validation error(s) attempting to upload expedition: {}".format(code))
         sys.exit()
-    elif not response.get('isValid'):
+    elif not response.get('isValid') and not accept_warnings:
         cont = input("Warnings found during validation. Would you like to continue? (y/n)   ")
         if cont.lower() != 'y':
             sys.exit()
 
     upload_url = response.get('uploadUrl') + '?access_token=' + access_token
     r = requests.put(upload_url, headers=headers)
-    if r.status_code > 400:
+    if r.status_code >= 400:
         print('\nERROR: ' + r.json().get('usrMessage'))
         print('\n')
         r.raise_for_status()
@@ -674,6 +725,7 @@ def insert_fastq_data(psql, project_id, expedition_id, data):
 
     for row in data:
         row['identifier'] = row['urn:materialSampleID']
+        row['urn:tissueID'] = row['urn:materialSampleID']
         row['bioSample'] = json.loads(row['bioSample'])
         del row['urn:materialSampleID']
         sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
@@ -694,13 +746,14 @@ def insert_fasta_data(psql, project_id, expedition_id, data):
     sql = "INSERT INTO project_{}.fastaSequence (local_identifier, expedition_id, data, parent_identifier) VALUES ".format(project_id)
 
     for row in data:
-        row['identifier'] = row['urn:materialSampleID']
+        row['identifier'] = "{}_{}".format(row['urn:materialSampleID'], row['marker'])
+        row['urn:tissueID'] = row['urn:materialSampleID']
         del row['urn:materialSampleID']
         sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
-            "{}_{}".format(row['urn:materialSampleID'], row['marker']),
+            row['identifier'],
             expedition_id,
             json.dumps(data),
-            row['urn:materialSampleID']
+            row['urn:tissueID']
         )
 
     sql = sql[:-2] + " ON CONFLICT (local_identifier, expedition_id) DO NOTHING"
@@ -720,13 +773,59 @@ def data_to_entities(old_data, config):
     sample = old_data['sample']
     for s in sample:
         for entity in config['entities']:
-            if entity['conceptAlias'] in ['fastaSequence', 'fastqMetadata']:
+            if entity['conceptAlias'] in ['fastaSequence', 'fastqMetadata', 'Sample_Photo', 'Event_Photo']:
                 continue
+            mapping = COLUMN_MAPPING[entity['conceptAlias']] if entity['conceptAlias'] in COLUMN_MAPPING else None
+            val_mapping = VALUE_MAPPINGS[entity['conceptAlias']] if entity['conceptAlias'] in VALUE_MAPPINGS else None
             ed = {}
             for attribute in entity['attributes']:
                 col = attribute['column']
-                if col in s:
-                    ed[col] = s[col]
+
+                def val(v):
+                    if col == 'coordinateUncertaintyInMeters' and v == 'NA':
+                        v = ''
+                    elif col == 'monthCollected' or col == 'monthIdentifier':
+                        if v.lower() in MONTH_MAP:
+                            v = MONTH_MAP[v.lower()]
+
+                    if attribute['dataType'] == 'FLOAT':
+                        # converts sci-notation
+                        try:
+                            if v and float(v) == int(float(v)):
+                                v = int(float(v))
+                            else:
+                                v = float(v)
+                        except ValueError:
+                            # catch error if string can't be converted to a float
+                            if v.endswith(' m'):
+                                # special case in dipnet data
+                                return val(v.replace(' m', ''))
+                    if attribute['dataType'] == 'INTEGER':
+                        # if v is FLOAT and we can convert to int w/o rounding, do it
+                        # also converts sci-notation
+                        try:
+                            if v and float(v) == int(float(v)):
+                                v = int(float(v))
+                        except ValueError:
+                            # catch error if string can't be converted to a float
+                            if v.endswith('M'):
+                                # special case in dipnet data
+                                return val(v.replace('M', ''))
+                            elif v.endswith(' m'):
+                                # special case in dipnet data
+                                return val(v.replace(' m', ''))
+
+                    if val_mapping and col in val_mapping and v in val_mapping[col]:
+                        return val_mapping[col][v]
+                    return v
+
+
+                if mapping and col in mapping:
+                    ed[col] = val(s[mapping[col]])
+                elif col in s:
+                    ed[col] = val(s[col])
+                elif col == 'yearCollected':
+                    ed[col] = 'Unknown'
             if entity['conceptAlias'] not in data:
                 data[entity['conceptAlias']] = []
 
@@ -761,14 +860,13 @@ if __name__ == "__main__":
                         nargs='+', required=True)
     parser.add_argument("--bcid_client_id", help="client_id for the bcid system")
     parser.add_argument("--bcid_client_secret", help="client_secret for the bcid system")
-    parser.add_argument("--config_file", help="Project configuration JSON to set the project to before uploading data", required=True)
+    parser.add_argument("--config_file", help="Project configuration JSON to set the project to before uploading data")
+    parser.add_argument("--accept_warnings", help="Continue to upload any data with validation warnings", default=False)
     args = parser.parse_args()
 
-    # if not args.psql_connection_string():
-    #     raise
     psql = psycopg2.connect(args.psql_connection_string)
     mysql = connector.connect(user=args.mysql_user, passwd=args.mysql_password, host=args.mysql_host, db=args.mysql_db,
                               buffered=True)
 
     migrate_project(psql, mysql, args.project_id, args.access_token, args.old_entities, args.bcid_client_id,
-                    args.bcid_client_secret, args.config_file)
+                    args.bcid_client_secret, args.config_file, args.accept_warnings)
