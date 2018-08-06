@@ -1,0 +1,3220 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is an API reference for GeOMe-db. Below you will see the main sections of the API. Click each section in order to see the endpoints that are available in that category.",
+        "version": "v1",
+        "title": "GeOMe-db API",
+        "apiVersions": [
+            "v1"
+        ]
+    },
+    "host": "",
+    "basePath": "/v1",
+    "tags": [
+        {
+            "name": "Data",
+            "description": "Validate and load data"
+        },
+        {
+            "name": "Records"
+        },
+        {
+            "name": "Records_-_Query",
+            "description": "Query a project's records. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>\n for more detailed information regarding queries."
+        },
+        {
+            "name": "Projects"
+        },
+        {
+            "name": "Templates"
+        },
+        {
+            "name": "Expeditions"
+        },
+        {
+            "name": "Members"
+        },
+        {
+            "name": "Config"
+        },
+        {
+            "name": "Files"
+        },
+        {
+            "name": "OAuth"
+        },
+        {
+            "name": "Users"
+        }
+    ],
+    "schemes": [
+        "https",
+        "http"
+    ],
+    "paths": {
+        "/data/export/{projectId}/{expeditionCode}": {
+            "get": {
+                "tags": [
+                    "Data"
+                ],
+                "summary": "Export all data for a given expedition",
+                "operationId": "export",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "expeditionCode",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/upload/{id}": {
+            "put": {
+                "tags": [
+                    "Data"
+                ],
+                "summary": "Service to upload a dataset to an expedition.",
+                "description": "The validate service must be called before this service.",
+                "operationId": "upload",
+                "produces": [
+                    "application/json;charset=utf-8"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "required. The dataset id returned from the validate service",
+                        "required": true,
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/validate": {
+            "post": {
+                "tags": [
+                    "Data"
+                ],
+                "summary": "Validate a dataset",
+                "operationId": "validate",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json;charset=utf-8"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "projectId",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "in": "body",
+                        "name": "expeditionCode",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "body",
+                        "name": "dataSourceMetadata",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/DataSourceMetadata"
+                            }
+                        }
+                    },
+                    {
+                        "in": "body",
+                        "name": "dataSourceFiles",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/FormDataBodyPart"
+                            }
+                        }
+                    },
+                    {
+                        "in": "body",
+                        "name": "workbooks",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/FormDataBodyPart"
+                            }
+                        }
+                    },
+                    {
+                        "in": "body",
+                        "name": "upload",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "in": "body",
+                        "name": "reloadWorkbooks",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "type": "boolean",
+                            "default": "false"
+                        }
+                    },
+                    {
+                        "name": "waitForCompletion",
+                        "in": "query",
+                        "description": "If false, the request will be processed aschronyously. The response will contain a validation Id\n                           that can be used to fetch the current status of the validation including the results when finished.",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ValidationResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/validate/{id}": {
+            "get": {
+                "tags": [
+                    "Data"
+                ],
+                "summary": "Get the status/results of a dataset validation.",
+                "description": "<p>\n The results are removed after 2hrs",
+                "operationId": "status",
+                "produces": [
+                    "application/json;charset=utf-8"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ValidationResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/files/{id}": {
+            "get": {
+                "tags": [
+                    "Files"
+                ],
+                "summary": "Retrieve a file",
+                "operationId": "getFile",
+                "produces": [
+                    "application/file"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/accessToken": {
+            "post": {
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Service for a client app to exchange an oAuth code for an access token",
+                "operationId": "access_token",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "code",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "client_id",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "client_secret",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "redirect_uri",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "grant_type",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string",
+                        "default": "authorization_code"
+                    },
+                    {
+                        "name": "username",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "password",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "state",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/authorize": {
+            "get": {
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Service for a client app to log a user into the system via oAuth.",
+                "operationId": "authorize",
+                "produces": [
+                    "text/html"
+                ],
+                "parameters": [
+                    {
+                        "name": "client_id",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "redirect_uri",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "state",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/invalidate": {
+            "post": {
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Invalidate access and refresh tokens",
+                "operationId": "logout",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "client_id",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "token",
+                        "in": "formData",
+                        "description": "refresh or access token to invalidate",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/AcknowledgedResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/oauth/refresh": {
+            "post": {
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Service for an oAuth client app to exchange a refresh token for a valid access token.",
+                "operationId": "refresh",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "client_id",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "refresh_token",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/": {
+            "get": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Fetch all projects available to the current user",
+                "operationId": "getProjects",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "includePublic",
+                        "in": "query",
+                        "description": "If we should include public projects",
+                        "required": false,
+                        "type": "boolean",
+                        "default": true
+                    },
+                    {
+                        "name": "admin",
+                        "in": "query",
+                        "description": "Flag used to request projects the authenticated user is an admin for. Note: this flag\n                      takes precedence over all other query params",
+                        "required": false,
+                        "type": "Flag",
+                        "default": "false"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Project-Views.Detailed"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/projects//{projectId}": {
+            "put": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Update a Project",
+                "description": "Update a {@link Project}",
+                "operationId": "updateProject",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The id of the project to update",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "in": "body",
+                        "name": "project",
+                        "description": "The updated project object",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Project"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Project-Views.Detailed"
+                        }
+                    },
+                    "403": {
+                        "description": "not the project's admin",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectId}/config": {
+            "get": {
+                "tags": [
+                    "Config"
+                ],
+                "summary": "Get a project config",
+                "operationId": "getConfig",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Config-ProjectConfig"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Config"
+                ],
+                "summary": "Update the project config",
+                "operationId": "update",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The id of the project to update",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "in": "body",
+                        "name": "config",
+                        "description": "The updated projectConfig object",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Config-ProjectConfig"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectId}/expeditions": {
+            "get": {
+                "tags": [
+                    "Expeditions"
+                ],
+                "summary": "Get a list of a Projects Expeditions",
+                "operationId": "listExpeditions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The project to get expeditions for",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "admin",
+                        "in": "query",
+                        "description": "If present, all expeditions will be returned, regardless of the expedition owner. Note: this flag\n                       takes precedence over all other query params",
+                        "required": false,
+                        "type": "Flag",
+                        "default": "false"
+                    },
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "description": "If present, only the expeditions for the authenticated user will be returned",
+                        "required": false,
+                        "type": "Flag",
+                        "default": "false"
+                    },
+                    {
+                        "name": "includePrivate",
+                        "in": "query",
+                        "description": "Include the authenticated users private expeditions in the results",
+                        "required": false,
+                        "type": "boolean",
+                        "default": false
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Expedition-Views.Detailed"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid request. Either using admin flag and user is not the project admin, or requesting\n expeditions for a private project that the user is not a member of.",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Expeditions"
+                ],
+                "summary": "Bulk update expeditions",
+                "description": "<p>\n Project Admin access only",
+                "operationId": "updateExpeditions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The projectId of the expeditions to be updated",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "in": "body",
+                        "name": "expeditions",
+                        "description": "The Expeditions to be updated. Note: The expeditions must already belong to the projectId",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Expedition"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Expedition"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "A given expedition does not belong to the project",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    },
+                    "403": {
+                        "description": "not the project's admin",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectId}/expeditions/{expeditionCode}": {
+            "get": {
+                "tags": [
+                    "Expeditions"
+                ],
+                "summary": "Get an expedition",
+                "operationId": "getExpedition",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "expeditionCode",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Expedition-Views.Detailed"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Expeditions"
+                ],
+                "summary": "create a new expedition.",
+                "operationId": "createExpedition",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "expeditionCode",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "expedition",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Expedition"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Expedition-Views.Detailed"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid expedition object<br>duplicate expeditionCode",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    },
+                    "403": {
+                        "description": "not allowed to create expedition in this project",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Expeditions"
+                ],
+                "summary": "update Expedition",
+                "operationId": "updateExpedition",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The projectId the expedition belongs to",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "expeditionCode",
+                        "in": "path",
+                        "description": "The expeditionCode of the expedition to update",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "expedition",
+                        "description": "The Expedition to be updated. Note: The expedition must already belong to the projectId",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Expedition"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Expedition"
+                        }
+                    },
+                    "400": {
+                        "description": "A given expedition does not belong to the project",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    },
+                    "403": {
+                        "description": "not the expedition owner or the project's admin",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Expeditions"
+                ],
+                "summary": "delete an expedition",
+                "operationId": "deleteExpedition",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The projectId the expedition belongs to",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "expeditionCode",
+                        "in": "path",
+                        "description": "The expeditionCode of the expedition to delete",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ConfirmationResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "not the project's admin",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectId}/members": {
+            "get": {
+                "tags": [
+                    "Members"
+                ],
+                "summary": "get project members",
+                "operationId": "getMembers",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/User-Views.Detailed"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "not the project's admin",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectId}/members/{username}": {
+            "put": {
+                "tags": [
+                    "Members"
+                ],
+                "summary": "add a member user",
+                "operationId": "addMember",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "the project to remove the user from",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "description": "the username of the user to remove",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "403": {
+                        "description": "not the project's admin",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    },
+                    "404": {
+                        "description": "user not found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Members"
+                ],
+                "summary": "remove a member user",
+                "operationId": "removeMember",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "the project to remove the user from",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "description": "the username of the user to remove",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    },
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "403": {
+                        "description": "not the project's admin",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    },
+                    "404": {
+                        "description": "user not found as project member",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectId}/templates": {
+            "get": {
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "fetch all templates for a project",
+                "operationId": "getTemplates",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "uniqueItems": true,
+                            "items": {
+                                "$ref": "#/definitions/ProjectTemplate-Views.Detailed"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectId}/templates/generate": {
+            "post": {
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "generate an excel template",
+                "operationId": "createExcel",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "columns",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi"
+                    },
+                    {
+                        "name": "sheetName",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectId}/templates/{configName}": {
+            "post": {
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "create a fims template generator configuration",
+                "operationId": "create",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "columns",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi"
+                    },
+                    {
+                        "name": "worksheet",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "configName",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ProjectTemplate"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "update a template configuration",
+                "operationId": "update",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "columns",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "multi"
+                    },
+                    {
+                        "name": "configName",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ProjectTemplate"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "delete a template configuration",
+                "operationId": "delete",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "configName",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/void"
+                        }
+                    }
+                }
+            }
+        },
+        "/records//{identifier}\\/.+}": {
+            "get": {
+                "tags": [
+                    "Records"
+                ],
+                "summary": "Get a Record by ark id",
+                "operationId": "get",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "identifier",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Map"
+                        }
+                    },
+                    "403": {
+                        "description": "Invalid request. The provided ark id is missing a suffix",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/records/{entity}/cspace": {
+            "get": {
+                "tags": [
+                    "Records_-_Query"
+                ],
+                "summary": "Query project resources, returning CSPACE file",
+                "operationId": "queryCspace",
+                "produces": [
+                    "application/xml"
+                ],
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "the query to run",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/records/{entity}/csv": {
+            "get": {
+                "tags": [
+                    "Records_-_Query"
+                ],
+                "summary": "Query project resources, returning CSV file",
+                "operationId": "queryCSV",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/csv"
+                ],
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "the query to run",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Records_-_Query"
+                ],
+                "summary": "Query project resources, returning a CSV file",
+                "operationId": "queryCSVAsPost",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/csv"
+                ],
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "formData",
+                        "description": "the query to run",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/records/{entity}/excel": {
+            "get": {
+                "tags": [
+                    "Records_-_Query"
+                ],
+                "summary": "Query project resources, returning excel workbook",
+                "operationId": "queryExcel",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/vnd.ms-excel"
+                ],
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "the query to run",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Records_-_Query"
+                ],
+                "summary": "Query project resources, returning a excel workbook",
+                "operationId": "queryExcelAsPost",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/vnd.ms-excel"
+                ],
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "formData",
+                        "description": "the query to run",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/records/{entity}/fasta": {
+            "get": {
+                "tags": [
+                    "Records_-_Query"
+                ],
+                "summary": "Query project resources, returning FASTA file",
+                "operationId": "queryFasta",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "the query to run",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/records/{entity}/json": {
+            "get": {
+                "tags": [
+                    "Records_-_Query"
+                ],
+                "summary": "Query project resources, returning JSON",
+                "operationId": "queryJson",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and\n                  limit=10, results 21-30 will be returned",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0,
+                        "format": "int32"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "the number of results to return",
+                        "required": false,
+                        "type": "integer",
+                        "default": 100,
+                        "format": "int32"
+                    },
+                    {
+                        "name": "source",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "the query to run",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Page"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Records_-_Query"
+                ],
+                "summary": "Query project resources, returning JSON",
+                "operationId": "queryJsonAsPost",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "formData",
+                        "description": "the query to run",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and\n                    limit=10, results 21-30 will be returned",
+                        "required": false,
+                        "type": "integer",
+                        "default": 0,
+                        "format": "int32"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "the number of results to return",
+                        "required": false,
+                        "type": "integer",
+                        "default": 100,
+                        "format": "int32"
+                    },
+                    {
+                        "name": "source",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Page"
+                        }
+                    }
+                }
+            }
+        },
+        "/records/{entity}/kml": {
+            "get": {
+                "tags": [
+                    "Records_-_Query"
+                ],
+                "summary": "Query project resources, returning KML file",
+                "operationId": "queryKML",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/vnd.google-earth.kml+xml"
+                ],
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "the query to run",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Records_-_Query"
+                ],
+                "summary": "Query project resources, returning a KML file",
+                "operationId": "queryKMLAsPost",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/vnd.google-earth.kml+xml"
+                ],
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "formData",
+                        "description": "the query to run",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/records/{entity}/tab": {
+            "post": {
+                "tags": [
+                    "Records_-_Query"
+                ],
+                "summary": "Query project resources, returning a TAB delimited text file",
+                "operationId": "queryTABAsPost",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/txt"
+                ],
+                "parameters": [
+                    {
+                        "name": "query",
+                        "in": "formData",
+                        "description": "the query to run",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/records/{entity}/tsv": {
+            "get": {
+                "tags": [
+                    "Records_-_Query"
+                ],
+                "summary": "Query project resources, returning TAB delimited text file",
+                "operationId": "queryTAB",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "text/txt"
+                ],
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "the query to run",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "get all registered users",
+                "operationId": "getUsers",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/User-Views.Detailed"
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "you are not a project admin",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "create a new user.",
+                "description": "must have a valid invite token",
+                "operationId": "createUser",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    {
+                        "in": "body",
+                        "name": "user",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/User-Views.Detailed"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid user object<br>invalid invite code<br>duplicate username",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/invite": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Send a user invite via email notification",
+                "operationId": "inviteUser",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "email",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ConfirmationResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/reset": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Service for a user to exchange their reset resetToken in order to update their password",
+                "operationId": "resetPassword",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "password",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "resetToken",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ConfirmationResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{username}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "get user",
+                "operationId": "getUser",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/User-Views.Detailed"
+                        }
+                    },
+                    "403": {
+                        "description": "you must be authenticated to access a users profile<br>you must be a project admin to access another user's profile",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "update a users profile",
+                "operationId": "updateUser",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "updatedUser",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/User-Views.Detailed"
+                        }
+                    },
+                    "403": {
+                        "description": "You cannot update another user's profile.",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{username}/password": {
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "update a users password",
+                "operationId": "updateUserPassword",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "currentPassword",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "newPassword",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/User-Views.Detailed"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid current password.",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    },
+                    "403": {
+                        "description": "You cannot update another users password.",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{username}/sendResetToken": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Request a password reset token.",
+                "description": "Will send an email to the user's registered email\n if the user is found",
+                "operationId": "sendResetToken",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "username",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/AcknowledgedResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "DataSourceMetadata": {
+            "type": "object",
+            "properties": {
+                "dataType": {
+                    "type": "string"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "reload": {
+                    "type": "boolean"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/Map"
+                }
+            }
+        },
+        "FormDataBodyPart": {
+            "type": "object",
+            "properties": {
+                "contentDisposition": {
+                    "$ref": "#/definitions/ContentDisposition"
+                },
+                "entity": {
+                    "$ref": "#/definitions/Object"
+                },
+                "headers": {
+                    "$ref": "#/definitions/MultivaluedMap"
+                },
+                "mediaType": {
+                    "$ref": "#/definitions/MediaType"
+                },
+                "messageBodyWorkers": {
+                    "$ref": "#/definitions/MessageBodyWorkers"
+                },
+                "parent": {
+                    "$ref": "#/definitions/MultiPart"
+                },
+                "providers": {
+                    "$ref": "#/definitions/Providers"
+                },
+                "parameterizedHeaders": {
+                    "$ref": "#/definitions/MultivaluedMap"
+                },
+                "fileNameFix": {
+                    "type": "boolean"
+                },
+                "formDataContentDisposition": {
+                    "$ref": "#/definitions/FormDataContentDisposition"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                },
+                "simple": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ContentDisposition": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "parameters": {
+                    "$ref": "#/definitions/Map"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "creationDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "modificationDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "readDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "size": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
+        "MultiPart": {
+            "type": "object",
+            "properties": {
+                "contentDisposition": {
+                    "$ref": "#/definitions/ContentDisposition"
+                },
+                "entity": {
+                    "$ref": "#/definitions/Object"
+                },
+                "headers": {
+                    "$ref": "#/definitions/MultivaluedMap"
+                },
+                "mediaType": {
+                    "$ref": "#/definitions/MediaType"
+                },
+                "messageBodyWorkers": {
+                    "$ref": "#/definitions/MessageBodyWorkers"
+                },
+                "parent": {
+                    "$ref": "#/definitions/MultiPart"
+                },
+                "providers": {
+                    "$ref": "#/definitions/Providers"
+                },
+                "parameterizedHeaders": {
+                    "$ref": "#/definitions/MultivaluedMap"
+                },
+                "bodyParts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/BodyPart"
+                    }
+                }
+            }
+        },
+        "ParameterizedHeader": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "string"
+                },
+                "parameters": {
+                    "$ref": "#/definitions/Map"
+                }
+            }
+        },
+        "BodyPart": {
+            "type": "object",
+            "properties": {
+                "contentDisposition": {
+                    "$ref": "#/definitions/ContentDisposition"
+                },
+                "entity": {
+                    "$ref": "#/definitions/Object"
+                },
+                "headers": {
+                    "$ref": "#/definitions/MultivaluedMap"
+                },
+                "mediaType": {
+                    "$ref": "#/definitions/MediaType"
+                },
+                "messageBodyWorkers": {
+                    "$ref": "#/definitions/MessageBodyWorkers"
+                },
+                "parent": {
+                    "$ref": "#/definitions/MultiPart"
+                },
+                "providers": {
+                    "$ref": "#/definitions/Providers"
+                },
+                "parameterizedHeaders": {
+                    "$ref": "#/definitions/MultivaluedMap"
+                }
+            }
+        },
+        "FormDataContentDisposition": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "parameters": {
+                    "$ref": "#/definitions/Map"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "creationDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "modificationDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "readDate": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "size": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "ValidationResponse": {
+            "type": "object",
+            "properties": {
+                "isValid": {
+                    "type": "boolean"
+                },
+                "hasError": {
+                    "type": "boolean"
+                },
+                "exception": {
+                    "type": "string",
+                    "description": "The exception that occurred during validation."
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/EntityMessages"
+                    }
+                },
+                "uploadUrl": {
+                    "type": "string",
+                    "description": "api endpoint to upload the validated dataset"
+                },
+                "status": {
+                    "type": "string",
+                    "description": "current status of the validation"
+                },
+                "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "id for the validation process.\n <p>\n Used to continue the upload after validating. If the validation was called with waitForCompletion = false, this id is used to fetch the validation status & results"
+                }
+            }
+        },
+        "EntityMessages": {
+            "type": "object",
+            "properties": {
+                "conceptAlias": {
+                    "type": "string"
+                },
+                "sheetName": {
+                    "type": "string"
+                },
+                "errorMessages": {
+                    "$ref": "#/definitions/MessagesGroupCollection"
+                },
+                "warningMessages": {
+                    "$ref": "#/definitions/MessagesGroupCollection"
+                },
+                "warnings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/MessagesGroup"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/MessagesGroup"
+                    }
+                },
+                "entity": {
+                    "type": "string"
+                }
+            }
+        },
+        "MessagesGroupCollection": {
+            "type": "object",
+            "properties": {
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/MessagesGroup"
+                    }
+                }
+            }
+        },
+        "MessagesGroup": {
+            "type": "object",
+            "properties": {
+                "groupMessage": {
+                    "type": "string"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Message"
+                    }
+                }
+            }
+        },
+        "Message": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "FileResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "ErrorInfo": {
+            "type": "object",
+            "properties": {
+                "httpStatusCode": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "usrMessage": {
+                    "$ref": "#/definitions/Object"
+                },
+                "developerMessage": {
+                    "$ref": "#/definitions/Object"
+                },
+                "e": {
+                    "$ref": "#/definitions/Exception"
+                },
+                "ts": {
+                    "$ref": "#/definitions/Timestamp"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "Exception": {
+            "type": "object",
+            "properties": {
+                "detailMessage": {
+                    "type": "string"
+                },
+                "cause": {
+                    "$ref": "#/definitions/Throwable"
+                },
+                "stackTrace": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/StackTraceElement"
+                    }
+                },
+                "suppressedExceptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Throwable"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "localizedMessage": {
+                    "type": "string"
+                },
+                "suppressed": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Throwable"
+                    }
+                }
+            }
+        },
+        "Throwable": {
+            "type": "object",
+            "properties": {
+                "detailMessage": {
+                    "type": "string"
+                },
+                "cause": {
+                    "$ref": "#/definitions/Throwable"
+                },
+                "stackTrace": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/StackTraceElement"
+                    }
+                },
+                "suppressedExceptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Throwable"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "localizedMessage": {
+                    "type": "string"
+                },
+                "suppressed": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Throwable"
+                    }
+                }
+            }
+        },
+        "Timestamp": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "nanos": {
+                    "type": "integer",
+                    "format": "int32"
+                }
+            }
+        },
+        "Page": {
+            "type": "object",
+            "properties": {
+                "number": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "the number of the current {@link Slice}."
+                },
+                "size": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "the size of the {@link Slice}."
+                },
+                "numberOfElements": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "the number of elements currently on this {@link Slice}."
+                },
+                "content": {
+                    "type": "array",
+                    "description": "Returns the page content as {@link List}.",
+                    "items": {
+                        "$ref": "#/definitions/T"
+                    }
+                },
+                "sort": {
+                    "$ref": "#/definitions/Sort"
+                },
+                "first": {
+                    "type": "boolean"
+                },
+                "last": {
+                    "type": "boolean"
+                },
+                "totalPages": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "the number of toral pages"
+                },
+                "totalElements": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "the total amount of elements"
+                }
+            }
+        },
+        "Sort": {
+            "type": "object",
+            "properties": {
+                "orders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Sort-Order"
+                    }
+                }
+            }
+        },
+        "Sort-Order": {
+            "type": "object",
+            "properties": {
+                "direction": {
+                    "type": "string",
+                    "description": "Returns the order the property shall be sorted for.",
+                    "enum": [
+                        "ASC",
+                        "DESC"
+                    ]
+                },
+                "property": {
+                    "type": "string",
+                    "description": "Returns the property to order for."
+                },
+                "ignoreCase": {
+                    "type": "boolean"
+                },
+                "nullHandling": {
+                    "type": "string",
+                    "description": "Returns the used {@link NullHandling} hint, which can but may not be respected by the used datastore.",
+                    "enum": [
+                        "NATIVE",
+                        "NULLS_FIRST",
+                        "NULLS_LAST"
+                    ]
+                },
+                "ascending": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Flag": {
+            "type": "object",
+            "properties": {
+                "isPresent": {
+                    "type": "boolean"
+                },
+                "present": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Project-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "projectId": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "projectCode": {
+                    "type": "string"
+                },
+                "projectTitle": {
+                    "type": "string"
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "validationXml": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "user": {
+                    "$ref": "#/definitions/User-Views.Detailed"
+                },
+                "public": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "User-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "userId": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "hasSetPassword": {
+                    "type": "boolean"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "projectAdmin": {
+                    "type": "boolean"
+                },
+                "institution": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "valid": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Project": {
+            "type": "object",
+            "properties": {
+                "projectId": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "projectCode": {
+                    "type": "string"
+                },
+                "projectTitle": {
+                    "type": "string"
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "validationXml": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "user": {
+                    "$ref": "#/definitions/User"
+                },
+                "public": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "User": {
+            "type": "object",
+            "properties": {
+                "userId": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "hasSetPassword": {
+                    "type": "boolean"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "projectAdmin": {
+                    "type": "boolean"
+                },
+                "institution": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "valid": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ErrorInfo-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "httpStatusCode": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "usrMessage": {
+                    "$ref": "#/definitions/Object"
+                },
+                "developerMessage": {
+                    "$ref": "#/definitions/Object"
+                },
+                "e": {
+                    "$ref": "#/definitions/Exception"
+                },
+                "ts": {
+                    "$ref": "#/definitions/Timestamp"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "Exception-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "detailMessage": {
+                    "type": "string"
+                },
+                "cause": {
+                    "$ref": "#/definitions/Throwable"
+                },
+                "stackTrace": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/StackTraceElement"
+                    }
+                },
+                "suppressedExceptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Throwable"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "localizedMessage": {
+                    "type": "string"
+                },
+                "suppressed": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Throwable"
+                    }
+                }
+            }
+        },
+        "Throwable-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "detailMessage": {
+                    "type": "string"
+                },
+                "cause": {
+                    "$ref": "#/definitions/Throwable"
+                },
+                "stackTrace": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/StackTraceElement"
+                    }
+                },
+                "suppressedExceptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Throwable"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "localizedMessage": {
+                    "type": "string"
+                },
+                "suppressed": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Throwable"
+                    }
+                }
+            }
+        },
+        "Timestamp-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "nanos": {
+                    "type": "integer",
+                    "format": "int32"
+                }
+            }
+        },
+        "ProjectTemplate-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "worksheet": {
+                    "type": "string"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "project": {
+                    "$ref": "#/definitions/Project-Views.Detailed"
+                },
+                "user": {
+                    "$ref": "#/definitions/User-Views.Detailed"
+                }
+            }
+        },
+        "ProjectTemplate": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "worksheet": {
+                    "type": "string"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "project": {
+                    "$ref": "#/definitions/Project"
+                },
+                "user": {
+                    "$ref": "#/definitions/User"
+                }
+            }
+        },
+        "Expedition-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "expeditionId": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "expeditionCode": {
+                    "type": "string"
+                },
+                "expeditionTitle": {
+                    "type": "string"
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "visibility": {
+                    "type": "string",
+                    "enum": [
+                        "ANYONE",
+                        "PROJECT",
+                        "EXPEDITION"
+                    ]
+                },
+                "project": {
+                    "$ref": "#/definitions/Project-Views.Detailed"
+                },
+                "user": {
+                    "$ref": "#/definitions/User-Views.Detailed"
+                },
+                "public": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Expedition": {
+            "type": "object",
+            "properties": {
+                "expeditionId": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "expeditionCode": {
+                    "type": "string"
+                },
+                "expeditionTitle": {
+                    "type": "string"
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "visibility": {
+                    "type": "string",
+                    "enum": [
+                        "ANYONE",
+                        "PROJECT",
+                        "EXPEDITION"
+                    ]
+                },
+                "project": {
+                    "$ref": "#/definitions/Project"
+                },
+                "user": {
+                    "$ref": "#/definitions/User"
+                },
+                "public": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ConfirmationResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Config-ProjectConfig": {
+            "type": "object",
+            "properties": {
+                "entities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Entity"
+                    }
+                },
+                "lists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/List"
+                    }
+                },
+                "expeditionForwardingAddress": {
+                    "type": "string"
+                },
+                "datasetForwardingAddress": {
+                    "type": "string"
+                },
+                "expeditionMetadataProperties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ExpeditionMetadataProperty"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "validated": {
+                    "type": "boolean"
+                },
+                "multiSheetEntity": {
+                    "type": "boolean"
+                },
+                "entityChildDescendent": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Entity": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "discriminator": "type",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Attribute"
+                    }
+                },
+                "rules": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "$ref": "#/definitions/Rule"
+                    }
+                },
+                "worksheet": {
+                    "type": "string"
+                },
+                "uniqueKey": {
+                    "type": "string"
+                },
+                "conceptAlias": {
+                    "type": "string"
+                },
+                "conceptURI": {
+                    "type": "string"
+                },
+                "conceptForwardingAddress": {
+                    "type": "string"
+                },
+                "parentEntity": {
+                    "type": "string"
+                },
+                "recordType": {
+                    "$ref": "#/definitions/Class"
+                },
+                "valid": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "Attribute": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "type": "string"
+                },
+                "column": {
+                    "type": "string"
+                },
+                "column_internal": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                },
+                "defined_by": {
+                    "type": "string"
+                },
+                "datatype": {
+                    "type": "string",
+                    "enum": [
+                        "INTEGER",
+                        "STRING",
+                        "DATE",
+                        "DATETIME",
+                        "TIME",
+                        "FLOAT"
+                    ]
+                },
+                "definition": {
+                    "type": "string"
+                },
+                "dataformat": {
+                    "type": "string"
+                },
+                "delimited_by": {
+                    "type": "string"
+                },
+                "displayAnnotationProperty": {
+                    "type": "boolean",
+                    "description": "Default is true"
+                }
+            }
+        },
+        "List": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string",
+                    "description": "return the alias for which this list is known"
+                },
+                "caseInsensitive": {
+                    "type": "boolean"
+                },
+                "fields": {
+                    "type": "array",
+                    "description": "Get the set of fields that belong to this list",
+                    "items": {
+                        "$ref": "#/definitions/Field"
+                    }
+                }
+            }
+        },
+        "Field": {
+            "type": "object",
+            "properties": {
+                "uri": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                },
+                "defined_by": {
+                    "type": "string"
+                },
+                "definition": {
+                    "type": "string"
+                }
+            }
+        },
+        "ExpeditionMetadataProperty": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "AcknowledgedResponse": {
+            "type": "object",
+            "properties": {
+                "acknowledged": {
+                    "type": "boolean"
+                }
+            }
+        }
+    }
+}

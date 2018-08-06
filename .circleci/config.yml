@@ -1,0 +1,110 @@
+# Java Gradle CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-java/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      - image: circleci/openjdk:8-jdk
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/mongo:3.4.4
+
+    working_directory: ~/repo
+
+    environment:
+          # Customize the JVM maximum heap limit
+          JVM_OPTS: -Xmx3200m
+          TERM: dumb
+
+    steps:
+      - checkout
+
+      # git clone & co same branch on biocode-fims-commons
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-commons; cd repo; git checkout ${CIRCLE_BRANCH}
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-sequences; cd repo; git checkout ${CIRCLE_BRANCH}
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-photos; cd repo; git checkout ${CIRCLE_BRANCH}
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "build.gradle" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      # set gradlew as executable
+      - run:
+          name: chmod permissions
+          command: chmod +x ./gradlew
+
+
+      # setup gradle.properties
+      - run: cp gradle.template gradle.properties
+      - run: ./gradlew -PbiocodeFimsCommonsDir=../biocode-fims-commons -PmavenUser=${MAVEN_USER} -PmavenPass=${MAVEN_PASS} dependencies
+
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+
+  checkout_code:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - run:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              ssh -o "StrictHostKeyChecking no" deploy@biscicol3.acis.ufl.edu 'cd /home/deploy/code/geome-db/ && git fetch && git checkout develop && git pull && bash -c "./scripts/checkoutChildProjects.sh"'
+             fi
+
+  generate_api_docs:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - run:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              ssh -o "StrictHostKeyChecking no" deploy@biscicol3.acis.ufl.edu 'cd /home/deploy/code/geome-db/ && ./gradlew clean && ./scripts/generateDevelopRestApiDocs.sh'
+             fi
+
+  deploy_fims:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - run:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              ssh -o "StrictHostKeyChecking no" deploy@biscicol3.acis.ufl.edu 'cd /home/deploy/code/geome-db/ && ./gradlew -Penvironment=development fatWar && sudo cp /home/deploy/code/geome-db/dist/geome-db-fat.war /opt/web/dev/webapps/geome-db.war && sudo /bin/touch /opt/web/dev/webapps/geome-db.xml'
+            fi
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: develop
+      - checkout_code:
+          filters:
+            branches:
+              only: develop
+      - generate_api_docs:
+          requires:
+            - checkout_code
+          filters:
+            branches:
+              only: develop
+      - deploy_fims:
+          requires:
+            - build
+            - generate_api_docs
+          filters:
+            branches:
+              only: develop
+#      - deploy_fims:
+#        requires: build

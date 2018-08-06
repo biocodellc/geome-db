@@ -1,17 +1,17 @@
 package biocode.fims.geome.sra;
 
+import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.exceptions.SraCode;
-import biocode.fims.fastq.fileManagers.FastqFileManager;
+import biocode.fims.fastq.FastqRecord;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.models.records.Record;
 import biocode.fims.ncbi.sra.submission.BioSampleMapper;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import biocode.fims.query.QueryResult;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
+import static biocode.fims.bcid.Identifier.ROOT_IDENTIFIER;
 
 /**
  * Class that maps geome project attributes to sra BioSample attributes
@@ -38,20 +38,29 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         add("bcid");
     }};
 
-    private final Iterator<JsonNode> resourcesIt;
+    private final Iterator<Record> recordsIt;
+    private final QueryResult fastqResults;
+    private final QueryResult parentResults;
+    private final Entity parentEntity;
+    private final String parentUniqueKey;
 
-    public GeomeBioSampleMapper(ArrayNode resources) {
+    public GeomeBioSampleMapper(QueryResult fastqResults, QueryResult parentResults) {
+        this.fastqResults = fastqResults;
+        this.parentResults = parentResults;
 
-        if (resources == null || resources.size() == 0) {
+        if (fastqResults.records().size() == 0) {
             throw new FimsRuntimeException(SraCode.MISSING_DATASET, 400);
         }
 
-        this.resourcesIt = resources.iterator();
+        this.parentEntity = parentResults.entity();
+        this.parentUniqueKey = parentEntity.getUniqueKeyURI();
+
+        this.recordsIt = fastqResults.records().iterator();
     }
 
     @Override
     public boolean hasNextSample() {
-        return resourcesIt.hasNext();
+        return recordsIt.hasNext();
     }
 
     @Override
@@ -61,63 +70,65 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
 
     @Override
     public List<String> getBioSampleAttributes() {
-        ObjectNode sample = (ObjectNode) resourcesIt.next();
+        FastqRecord record = (FastqRecord) recordsIt.next();
         List<String> bioSampleAttributes = new ArrayList<>();
 
-        if (sample.has(FastqFileManager.CONCEPT_ALIAS)) {
-            String organism;
-            String species = getTextField(sample, "species");
-            String genus = getTextField(sample, "genus");
+        Record parent = getParentForRecord(record);
 
-            if (!StringUtils.isBlank(genus)) {
-                organism = genus;
-                if (!StringUtils.isBlank(species)) {
-                    organism += " " + species;
-                }
-            } else {
-                organism = getTextField(sample, "phylum");
+        String organism;
+        String species = parent.get("urn:species");
+        String genus = parent.get("urn:genus");
+
+        if (!genus.equals("")) {
+            organism = genus;
+            if (!species.equals("")) {
+                organism += " " + species;
             }
-
-            bioSampleAttributes.add(getTextField(sample, "materialSampleID"));
-            bioSampleAttributes.add(sample.at("/" + FastqFileManager.CONCEPT_ALIAS + "/libraryStrategy").asText() + "_" + organism.replace(" ", "_"));
-            bioSampleAttributes.add(organism);
-            bioSampleAttributes.add(getCollectionDate(sample));
-
-            StringBuilder geoLocSb = new StringBuilder();
-            geoLocSb.append(getTextField(sample, "country"));
-            // must start with a country, otherwise sra validation fails
-            if (!StringUtils.isBlank(getTextField(sample, "locality")) & !StringUtils.isBlank(geoLocSb.toString())) {
-                geoLocSb.append(": ");
-                geoLocSb.append(getTextField(sample, "locality"));
-            }
-            bioSampleAttributes.add(modifyBlankAttribute(geoLocSb.toString()));
-
-            bioSampleAttributes.add(modifyBlankAttribute(getTextField(sample, "geneticTissueType")));
-            bioSampleAttributes.add(getTextField(sample, "principalInvestigator"));
-            bioSampleAttributes.add(modifyBlankAttribute(getTextField(sample, "recordedBy")));
-
-            StringBuilder depthSb = new StringBuilder();
-            if (!StringUtils.isBlank(getTextField(sample, "minimumDepthInMeters"))) {
-                depthSb.append(getTextField(sample, "minimumDepthInMeters"));
-
-                if (!StringUtils.isBlank(getTextField(sample, "maximumDepthInMeters"))) {
-                    depthSb.append(", ");
-                    depthSb.append(getTextField(sample, "maximumDepthInMeters"));
-                }
-            }
-            bioSampleAttributes.add(modifyBlankAttribute(depthSb.toString()));
-
-            bioSampleAttributes.add(modifyBlankAttribute(getTextField(sample, "lifeStage")));
-            bioSampleAttributes.add(modifyBlankAttribute(getTextField(sample, "identifiedBy")));
-
-            bioSampleAttributes.add(modifyBlankAttribute(getLatLong(sample)));
-
-            bioSampleAttributes.add(modifyBlankAttribute(getTextField(sample, "sex")));
-            bioSampleAttributes.add(BLANK_ATTRIBUTE);
-            bioSampleAttributes.add(BLANK_ATTRIBUTE);
-            bioSampleAttributes.add(BLANK_ATTRIBUTE);
-            bioSampleAttributes.add(sample.get("bcid").asText());
+        } else {
+            organism = parent.get("urn:phylum");
         }
+
+        bioSampleAttributes.add(parent.get("urn:materialSampleID"));
+        bioSampleAttributes.add(record.libraryStrategy() + "_" + organism.replace(" ", "_"));
+        bioSampleAttributes.add(organism);
+        bioSampleAttributes.add(getCollectionDate(parent));
+
+        StringBuilder geoLocSb = new StringBuilder();
+        geoLocSb.append(parent.get("urn:country"));
+        // must start with a country, otherwise sra validation fails
+        if (!StringUtils.isBlank(parent.get("urn:locality")) & !StringUtils.isBlank(geoLocSb.toString())) {
+            geoLocSb.append(": ");
+            geoLocSb.append(parent.get("urn:locality"));
+        }
+        bioSampleAttributes.add(modifyBlankAttribute(geoLocSb.toString()));
+
+        bioSampleAttributes.add(modifyBlankAttribute(parent.get("urn:geneticTissueType")));
+        bioSampleAttributes.add(parent.get("urn:principalInvestigator"));
+        bioSampleAttributes.add(modifyBlankAttribute(parent.get("urn:recordedBy")));
+
+        StringBuilder depthSb = new StringBuilder();
+        if (!StringUtils.isBlank(parent.get("urn:minimumDepthInMeters"))) {
+            depthSb.append(parent.get("urn:minimumDepthInMeters"));
+
+            if (!StringUtils.isBlank(parent.get("urn:maximumDepthInMeters"))) {
+                depthSb.append(", ");
+                depthSb.append(parent.get("urn:maximumDepthInMeters"));
+            }
+        }
+        bioSampleAttributes.add(modifyBlankAttribute(depthSb.toString()));
+
+        bioSampleAttributes.add(modifyBlankAttribute(parent.get("urn:lifeStage")));
+        bioSampleAttributes.add(modifyBlankAttribute(parent.get("urn:identifiedBy")));
+
+        bioSampleAttributes.add(modifyBlankAttribute(getLatLong(parent)));
+
+        bioSampleAttributes.add(modifyBlankAttribute(parent.get("urn:sex")));
+        bioSampleAttributes.add(BLANK_ATTRIBUTE);
+        bioSampleAttributes.add(BLANK_ATTRIBUTE);
+        bioSampleAttributes.add(BLANK_ATTRIBUTE);
+        // we don't need to entity.buildChildRecord here b/c fastq entity unique key is null
+        // and thus only allows a 1-1 mapping to parents
+        bioSampleAttributes.add(record.get(ROOT_IDENTIFIER) + parent.get(parentUniqueKey));
 
         return bioSampleAttributes;
     }
@@ -130,13 +141,13 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         return attribute;
     }
 
-    private String getCollectionDate(ObjectNode sample) {
+    private String getCollectionDate(Record record) {
         StringBuilder collectionDate = new StringBuilder();
 
-        collectionDate.append(getTextField(sample, "yearCollected"));
+        collectionDate.append(record.get("urn:yearCollected"));
 
-        String monthCollected = getTextField(sample, "monthCollected");
-        String dayCollected = getTextField(sample, "dayCollected");
+        String monthCollected = record.get("urn:monthCollected");
+        String dayCollected = record.get("urn:dayCollected");
 
         if (!StringUtils.isBlank(monthCollected)) {
             collectionDate.append("-");
@@ -151,13 +162,6 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         return modifyBlankAttribute(collectionDate.toString());
     }
 
-    private String getTextField(ObjectNode sample, String field) {
-        if (sample.hasNonNull(field)) {
-            return sample.get(field).asText();
-        }
-        return "";
-    }
-
     /**
      * if both lat and long are present, return a string containing the abs(decimalDegree) + Compass Direction
      * <p>
@@ -165,17 +169,16 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
      * <p>
      * lat = -8, long = 140 would return "8 S 140 W"
      *
-     * @param sample
-     * @return
+     * @param parent
      */
-    private String getLatLong(ObjectNode sample) {
+    private String getLatLong(Record parent) {
         StringBuilder latLongSb = new StringBuilder();
 
-        if (!StringUtils.isBlank(getTextField(sample, "decimalLatitude")) &&
-                !StringUtils.isBlank(getTextField(sample, "decimalLongitude"))) {
+        if (!StringUtils.isBlank(parent.get("decimalLatitude")) &&
+                !StringUtils.isBlank(parent.get("decimalLongitude"))) {
 
-            String latText = getTextField(sample, "decimalLatitude");
-            String lngText = getTextField(sample, "decimalLongitude");
+            String latText = parent.get("decimalLatitude");
+            String lngText = parent.get("decimalLongitude");
             try {
                 Double lat = Double.parseDouble(latText);
 
@@ -203,5 +206,14 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         }
 
         return latLongSb.toString();
+    }
+
+    private Record getParentForRecord(FastqRecord record) {
+        String parentId = record.get(parentUniqueKey);
+        return this.parentResults.records()
+                .stream()
+                .filter(r -> Objects.equals(r.get(parentUniqueKey), parentId))
+                .findFirst()
+                .orElse(null);
     }
 }

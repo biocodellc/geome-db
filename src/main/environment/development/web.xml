@@ -20,33 +20,39 @@
     <session-config>
         <cookie-config>
             <http-only>true</http-only>
+            <domain>.api.develop.geome-db.org</domain>
         </cookie-config>
     </session-config>
 
     <servlet>
-        <servlet-name>Jersey Web Application Rest</servlet-name>
-        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+        <servlet-name>DefaultServlet</servlet-name>
+        <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
         <init-param>
-            <param-name>javax.ws.rs.Application</param-name>
-            <param-value>biocode.fims.rest.GeomeApplication</param-value>
+            <param-name>dirAllowed</param-name>
+            <param-value>false</param-value>
         </init-param>
-        <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
-        <servlet-name>Jersey Web Application Rest</servlet-name>
-        <url-pattern>rest/*</url-pattern>
-    </servlet-mapping>
-
-    <!-- FimsDefaultServlet must be listed after all other servlets -->
-    <servlet>
-        <servlet-name>FimsDefaultServlet</servlet-name>
-        <servlet-class>biocode.fims.rest.FimsDefaultServlet</servlet-class>
-        <load-on-startup>2</load-on-startup>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>FimsDefaultServlet</servlet-name>
+        <servlet-name>DefaultServlet</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
+
+    <filter>
+        <filter-name>cross-origin</filter-name>
+        <filter-class>org.eclipse.jetty.servlets.CrossOriginFilter</filter-class>
+        <init-param>
+            <param-name>allowedMethods</param-name>
+            <param-value>GET,POST,HEAD,OPTIONS,PUT,DELETE</param-value>
+        </init-param>
+        <init-param>
+            <param-name>allowedHeaders</param-name>
+            <param-value>X-Requested-With,Content-Type,Accept,Origin,fims-app</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>cross-origin</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <filter>
         <filter-name>ClickjackFilterDeny</filter-name>
@@ -63,4 +69,22 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
+    <!-- Jersey filter must run last b/c it will commit the response, preventing down-chain filters from running -->
+    <filter>
+        <filter-name>Geome API</filter-name>
+        <filter-class>org.glassfish.jersey.servlet.ServletContainer</filter-class>
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>biocode.fims.rest.GeomeApplication</param-value>
+        </init-param>
+        <!-- pass to next filter if Jersey/App returns 404 -->
+        <init-param>
+            <param-name>jersey.config.servlet.filter.forwardOn404</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>Geome API</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 </web-app>

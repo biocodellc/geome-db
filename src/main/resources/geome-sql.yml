@@ -1,0 +1,14 @@
+expeditionStats: >
+  SELECT e.expedition_code AS "expeditionCode", e.expedition_title AS "expeditionTitle", e.identifier as "expeditionIdentifier" ${entityCounts}
+  FROM expeditions AS e
+  ${entityJoins}
+  WHERE e.project_id = ${projectId} AND (e.public = true OR e.public <> ${includePrivate})
+  ORDER BY lower(e.expedition_code)
+
+expeditionStatsEntityCounts: >
+  COALESCE(${entity}.ct, 0) as "${entity}Count"
+
+expeditionStatsEntityJoins: >
+  LEFT JOIN (
+    SELECT expedition_id, count(*) as ct FROM ${table} GROUP BY expedition_id
+  ) AS ${entity} on ${entity}.expedition_id = e.id
