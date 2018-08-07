@@ -2,24 +2,24 @@
 
 *Note:* This is temporary, and will be added to the ui at a future date.
 
-Issue the following sql cmd against the db you wish to create the project in:
-
-    insert into projects(project_code, project_title, config, user_id, public) 
-        VALUES ('MBIO', 'Moorea Biocode Project', '{}', ${USER_ID}, true);
-        
-Then add user_projects table entry:
-
-    insert into user_projects(project_id, user_id) VALUES (${PROJECT_ID}, ${USER_ID});
-    
-Then create the project schema:
-
 ensure the postgres function is loaded:
 
-      CREATE OR REPLACE FUNCTION create_project_schema(integer, text)
+      CREATE OR REPLACE FUNCTION create_project(project_code text, project_title text, user_id integer)
         RETURNS VOID AS
       $func$
+      DECLARE
+         project_id integer;
+         db_owner text;
       BEGIN
-        EXECUTE format('CREATE SCHEMA project_%s', $1);
+        db_owner := (SELECT pg_catalog.pg_get_userbyid(d.datdba) FROM pg_catalog.pg_database d WHERE d.datname = (select current_database ()) ORDER BY 1);
+
+        EXECUTE format(E'insert into projects(project_code, project_title, config, user_id, public) VALUES (\'%s\', \'%s\', \'{}\', %s, true)', project_code, project_title, user_id);
+
+        project_id := (SELECT id from projects order by id desc limit 1);
+
+        EXECUTE format('insert into user_projects(project_id, user_id) VALUES (%s, %s)', project_id, user_id);
+
+        EXECUTE format('CREATE SCHEMA project_%s', project_id);
       
         EXECUTE format(E'
         CREATE TABLE project_%s.audit_table
@@ -32,15 +32,15 @@ ensure the postgres function is loaded:
           row_data jsonb, -- For INSERT this is the new row values. For DELETE and UPDATE it is the old row values.
           changed_fields jsonb -- Null except UPDATE events. This is the result of jsonb_diff_val(NEW data, OLD data)
         );
-        ', $1);
+        ', project_id);
       
-        EXECUTE format('alter schema project_%s owner to %s', $1, $2);
-        EXECUTE format('alter table project_%s.audit_table owner to %s', $1, $2);
+        EXECUTE format('alter schema project_%s owner to %s', project_id, db_owner);
+        EXECUTE format('alter table project_%s.audit_table owner to %s', project_id, db_owner);
       
       END
       $func$  LANGUAGE plpgsql;
       
-then run:
+Issue the following sql cmd against the db you wish to create the project in:
 
-    select create_project_schema(${PROJECT_ID}, 'biscicoldev');
+    select create_project('MBIO', 'Moorea Biocode Project', ${USER_ID});
 
