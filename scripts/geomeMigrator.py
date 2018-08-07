@@ -15,6 +15,10 @@ ENDPOINT = 'http://localhost:8080/'
 BCID_URL = 'http://localhost:8080/bcid'
 ES_ENDPOINT = 'https://localhost:9200'
 
+ENTITY_MAPPING = {
+    'Resource': 'Sample'
+}
+
 COLUMN_MAPPING = {
     'Event': { 'eventID': 'specimenID'},
     'Sample': { 'eventID': 'specimenID'},
@@ -392,6 +396,9 @@ def create_entity_identifiers(psql, project, client_id, client_secret):
             ])
 
         for entity in project['config']['entities']:
+            alias = entity['conceptAlias']
+            alias = ENTITY_MAPPING[alias] if alias in ENTITY_MAPPING else alias
+            entity['conceptAlias'] = alias
             if entity['conceptAlias'] not in created and not entity_identifier_exists(psql, expedition['id'], entity['conceptAlias']):
                 print("{}\t{}".format(expedition['id'], entity['conceptAlias']))
                 to_create.append({'entity': entity, 'expedition_id': expedition['id'], 'user': expedition['user']})
@@ -513,7 +520,7 @@ def fetch_expedition_data(project_id, expeditionCode, uri_mapping):
                 reader = csv.DictReader(f)
                 return [row for row in reader]
 
-    if project_id == 25:
+    if project_id == '25' or project_id == 25:
         data = {'sample': get_cached_samples()}
         # check for fasta
         file = os.path.join(WORKING_DIR, project_id, expeditionCode + "_fasta.csv")
@@ -734,7 +741,7 @@ def insert_fastq_data(psql, project_id, expedition_id, data):
         sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
             row['identifier'],
             expedition_id,
-            json.dumps(data),
+            json.dumps(row),
             row['identifier']
         )
 
@@ -755,7 +762,7 @@ def insert_fasta_data(psql, project_id, expedition_id, data):
         sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
             row['identifier'],
             expedition_id,
-            json.dumps(data),
+            json.dumps(row),
             row['urn:tissueID']
         )
 
