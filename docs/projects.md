@@ -36,6 +36,16 @@ ensure the postgres function is loaded:
       
         EXECUTE format('alter schema project_%s owner to %s', project_id, db_owner);
         EXECUTE format('alter table project_%s.audit_table owner to %s', project_id, db_owner);
+        
+        IF EXISTS (
+              SELECT                       -- SELECT list can stay empty for this
+              FROM   pg_catalog.pg_roles
+              WHERE  rolname = 'readaccess') THEN
+        
+            EXECUTE format('GRANT USAGE ON SCHEMA project_%s TO readaccess', project_id);
+            EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA project_%s TO readaccess', project_id);
+            EXECUTE format('GRANT SELECT ON ALL SEQEUNCES IN SCHEMA project_%s TO readaccess', project_id);
+        END IF;
       
       END
       $func$  LANGUAGE plpgsql;
