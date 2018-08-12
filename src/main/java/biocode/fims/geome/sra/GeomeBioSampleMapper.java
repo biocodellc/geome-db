@@ -11,8 +11,6 @@ import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
 
-import static biocode.fims.bcid.Identifier.ROOT_IDENTIFIER;
-
 /**
  * Class that maps geome project attributes to sra BioSample attributes
  */
@@ -128,7 +126,7 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         bioSampleAttributes.add(BLANK_ATTRIBUTE);
         // we don't need to entity.buildChildRecord here b/c fastq entity unique key is null
         // and thus only allows a 1-1 mapping to parents
-        bioSampleAttributes.add(record.get(ROOT_IDENTIFIER) + parent.get(parentUniqueKey));
+        bioSampleAttributes.add(record.rootIdentifier() + parent.get(parentUniqueKey));
 
         return bioSampleAttributes;
     }
