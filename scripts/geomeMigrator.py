@@ -736,9 +736,10 @@ def insert_fastq_data(psql, project_id, expedition_id, data):
     for row in data:
         row['identifier'] = row['urn:materialSampleID']
         row['urn:tissueID'] = row['urn:materialSampleID']
-        if row['bioSample']:
-            row['bioSample'] = json.loads(row['bioSample'].replace("'", '"'))
-        row['filenames'] = json.loads(row['filenames'].replace("'", '"'))
+        # TODO bioSample & filenames need to be stringified strings (filenames = "[\"File1.text\"]")
+        # if row['bioSample']:
+        #     row['bioSample'] = json.loads(row['bioSample'].replace("'", '"'))
+        # row['filenames'] = json.loads(row['filenames'].replace("'", '"'))
         del row['urn:materialSampleID']
         sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
             row['identifier'],
