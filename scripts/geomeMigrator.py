@@ -534,7 +534,7 @@ def fetch_expedition_data(project_id, expeditionCode, uri_mapping):
             with open(file, 'r') as f:
                 reader = csv.DictReader(f)
                 data['fastq'] = [row for row in reader]
-        if len(data['sample']) > 0:
+        if data['sample'] != None and len(data['sample']) > 0:
             print('Using existing data in output dir for expedition: ', expeditionCode)
             return data
     else:
