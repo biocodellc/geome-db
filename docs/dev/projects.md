@@ -4,18 +4,21 @@
 
 ensure the postgres function is loaded:
 
-      CREATE OR REPLACE FUNCTION create_project(project_code text, project_title text, user_id integer)
+      CREATE OR REPLACE FUNCTION create_project(project_id integer, project_code text, project_title text, user_id integer)
         RETURNS VOID AS
       $func$
       DECLARE
-         project_id integer;
          db_owner text;
       BEGIN
         db_owner := (SELECT pg_catalog.pg_get_userbyid(d.datdba) FROM pg_catalog.pg_database d WHERE d.datname = (select current_database ()) ORDER BY 1);
 
-        EXECUTE format(E'insert into projects(project_code, project_title, config, user_id, public) VALUES (\'%s\', \'%s\', \'{}\', %s, true)', project_code, project_title, user_id);
+        IF project_id IS NULL THEN
+            EXECUTE format(E'insert into projects(project_code, project_title, config, user_id, public) VALUES (\'%s\', \'%s\', \'{}\', %s, true)', project_code, project_title, user_id);
+            project_id := (SELECT id from projects order by id desc limit 1);
+        ELSE
+            EXECUTE format(E'insert into projects(id, project_code, project_title, config, user_id, public) VALUES (%s, \'%s\', \'%s\', \'{}\', %s, true)', project_id, project_code, project_title, user_id);
+        END IF;
 
-        project_id := (SELECT id from projects order by id desc limit 1);
 
         EXECUTE format('insert into user_projects(project_id, user_id) VALUES (%s, %s)', project_id, user_id);
 
@@ -44,7 +47,7 @@ ensure the postgres function is loaded:
         
             EXECUTE format('GRANT USAGE ON SCHEMA project_%s TO readaccess', project_id);
             EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA project_%s TO readaccess', project_id);
-            EXECUTE format('GRANT SELECT ON ALL SEQEUNCES IN SCHEMA project_%s TO readaccess', project_id);
+            EXECUTE format('GRANT SELECT ON ALL SEQUENCES IN SCHEMA project_%s TO readaccess', project_id);
         END IF;
       
       END
@@ -52,5 +55,7 @@ ensure the postgres function is loaded:
       
 Issue the following sql cmd against the db you wish to create the project in:
 
-    select create_project('MBIO', 'Moorea Biocode Project', ${USER_ID});
+    select create_project(NULL, 'MBIO', 'Moorea Biocode Project', ${USER_ID});
+    or
+    select create_project(3, 'MBIO', 'Moorea Biocode Project', ${USER_ID});
 

@@ -20,11 +20,11 @@ ENTITY_MAPPING = {
 }
 
 COLUMN_MAPPING = {
-    'Event': { 'eventID': 'specimenID'},
-    'Sample': { 'eventID': 'specimenID'},
-    'Tissue': { 'tissueID': 'specimenID'},
-    'fastaSequence': { 'tissueID': 'specimenID'},
-    'fastqMetadata': { 'tissueID': 'specimenID'},
+    'Event': {},
+    'Sample': {},
+    'Tissue': {},
+    'fastaSequence': {},
+    'fastqMetadata': {},
 }
 
 VALUE_MAPPINGS = {
@@ -735,12 +735,10 @@ def insert_fastq_data(psql, project_id, expedition_id, data):
 
     for row in data:
         row['identifier'] = row['urn:materialSampleID']
-        row['urn:tissueID'] = row['urn:materialSampleID']
         # TODO bioSample & filenames need to be stringified strings (filenames = "[\"File1.text\"]")
         # if row['bioSample']:
         #     row['bioSample'] = json.loads(row['bioSample'].replace("'", '"'))
         # row['filenames'] = json.loads(row['filenames'].replace("'", '"'))
-        del row['urn:materialSampleID']
         sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
             row['identifier'],
             expedition_id,
@@ -760,13 +758,11 @@ def insert_fasta_data(psql, project_id, expedition_id, data):
 
     for row in data:
         row['identifier'] = "{}_{}".format(row['urn:materialSampleID'], row['marker'])
-        row['urn:tissueID'] = row['urn:materialSampleID']
-        del row['urn:materialSampleID']
         sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
             row['identifier'],
             expedition_id,
             json.dumps(row),
-            row['urn:tissueID']
+            row['urn:materialSampleID']
         )
 
     sql = sql[:-2] + " ON CONFLICT (local_identifier, expedition_id) DO NOTHING"
