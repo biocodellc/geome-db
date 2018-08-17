@@ -646,7 +646,7 @@ def migrate(psql, project_id, expedition, access_token, old_data, config, accept
     metadata = []
 
     for sheet in transformed_data.keys():
-        if sheetnot in ['fastaSequence', 'fastqMetadata']:
+        if sheet not in ['fastaSequence', 'fastqMetadata']:
             files.append(
                 ('dataSourceFiles', ("{}.csv".format(sheet), data_to_filelike_csv(transformed_data[sheet]), 'text/plain'))
             )
@@ -728,10 +728,9 @@ def insert_fastq_data(psql, project_id, expedition_id, data):
 
     for row in data:
         row['identifier'] = row['urn:materialSampleID']
-        # TODO bioSample & filenames need to be stringified strings (filenames = "[\"File1.text\"]")
-        # if row['bioSample']:
-        #     row['bioSample'] = json.loads(row['bioSample'].replace("'", '"'))
-        # row['filenames'] = json.loads(row['filenames'].replace("'", '"'))
+        if row['bioSample']:
+            row['bioSample'] = row['bioSample'].replace("'", '"')
+        row['filenames'] = row['filenames'].replace("'", '"')
         sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
             row['identifier'],
             expedition_id,
@@ -778,9 +777,9 @@ def data_to_worksheets(old_data, config):
             continue
         if not entity['worksheet']:
             continue
-        if not entity['conceptAlias'] in sheet_attributes:
-            sheet_attributes[entity['conceptAlias']] = []
-        sheet_attributes[entity['conceptAlias']].extend(entity['attributes'])
+        if not entity['worksheet'] in sheet_attributes:
+            sheet_attributes[entity['worksheet']] = []
+        sheet_attributes[entity['worksheet']].extend(entity['attributes'])
 
     sample = old_data['sample']
     for s in sample:
