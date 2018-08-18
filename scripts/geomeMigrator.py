@@ -728,8 +728,11 @@ def insert_fastq_data(psql, project_id, expedition_id, data):
 
     for row in data:
         row['identifier'] = row['urn:materialSampleID']
-        if row['bioSample']:
-            row['bioSample'] = row['bioSample'].replace("'", '"')
+        if 'bioSample' in row:
+            if row['bioSample'] == "":
+                del row['bioSample']
+            else:
+                row['bioSample'] = row['bioSample'].replace("'", '"')
         row['filenames'] = row['filenames'].replace("'", '"')
         sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
             row['identifier'],
