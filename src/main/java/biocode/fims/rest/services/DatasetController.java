@@ -15,6 +15,7 @@ import biocode.fims.models.User;
 import biocode.fims.models.records.RecordMetadata;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryBuilder;
+import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.*;
 import biocode.fims.query.writers.DelimitedTextQueryWriter;
@@ -39,6 +40,7 @@ import biocode.fims.validation.RecordValidatorFactory;
 import org.apache.commons.lang.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.hibernate.sql.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -53,6 +55,7 @@ import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * @resourceTag Data
@@ -379,31 +382,36 @@ public class DatasetController extends FimsController {
             throw new NotFoundException("could not find expedition");
         }
 
-        Map<String, File> fileMap = new HashMap<>();
         ProjectConfig config = expedition.getProject().getProjectConfig();
-        for (Entity entity : config.entities()) {
-            QueryBuilder qb = new QueryBuilder(expedition.getProject(), entity.getConceptAlias());
-            Query query = new Query(qb, config, new ExpeditionExpression(expeditionCode));
 
-            QueryResults result = recordRepository.query(query);
-            QueryWriter queryWriter = new DelimitedTextQueryWriter(result, ",", config);
+        List<String> entities = config.entities().stream().map(Entity::getConceptAlias).collect(Collectors.toList());
 
-            try {
-                fileMap.put(expeditionCode + "_" + entity.getConceptAlias() + "-export.csv", queryWriter.write());
-            } catch (FimsRuntimeException e) {
-                if (!e.getErrorCode().equals(QueryCode.NO_RESOURCES)) {
-                    throw e;
-                }
+        ExpeditionExpression expeditionExpression = new ExpeditionExpression(expeditionCode);
+        Expression exp = new SelectExpression(
+                String.join(",", entities.subList(1, entities.size() - 1)),
+                expeditionExpression
+        );
+
+        QueryBuilder qb = new QueryBuilder(expedition.getProject(), entities.get(0));
+        Query query = new Query(qb, config, exp);
+
+        QueryResults result = recordRepository.query(query);
+        QueryWriter queryWriter = new DelimitedTextQueryWriter(result, ",", config);
+
+        File file = null;
+        try {
+            file = queryWriter.write();
+        } catch (FimsRuntimeException e) {
+            if (!e.getErrorCode().equals(QueryCode.NO_RESOURCES)) {
+                throw e;
             }
         }
 
-        if (fileMap.isEmpty()) {
+        if (file == null) {
             return null;
         }
 
-        File zFile = FileUtils.zip(fileMap, defaultOutputDirectory());
-
-        String fileId = fileCache.cacheFileForUser(zFile, userContext.getUser(), expeditionCode + "-export.zip");
+        String fileId = fileCache.cacheFileForUser(file, userContext.getUser(), expeditionCode + "-export.zip");
 
         return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
     }
