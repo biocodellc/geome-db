@@ -15,16 +15,18 @@ ENDPOINT = 'http://localhost:8080/'
 BCID_URL = 'http://localhost:8080/bcid'
 ES_ENDPOINT = 'https://localhost:9200'
 
+ENTITY_MAPPING = {
+    'Resource': 'Sample'
+}
+
 COLUMN_MAPPING = {
-    'Event': { 'eventID': 'specimenID'},
-    'Sample': { 'eventID': 'specimenID'},
-    'Tissue': { 'tissueID': 'specimenID'},
-    'fastaSequence': { 'tissueID': 'specimenID'},
-    'fastqMetadata': { 'tissueID': 'specimenID'},
+    'Samples': {},
+    'fastaSequence': {},
+    'fastqMetadata': {},
 }
 
 VALUE_MAPPINGS = {
-    'Event': {
+    'Samples': {
         'country': {
             'United States of America': 'USA',
             'Cocos (Keeling) Islands': 'Cocos Islands',
@@ -392,6 +394,9 @@ def create_entity_identifiers(psql, project, client_id, client_secret):
             ])
 
         for entity in project['config']['entities']:
+            alias = entity['conceptAlias']
+            alias = ENTITY_MAPPING[alias] if alias in ENTITY_MAPPING else alias
+            entity['conceptAlias'] = alias
             if entity['conceptAlias'] not in created and not entity_identifier_exists(psql, expedition['id'], entity['conceptAlias']):
                 print("{}\t{}".format(expedition['id'], entity['conceptAlias']))
                 to_create.append({'entity': entity, 'expedition_id': expedition['id'], 'user': expedition['user']})
@@ -513,7 +518,7 @@ def fetch_expedition_data(project_id, expeditionCode, uri_mapping):
                 reader = csv.DictReader(f)
                 return [row for row in reader]
 
-    if project_id == 25:
+    if project_id == '25' or project_id == 25:
         data = {'sample': get_cached_samples()}
         # check for fasta
         file = os.path.join(WORKING_DIR, project_id, expeditionCode + "_fasta.csv")
@@ -527,7 +532,7 @@ def fetch_expedition_data(project_id, expeditionCode, uri_mapping):
             with open(file, 'r') as f:
                 reader = csv.DictReader(f)
                 data['fastq'] = [row for row in reader]
-        if len(data['sample']) > 0:
+        if data['sample'] != None and len(data['sample']) > 0:
             print('Using existing data in output dir for expedition: ', expeditionCode)
             return data
     else:
@@ -611,7 +616,10 @@ def transform_data(data, uri_mapping):
     for d in data:
         t = {}
         for key in d.keys():
-            if key in uri_mapping:
+            if key == 'urn:yearCollected' and d[key] == '2005-2007':
+                t[uri_mapping[key]] = '2006'
+                t['eventRemarks'] = "verbatimYear = {}".format(d[key])
+            elif key in uri_mapping:
                 t[uri_mapping[key]] = d[key]
             else:
                 t[key] = d[key]
@@ -624,7 +632,7 @@ def migrate(psql, project_id, expedition, access_token, old_data, config, accept
     code = expedition['expedition_code']
     print('Migrating data for expedition: ', code)
 
-    transformed_data = data_to_entities(old_data, config)
+    transformed_data = data_to_worksheets(old_data, config)
 
     validate_url = "{}data/validate?access_token={}".format(ENDPOINT, access_token)
 
@@ -637,22 +645,17 @@ def migrate(psql, project_id, expedition, access_token, old_data, config, accept
     files = []
     metadata = []
 
-    def sheetName(entity):
-        for e in config['entities']:
-            if e['conceptAlias'] == entity:
-                return e['worksheet']
-
-    for entity in transformed_data.keys():
-        if entity not in ['fastaSequence', 'fastqMetadata']:
+    for sheet in transformed_data.keys():
+        if sheet not in ['fastaSequence', 'fastqMetadata']:
             files.append(
-                ('dataSourceFiles', ("{}.csv".format(entity), data_to_filelike_csv(transformed_data[entity]), 'text/plain'))
+                ('dataSourceFiles', ("{}.csv".format(sheet), data_to_filelike_csv(transformed_data[sheet]), 'text/plain'))
             )
             metadata.append(
                 {
                     "dataType": 'TABULAR',
-                    "filename": "{}.csv".format(entity),
+                    "filename": "{}.csv".format(sheet),
                     "metadata": {
-                        "sheetName": sheetName(entity)
+                        "sheetName": sheet
                     },
                     "reload": True
                 }
@@ -725,13 +728,16 @@ def insert_fastq_data(psql, project_id, expedition_id, data):
 
     for row in data:
         row['identifier'] = row['urn:materialSampleID']
-        row['urn:tissueID'] = row['urn:materialSampleID']
-        row['bioSample'] = json.loads(row['bioSample'])
-        del row['urn:materialSampleID']
+        if 'bioSample' in row:
+            if row['bioSample'] == "":
+                del row['bioSample']
+            else:
+                row['bioSample'] = row['bioSample'].replace("'", '"')
+        row['filenames'] = row['filenames'].replace("'", '"')
         sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
             row['identifier'],
             expedition_id,
-            json.dumps(data),
+            json.dumps(row),
             row['identifier']
         )
 
@@ -747,13 +753,11 @@ def insert_fasta_data(psql, project_id, expedition_id, data):
 
     for row in data:
         row['identifier'] = "{}_{}".format(row['urn:materialSampleID'], row['marker'])
-        row['urn:tissueID'] = row['urn:materialSampleID']
-        del row['urn:materialSampleID']
         sql += "('{}', {}, '{}'::jsonb, '{}'), ".format(
             row['identifier'],
             expedition_id,
-            json.dumps(data),
-            row['urn:tissueID']
+            json.dumps(row),
+            row['urn:materialSampleID']
         )
 
     sql = sql[:-2] + " ON CONFLICT (local_identifier, expedition_id) DO NOTHING"
@@ -762,7 +766,7 @@ def insert_fasta_data(psql, project_id, expedition_id, data):
     cursor.close()
 
 
-def data_to_entities(old_data, config):
+def data_to_worksheets(old_data, config):
     data = {}
 
     if 'fasta' in old_data:
@@ -770,15 +774,23 @@ def data_to_entities(old_data, config):
     if 'fastq' in old_data:
         data['fastqMetadata'] = old_data['fastq']
 
+    sheet_attributes = {}
+    for entity in config['entities']:
+        if entity['conceptAlias'] in ['fastaSequence', 'fastqMetadata', 'Sample_Photo', 'Event_Photo']:
+            continue
+        if not entity['worksheet']:
+            continue
+        if not entity['worksheet'] in sheet_attributes:
+            sheet_attributes[entity['worksheet']] = []
+        sheet_attributes[entity['worksheet']].extend(entity['attributes'])
+
     sample = old_data['sample']
     for s in sample:
-        for entity in config['entities']:
-            if entity['conceptAlias'] in ['fastaSequence', 'fastqMetadata', 'Sample_Photo', 'Event_Photo']:
-                continue
-            mapping = COLUMN_MAPPING[entity['conceptAlias']] if entity['conceptAlias'] in COLUMN_MAPPING else None
-            val_mapping = VALUE_MAPPINGS[entity['conceptAlias']] if entity['conceptAlias'] in VALUE_MAPPINGS else None
+        for sheet in sheet_attributes:
+            mapping = COLUMN_MAPPING[sheet] if sheet in COLUMN_MAPPING else None
+            val_mapping = VALUE_MAPPINGS[sheet] if sheet in VALUE_MAPPINGS else None
             ed = {}
-            for attribute in entity['attributes']:
+            for attribute in sheet_attributes[sheet]:
                 col = attribute['column']
 
                 def val(v):
@@ -826,10 +838,10 @@ def data_to_entities(old_data, config):
                     ed[col] = val(s[col])
                 elif col == 'yearCollected':
                     ed[col] = 'Unknown'
-            if entity['conceptAlias'] not in data:
-                data[entity['conceptAlias']] = []
+            if sheet not in data:
+                data[sheet] = []
 
-            data[entity['conceptAlias']].append(ed)
+            data[sheet].append(ed)
 
     return data
 

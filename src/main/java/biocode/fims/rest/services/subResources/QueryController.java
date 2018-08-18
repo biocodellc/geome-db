@@ -2,7 +2,7 @@ package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
-import biocode.fims.models.records.RecordSources;
+import biocode.fims.records.RecordSources;
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fasta.FastaQueryWriter;
