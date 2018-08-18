@@ -2,6 +2,8 @@ package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
+import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.query.QueryResult;
 import biocode.fims.records.RecordSources;
 import biocode.fims.projectConfig.models.Attribute;
 import biocode.fims.projectConfig.models.Entity;
@@ -31,6 +33,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
@@ -279,35 +282,48 @@ public class QueryController extends FimsController {
     @Path("/fasta/")
     @Consumes(MediaType.APPLICATION_JSON)
     public FileResponse queryFasta(@QueryParam("q") String queryString) {
-        // TODO need to fetch parent queryEntity metadata for query results & return zip file
-        // of csv metadata output along w/ fasta file
+        ProjectConfig config = getProject().getProjectConfig();
 
-        Entity e = getProject().getProjectConfig().entity(entity);
+        Entity e = config.entity(entity);
         if (!(e instanceof FastaEntity)) {
             throw new BadRequestException("queryEntity is not a FastaEntity");
         }
 
-        Entity parentEntity = getProject().getProjectConfig().entity(e.getParentEntity());
+        Entity parentEntity = e;
+        do {
+            parentEntity = config.entity(parentEntity.getParentEntity());
+        } while (parentEntity.isChildEntity());
 
-        queryString += " _select_:" + parentEntity.getConceptAlias();
+        List<String> entities = config.entitiesInRelation(parentEntity, e).stream()
+                .map(Entity::getConceptAlias)
+                .collect(Collectors.toList());
+
+        queryString += " _select_:[" + String.join(",", entities) + "]";
 
         QueryResults queryResults = run(queryString);
 
         try {
             QueryWriter queryWriter = new FastaQueryWriter(queryResults.getResult(e.getConceptAlias()), getProject().getProjectConfig());
-            QueryResults parentQueryResults = new QueryResults(Arrays.asList(queryResults.getResult(e.getParentEntity())));
-            QueryWriter parentQueryWriter = new DelimitedTextQueryWriter(parentQueryResults, ",", getProject().getProjectConfig());
+
+            List<QueryResult> metadataResults = queryResults.results().stream()
+                    .filter(r -> !r.entity().equals(e))
+                    .collect(Collectors.toList());
+
+            QueryWriter parentQueryWriter = new DelimitedTextQueryWriter(
+                    new QueryResults(metadataResults),
+                    ",", getProject().getProjectConfig()
+            );
 
             File fastaFile = queryWriter.write();
             File metadataFile = parentQueryWriter.write();
 
             Map<String, File> fileMap = new HashMap<>();
-            fileMap.put("biocode-fims-output.csv", metadataFile);
+            fileMap.put("geome-db-output.csv", metadataFile);
 
             if (fastaFile.getName().endsWith(".zip")) {
-                fileMap.put("biocode-fims-fasta.zip", fastaFile);
+                fileMap.put("geome-db-fasta.zip", fastaFile);
             } else {
-                fileMap.put("biocode-fims-output.fasta", fastaFile);
+                fileMap.put("geome-db-output.fasta", fastaFile);
             }
 
             File file = FileUtils.zip(fileMap, defaultOutputDirectory());
@@ -455,7 +471,6 @@ public class QueryController extends FimsController {
 
         Query query = Query.factory(project, entity, queryString, page, limit);
 
-        // may break biocode-lims plugin
         if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), new ArrayList<>(query.expeditions()), userContext.getUser())) {
             throw new ForbiddenRequestException("unauthorized query.");
         }
