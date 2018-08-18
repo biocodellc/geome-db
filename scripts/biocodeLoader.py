@@ -16,7 +16,7 @@ headers = {
 }
 
 
-def upload_files(project_id, access_token, dir):
+def upload_files(project_id, access_token, dir, accept_warnings=False):
     #expeditions = {f.split('_')[0] for f in listdir(dir)}
     expeditions = {f.replace("_Specimens.txt","").replace("_Collecting_Events.txt","").replace("_Tissues.txt","") for f in listdir(dir)}
 
@@ -28,7 +28,7 @@ def upload_files(project_id, access_token, dir):
 
     for code in expeditions:
         create_expedition(project_id, code, access_token)
-        upload_data(project_id, code, access_token, dir)
+        upload_data(project_id, code, access_token, dir, accept_warnings)
 
 
 def create_expedition(project_id, code, access_token):
@@ -54,7 +54,7 @@ def create_expedition(project_id, code, access_token):
         print('Successfully created expedition: ', code)
 
 
-def upload_data(project_id, code, access_token, base_dir):
+def upload_data(project_id, code, access_token, base_dir, accept_warnings):
     print('Attempting to upload data for expedition: ', code)
 
     validate_url = "{}data/validate?access_token={}".format(ENDPOINT, access_token)
@@ -152,7 +152,7 @@ def upload_data(project_id, code, access_token, base_dir):
     if response.get('hasError'):
         print("Validation error(s) attempting to upload expedition: {}".format(code))
         sys.exit()
-    elif not response.get('isValid'):
+    elif not response.get('isValid') and not accept_warnings:
         cont = raw_input("Warnings found during validation. Would you like to continue? (y/n)   ")
         if cont.lower() != 'y':
             sys.exit()
@@ -178,6 +178,7 @@ if __name__ == "__main__":
                         help="Directory containing the files to upload. The file prefix will be the expedition. "
                              "For each expedition, we expect 3 files PREFIX_Collecting_Events.txt, "
                              "PREFIX_Specimens.txt, and PREFIX_Tissues.txt")
+    parser.add_argument("--accept_warnings", help="Continue to upload any data with validation warnings", default=False)
     args = parser.parse_args()
 
-    upload_files(args.project_id, args.access_token, args.dir)
+    upload_files(args.project_id, args.access_token, args.dir, args.accept_warnings)
