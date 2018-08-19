@@ -21,10 +21,10 @@ import org.biocode.gradle.web.tasks.RestartRemoteJettyTask
 import org.biocode.gradle.web.tasks.HotDeployRemoteJettyTask
 
 if (!project.hasProperty('fimsCommonsVersion')) {
-    ext.fimsCommonsVersion = "1.0.0-beta.3"
+    ext.fimsCommonsVersion = "1.0.0-rc.1"
 }
 if (!project.hasProperty('fimsSequencesVersion')) {
-    ext.fimsSequencesVersion = "1.0.0-beta.2"
+    ext.fimsSequencesVersion = "1.0.0-rc.1"
 }
 if (!project.hasProperty('fimsPhotosVersion')) {
     ext.fimsPhotosVersion = "0.0.1-beta.1"
@@ -97,7 +97,7 @@ dependencies {
 // jetty ssh plugin
 remotes {
     biscicol {
-        host = 'biscicol.org'
+        host = 'biscicol3.acis.ufl.org'
         user = biscicolUser
         password = biscicolPassword
     }
@@ -131,31 +131,14 @@ updateDependencies {
     location = remoteLibsDirectory
 }
 
-updateDependenciesDev {
-    remote = remotes.biscicol
-    location = remoteDevLibsDirectory
-}
-
 deployFims {
     remote = remotes.biscicol
     remoteLibsDir = remoteLibsDirectory
     remoteWarDir = remoteWarDirectory
 }
 
-deployFimsDev {
-    remote = remotes.biscicol
-    remoteLibsDir = remoteDevLibsDirectory
-    remoteWarDir = remoteWarDevDirectory
-}
-
 deployFimsLocal {
     deployDir = localWarDirectory
-}
-
-task hotDeployFimsDev(type: HotDeployRemoteJettyTask, dependsOn: "deployFimsDev") {
-    group = 'Fims'
-    remoteWarDir = remoteWarDevDirectory
-    remote = remotes.biscicol
 }
 
 task hotDeployFims(type: HotDeployRemoteJettyTask, dependsOn: "deployFims") {
