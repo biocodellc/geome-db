@@ -3,6 +3,7 @@ package biocode.fims.rest.services;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.application.config.GeomeSql;
 import biocode.fims.authorizers.QueryAuthorizer;
+import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.projectConfig.models.FastqEntity;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -11,14 +12,17 @@ import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.geome.sra.GeomeBioSampleMapper;
 import biocode.fims.geome.sra.GeomeSraMetadataMapper;
 import biocode.fims.models.Project;
-import biocode.fims.models.records.RecordSet;
 import biocode.fims.ncbi.sra.submission.BioSampleAttributesGenerator;
 import biocode.fims.ncbi.sra.submission.BioSampleMapper;
 import biocode.fims.ncbi.sra.submission.SraMetadataGenerator;
 import biocode.fims.ncbi.sra.submission.SraMetadataMapper;
 import biocode.fims.query.PostgresUtils;
+import biocode.fims.query.QueryBuilder;
 import biocode.fims.query.QueryResults;
+import biocode.fims.query.dsl.ExpeditionExpression;
+import biocode.fims.query.dsl.Expression;
 import biocode.fims.query.dsl.Query;
+import biocode.fims.query.dsl.SelectExpression;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.service.ExpeditionService;
@@ -36,6 +40,7 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * project API endpoints
@@ -78,20 +83,33 @@ public class ProjectController extends BaseProjectsController {
 
         Project project = projectService.getProject(projectId);
 
-        Entity e = project.getProjectConfig().entities()
+
+        ProjectConfig config = project.getProjectConfig();
+
+        Entity e = config.entities()
                 .stream()
                 .filter(FastqEntity.class::isInstance)
                 .findFirst()
                 .orElseThrow((Supplier<RuntimeException>) () -> new BadRequestException("Could not find FastqEntity for provided project"));
 
-        Entity parentEntity = project.getProjectConfig().entity(e.getParentEntity());
 
-        String q = "_expeditions_:" +
-                expeditionCode +
-                " _select_:" +
-                parentEntity.getConceptAlias();
+        Entity parentEntity = e;
+        do {
+            parentEntity = config.entity(parentEntity.getParentEntity());
+        } while (parentEntity.isChildEntity());
 
-        Query query = Query.factory(project, e.getConceptAlias(), q);
+        List<String> entities = config.entitiesInRelation(parentEntity, e).stream()
+                .map(Entity::getConceptAlias)
+                .collect(Collectors.toList());
+
+        ExpeditionExpression expeditionExpression = new ExpeditionExpression(expeditionCode);
+        Expression exp = new SelectExpression(
+                String.join(",", entities),
+                expeditionExpression
+        );
+
+        QueryBuilder qb = new QueryBuilder(project, e.getConceptAlias());
+        Query query = new Query(qb, config, exp);
 
         if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), new ArrayList<>(query.expeditions()), userContext.getUser())) {
             throw new FimsRuntimeException(GenericErrorCode.UNAUTHORIZED, 403);
@@ -101,12 +119,8 @@ public class ProjectController extends BaseProjectsController {
 
         if (queryResults.isEmpty()) return null;
 
-        RecordSet parentRecordSet = new RecordSet(parentEntity, queryResults.getResult(parentEntity.getConceptAlias()).records(), false);
-        RecordSet recordSet = new RecordSet(e, queryResults.getResult(e.getConceptAlias()).records(), false);
-        recordSet.setParent(parentRecordSet);
-
-        SraMetadataMapper metadataMapper = new GeomeSraMetadataMapper(queryResults.getResult(e.getConceptAlias()), queryResults.getResult(parentEntity.getConceptAlias()));
-        BioSampleMapper bioSampleMapper = new GeomeBioSampleMapper(queryResults.getResult(e.getConceptAlias()), queryResults.getResult(parentEntity.getConceptAlias()));
+        SraMetadataMapper metadataMapper = new GeomeSraMetadataMapper(e, queryResults);
+        BioSampleMapper bioSampleMapper = new GeomeBioSampleMapper(e, queryResults);
 
         File bioSampleFile = BioSampleAttributesGenerator.generateFile(bioSampleMapper);
         File sraMetadataFile = SraMetadataGenerator.generateFile(metadataMapper);
@@ -124,7 +138,7 @@ public class ProjectController extends BaseProjectsController {
 
     /**
      * Fetch an overview of all expeditions in a project.
-	 *  TODO this isn't in the generated swagger docs
+     * TODO this isn't in the generated swagger docs
      *
      * @return List of json objects containing the following information for each expedition:
      * - expeditionCode
