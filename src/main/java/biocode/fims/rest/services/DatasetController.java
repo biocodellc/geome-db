@@ -408,7 +408,8 @@ public class DatasetController extends FimsController {
             return null;
         }
 
-        String fileId = fileCache.cacheFileForUser(file, userContext.getUser(), expeditionCode + "-export.zip");
+        String ext = FileUtils.getExtension(file.getName(), ".zip");
+        String fileId = fileCache.cacheFileForUser(file, userContext.getUser(), expeditionCode + "-export." + ext);
 
         return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
     }
