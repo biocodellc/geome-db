@@ -118,6 +118,19 @@ distributions {
     }
 }
 
+// TODO find a better way to do this, but we need to run the biocode-fims-commons
+// registerOAuthClient task with the geome classpath
+// ./gradlew registerOAuthClient -PappArgs="['-c', 'https://localhost:8080/']"
+task registerOAuthClient() {
+    classpath = configurations.server + configurations.compile + sourceSets.main.runtimeClasspath
+
+    if (project.hasProperty("appArgs")) {
+        args Eval.me(appArgs)
+    }
+
+    main = "biocode.fims.auth.oauth2.OAuthClientRegisterer"
+}
+
 startScripts {
     classpath = files(jar.archivePath, configurations.server, configurations.runtime)
 }
@@ -174,6 +187,7 @@ fatWar {
         into 'docs'
     })
 }
+
 
 //= Rest api docs configuration
 //=============================
