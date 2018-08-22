@@ -121,7 +121,7 @@ distributions {
 // TODO find a better way to do this, but we need to run the biocode-fims-commons
 // registerOAuthClient task with the geome classpath
 // ./gradlew registerOAuthClient -PappArgs="['-c', 'https://localhost:8080/']"
-task registerOAuthClient() {
+task registerOAuthClient(type: JavaExec) {
     classpath = configurations.server + configurations.compile + sourceSets.main.runtimeClasspath
 
     if (project.hasProperty("appArgs")) {
