@@ -2,6 +2,7 @@ package biocode.fims.rest.services;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
+import biocode.fims.fasta.FastaQueryWriter;
 import biocode.fims.projectConfig.models.Entity;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
@@ -11,6 +12,8 @@ import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.User;
+import biocode.fims.projectConfig.models.FastaEntity;
+import biocode.fims.query.QueryResult;
 import biocode.fims.records.RecordMetadata;
 import biocode.fims.projectConfig.ProjectConfig;
 import biocode.fims.query.QueryBuilder;
@@ -398,23 +401,36 @@ public class DatasetController extends FimsController {
         Query query = new Query(qb, config, exp);
 
         QueryResults result = recordRepository.query(query);
-        QueryWriter queryWriter = new DelimitedTextQueryWriter(result, ",", config);
+        QueryWriter delimitedTextQueryWriter = new DelimitedTextQueryWriter(result, ",", config);
 
-        File file = null;
+        List<File> files = null;
         try {
-            file = queryWriter.write();
+            files = delimitedTextQueryWriter.write();
+
+            Optional<Entity> fastaEntity = config.entities().stream()
+                    .filter(e -> e.type().equals(FastaEntity.TYPE))
+                    .findFirst();
+
+            if (fastaEntity.isPresent()) {
+                String conceptAlias = fastaEntity.get().getConceptAlias();
+                QueryResult fastaQueryResult = result.getResult(conceptAlias);
+
+                if (fastaQueryResult != null) {
+                    QueryWriter fastaQueryWriter = new FastaQueryWriter(fastaQueryResult, config);
+                    files.addAll(fastaQueryWriter.write());
+                }
+            }
         } catch (FimsRuntimeException e) {
             if (!e.getErrorCode().equals(QueryCode.NO_RESOURCES)) {
                 throw e;
             }
         }
 
-        if (file == null) {
+        if (files == null) {
             return null;
         }
 
-        String ext = FileUtils.getExtension(file.getName(), ".zip");
-        String fileId = fileCache.cacheFileForUser(file, userContext.getUser(), expeditionCode + "-export." + ext);
+        String fileId = fileCache.cacheFileForUser(FileUtils.zip(files), userContext.getUser(), expeditionCode + "-export.zip");
 
         return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
     }

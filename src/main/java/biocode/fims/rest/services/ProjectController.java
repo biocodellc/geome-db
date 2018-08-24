@@ -31,6 +31,7 @@ import biocode.fims.tools.FileCache;
 import biocode.fims.utils.FileUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Controller;
 
 import javax.servlet.ServletContext;
@@ -148,7 +149,8 @@ public class ProjectController extends BaseProjectsController {
      */
     @GET
     @Path("/{projectId}/expeditions/stats")
-    public List<Map> expeditionStats(@PathParam("projectId") Integer projectId) {
+    public List<Map> expeditionStats(@PathParam("projectId") Integer projectId,
+                                     @QueryParam("expeditionCode") String expeditionCode) {
         Project project = projectService.getProject(projectId);
 
         if (project == null) {
@@ -157,7 +159,7 @@ public class ProjectController extends BaseProjectsController {
 
         String countsSql = geomeSql.expeditionStatsEntityCounts();
         String joinsSql = geomeSql.expeditionStatsEntityJoins();
-        String sql = geomeSql.expeditionStats();
+        String sql = expeditionCode == null ? geomeSql.expeditionStats() : geomeSql.singleExpeditionStats();
 
         StringBuilder entityJoinsSql = new StringBuilder();
         StringBuilder entityCountsSql = new StringBuilder();
@@ -180,7 +182,7 @@ public class ProjectController extends BaseProjectsController {
 
         return recordRepository.query(
                 StrSubstitutor.replace(sql, params),
-                null,
+                expeditionCode == null ? null : new MapSqlParameterSource("expeditionCode", expeditionCode),
                 Map.class
         );
     }

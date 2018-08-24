@@ -5,6 +5,13 @@ expeditionStats: >
   WHERE e.project_id = ${projectId} AND (e.public = true OR e.public <> ${includePrivate})
   ORDER BY lower(e.expedition_code)
 
+singleExpeditionStats: >
+  SELECT e.expedition_code AS "expeditionCode", e.expedition_title AS "expeditionTitle", e.identifier as "expeditionIdentifier" ${entityCounts}
+  FROM expeditions AS e
+  ${entityJoins}
+  WHERE e.project_id = ${projectId} AND e.expedition_code = :expeditionCode
+  ORDER BY lower(e.expedition_code)
+
 expeditionStatsEntityCounts: >
   COALESCE(${entity}.ct, 0) as "${entity}Count"
 

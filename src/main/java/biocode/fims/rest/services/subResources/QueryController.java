@@ -151,13 +151,8 @@ public class QueryController extends FimsController {
         try {
             QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, ",", getProject().getProjectConfig());
 
-            File file = queryWriter.write();
-
-            if (file.getName().endsWith("zip")) {
-                return returnFileResults(file, "geome-fims-output.zip");
-            }
-
-            return returnFileResults(file, "geome-fims-output.csv");
+            List<File> files = queryWriter.write();
+            return returnFileResults(FileUtils.zip(files), "geome-fims-output-csv.zip");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return null;
@@ -218,7 +213,7 @@ public class QueryController extends FimsController {
                     .nameColumn(entity.getUniqueKey())
                     .build();
 
-            return returnFileResults(queryWriter.write(), "geome-fims-output.kml");
+            return returnFileResults(FileUtils.zip(queryWriter.write()), "geome-fims-output-kml.zip");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return null;
@@ -259,7 +254,7 @@ public class QueryController extends FimsController {
         try {
             QueryWriter queryWriter = new CspaceQueryWriter(queryResults.results().get(0), getProject().getProjectConfig());
 
-            return returnFileResults(queryWriter.write(), "geome-fims-output.cspace.xml");
+            return returnFileResults(FileUtils.zip(queryWriter.write()), "geome-fims-output-cspace.zip");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return null;
@@ -301,6 +296,7 @@ public class QueryController extends FimsController {
         queryString += " _select_:[" + String.join(",", entities) + "]";
 
         QueryResults queryResults = run(queryString);
+        if (queryResults.isEmpty()) return null;
 
         try {
             QueryWriter queryWriter = new FastaQueryWriter(queryResults.getResult(e.getConceptAlias()), getProject().getProjectConfig());
@@ -314,20 +310,10 @@ public class QueryController extends FimsController {
                     ",", getProject().getProjectConfig()
             );
 
-            File fastaFile = queryWriter.write();
-            File metadataFile = parentQueryWriter.write();
+            List<File> files = queryWriter.write();
+            files.addAll(parentQueryWriter.write());
 
-            Map<String, File> fileMap = new HashMap<>();
-            fileMap.put("geome-db-output.csv", metadataFile);
-
-            if (fastaFile.getName().endsWith(".zip")) {
-                fileMap.put("geome-db-fasta.zip", fastaFile);
-            } else {
-                fileMap.put("geome-db-output.fasta", fastaFile);
-            }
-
-            File file = FileUtils.zip(fileMap, defaultOutputDirectory());
-            return returnFileResults(file, "geome-fims-output.zip");
+            return returnFileResults(FileUtils.zip(files), "geome-fims-output-fasta.zip");
         } catch (FimsRuntimeException err) {
             if (err.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return null;
@@ -373,12 +359,9 @@ public class QueryController extends FimsController {
         try {
             QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, "\t", getProject().getProjectConfig());
 
-            File file = queryWriter.write();
+            List<File> files = queryWriter.write();
 
-            if (file.getName().endsWith("zip")) {
-                return returnFileResults(file, "geome-fims-output.zip");
-            }
-            return returnFileResults(file, "geome-fims-output.txt");
+            return returnFileResults(FileUtils.zip(files), "geome-fims-output.txt");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return null;
@@ -424,9 +407,9 @@ public class QueryController extends FimsController {
 
         try {
             QueryWriter queryWriter = new ExcelQueryWriter(projectService.getProject(projectId), queryResults, props.naan());
-            File file = queryWriter.write();
+            List<File> files = queryWriter.write();
 
-            return returnFileResults(file, "geome-fims-output.xlsx");
+            return returnFileResults(FileUtils.zip(files), "geome-fims-output-excel.zip");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return null;
