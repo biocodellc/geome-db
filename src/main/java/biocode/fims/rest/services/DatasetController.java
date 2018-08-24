@@ -381,15 +381,20 @@ public class DatasetController extends FimsController {
 
         ProjectConfig config = expedition.getProject().getProjectConfig();
 
-        List<String> entities = config.entities().stream().map(Entity::getConceptAlias).collect(Collectors.toList());
+        // TODO: this won't work when a config has 2 un-related parentEntities
+        String queryEntity = config.entities().stream().filter(e -> !e.isChildEntity()).findFirst().get().getConceptAlias();
+        List<String> entities = config.entities().stream()
+                .map(Entity::getConceptAlias)
+                .filter(c -> !c.equals(queryEntity))
+                .collect(Collectors.toList());
 
         ExpeditionExpression expeditionExpression = new ExpeditionExpression(expeditionCode);
         Expression exp = new SelectExpression(
-                String.join(",", entities.subList(1, entities.size() - 1)),
+                String.join(",", entities),
                 expeditionExpression
         );
 
-        QueryBuilder qb = new QueryBuilder(expedition.getProject(), entities.get(0));
+        QueryBuilder qb = new QueryBuilder(expedition.getProject(), queryEntity);
         Query query = new Query(qb, config, exp);
 
         QueryResults result = recordRepository.query(query);
