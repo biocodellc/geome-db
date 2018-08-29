@@ -1,5 +1,6 @@
 package biocode.fims.application.config;
 
+import biocode.fims.config.models.PhotoEntity;
 import biocode.fims.fasta.FastaRecord;
 import biocode.fims.fasta.FastaValidator;
 import biocode.fims.fasta.reader.FastaDataReaderType;
@@ -18,7 +19,6 @@ import biocode.fims.photos.PhotoValidator;
 import biocode.fims.photos.processing.PhotoProcessingTaskExecutor;
 import biocode.fims.photos.processing.PhotoProcessingTaskScheduler;
 import biocode.fims.photos.reader.PhotoConverter;
-import biocode.fims.projectConfig.models.PhotoEntity;
 import biocode.fims.reader.*;
 import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.plugins.ExcelReader;
