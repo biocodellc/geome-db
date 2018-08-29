@@ -25,6 +25,7 @@ import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
 import biocode.fims.repositories.PostgresRecordRepository;
 import biocode.fims.repositories.RecordRepository;
+import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.validation.RecordValidator;
 import biocode.fims.validation.RecordValidatorFactory;
@@ -53,7 +54,7 @@ public class GeomeAppConfig {
     PhotosAppConfig photosAppConfig;
 
     @Autowired
-    ProjectService projectService;
+    NetworkService networkService;
     @Autowired
     PhotosProperties photosProperties;
 
@@ -120,7 +121,7 @@ public class GeomeAppConfig {
     @Bean
     public PhotoProcessingTaskScheduler photoProcessingTaskScheduler() {
         PhotoProcessingTaskExecutor executor = new PhotoProcessingTaskExecutor(recordRepository(), Executors.newFixedThreadPool(5));
-        return new PhotoProcessingTaskScheduler(projectService, recordRepository(), photosAppConfig.photosSql(), executor, ClientBuilder.newClient(), photosProperties);
+        return new PhotoProcessingTaskScheduler(networkService, recordRepository(), photosAppConfig.photosSql(), executor, ClientBuilder.newClient(), photosProperties);
     }
 
 //    @Bean

@@ -144,9 +144,8 @@ public class DatasetController extends FimsController {
             throw new FimsRuntimeException(ProjectCode.INVALID_PROJECT, 400);
         }
 
-        DatasetProcessor.Builder builder = new DatasetProcessor.Builder(projectId, expeditionCode, processorStatus)
+        DatasetProcessor.Builder builder = new DatasetProcessor.Builder(project, expeditionCode, processorStatus)
                 .user(userContext.getUser())
-                .projectConfig(project.getProjectConfig())
                 .readerFactory(readerFactory)
                 .dataConverterFactory(dataConverterFactory)
                 .recordRepository(recordRepository)
@@ -397,7 +396,7 @@ public class DatasetController extends FimsController {
                 expeditionExpression
         );
 
-        QueryBuilder qb = new QueryBuilder(expedition.getProject(), queryEntity);
+        QueryBuilder qb = new QueryBuilder(config, expedition.getProject().getNetwork().getId(), queryEntity);
         Query query = new Query(qb, config, exp);
 
         QueryResults result = recordRepository.query(query);

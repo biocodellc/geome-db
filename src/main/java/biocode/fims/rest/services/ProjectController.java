@@ -109,7 +109,7 @@ public class ProjectController extends BaseProjectsController {
                 expeditionExpression
         );
 
-        QueryBuilder qb = new QueryBuilder(project, e.getConceptAlias());
+        QueryBuilder qb = new QueryBuilder(config, project.getNetwork().getId(), e.getConceptAlias());
         Query query = new Query(qb, config, exp);
 
         if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), new ArrayList<>(query.expeditions()), userContext.getUser())) {
@@ -166,7 +166,7 @@ public class ProjectController extends BaseProjectsController {
 
         for (Entity e : project.getProjectConfig().entities()) {
             Map<String, String> p = new HashMap<>();
-            p.put("table", PostgresUtils.entityTable(projectId, e.getConceptAlias()));
+            p.put("table", PostgresUtils.entityTable(project.getNetwork().getId(), e.getConceptAlias()));
             p.put("entity", e.getConceptAlias());
 
             entityCountsSql.append(", ");
