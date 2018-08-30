@@ -33,6 +33,7 @@ import biocode.fims.validation.ValidatorInstantiator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.io.ClassPathResource;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -128,5 +129,11 @@ public class GeomeAppConfig {
 //    public SraAccessionHarvester sraAccessionHarvester() {
 //        return new SraAccessionHarvester(geomeResourceRepository(), bioSampleRepository(), projectService, geomeProperties());
 //    }
+
+    @Primary
+    @Bean
+    public GeomeProperties geomeProperties(ConfigurableEnvironment env) {
+        return new GeomeProperties(env);
+    }
 
 }

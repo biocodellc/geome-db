@@ -34,7 +34,7 @@ public class RecordController extends FimsController {
      * @responseType biocode.fims.rest.services.subResources.QueryController
      * @resourceDescription Query a project's records. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>
      * for more detailed information regarding queries.
-     * @resourceTag Records - Query
+     * @resourceTag Query Records
      */
     // note: we use the regex for entity here so the paths don't collide w/ RecordsResource get by arkID
     @Path("{entity: [a-zA-Z0-9_]+}")

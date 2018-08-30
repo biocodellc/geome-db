@@ -1,9 +1,11 @@
 package biocode.fims.rest.services.subResources;
 
-import biocode.fims.application.config.FimsProperties;
+import biocode.fims.application.config.GeomeProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
+import biocode.fims.config.Config;
 import biocode.fims.config.models.FastaEntity;
-import biocode.fims.config.project.ProjectConfig;
+import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
+import biocode.fims.models.Network;
 import biocode.fims.query.QueryResult;
 import biocode.fims.records.RecordSources;
 import biocode.fims.config.models.Attribute;
@@ -21,6 +23,7 @@ import biocode.fims.rest.Compress;
 import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.responses.PaginatedResponse;
+import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tools.FileCache;
 import biocode.fims.utils.FileUtils;
@@ -40,24 +43,27 @@ import java.util.stream.Collectors;
 public class QueryController extends FimsController {
     private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
 
+    private final GeomeProperties props;
     private final RecordRepository recordRepository;
     private final QueryAuthorizer queryAuthorizer;
     private final ProjectService projectService;
+    private final NetworkService networkService;
     private final FileCache fileCache;
 
-    @QueryParam("projectId")
-    private Integer projectId;
     @PathParam("entity")
     private String entity;
+    private Network network;
     private Project project;
 
     @Autowired
-    QueryController(FimsProperties props, RecordRepository recordRepository, QueryAuthorizer queryAuthorizer,
-                    ProjectService projectService, FileCache fileCache) {
+    QueryController(GeomeProperties props, RecordRepository recordRepository, QueryAuthorizer queryAuthorizer,
+                    ProjectService projectService, NetworkService networkService, FileCache fileCache) {
         super(props);
+        this.props = props;
         this.recordRepository = recordRepository;
         this.queryAuthorizer = queryAuthorizer;
         this.projectService = projectService;
+        this.networkService = networkService;
         this.fileCache = fileCache;
     }
 
@@ -68,9 +74,8 @@ public class QueryController extends FimsController {
      * @param page        the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
      *                    limit=10, results 21-30 will be returned
      * @param limit       the number of results to return
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
-     * @summary Query project resources, returning JSON
+     * @implicitParam entity|string|path|true|||||false|the network entity to query
+     * @summary Query network resources, returning JSON
      * @responseType org.springframework.data.domain.Page<>
      */
     @Compress
@@ -90,11 +95,10 @@ public class QueryController extends FimsController {
      * @param page   the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and
      *               limit=10, results 21-30 will be returned
      * @param limit  the number of results to return
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam entity|string|path|true|||||false|the network entity to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
-     * @summary Query project resources, returning JSON
+     * @summary Query network resources, returning JSON
      * @responseType org.springframework.data.domain.Page<>
      */
     @Compress
@@ -116,11 +120,10 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam entity|string|path|true|||||false|the network entity to query
      * @implicitParam q|string|form|true|||||false|the query to run
      * @excludeParam queryString
-     * @summary Query project resources, returning a CSV file
+     * @summary Query network resources, returning a CSV file
      * @responseType java.io.File
      */
     @POST
@@ -131,11 +134,10 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
+     * @implicitParam entity|string|path|true|||||false|the network entity to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
-     * @summary Query project resources, returning CSV file
+     * @summary Query network resources, returning CSV file
      * @responseType java.io.File
      */
     @GET
@@ -149,7 +151,7 @@ public class QueryController extends FimsController {
         QueryResults queryResults = run(queryString);
 
         try {
-            QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, ",", getProject().getProjectConfig());
+            QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, ",", getConfig());
 
             List<File> files = queryWriter.write();
             return returnFileResults(FileUtils.zip(files), "geome-fims-output-csv.zip");
@@ -163,11 +165,10 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the network entity to query
      * @implicitParam q|string|form|true|||||false|the query to run
      * @excludeParams queryString
-     * @summary Query project resources, returning a KML file
+     * @summary Query network resources, returning a KML file
      * @responseType java.io.File
      */
     @POST
@@ -178,11 +179,10 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the network entity to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
-     * @summary Query project resources, returning KML file
+     * @summary Query network resources, returning KML file
      * @responseType java.io.File
      */
     @GET
@@ -234,11 +234,10 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the network entity to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
-     * @summary Query project resources, returning CSPACE file
+     * @summary Query network resources, returning CSPACE file
      * @responseType java.io.File
      */
     @GET
@@ -252,7 +251,7 @@ public class QueryController extends FimsController {
         }
 
         try {
-            QueryWriter queryWriter = new CspaceQueryWriter(queryResults.results().get(0), getProject().getProjectConfig());
+            QueryWriter queryWriter = new CspaceQueryWriter(queryResults.results().get(0), getConfig());
 
             return returnFileResults(FileUtils.zip(queryWriter.write()), "geome-fims-output-cspace.zip");
         } catch (FimsRuntimeException e) {
@@ -266,18 +265,17 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the network entity to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
-     * @summary Query project resources, returning FASTA file
+     * @summary Query network resources, returning FASTA file
      * @responseType java.io.File
      */
     @GET
     @Path("/fasta/")
     @Consumes(MediaType.APPLICATION_JSON)
     public FileResponse queryFasta(@QueryParam("q") String queryString) {
-        ProjectConfig config = getProject().getProjectConfig();
+        Config config = getConfig();
 
         Entity e = config.entity(entity);
         if (!(e instanceof FastaEntity)) {
@@ -299,7 +297,8 @@ public class QueryController extends FimsController {
         if (queryResults.isEmpty()) return null;
 
         try {
-            QueryWriter queryWriter = new FastaQueryWriter(queryResults.getResult(e.getConceptAlias()), getProject().getProjectConfig());
+            // call getConfig() again here b/c it will be set to the ProjectConfig if the query was against a single project
+            QueryWriter queryWriter = new FastaQueryWriter(queryResults.getResult(e.getConceptAlias()), getConfig());
 
             List<QueryResult> metadataResults = queryResults.results().stream()
                     .filter(r -> !r.entity().equals(e))
@@ -307,7 +306,7 @@ public class QueryController extends FimsController {
 
             QueryWriter parentQueryWriter = new DelimitedTextQueryWriter(
                     new QueryResults(metadataResults),
-                    ",", getProject().getProjectConfig()
+                    ",", getConfig()
             );
 
             List<File> files = queryWriter.write();
@@ -324,11 +323,10 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the network entity to query
      * @implicitParam q|string|form|true|||||false|the query to run
      * @excludeParam queryString
-     * @summary Query project resources, returning a TAB delimited text file
+     * @summary Query network records, returning a TAB delimited text file
      * @responseType java.io.File
      */
     @POST
@@ -339,11 +337,10 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the network entity to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
-     * @summary Query project resources, returning TAB delimited text file
+     * @summary Query network records, returning TAB delimited text file
      * @responseType java.io.File
      */
     @GET
@@ -357,7 +354,7 @@ public class QueryController extends FimsController {
         QueryResults queryResults = run(queryString);
 
         try {
-            QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, "\t", getProject().getProjectConfig());
+            QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, "\t", getConfig());
 
             List<File> files = queryWriter.write();
 
@@ -372,11 +369,10 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the network entity to query
      * @implicitParam q|string|form|true|||||false|the query to run
      * @excludeParam queryString
-     * @summary Query project resources, returning a excel workbook
+     * @summary Query network records, returning a excel workbook
      * @responseType java.io.File
      */
     @POST
@@ -387,11 +383,10 @@ public class QueryController extends FimsController {
     }
 
     /**
-     * @implicitParam entity|string|path|true|||||false|the project entity to query
-     * @implicitParam projectId|integer|query|true|||||false|the project to query
+     * @implicitParam entity|string|path|true|||||false|the network entity to query
      * @implicitParam q|string|query|true|||||false|the query to run
      * @excludeParams queryString
-     * @summary Query project resources, returning excel workbook
+     * @summary Query network records, returning excel workbook
      * @responseType java.io.File
      */
     @GET
@@ -406,7 +401,7 @@ public class QueryController extends FimsController {
         QueryResults queryResults = recordRepository.query(query);
 
         try {
-            QueryWriter queryWriter = new ExcelQueryWriter(projectService.getProject(projectId), queryResults, props.naan());
+            QueryWriter queryWriter = new ExcelQueryWriter(projectService.getProject(props.networkId()), queryResults, props.naan());
             List<File> files = queryWriter.write();
 
             return returnFileResults(FileUtils.zip(files), "geome-fims-output-excel.zip");
@@ -436,27 +431,49 @@ public class QueryController extends FimsController {
         return buildQuery(queryString, null, null);
     }
 
-    private Project getProject() {
-        if (project == null || projectId != project.getProjectId()) {
-            project = projectService.getProject(projectId);
+    private Network getNetwork() {
+        if (network == null || props.networkId() != network.getId()) {
+            network = networkService.getNetwork(props.networkId());
+
+            if (network == null) {
+                throw new FimsRuntimeException(GenericErrorCode.SERVER_ERROR, "Failed to find valid networkId in props file", 500);
+            }
         }
 
-        return project;
+        return network;
+    }
+
+    private Config getConfig() {
+        return (project == null) ? getNetwork().getNetworkConfig() : project.getProjectConfig();
+
     }
 
     private Query buildQuery(String queryString, Integer page, Integer limit) {
-        // Make sure projectId is set
-        if (projectId == null) {
-            throw new BadRequestException("ERROR: incomplete arguments");
+        network = getNetwork();
+
+        Query query = Query.factory(network, entity, queryString, page, limit);
+
+        List<Integer> projects = query.projects();
+
+        if (projects.isEmpty()) {
+
+            // TODO need to authorize network query? Currently the repo will only query public expeditions is none are specified
+            // possible to just query public projects if none are specified?
+
+        } else {
+            if (projects.size() == 1) {
+                project = projectService.getProject(projects.get(0));
+
+                if (project != null) {
+                    query.setProjectConfig(project.getProjectConfig());
+                }
+            }
+
+            if (!queryAuthorizer.authorizedQuery(projects, new ArrayList<>(query.expeditions()), userContext.getUser())) {
+                throw new ForbiddenRequestException("unauthorized query.");
+            }
         }
 
-        project = getProject();
-
-        Query query = Query.factory(project, entity, queryString, page, limit);
-
-        if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), new ArrayList<>(query.expeditions()), userContext.getUser())) {
-            throw new ForbiddenRequestException("unauthorized query.");
-        }
         return query;
     }
 }
