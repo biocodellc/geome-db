@@ -10,6 +10,10 @@ import biocode.fims.fastq.FastqRecordRowMapper;
 import biocode.fims.fastq.FastqValidator;
 import biocode.fims.fastq.reader.FastqDataReaderType;
 import biocode.fims.fastq.reader.FastqReader;
+import biocode.fims.ncbi.entrez.BioSampleRepository;
+import biocode.fims.ncbi.entrez.EntrezApiFactoryImpl;
+import biocode.fims.ncbi.entrez.EntrezApiService;
+import biocode.fims.ncbi.sra.SraAccessionHarvester;
 import biocode.fims.records.FimsRowMapper;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.GenericRecordRowMapper;
@@ -126,8 +130,11 @@ public class GeomeAppConfig {
     }
 
 //    @Bean
-//    public SraAccessionHarvester sraAccessionHarvester() {
-//        return new SraAccessionHarvester(geomeResourceRepository(), bioSampleRepository(), projectService, geomeProperties());
+//    public SraAccessionHarvester sraAccessionHarvester(GeomeProperties geomeProperties, ProjectService projectService) {
+//        EntrezApiFactoryImpl apiFactory = new EntrezApiFactoryImpl(ClientBuilder.newClient());
+//        EntrezApiService entrezApiService = new EntrezApiService(apiFactory);
+//        BioSampleRepository bioSampleRepository = new BioSampleRepository(entrezApiService);
+//        return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService, geomeProperties);
 //    }
 
     @Primary

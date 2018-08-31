@@ -138,7 +138,7 @@ public class DatasetController extends FimsController {
         // create a new processorStatus
         ProcessorStatus processorStatus = new ProcessorStatus();
 
-        Project project = projectService.getProject(projectId);
+        Project project = projectService.getProjectWithExpeditions(projectId);
 
         if (project == null) {
             throw new FimsRuntimeException(ProjectCode.INVALID_PROJECT, 400);
@@ -150,9 +150,9 @@ public class DatasetController extends FimsController {
                 .dataConverterFactory(dataConverterFactory)
                 .recordRepository(recordRepository)
                 .validatorFactory(validatorFactory)
-                .expeditionService(expeditionService)
-                .ignoreUser(props.ignoreUser())
+                .ignoreUser(props.ignoreUser() || project.getUser().equals(userContext.getUser())) // projectAdmin can modify expedition data
                 .serverDataDir(props.serverRoot())
+                .isUpload(upload)
                 .reloadWorkbooks(reloadWorkbooks);
 
         UUID processId = UUID.randomUUID();
@@ -276,7 +276,10 @@ public class DatasetController extends FimsController {
         UUID id = validationStore.put(processId, processorStatus, userId);
 
         future.whenCompleteAsync(((validationResponse, throwable) -> {
-            if (throwable != null) logger.error("Exception during dataset validation", throwable);
+            if (throwable != null) {
+                logger.error("Exception during dataset validation", throwable);
+                throwable = throwable.getCause();
+            }
             validationStore.update(id, validationResponse, throwable);
         }));
 
@@ -345,10 +348,8 @@ public class DatasetController extends FimsController {
             processor.upload();
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == UploadCode.INVALID_EXPEDITION) {
-                String message = "The expedition code \"" + processor.expeditionCode() + "\" does not exist.";
-
                 return Response.status(400)
-                        .entity(new UploadResponse(false, message))
+                        .entity(new UploadResponse(false, e.getUsrMessage()))
                         .build();
             } else {
                 throw e;
