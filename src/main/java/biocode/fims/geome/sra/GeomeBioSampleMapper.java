@@ -1,5 +1,6 @@
 package biocode.fims.geome.sra;
 
+import biocode.fims.config.Config;
 import biocode.fims.config.models.Entity;
 import biocode.fims.exceptions.SraCode;
 import biocode.fims.fastq.FastqRecord;
@@ -42,18 +43,15 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
     private final RecordJoiner recordJoiner;
     private final String uniqueKeyURI;
 
-    public GeomeBioSampleMapper(Entity fastqEntity, QueryResults queryResults) {
+    public GeomeBioSampleMapper(Config config, Entity fastqEntity, QueryResults queryResults) {
         QueryResult fastqResults = queryResults.getResult(fastqEntity.getConceptAlias());
 
         if (fastqResults.records().size() == 0) {
             throw new FimsRuntimeException(SraCode.MISSING_DATASET, 400);
         }
 
-        // sort entities so children come first
-        queryResults.sort(new QueryResults.ChildrenFirstComparator());
-
         this.recordsIt = fastqResults.records().iterator();
-        this.recordJoiner = new RecordJoiner(fastqEntity, queryResults);
+        this.recordJoiner = new RecordJoiner(config, fastqEntity, queryResults);
         this.uniqueKeyURI = fastqEntity.getUniqueKeyURI();
     }
 
@@ -72,11 +70,11 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         FastqRecord record = (FastqRecord) recordsIt.next();
         List<String> bioSampleAttributes = new ArrayList<>();
 
-        Record joinedRecord = recordJoiner.joinRecords(record);
+        Record sample = recordJoiner.getParent("Sample", record);
 
         String organism;
-        String species = joinedRecord.get("urn:species");
-        String genus = joinedRecord.get("urn:genus");
+        String species = sample.get("urn:species");
+        String genus = sample.get("urn:genus");
 
         if (!genus.equals("")) {
             organism = genus;
@@ -84,50 +82,50 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
                 organism += " " + species;
             }
         } else {
-            organism = joinedRecord.get("urn:phylum");
+            organism = sample.get("urn:phylum");
         }
 
-        bioSampleAttributes.add(joinedRecord.get("urn:materialSampleID"));
+        bioSampleAttributes.add(sample.get("urn:materialSampleID"));
         bioSampleAttributes.add(record.libraryStrategy() + "_" + organism.replace(" ", "_"));
         bioSampleAttributes.add(organism);
-        bioSampleAttributes.add(getCollectionDate(joinedRecord));
+        bioSampleAttributes.add(getCollectionDate(sample));
 
         StringBuilder geoLocSb = new StringBuilder();
-        geoLocSb.append(joinedRecord.get("urn:country"));
+        geoLocSb.append(sample.get("urn:country"));
         // must start with a country, otherwise sra validation fails
-        if (!StringUtils.isBlank(joinedRecord.get("urn:locality")) & !StringUtils.isBlank(geoLocSb.toString())) {
+        if (!StringUtils.isBlank(sample.get("urn:locality")) & !StringUtils.isBlank(geoLocSb.toString())) {
             geoLocSb.append(": ");
-            geoLocSb.append(joinedRecord.get("urn:locality"));
+            geoLocSb.append(sample.get("urn:locality"));
         }
         bioSampleAttributes.add(modifyBlankAttribute(geoLocSb.toString()));
 
-        bioSampleAttributes.add(modifyBlankAttribute(joinedRecord.get("urn:geneticTissueType")));
-        bioSampleAttributes.add(joinedRecord.get("urn:principalInvestigator"));
-        bioSampleAttributes.add(modifyBlankAttribute(joinedRecord.get("urn:recordedBy")));
+        bioSampleAttributes.add(modifyBlankAttribute(sample.get("urn:geneticTissueType")));
+        bioSampleAttributes.add(sample.get("urn:principalInvestigator"));
+        bioSampleAttributes.add(modifyBlankAttribute(sample.get("urn:recordedBy")));
 
         StringBuilder depthSb = new StringBuilder();
-        if (!StringUtils.isBlank(joinedRecord.get("urn:minimumDepthInMeters"))) {
-            depthSb.append(joinedRecord.get("urn:minimumDepthInMeters"));
+        if (!StringUtils.isBlank(sample.get("urn:minimumDepthInMeters"))) {
+            depthSb.append(sample.get("urn:minimumDepthInMeters"));
 
-            if (!StringUtils.isBlank(joinedRecord.get("urn:maximumDepthInMeters"))) {
+            if (!StringUtils.isBlank(sample.get("urn:maximumDepthInMeters"))) {
                 depthSb.append(", ");
-                depthSb.append(joinedRecord.get("urn:maximumDepthInMeters"));
+                depthSb.append(sample.get("urn:maximumDepthInMeters"));
             }
         }
         bioSampleAttributes.add(modifyBlankAttribute(depthSb.toString()));
 
-        bioSampleAttributes.add(modifyBlankAttribute(joinedRecord.get("urn:lifeStage")));
-        bioSampleAttributes.add(modifyBlankAttribute(joinedRecord.get("urn:identifiedBy")));
+        bioSampleAttributes.add(modifyBlankAttribute(sample.get("urn:lifeStage")));
+        bioSampleAttributes.add(modifyBlankAttribute(sample.get("urn:identifiedBy")));
 
-        bioSampleAttributes.add(modifyBlankAttribute(getLatLong(joinedRecord)));
+        bioSampleAttributes.add(modifyBlankAttribute(getLatLong(sample)));
 
-        bioSampleAttributes.add(modifyBlankAttribute(joinedRecord.get("urn:sex")));
+        bioSampleAttributes.add(modifyBlankAttribute(sample.get("urn:sex")));
         bioSampleAttributes.add(BLANK_ATTRIBUTE);
         bioSampleAttributes.add(BLANK_ATTRIBUTE);
         bioSampleAttributes.add(BLANK_ATTRIBUTE);
         // we don't need to entity.buildChildRecord here b/c fastq entity unique key is null
         // and thus only allows a 1-1 mapping to parents
-        bioSampleAttributes.add(record.rootIdentifier() + record.get(uniqueKeyURI));
+        bioSampleAttributes.add(sample.rootIdentifier() + record.get(uniqueKeyURI));
 
         return bioSampleAttributes;
     }

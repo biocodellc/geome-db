@@ -120,8 +120,8 @@ public class ProjectController extends BaseProjectsController {
 
         if (queryResults.isEmpty()) return null;
 
-        SraMetadataMapper metadataMapper = new GeomeSraMetadataMapper(e, queryResults);
-        BioSampleMapper bioSampleMapper = new GeomeBioSampleMapper(e, queryResults);
+        SraMetadataMapper metadataMapper = new GeomeSraMetadataMapper(config,e, queryResults);
+        BioSampleMapper bioSampleMapper = new GeomeBioSampleMapper(config, e, queryResults);
 
         File bioSampleFile = BioSampleAttributesGenerator.generateFile(bioSampleMapper);
         File sraMetadataFile = SraMetadataGenerator.generateFile(metadataMapper);

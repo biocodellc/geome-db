@@ -129,13 +129,13 @@ public class GeomeAppConfig {
         return new PhotoProcessingTaskScheduler(networkService, recordRepository(), photosAppConfig.photosSql(), executor, ClientBuilder.newClient(), photosProperties);
     }
 
-//    @Bean
-//    public SraAccessionHarvester sraAccessionHarvester(GeomeProperties geomeProperties, ProjectService projectService) {
-//        EntrezApiFactoryImpl apiFactory = new EntrezApiFactoryImpl(ClientBuilder.newClient());
-//        EntrezApiService entrezApiService = new EntrezApiService(apiFactory);
-//        BioSampleRepository bioSampleRepository = new BioSampleRepository(entrezApiService);
-//        return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService, geomeProperties);
-//    }
+    @Bean
+    public SraAccessionHarvester sraAccessionHarvester(GeomeProperties geomeProperties, ProjectService projectService) {
+        EntrezApiFactoryImpl apiFactory = new EntrezApiFactoryImpl(ClientBuilder.newClient());
+        EntrezApiService entrezApiService = new EntrezApiService(apiFactory);
+        BioSampleRepository bioSampleRepository = new BioSampleRepository(entrezApiService);
+        return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService, geomeProperties);
+    }
 
     @Primary
     @Bean

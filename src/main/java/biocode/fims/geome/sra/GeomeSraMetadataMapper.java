@@ -1,5 +1,6 @@
 package biocode.fims.geome.sra;
 
+import biocode.fims.config.Config;
 import biocode.fims.fastq.FastqProps;
 import biocode.fims.config.models.Entity;
 import biocode.fims.exceptions.SraCode;
@@ -22,18 +23,15 @@ public class GeomeSraMetadataMapper extends AbstractSraMetadataMapper {
     private final Iterator<Record> recordIt;
     private final RecordJoiner recordJoiner;
 
-    public GeomeSraMetadataMapper(Entity fastqEntity, QueryResults queryResults) {
+    public GeomeSraMetadataMapper(Config config, Entity fastqEntity, QueryResults queryResults) {
         QueryResult fastqResults = queryResults.getResult(fastqEntity.getConceptAlias());
 
         if (fastqResults.records().size() == 0) {
             throw new FimsRuntimeException(SraCode.MISSING_DATASET, 400);
         }
 
-        // sort entities so children come first
-        queryResults.sort(new QueryResults.ChildrenFirstComparator());
-
         this.recordIt = fastqResults.records().iterator();
-        this.recordJoiner = new RecordJoiner(fastqEntity, queryResults);
+        this.recordJoiner = new RecordJoiner(config, fastqEntity, queryResults);
     }
 
     @Override
