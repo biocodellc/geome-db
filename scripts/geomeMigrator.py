@@ -5,7 +5,7 @@ backup your db before running this script
 
 import psycopg2
 from mysql import connector
-import sys, argparse, requests, json, tempfile, os, csv, io
+import sys, argparse, requests, json, tempfile, os, csv, io, re
 from elasticsearch import Elasticsearch
 
 # ENDPOINT = 'https://api.develop.geome-db.org/'
@@ -359,7 +359,7 @@ def create_project_expeditions(psql, project, client_id, client_secret):
             expedition['id'],
             project['id'],
             expedition['expedition_code'],
-            expedition['expedition_title'],
+            re.sub(' spreadsheet$', '', expedition['expedition_title']),
             expedition['identifier'],
             'ANYONE' if expedition['public'] else 'EXPEDITION',
             project['tmp_user_id'],
