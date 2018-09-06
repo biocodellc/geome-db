@@ -14,6 +14,7 @@ import biocode.fims.ncbi.entrez.BioSampleRepository;
 import biocode.fims.ncbi.entrez.EntrezApiFactoryImpl;
 import biocode.fims.ncbi.entrez.EntrezApiService;
 import biocode.fims.ncbi.sra.SraAccessionHarvester;
+import biocode.fims.photos.BulkPhotoLoader;
 import biocode.fims.records.FimsRowMapper;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.GenericRecordRowMapper;
@@ -127,6 +128,11 @@ public class GeomeAppConfig {
     public PhotoProcessingTaskScheduler photoProcessingTaskScheduler() {
         PhotoProcessingTaskExecutor executor = new PhotoProcessingTaskExecutor(recordRepository(), Executors.newFixedThreadPool(5));
         return new PhotoProcessingTaskScheduler(networkService, recordRepository(), photosAppConfig.photosSql(), executor, ClientBuilder.newClient(), photosProperties);
+    }
+
+    @Bean
+    public BulkPhotoLoader bulkPhotoLoader(FimsProperties props) {
+        return new BulkPhotoLoader(dataReaderFactory(), recordValidatorFactory(), recordRepository(), dataConverterFactory(), props);
     }
 
     @Bean

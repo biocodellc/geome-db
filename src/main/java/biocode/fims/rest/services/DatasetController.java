@@ -152,7 +152,8 @@ public class DatasetController extends FimsController {
                 .validatorFactory(validatorFactory)
                 .ignoreUser(props.ignoreUser() || project.getUser().equals(userContext.getUser())) // projectAdmin can modify expedition data
                 .serverDataDir(props.serverRoot())
-                .isUpload(upload)
+                .upload()
+                .writeToServer()
                 .reloadWorkbooks(reloadWorkbooks);
 
         UUID processId = UUID.randomUUID();
