@@ -11,7 +11,7 @@ import biocode.fims.ncbi.sra.submission.AbstractSraMetadataMapper;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.records.RecordJoiner;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 

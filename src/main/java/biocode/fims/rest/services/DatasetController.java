@@ -38,7 +38,7 @@ import biocode.fims.tools.UploadStore;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.run.DataSourceMetadata;
 import biocode.fims.validation.RecordValidatorFactory;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
