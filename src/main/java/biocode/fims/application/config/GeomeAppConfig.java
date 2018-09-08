@@ -32,6 +32,8 @@ import biocode.fims.repositories.PostgresRecordRepository;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectService;
+import biocode.fims.tissues.PostgresTissueRepository;
+import biocode.fims.tissues.TissueRepository;
 import biocode.fims.validation.RecordValidator;
 import biocode.fims.validation.RecordValidatorFactory;
 import biocode.fims.validation.ValidatorInstantiator;
@@ -115,6 +117,14 @@ public class GeomeAppConfig {
         rowMappers.put(FastqRecord.class, new FastqRecordRowMapper());
 
         return new PostgresRecordRepository(fimsAppConfig.jdbcTemplate, yaml.getObject(), rowMappers);
+    }
+
+    @Bean
+    public TissueRepository tissueRepository() {
+        YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
+        yaml.setResources(new ClassPathResource("tissue-repository-sql.yml"));
+
+        return new PostgresTissueRepository(fimsAppConfig.jdbcTemplate, yaml.getObject());
     }
 
     @Bean

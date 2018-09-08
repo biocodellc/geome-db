@@ -1,6 +1,7 @@
 package biocode.fims.rest;
 
 import biocode.fims.rest.services.subResources.QueryController;
+import biocode.fims.tissues.PlateResource;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 /**
@@ -14,5 +15,6 @@ public class GeomeApplication extends FimsApplication {
         register(MultiPartFeature.class);
         register(GZIPWriterInterceptor.class);
         register(QueryController.class);
+        register(PlateResource.class);
     }
 }
