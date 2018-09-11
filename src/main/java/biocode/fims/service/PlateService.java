@@ -20,10 +20,7 @@ import biocode.fims.records.RecordSet;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.run.DatasetProcessor;
 import biocode.fims.run.ProcessorStatus;
-import biocode.fims.tissues.Plate;
-import biocode.fims.tissues.PlateResponse;
-import biocode.fims.tissues.PlateRow;
-import biocode.fims.tissues.TissueRepository;
+import biocode.fims.tissues.*;
 import biocode.fims.validation.RecordValidatorFactory;
 import biocode.fims.validation.messages.EntityMessages;
 import org.apache.commons.collections.keyvalue.MultiKey;
@@ -103,73 +100,55 @@ public class PlateService {
         return project.getProjectConfig().entity(entity.getParentEntity());
     }
 
-    public PlateResponse createPlate(User user, Project project, String plateName, Plate plate) {
-        if (getPlate(project, plateName) != null) {
+    public PlateResponse update(User user, Project project, Plate plate) {
+        Plate p = getPlate(project, plate.name());
+
+        if (p == null) {
+            throw new BadRequestException("That plate does not exits");
+        }
+
+        PlateTissues plateTissues = getPlateTissues(project, plate);
+
+        if (plateTissues.newTissues().isEmpty()) {
+            // no tissues to create
+            return new PlateResponse(p, null);
+        }
+
+        return save(user, plateTissues);
+    }
+
+    public PlateResponse create(User user, Project project, Plate plate) {
+        if (getPlate(project, plate.name()) != null) {
             throw new BadRequestException("A plate with that name already exists");
         }
 
-        Entity entity = getTissueEntity(project);
-        Entity parentEntity = getTissueParentEntity(project);
+        PlateTissues plateTissues = getPlateTissues(project, plate);
 
-        Set<String> parentIdentifiers = new HashSet<>();
-        Map<MultiKey, List<Record>> records = new HashMap<>();
-
-        for (Map.Entry<PlateRow, Record[]> e : plate.getRows().entrySet()) {
-            PlateRow row = e.getKey();
-
-            int col = 1;
-            for (Record r : e.getValue()) {
-                if (r != null) {
-                    r.set(props.tissuePlateUri(), plateName);
-                    r.set(props.tissueWellUri(), row.toString() + col);
-
-                    String parentIdentifier = r.get(parentEntity.getUniqueKey());
-
-                    parentIdentifiers.add(parentIdentifier);
-
-                    MultiKey k = new MultiKey(r.expeditionCode(), parentIdentifier);
-                    records.computeIfAbsent(k, key -> new ArrayList<>()).add(r);
-                }
-                col++;
-            }
-        }
-
-        if (records.isEmpty()) {
+        if (plateTissues.newTissues().isEmpty()) {
             throw new FimsRuntimeException(ValidationCode.INVALID_DATASET, 400);
         }
 
-        // fetch existing sibling tissues
-        Map<MultiKey, List<Record>> existingTissues = new HashMap<>();
-        tissueRepository.getTissues(
-                project.getNetwork().getId(),
-                project.getProjectId(),
-                entity.getConceptAlias(),
-                new ArrayList<>(parentIdentifiers)
-        )
-                .forEach(r -> {
-                    MultiKey k = new MultiKey(r.expeditionCode(), r.get(parentEntity.getUniqueKeyURI()));
-                    existingTissues.computeIfAbsent(k, key -> new ArrayList<>()).add(r);
-                });
+        return save(user, plateTissues);
+    }
 
-        Map<String, RecordSet> recordSets = new HashMap<>();
-        // generate a uniqueKey for each tissue in the plate
-        for (Map.Entry<MultiKey, List<Record>> e : records.entrySet()) {
-            MultiKey k = e.getKey();
+    private PlateTissues getPlateTissues(Project project, Plate plate) {
+        Entity entity = getTissueEntity(project);
+        Entity parentEntity = getTissueParentEntity(project);
 
-            String expeditionCode = (String) k.getKey(0);
+        return new PlateTissues.Builder()
+                .props(props)
+                .entity(entity)
+                .parentEntity(parentEntity)
+                .plate(plate)
+                .project(project)
+                .build();
+    }
 
-            RecordSet recordSet = recordSets.computeIfAbsent(expeditionCode, key -> new RecordSet(entity, false));
+    private PlateResponse save(User user, PlateTissues plateTissues) {
+        Project project = plateTissues.project();
 
-            List<Record> siblingTissues = existingTissues.getOrDefault(k, new ArrayList<>());
-            for (Record r : e.getValue()) {
-                r = transformProperties(entity, r);
-                recordSet.add(r);
-                if (!r.has(entity.getUniqueKeyURI())) {
-                    r.set(entity.getUniqueKeyURI(), r.get(parentEntity.getUniqueKeyURI()) + "." + (siblingTissues.size() + 1));
-                }
-                siblingTissues.add(r);
-            }
-        }
+        Map<MultiKey, List<Record>> siblingTissues = getSiblingTissues(plateTissues);
+        Map<String, RecordSet> recordSets = plateTissues.createRecordSets(siblingTissues);
 
         DatasetProcessor.Builder builder = new DatasetProcessor.Builder(project, null, new ProcessorStatus())
                 .user(user)
@@ -187,11 +166,11 @@ public class PlateService {
 
         processor.upload();
 
-        Plate p = getPlate(project, plateName);
+        Plate p = getPlate(project, plateTissues.name());
         EntityMessages entityMessages = null;
         if (!isvalid) {
             entityMessages = processor.messages().stream()
-                    .filter(em -> entity.getConceptAlias().equals(em.conceptAlias()))
+                    .filter(em -> plateTissues.entity().getConceptAlias().equals(em.conceptAlias()))
                     .findFirst()
                     .orElse(null);
         }
@@ -200,24 +179,28 @@ public class PlateService {
     }
 
     /**
-     * attempts to map any properties using the entity Attributes uri if possible
+     * Fetch existing sibling tissues
      *
-     * @param entity entity to map the Record properties against
-     * @param r
-     * @return new Record instance w/ mapped properties
+     * @param plateTissues
+     * @return
      */
-    private Record transformProperties(Entity entity, Record r) {
-        Map<String, String> props = new HashMap<>();
+    private Map<MultiKey, List<Record>> getSiblingTissues(PlateTissues plateTissues) {
+        Project project = plateTissues.project();
+        Map<MultiKey, List<Record>> existingTissues = new HashMap<>();
 
-        for (String key : r.properties().keySet()) {
-            String uri = entity.getAttributeUri(key);
-            if (uri == null) {
-                props.put(key, r.get(key));
-            } else {
-                props.put(uri, r.get(key));
-            }
-        }
+        tissueRepository.getTissues(
+                project.getNetwork().getId(),
+                project.getProjectId(),
+                plateTissues.entity().getConceptAlias(),
+                new ArrayList<>(plateTissues.parentIdentifiers())
+        )
+                .forEach(r -> {
+                    MultiKey k = new MultiKey(r.expeditionCode(), r.get(plateTissues.parentEntity().getUniqueKeyURI()));
+                    existingTissues.computeIfAbsent(k, key -> new ArrayList<>()).add(r);
+                });
 
-        return new GenericRecord(props, r.rootIdentifier(), r.projectId(), r.expeditionCode(), r.persist());
+        return existingTissues;
     }
+
+
 }

@@ -12,10 +12,12 @@ import java.util.regex.Pattern;
 /**
  * @author rjewing
  */
+@JsonIgnoreProperties(value = {"name"}, ignoreUnknown = true)
 public class Plate {
     private static final Pattern WELL_PATTERN = Pattern.compile("^([a-z])([0-9]{1,2})$", Pattern.CASE_INSENSITIVE);
 
     private Map<PlateRow, Record[]> rows;
+    private String name;
 
     Plate() {
         this.rows = new LinkedHashMap<>();
@@ -23,6 +25,14 @@ public class Plate {
         for (PlateRow row : PlateRow.values()) {
             rows.put(row, new Record[12]);
         }
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public void name(String name) {
+        this.name = name;
     }
 
     @JsonAnyGetter
@@ -36,7 +46,7 @@ public class Plate {
 
         Record[] row = new Record[12];
         int i = 0;
-        for (Object props: (List) value) {
+        for (Object props : (List) value) {
             if (props != null) {
                 row[i] = new GenericRecord((Map<String, String>) props);
             }

@@ -1,6 +1,7 @@
 package biocode.fims.tissues;
 
 
+import biocode.fims.application.config.FimsProperties;
 import biocode.fims.application.config.GeomeProperties;
 import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.fimsExceptions.BadRequestException;
@@ -28,15 +29,13 @@ import java.util.List;
 public class PlateResource extends FimsController {
     private final static Logger logger = LoggerFactory.getLogger(PlateResource.class);
 
-    private final GeomeProperties props;
     private final ProjectService projectService;
     private final PlateService plateService;
     private final ProjectAuthorizer projectAuthorizer;
 
     @Autowired
-    public PlateResource(GeomeProperties props, ProjectService projectService, PlateService plateService, ProjectAuthorizer projectAuthorizer) {
+    public PlateResource(FimsProperties props, ProjectService projectService, PlateService plateService, ProjectAuthorizer projectAuthorizer) {
         super(props);
-        this.props = props;
         this.projectService = projectService;
         this.plateService = plateService;
         this.projectAuthorizer = projectAuthorizer;
@@ -61,8 +60,8 @@ public class PlateResource extends FimsController {
 
     @Path("{projectId: [0-9]+}/{plateName}")
     @GET
-    public Plate getPlates(@PathParam("projectId") Integer projectId,
-                           @PathParam("plateName") String plateName) {
+    public Plate get(@PathParam("projectId") Integer projectId,
+                     @PathParam("plateName") String plateName) {
         User user = userContext.getUser();
         Project project = projectService.getProjectWithExpeditions(projectId);
 
@@ -74,7 +73,13 @@ public class PlateResource extends FimsController {
             throw new ForbiddenRequestException("You do not have access to this project");
         }
 
-        return plateService.getPlate(project, plateName);
+        Plate plate = plateService.getPlate(project, plateName);
+
+        if (plate == null) {
+            throw new BadRequestException("Invalid plate");
+        }
+
+        return plate;
     }
 
     @Authenticated
@@ -90,24 +95,26 @@ public class PlateResource extends FimsController {
             throw new BadRequestException("Invalid project");
         }
 
-        return plateService.createPlate(user, project, plateName, plate);
+        plate.name(plateName);
+
+        return plateService.create(user, project, plate);
     }
 
-//    @Path("{projectId: [0-9]+}/{plateName}")
-//    @GET
-//    public Plate getPlates(@PathParam("projectId") Integer projectId,
-//                           @PathParam("plateName") String plateName) {
-//        User user = userContext.getUser();
-//        Project project = projectService.getProjectWithExpeditions(projectId);
+    @Authenticated
+    @Path("{projectId: [0-9]+}/{plateName}")
+    @PUT
+    public PlateResponse update(@PathParam("projectId") Integer projectId,
+                                @PathParam("plateName") String plateName,
+                                Plate plate) {
+        User user = userContext.getUser();
+        Project project = projectService.getProjectWithExpeditions(projectId);
 
-//        if (project == null) {
-//            throw new BadRequestException("Invalid project");
-//        }
+        if (project == null) {
+            throw new BadRequestException("Invalid project");
+        }
 
-//        if (!projectAuthorizer.userHasAccess(user, project)) {
-//            throw new ForbiddenRequestException("You do not have access to this project");
-//        }
+        plate.name(plateName);
 
-//        return plateService.getPlate(project, plateName);
-//    }
+        return plateService.update(user, project, plate);
+    }
 }
