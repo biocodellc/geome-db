@@ -2,3 +2,9 @@ getPlates: >
   SELECT distinct(data->>'${plateColumn}')
   FROM ${table} t
   WHERE t.expedition_id in (SELECT id from expeditions where  project_id = :projectId)
+
+getTissues: >
+  SELECT data
+  FROM ${table} t
+  JOIN expeditions e on t.expedition_id = e.id
+  WHERE t.parent_identifier in (:parentIdentifiers) and e.project_id = :projectId

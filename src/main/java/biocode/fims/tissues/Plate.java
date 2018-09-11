@@ -1,15 +1,11 @@
 package biocode.fims.tissues;
 
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.annotation.*;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,7 +17,7 @@ public class Plate {
 
     private Map<PlateRow, Record[]> rows;
 
-    public Plate() {
+    Plate() {
         this.rows = new LinkedHashMap<>();
 
         for (PlateRow row : PlateRow.values()) {
@@ -32,6 +28,22 @@ public class Plate {
     @JsonAnyGetter
     public Map<PlateRow, Record[]> getRows() {
         return rows;
+    }
+
+    @JsonAnySetter
+    public void anySetter(String name, Object value) {
+        PlateRow plateRow = PlateRow.fromString(name);
+
+        Record[] row = new Record[12];
+        int i = 0;
+        for (Object props: (List) value) {
+            if (props != null) {
+                row[i] = new GenericRecord((Map<String, String>) props);
+            }
+            i++;
+        }
+
+        this.rows.put(plateRow, row);
     }
 
     public void addRecord(String well, Record record) {

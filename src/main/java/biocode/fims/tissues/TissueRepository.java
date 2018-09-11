@@ -1,5 +1,7 @@
 package biocode.fims.tissues;
 
+import biocode.fims.records.Record;
+
 import java.util.List;
 
 /**
@@ -8,4 +10,6 @@ import java.util.List;
 public interface TissueRepository {
 
     List<String> getPlates(int networkId, int projectId, String conceptAlias, String plateColumn);
+
+    List<Record> getTissues(int networkId, int projectId, String conceptAlias, List<String> parentIdentifiers);
 }
