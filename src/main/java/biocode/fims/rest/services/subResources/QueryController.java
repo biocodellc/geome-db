@@ -344,7 +344,7 @@ public class QueryController extends FimsController {
      * @responseType java.io.File
      */
     @GET
-    @Path("/tsv/")
+    @Path("/tab/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     public FileResponse queryTAB(@QueryParam("q") String queryString) {
         return tsv(queryString);
@@ -358,7 +358,7 @@ public class QueryController extends FimsController {
 
             List<File> files = queryWriter.write();
 
-            return returnFileResults(FileUtils.zip(files), "geome-fims-output.txt");
+            return returnFileResults(FileUtils.zip(files), "geome-fims-output-tab.zip");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return null;
@@ -401,10 +401,14 @@ public class QueryController extends FimsController {
         QueryResults queryResults = recordRepository.query(query);
 
         try {
-            QueryWriter queryWriter = new ExcelQueryWriter(projectService.getProject(props.networkId()), queryResults, props.naan());
+            // If project, then this is a single project query
+            QueryWriter queryWriter = (project == null)
+                    ? new ExcelQueryWriter(getConfig(), queryResults, props.naan())
+                    : new ExcelQueryWriter(project, queryResults, props.naan());
             List<File> files = queryWriter.write();
 
-            return returnFileResults(FileUtils.zip(files), "geome-fims-output-excel.zip");
+            // ExcelQueryWriter return single file
+            return returnFileResults(files.get(0), "geome-fims-output-excel.xlsx");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
                 return null;
@@ -457,7 +461,7 @@ public class QueryController extends FimsController {
 
         if (projects.isEmpty()) {
 
-            // TODO need to authorize network query? Currently the repo will only query public expeditions is none are specified
+            // TODO need to authorize network query? Currently the repo will only query public expeditions if none are specified
             // possible to just query public projects if none are specified?
 
         } else {
