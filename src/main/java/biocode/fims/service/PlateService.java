@@ -1,6 +1,7 @@
 package biocode.fims.service;
 
 import biocode.fims.application.config.GeomeProperties;
+import biocode.fims.bcid.BcidBuilder;
 import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.Entity;
 import biocode.fims.config.project.ProjectConfig;
@@ -14,9 +15,7 @@ import biocode.fims.query.QueryBuilder;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.*;
-import biocode.fims.records.GenericRecord;
-import biocode.fims.records.Record;
-import biocode.fims.records.RecordSet;
+import biocode.fims.records.*;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.run.DatasetProcessor;
 import biocode.fims.run.ProcessorStatus;
@@ -27,6 +26,7 @@ import org.apache.commons.collections.keyvalue.MultiKey;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author rjewing
@@ -70,19 +70,33 @@ public class PlateService {
 
         Attribute plateAttribute = entity.getAttributeByUri(props.tissuePlateUri());
         ComparisonExpression plateExp = new ComparisonExpression(plateAttribute.getColumn(), plateName, ComparisonOperator.EQUALS);
-//        SelectExpression exp = new SelectExpression(entity.getParentEntity(), plateExp);
+        SelectExpression exp = new SelectExpression(entity.getParentEntity(), plateExp);
         QueryBuilder qb = new QueryBuilder(config, project.getNetwork().getId(), entity.getConceptAlias());
-        Query query = new Query(qb, config, plateExp);
+        Query query = new Query(qb, config, exp);
+
 
         QueryResults queryResults = recordRepository.query(query);
 
         if (queryResults.isEmpty()) return null;
 
-        QueryResult tissues = queryResults.getResult(entity.getConceptAlias());
+        Entity parentEntity = getTissueParentEntity(project);
+        BcidBuilder bcidBuilder = new BcidBuilder(entity, parentEntity);
+
+        ArrayList<Attribute> attributes = new ArrayList<>(entity.getAttributes());
+        attributes.addAll(parentEntity.getAttributes());
+
+        RecordMapper recordMapper = new RecordMapper(bcidBuilder, attributes, false);
+        RecordJoiner joiner = new RecordJoiner(config, entity, queryResults);
+
+        List<Record> tissues = queryResults.getResult(entity.getConceptAlias())
+                .records().stream()
+                .map(joiner::joinRecords)
+                .map(recordMapper::mapAsRecord)
+                .collect(Collectors.toList());
 
         Attribute wellAttribute = entity.getAttributeByUri(props.tissueWellUri());
 
-        return Plate.fromRecords(wellAttribute.getColumn(), tissues.getAsRecord(false));
+        return Plate.fromRecords(wellAttribute.getColumn(), tissues);
     }
 
     private Entity getTissueEntity(Project project) {
