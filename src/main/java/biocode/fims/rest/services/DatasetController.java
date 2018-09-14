@@ -134,6 +134,10 @@ public class DatasetController extends FimsController {
             throw new UnauthorizedRequestException("You must be logged in to upload.");
         }
 
+        if (upload && expeditionCode == null &&
+                (reloadWorkbooks || dataSourceMetadata.stream().anyMatch(DataSourceMetadata::isReload))) {
+            throw new BadRequestException("reloading data is prohibited for multi-expedition uploads.");
+        }
 
         // create a new processorStatus
         ProcessorStatus processorStatus = new ProcessorStatus();
