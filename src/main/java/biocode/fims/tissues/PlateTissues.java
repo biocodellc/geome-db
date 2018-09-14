@@ -172,7 +172,11 @@ public class PlateTissues {
                         // those that are missing the tissue entity uniqueKey
                         if (!r.has(entity.getUniqueKey())) {
                             r.set(props.tissuePlateUri(), plate.name());
-                            r.set(props.tissueWellUri(), row.toString() + col);
+                            if (col < 10) {
+                                r.set(props.tissueWellUri(), row.toString() + ("0" + col));
+                            } else {
+                                r.set(props.tissueWellUri(), row.toString() + col);
+                            }
                             newTissues.computeIfAbsent(k, key -> new ArrayList<>()).add(r);
                         } else {
                             existingTissues.computeIfAbsent(k, key -> new ArrayList<>()).add(r);
