@@ -26,8 +26,8 @@ public class RecordController extends FimsController {
      * @responseType biocode.fims.rest.services.subResources.RecordsResource
      */
     @Path("/")
-    public Resource getRecordsResource() {
-        return Resource.from(RecordsResource.class);
+    public Class<RecordsResource> getRecordsResource() {
+        return RecordsResource.class;
     }
 
     /**
@@ -38,8 +38,8 @@ public class RecordController extends FimsController {
      */
     // note: we use the regex for entity here so the paths don't collide w/ RecordsResource get by arkID
     @Path("{entity: [a-zA-Z0-9_]+}")
-    public Resource getQueryController() {
-        return Resource.from(QueryController.class);
+    public Class<QueryController> getQueryController() {
+        return QueryController.class;
     }
 }
 

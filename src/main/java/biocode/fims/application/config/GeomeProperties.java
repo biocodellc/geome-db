@@ -5,13 +5,14 @@ import org.springframework.core.env.ConfigurableEnvironment;
 /**
  * @author rjewing
  */
-public class GeomeProperties extends FimsProperties {
+public class GeomeProperties extends FimsProperties implements NetworkProperties {
 
     public GeomeProperties(ConfigurableEnvironment env) {
         super(env);
     }
 
-    public int networkId() {
+    @Override
+    public Integer networkId() {
         return env.getRequiredProperty("networkId", int.class);
     }
 

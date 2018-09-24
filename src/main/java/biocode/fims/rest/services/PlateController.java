@@ -25,7 +25,7 @@ public class PlateController extends FimsController {
      * @responseType biocode.fims.tissues.PlateResource
      */
     @Path("/")
-    public Resource getPlateResource() {
-        return Resource.from(PlateResource.class);
+    public Class<PlateResource> getPlateResource() {
+        return PlateResource.class;
     }
 }

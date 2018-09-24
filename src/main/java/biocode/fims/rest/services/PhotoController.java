@@ -25,7 +25,7 @@ public class PhotoController extends FimsController {
      * @responseType biocode.fims.rest.services.subResources.PhotosResource
      */
     @Path("/")
-    public Resource getPhotosResource() {
-        return Resource.from(PhotosResource.class);
+    public Class<PhotosResource> getPhotosResource() {
+        return PhotosResource.class;
     }
 }
