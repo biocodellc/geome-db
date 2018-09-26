@@ -9,6 +9,9 @@ import biocode.fims.records.RecordSet;
 import org.apache.commons.collections.keyvalue.MultiKey;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author rjewing
@@ -78,14 +81,33 @@ public class PlateTissues {
 
             RecordSet recordSet = recordSets.computeIfAbsent(expeditionCode, key -> new RecordSet(entity, false));
 
-            List<Record> siblings = siblingTissues.getOrDefault(k, new ArrayList<>());
+            List<String> siblings = siblingTissues.getOrDefault(k, new ArrayList<>()).stream()
+                    .map(r -> r.get(entity.getUniqueKeyURI()))
+                    .collect(Collectors.toList());
+
+            // we get the max here so we don't create duplicates if a tissue has been deleted
+            // if id is of form parentIdentifier.[0-9] we parse the digit and use that as the
+            // max if it is > then siblings.size();
+            int max = siblings.size();
+
+            // don't use uniqueKeyUri here b/c we haven't called transformProperties yet
+            Pattern p = Pattern.compile(e.getValue().get(0).get(parentEntity.getUniqueKey()) + "\\.(\\d+)");
+            for (String s: siblings) {
+                Matcher matcher = p.matcher(s);
+                if (matcher.matches()) {
+                    Integer i = Integer.parseInt(matcher.group(1));
+                    if (i > max) max = i;
+                }
+            }
+
             for (Record r : e.getValue()) {
                 r = transformProperties(r);
                 recordSet.add(r);
                 if (!r.has(entity.getUniqueKeyURI())) {
-                    r.set(entity.getUniqueKeyURI(), r.get(parentEntity.getUniqueKeyURI()) + "." + (siblings.size() + 1));
+                    r.set(entity.getUniqueKeyURI(), r.get(parentEntity.getUniqueKeyURI()) + "." + ++max);
                 }
-                siblings.add(r);
+                siblings.add(r.get(entity.getUniqueKeyURI()));
+                if (siblings.size() > max) max += 1;
             }
         }
 
