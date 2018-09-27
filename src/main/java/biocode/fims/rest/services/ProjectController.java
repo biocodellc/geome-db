@@ -3,9 +3,9 @@ package biocode.fims.rest.services;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.application.config.GeomeSql;
 import biocode.fims.authorizers.QueryAuthorizer;
-import biocode.fims.projectConfig.ProjectConfig;
-import biocode.fims.projectConfig.models.Entity;
-import biocode.fims.projectConfig.models.FastqEntity;
+import biocode.fims.config.models.FastqEntity;
+import biocode.fims.config.project.ProjectConfig;
+import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
@@ -29,8 +29,9 @@ import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tools.FileCache;
 import biocode.fims.utils.FileUtils;
-import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Controller;
 
 import javax.servlet.ServletContext;
@@ -108,7 +109,7 @@ public class ProjectController extends BaseProjectsController {
                 expeditionExpression
         );
 
-        QueryBuilder qb = new QueryBuilder(project, e.getConceptAlias());
+        QueryBuilder qb = new QueryBuilder(config, project.getNetwork().getId(), e.getConceptAlias());
         Query query = new Query(qb, config, exp);
 
         if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), new ArrayList<>(query.expeditions()), userContext.getUser())) {
@@ -119,8 +120,8 @@ public class ProjectController extends BaseProjectsController {
 
         if (queryResults.isEmpty()) return null;
 
-        SraMetadataMapper metadataMapper = new GeomeSraMetadataMapper(e, queryResults);
-        BioSampleMapper bioSampleMapper = new GeomeBioSampleMapper(e, queryResults);
+        SraMetadataMapper metadataMapper = new GeomeSraMetadataMapper(config,e, queryResults);
+        BioSampleMapper bioSampleMapper = new GeomeBioSampleMapper(config, e, queryResults);
 
         File bioSampleFile = BioSampleAttributesGenerator.generateFile(bioSampleMapper);
         File sraMetadataFile = SraMetadataGenerator.generateFile(metadataMapper);
@@ -148,7 +149,8 @@ public class ProjectController extends BaseProjectsController {
      */
     @GET
     @Path("/{projectId}/expeditions/stats")
-    public List<Map> expeditionStats(@PathParam("projectId") Integer projectId) {
+    public List<Map> expeditionStats(@PathParam("projectId") Integer projectId,
+                                     @QueryParam("expeditionCode") String expeditionCode) {
         Project project = projectService.getProject(projectId);
 
         if (project == null) {
@@ -157,14 +159,14 @@ public class ProjectController extends BaseProjectsController {
 
         String countsSql = geomeSql.expeditionStatsEntityCounts();
         String joinsSql = geomeSql.expeditionStatsEntityJoins();
-        String sql = geomeSql.expeditionStats();
+        String sql = expeditionCode == null ? geomeSql.expeditionStats() : geomeSql.singleExpeditionStats();
 
         StringBuilder entityJoinsSql = new StringBuilder();
         StringBuilder entityCountsSql = new StringBuilder();
 
         for (Entity e : project.getProjectConfig().entities()) {
             Map<String, String> p = new HashMap<>();
-            p.put("table", PostgresUtils.entityTable(projectId, e.getConceptAlias()));
+            p.put("table", PostgresUtils.entityTable(project.getNetwork().getId(), e.getConceptAlias()));
             p.put("entity", e.getConceptAlias());
 
             entityCountsSql.append(", ");
@@ -180,7 +182,7 @@ public class ProjectController extends BaseProjectsController {
 
         return recordRepository.query(
                 StrSubstitutor.replace(sql, params),
-                null,
+                expeditionCode == null ? null : new MapSqlParameterSource("expeditionCode", expeditionCode),
                 Map.class
         );
     }

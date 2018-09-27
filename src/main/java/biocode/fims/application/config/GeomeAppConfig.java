@@ -1,5 +1,6 @@
 package biocode.fims.application.config;
 
+import biocode.fims.config.models.PhotoEntity;
 import biocode.fims.fasta.FastaRecord;
 import biocode.fims.fasta.FastaValidator;
 import biocode.fims.fasta.reader.FastaDataReaderType;
@@ -9,6 +10,11 @@ import biocode.fims.fastq.FastqRecordRowMapper;
 import biocode.fims.fastq.FastqValidator;
 import biocode.fims.fastq.reader.FastqDataReaderType;
 import biocode.fims.fastq.reader.FastqReader;
+import biocode.fims.ncbi.entrez.BioSampleRepository;
+import biocode.fims.ncbi.entrez.EntrezApiFactoryImpl;
+import biocode.fims.ncbi.entrez.EntrezApiService;
+import biocode.fims.ncbi.sra.SraAccessionHarvester;
+import biocode.fims.photos.BulkPhotoLoader;
 import biocode.fims.records.FimsRowMapper;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.GenericRecordRowMapper;
@@ -18,20 +24,23 @@ import biocode.fims.photos.PhotoValidator;
 import biocode.fims.photos.processing.PhotoProcessingTaskExecutor;
 import biocode.fims.photos.processing.PhotoProcessingTaskScheduler;
 import biocode.fims.photos.reader.PhotoConverter;
-import biocode.fims.projectConfig.models.PhotoEntity;
 import biocode.fims.reader.*;
 import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
 import biocode.fims.repositories.PostgresRecordRepository;
 import biocode.fims.repositories.RecordRepository;
+import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectService;
+import biocode.fims.tissues.PostgresTissueRepository;
+import biocode.fims.tissues.TissueRepository;
 import biocode.fims.validation.RecordValidator;
 import biocode.fims.validation.RecordValidatorFactory;
 import biocode.fims.validation.ValidatorInstantiator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.io.ClassPathResource;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -53,7 +62,7 @@ public class GeomeAppConfig {
     PhotosAppConfig photosAppConfig;
 
     @Autowired
-    ProjectService projectService;
+    NetworkService networkService;
     @Autowired
     PhotosProperties photosProperties;
 
@@ -111,6 +120,14 @@ public class GeomeAppConfig {
     }
 
     @Bean
+    public TissueRepository tissueRepository() {
+        YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
+        yaml.setResources(new ClassPathResource("tissue-repository-sql.yml"));
+
+        return new PostgresTissueRepository(fimsAppConfig.jdbcTemplate, yaml.getObject());
+    }
+
+    @Bean
     public GeomeSql geomeSql() {
         YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
         yaml.setResources(new ClassPathResource("geome-sql.yml"));
@@ -120,12 +137,26 @@ public class GeomeAppConfig {
     @Bean
     public PhotoProcessingTaskScheduler photoProcessingTaskScheduler() {
         PhotoProcessingTaskExecutor executor = new PhotoProcessingTaskExecutor(recordRepository(), Executors.newFixedThreadPool(5));
-        return new PhotoProcessingTaskScheduler(projectService, recordRepository(), photosAppConfig.photosSql(), executor, ClientBuilder.newClient(), photosProperties);
+        return new PhotoProcessingTaskScheduler(networkService, recordRepository(), photosAppConfig.photosSql(), executor, ClientBuilder.newClient(), photosProperties);
     }
 
-//    @Bean
-//    public SraAccessionHarvester sraAccessionHarvester() {
-//        return new SraAccessionHarvester(geomeResourceRepository(), bioSampleRepository(), projectService, geomeProperties());
-//    }
+    @Bean
+    public BulkPhotoLoader bulkPhotoLoader(FimsProperties props) {
+        return new BulkPhotoLoader(dataReaderFactory(), recordValidatorFactory(), recordRepository(), dataConverterFactory(), props);
+    }
+
+    @Bean
+    public SraAccessionHarvester sraAccessionHarvester(GeomeProperties geomeProperties, ProjectService projectService) {
+        EntrezApiFactoryImpl apiFactory = new EntrezApiFactoryImpl(ClientBuilder.newClient());
+        EntrezApiService entrezApiService = new EntrezApiService(apiFactory);
+        BioSampleRepository bioSampleRepository = new BioSampleRepository(entrezApiService);
+        return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService, geomeProperties);
+    }
+
+    @Primary
+    @Bean
+    public GeomeProperties geomeProperties(ConfigurableEnvironment env) {
+        return new GeomeProperties(env);
+    }
 
 }

@@ -1,7 +1,8 @@
 package biocode.fims.geome.sra;
 
+import biocode.fims.config.Config;
 import biocode.fims.fastq.FastqProps;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.Entity;
 import biocode.fims.exceptions.SraCode;
 import biocode.fims.fastq.FastqRecord;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
@@ -10,7 +11,7 @@ import biocode.fims.ncbi.sra.submission.AbstractSraMetadataMapper;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.records.RecordJoiner;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -22,18 +23,15 @@ public class GeomeSraMetadataMapper extends AbstractSraMetadataMapper {
     private final Iterator<Record> recordIt;
     private final RecordJoiner recordJoiner;
 
-    public GeomeSraMetadataMapper(Entity fastqEntity, QueryResults queryResults) {
+    public GeomeSraMetadataMapper(Config config, Entity fastqEntity, QueryResults queryResults) {
         QueryResult fastqResults = queryResults.getResult(fastqEntity.getConceptAlias());
 
         if (fastqResults.records().size() == 0) {
             throw new FimsRuntimeException(SraCode.MISSING_DATASET, 400);
         }
 
-        // sort entities so children come first
-        queryResults.sort(new QueryResults.ChildrenFirstComparator());
-
         this.recordIt = fastqResults.records().iterator();
-        this.recordJoiner = new RecordJoiner(fastqEntity, queryResults);
+        this.recordJoiner = new RecordJoiner(config, fastqEntity, queryResults);
     }
 
     @Override

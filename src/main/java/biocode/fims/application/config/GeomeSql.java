@@ -18,6 +18,10 @@ public class GeomeSql {
         return get("expeditionStats");
     }
 
+    public String singleExpeditionStats() {
+        return get("singleExpeditionStats");
+    }
+
     public String expeditionStatsEntityCounts() {
         return get("expeditionStatsEntityCounts");
     }

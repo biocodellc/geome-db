@@ -2,7 +2,9 @@ package biocode.fims.rest.services;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
-import biocode.fims.projectConfig.models.Entity;
+import biocode.fims.config.models.FastaEntity;
+import biocode.fims.fasta.FastaQueryWriter;
+import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
 import biocode.fims.models.Expedition;
@@ -11,8 +13,9 @@ import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.User;
+import biocode.fims.query.QueryResult;
 import biocode.fims.records.RecordMetadata;
-import biocode.fims.projectConfig.ProjectConfig;
+import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.query.QueryBuilder;
 import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.*;
@@ -35,7 +38,7 @@ import biocode.fims.tools.UploadStore;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.run.DataSourceMetadata;
 import biocode.fims.validation.RecordValidatorFactory;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
@@ -131,26 +134,30 @@ public class DatasetController extends FimsController {
             throw new UnauthorizedRequestException("You must be logged in to upload.");
         }
 
+        if (upload && expeditionCode == null &&
+                (reloadWorkbooks || dataSourceMetadata.stream().anyMatch(DataSourceMetadata::isReload))) {
+            throw new BadRequestException("reloading data is prohibited for multi-expedition uploads.");
+        }
 
         // create a new processorStatus
         ProcessorStatus processorStatus = new ProcessorStatus();
 
-        Project project = projectService.getProject(projectId);
+        Project project = projectService.getProjectWithExpeditions(projectId);
 
         if (project == null) {
             throw new FimsRuntimeException(ProjectCode.INVALID_PROJECT, 400);
         }
 
-        DatasetProcessor.Builder builder = new DatasetProcessor.Builder(projectId, expeditionCode, processorStatus)
+        DatasetProcessor.Builder builder = new DatasetProcessor.Builder(project, expeditionCode, processorStatus)
                 .user(userContext.getUser())
-                .projectConfig(project.getProjectConfig())
                 .readerFactory(readerFactory)
                 .dataConverterFactory(dataConverterFactory)
                 .recordRepository(recordRepository)
                 .validatorFactory(validatorFactory)
-                .expeditionService(expeditionService)
-                .ignoreUser(props.ignoreUser())
+                .ignoreUser(props.ignoreUser() || project.getUser().equals(userContext.getUser())) // projectAdmin can modify expedition data
                 .serverDataDir(props.serverRoot())
+                .upload()
+                .writeToServer()
                 .reloadWorkbooks(reloadWorkbooks);
 
         UUID processId = UUID.randomUUID();
@@ -274,7 +281,10 @@ public class DatasetController extends FimsController {
         UUID id = validationStore.put(processId, processorStatus, userId);
 
         future.whenCompleteAsync(((validationResponse, throwable) -> {
-            if (throwable != null) logger.error("Exception during dataset validation", throwable);
+            if (throwable != null) {
+                logger.error("Exception during dataset validation", throwable);
+                throwable = throwable.getCause();
+            }
             validationStore.update(id, validationResponse, throwable);
         }));
 
@@ -343,10 +353,8 @@ public class DatasetController extends FimsController {
             processor.upload();
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == UploadCode.INVALID_EXPEDITION) {
-                String message = "The expedition code \"" + processor.expeditionCode() + "\" does not exist.";
-
                 return Response.status(400)
-                        .entity(new UploadResponse(false, message))
+                        .entity(new UploadResponse(false, e.getUsrMessage()))
                         .build();
             } else {
                 throw e;
@@ -381,35 +389,53 @@ public class DatasetController extends FimsController {
 
         ProjectConfig config = expedition.getProject().getProjectConfig();
 
-        List<String> entities = config.entities().stream().map(Entity::getConceptAlias).collect(Collectors.toList());
+        // TODO: this won't work when a config has 2 un-related parentEntities
+        String queryEntity = config.entities().stream().filter(e -> !e.isChildEntity()).findFirst().get().getConceptAlias();
+        List<String> entities = config.entities().stream()
+                .map(Entity::getConceptAlias)
+                .filter(c -> !c.equals(queryEntity))
+                .collect(Collectors.toList());
 
         ExpeditionExpression expeditionExpression = new ExpeditionExpression(expeditionCode);
         Expression exp = new SelectExpression(
-                String.join(",", entities.subList(1, entities.size() - 1)),
+                String.join(",", entities),
                 expeditionExpression
         );
 
-        QueryBuilder qb = new QueryBuilder(expedition.getProject(), entities.get(0));
+        QueryBuilder qb = new QueryBuilder(config, expedition.getProject().getNetwork().getId(), queryEntity);
         Query query = new Query(qb, config, exp);
 
         QueryResults result = recordRepository.query(query);
-        QueryWriter queryWriter = new DelimitedTextQueryWriter(result, ",", config);
+        QueryWriter delimitedTextQueryWriter = new DelimitedTextQueryWriter(result, ",", config);
 
-        File file = null;
+        List<File> files = null;
         try {
-            file = queryWriter.write();
+            files = delimitedTextQueryWriter.write();
+
+            Optional<Entity> fastaEntity = config.entities().stream()
+                    .filter(e -> e.type().equals(FastaEntity.TYPE))
+                    .findFirst();
+
+            if (fastaEntity.isPresent()) {
+                String conceptAlias = fastaEntity.get().getConceptAlias();
+                QueryResult fastaQueryResult = result.getResult(conceptAlias);
+
+                if (fastaQueryResult != null) {
+                    QueryWriter fastaQueryWriter = new FastaQueryWriter(fastaQueryResult, config);
+                    files.addAll(fastaQueryWriter.write());
+                }
+            }
         } catch (FimsRuntimeException e) {
             if (!e.getErrorCode().equals(QueryCode.NO_RESOURCES)) {
                 throw e;
             }
         }
 
-        if (file == null) {
+        if (files == null) {
             return null;
         }
 
-        String ext = FileUtils.getExtension(file.getName(), ".zip");
-        String fileId = fileCache.cacheFileForUser(file, userContext.getUser(), expeditionCode + "-export." + ext);
+        String fileId = fileCache.cacheFileForUser(FileUtils.zip(files), userContext.getUser(), expeditionCode + "-export.zip");
 
         return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
     }
