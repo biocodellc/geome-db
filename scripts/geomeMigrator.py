@@ -185,18 +185,17 @@ def get_project_data(mysql, project_id, entities):
 def get_project_users(mysql, project_id):
     cursor = mysql.cursor()
     query = (
-        "SELECT u.userId AS userId, username, password, hasSetPassword, email, institution, firstName, lastName FROM userProjects p JOIN users u ON p.userId = u.userId WHERE projectId = %s \
+        "SELECT u.userId AS userId, username, password, email, institution, firstName, lastName FROM userProjects p JOIN users u ON p.userId = u.userId WHERE projectId = %s \
         UNION \
-        SELECT u.userId AS userId, username, password, hasSetPassword, email, institution, firstName, lastName FROM projects p JOIN users u ON p.userId = u.userId WHERE projectId = %s")
+        SELECT u.userId AS userId, username, password, email, institution, firstName, lastName FROM projects p JOIN users u ON p.userId = u.userId WHERE projectId = %s")
     cursor.execute(query, (project_id, project_id,))
 
     users = []
-    for (userId, username, password, hasSetPassword, email, institution, firstName, lastName) in cursor:
+    for (userId, username, password, email, institution, firstName, lastName) in cursor:
         users.append({
             'id': userId,
             'username': username,
             'password': password,
-            'has_set_password': hasSetPassword,
             'email': email,
             'institution': institution,
             'first_name': firstName,
