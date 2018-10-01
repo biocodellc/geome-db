@@ -12,14 +12,26 @@
     "basePath": "/v1",
     "tags": [
         {
+            "name": "/photos"
+        },
+        {
             "name": "Data",
             "description": "Validate and load data"
+        },
+        {
+            "name": "/tissues/plates"
+        },
+        {
+            "name": "Network"
+        },
+        {
+            "name": "Config"
         },
         {
             "name": "Records"
         },
         {
-            "name": "Records_-_Query",
+            "name": "Query_Records",
             "description": "Query a project's records. See <a href='http://fims.readthedocs.io/en/latest/fims/query.html'>Fims Docs</a>\n for more detailed information regarding queries."
         },
         {
@@ -35,7 +47,7 @@
             "name": "Members"
         },
         {
-            "name": "Config"
+            "name": "Project_Configurations"
         },
         {
             "name": "Files"
@@ -98,7 +110,7 @@
                 "description": "The validate service must be called before this service.",
                 "operationId": "upload",
                 "produces": [
-                    "application/json;charset=utf-8"
+                    "application/json"
                 ],
                 "parameters": [
                     {
@@ -131,7 +143,7 @@
                     "multipart/form-data"
                 ],
                 "produces": [
-                    "application/json;charset=utf-8"
+                    "application/json"
                 ],
                 "parameters": [
                     {
@@ -179,7 +191,7 @@
                     },
                     {
                         "in": "body",
-                        "name": "workbooks",
+                        "name": "workbookFiles",
                         "description": "",
                         "required": true,
                         "schema": {
@@ -236,7 +248,7 @@
                 "description": "<p>\n The results are removed after 2hrs",
                 "operationId": "status",
                 "produces": [
-                    "application/json;charset=utf-8"
+                    "application/json"
                 ],
                 "parameters": [
                     {
@@ -275,6 +287,147 @@
                         "description": "",
                         "required": true,
                         "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/network/": {
+            "get": {
+                "tags": [
+                    "Network"
+                ],
+                "summary": "Fetch all available networks",
+                "operationId": "getNetworks",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Network-Views.Detailed"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/network//{networkId}": {
+            "get": {
+                "tags": [
+                    "Network"
+                ],
+                "operationId": "getNetwork",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Network-Views.DetailedConfig"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Network"
+                ],
+                "summary": "Update a Network",
+                "description": "Update a {@link Network}",
+                "operationId": "updateNetwork",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "networkId",
+                        "in": "path",
+                        "description": "The id of the network to update",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "in": "body",
+                        "name": "network",
+                        "description": "The updated network object",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Network"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Network-Views.Detailed"
+                        }
+                    },
+                    "403": {
+                        "description": "not the network's admin",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/network/{networkId}/config": {
+            "get": {
+                "tags": [
+                    "Config"
+                ],
+                "summary": "Get a network config",
+                "operationId": "getConfig",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/NetworkConfig"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Config"
+                ],
+                "summary": "Update the network config",
+                "operationId": "update",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "config",
+                        "description": "The updated network object",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/NetworkConfig"
+                        }
                     }
                 ],
                 "responses": {
@@ -487,6 +640,117 @@
                 }
             }
         },
+        "/photos//{entity}/upload": {
+            "put": {
+                "tags": [
+                    "/photos"
+                ],
+                "operationId": "bulkUpload",
+                "consumes": [
+                    "application/zip",
+                    "application/octet-stream"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "expeditionCode",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "string",
+                        "enum": [
+                            "NEW",
+                            "RESUMABLE",
+                            "RESUME"
+                        ]
+                    },
+                    {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "is",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/InputStream"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/UploadResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/photos//{entity}/upload/progress": {
+            "get": {
+                "tags": [
+                    "/photos"
+                ],
+                "operationId": "status",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "expeditionCode",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Resources-PhotosResource-UploadEntry"
+                        }
+                    }
+                }
+            }
+        },
         "/projects/": {
             "get": {
                 "tags": [
@@ -507,6 +771,13 @@
                         "default": true
                     },
                     {
+                        "name": "projectTitle",
+                        "in": "query",
+                        "description": "A filter on the projectTitle field.",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
                         "name": "admin",
                         "in": "query",
                         "description": "Flag used to request projects the authenticated user is an admin for. Note: this flag\n                      takes precedence over all other query params",
@@ -523,6 +794,38 @@
                             "items": {
                                 "$ref": "#/definitions/Project-Views.Detailed"
                             }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Create a new project",
+                "operationId": "create",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "project",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Resources-ProjectsResource-NewProject"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response-Views.DetailedConfig"
                         }
                     }
                 }
@@ -575,12 +878,192 @@
                         }
                     }
                 }
+            },
+            "delete": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "delete a project",
+                "operationId": "delete",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The id of the project to delete",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ConfirmationResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "not the project's admin",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/configs": {
+            "get": {
+                "tags": [
+                    "Project_Configurations"
+                ],
+                "summary": "Get all ProjectConfigurations",
+                "operationId": "all",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "networkApproved",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "Flag",
+                        "default": "false"
+                    },
+                    {
+                        "name": "user",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "Flag",
+                        "default": "false"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ProjectConfiguration-Views.Summary"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Project_Configurations"
+                ],
+                "summary": "Create a new ProjectConfiguration",
+                "operationId": "create",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "configuration",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ProjectConfiguration"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response-Views.DetailedConfig"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/configs/{id}": {
+            "get": {
+                "tags": [
+                    "Project_Configurations"
+                ],
+                "summary": "Get a ProjectConfiguration",
+                "operationId": "get",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ProjectConfiguration-Views.DetailedConfig"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Project_Configurations"
+                ],
+                "summary": "Update the ProjectConfiguration",
+                "operationId": "update",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The id of the configuration to update",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "in": "body",
+                        "name": "config",
+                        "description": "The updated project configuration",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ProjectConfiguration"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response"
+                        }
+                    }
+                }
             }
         },
         "/projects/{projectId}/config": {
             "get": {
                 "tags": [
-                    "Config"
+                    "Projects"
                 ],
                 "summary": "Get a project config",
                 "operationId": "getConfig",
@@ -601,47 +1084,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Config-ProjectConfig"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "tags": [
-                    "Config"
-                ],
-                "summary": "Update the project config",
-                "operationId": "update",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "projectId",
-                        "in": "path",
-                        "description": "The id of the project to update",
-                        "required": true,
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    {
-                        "in": "body",
-                        "name": "config",
-                        "description": "The updated projectConfig object",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/Config-ProjectConfig"
-                        }
-                    }
-                ],
-                "responses": {
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/Response"
+                            "$ref": "#/definitions/ProjectConfig"
                         }
                     }
                 }
@@ -767,6 +1210,47 @@
                         "description": "not the project's admin",
                         "schema": {
                             "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{projectId}/expeditions/stats": {
+            "get": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Fetch an overview of all expeditions in a project.",
+                "description": "TODO this isn't in the generated swagger docs",
+                "operationId": "expeditionStats",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "expeditionCode",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Map"
+                            }
                         }
                     }
                 }
@@ -971,6 +1455,44 @@
                 }
             }
         },
+        "/projects/{projectId}/expeditions/{expeditionCode}/generateSraFiles": {
+            "get": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "TODO find a more suitable place for this.",
+                "description": "& Re-write *Mappers to be more robust",
+                "operationId": "generateSraFiles",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "expeditionCode",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/projects/{projectId}/members": {
             "get": {
                 "tags": [
@@ -1139,7 +1661,7 @@
                             "type": "array",
                             "uniqueItems": true,
                             "items": {
-                                "$ref": "#/definitions/ProjectTemplate-Views.Detailed"
+                                "$ref": "#/definitions/WorksheetTemplate-Views.Detailed"
                             }
                         }
                     }
@@ -1151,32 +1673,26 @@
                 "tags": [
                     "Templates"
                 ],
-                "summary": "generate an excel template",
+                "summary": "generate an excel template workbook",
                 "operationId": "createExcel",
                 "consumes": [
-                    "application/x-www-form-urlencoded"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
                 "parameters": [
                     {
-                        "name": "columns",
-                        "in": "formData",
-                        "description": "",
-                        "required": false,
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "collectionFormat": "multi"
-                    },
-                    {
-                        "name": "sheetName",
-                        "in": "formData",
-                        "description": "",
-                        "required": false,
-                        "type": "string"
+                        "in": "body",
+                        "name": "worksheetTemplates",
+                        "description": "list of {@link WorksheetTemplate}s to include in the workbook",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/WorksheetTemplate"
+                            }
+                        }
                     },
                     {
                         "name": "projectId",
@@ -1249,7 +1765,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/ProjectTemplate"
+                            "$ref": "#/definitions/WorksheetTemplate"
                         }
                     }
                 }
@@ -1298,7 +1814,7 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/ProjectTemplate"
+                            "$ref": "#/definitions/WorksheetTemplate"
                         }
                     }
                 }
@@ -1354,6 +1870,22 @@
                 ],
                 "parameters": [
                     {
+                        "name": "includeChildren",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "Flag",
+                        "default": "false"
+                    },
+                    {
+                        "name": "includeParent",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "type": "Flag",
+                        "default": "false"
+                    },
+                    {
                         "name": "identifier",
                         "in": "path",
                         "description": "",
@@ -1365,10 +1897,46 @@
                     "default": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/Map"
+                            "$ref": "#/definitions/RecordResponse"
                         }
                     },
-                    "403": {
+                    "400": {
+                        "description": "Invalid request. The provided ark id is missing a suffix",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Records"
+                ],
+                "summary": "Delete a Record by ark id",
+                "operationId": "delete",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "identifier",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ConfirmationResponse"
+                        }
+                    },
+                    "400": {
                         "description": "Invalid request. The provided ark id is missing a suffix",
                         "schema": {
                             "$ref": "#/definitions/ErrorInfo"
@@ -1380,14 +1948,21 @@
         "/records/{entity}/cspace": {
             "get": {
                 "tags": [
-                    "Records_-_Query"
+                    "Query_Records"
                 ],
-                "summary": "Query project resources, returning CSPACE file",
+                "summary": "Query network resources, returning CSPACE file",
                 "operationId": "queryCspace",
                 "produces": [
-                    "application/xml"
+                    "application/json"
                 ],
                 "parameters": [
+                    {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "the network entity to query",
+                        "required": true,
+                        "type": "string"
+                    },
                     {
                         "name": "q",
                         "in": "query",
@@ -1409,17 +1984,24 @@
         "/records/{entity}/csv": {
             "get": {
                 "tags": [
-                    "Records_-_Query"
+                    "Query_Records"
                 ],
-                "summary": "Query project resources, returning CSV file",
+                "summary": "Query network resources, returning CSV file",
                 "operationId": "queryCSV",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
-                    "text/csv"
+                    "application/json"
                 ],
                 "parameters": [
+                    {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "the network entity to query",
+                        "required": true,
+                        "type": "string"
+                    },
                     {
                         "name": "q",
                         "in": "query",
@@ -1439,22 +2021,29 @@
             },
             "post": {
                 "tags": [
-                    "Records_-_Query"
+                    "Query_Records"
                 ],
-                "summary": "Query project resources, returning a CSV file",
+                "summary": "Query network resources, returning a CSV file",
                 "operationId": "queryCSVAsPost",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
-                    "text/csv"
+                    "application/json"
                 ],
                 "parameters": [
                     {
-                        "name": "query",
+                        "name": "q",
                         "in": "formData",
-                        "description": "the query to run",
+                        "description": "",
                         "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "the network entity to query",
+                        "required": true,
                         "type": "string"
                     }
                 ],
@@ -1471,17 +2060,24 @@
         "/records/{entity}/excel": {
             "get": {
                 "tags": [
-                    "Records_-_Query"
+                    "Query_Records"
                 ],
-                "summary": "Query project resources, returning excel workbook",
+                "summary": "Query network records, returning excel workbook",
                 "operationId": "queryExcel",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
-                    "application/vnd.ms-excel"
+                    "application/json"
                 ],
                 "parameters": [
+                    {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "the network entity to query",
+                        "required": true,
+                        "type": "string"
+                    },
                     {
                         "name": "q",
                         "in": "query",
@@ -1501,22 +2097,29 @@
             },
             "post": {
                 "tags": [
-                    "Records_-_Query"
+                    "Query_Records"
                 ],
-                "summary": "Query project resources, returning a excel workbook",
+                "summary": "Query network records, returning a excel workbook",
                 "operationId": "queryExcelAsPost",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
-                    "application/vnd.ms-excel"
+                    "application/json"
                 ],
                 "parameters": [
                     {
-                        "name": "query",
+                        "name": "q",
                         "in": "formData",
-                        "description": "the query to run",
+                        "description": "",
                         "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "the network entity to query",
+                        "required": true,
                         "type": "string"
                     }
                 ],
@@ -1533,9 +2136,9 @@
         "/records/{entity}/fasta": {
             "get": {
                 "tags": [
-                    "Records_-_Query"
+                    "Query_Records"
                 ],
-                "summary": "Query project resources, returning FASTA file",
+                "summary": "Query network resources, returning FASTA file",
                 "operationId": "queryFasta",
                 "consumes": [
                     "application/json"
@@ -1544,6 +2147,13 @@
                     "application/json"
                 ],
                 "parameters": [
+                    {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "the network entity to query",
+                        "required": true,
+                        "type": "string"
+                    },
                     {
                         "name": "q",
                         "in": "query",
@@ -1565,9 +2175,9 @@
         "/records/{entity}/json": {
             "get": {
                 "tags": [
-                    "Records_-_Query"
+                    "Query_Records"
                 ],
-                "summary": "Query project resources, returning JSON",
+                "summary": "Query network resources, returning JSON",
                 "operationId": "queryJson",
                 "produces": [
                     "application/json"
@@ -1576,7 +2186,7 @@
                     {
                         "name": "page",
                         "in": "query",
-                        "description": "the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and\n                  limit=10, results 21-30 will be returned",
+                        "description": "the page number to return Ex. If page=0 and limit=10, results 1-10 will be returned. If page=2 and\n               limit=10, results 21-30 will be returned",
                         "required": false,
                         "type": "integer",
                         "default": 0,
@@ -1599,6 +2209,13 @@
                         "type": "string"
                     },
                     {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "the network entity to query",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
                         "name": "q",
                         "in": "query",
                         "description": "the query to run",
@@ -1617,9 +2234,9 @@
             },
             "post": {
                 "tags": [
-                    "Records_-_Query"
+                    "Query_Records"
                 ],
-                "summary": "Query project resources, returning JSON",
+                "summary": "Query network resources, returning JSON",
                 "operationId": "queryJsonAsPost",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -1659,6 +2276,13 @@
                         "description": "",
                         "required": false,
                         "type": "string"
+                    },
+                    {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "the network entity to query",
+                        "required": true,
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -1674,17 +2298,24 @@
         "/records/{entity}/kml": {
             "get": {
                 "tags": [
-                    "Records_-_Query"
+                    "Query_Records"
                 ],
-                "summary": "Query project resources, returning KML file",
+                "summary": "Query network resources, returning KML file",
                 "operationId": "queryKML",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
-                    "application/vnd.google-earth.kml+xml"
+                    "application/json"
                 ],
                 "parameters": [
+                    {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "the network entity to query",
+                        "required": true,
+                        "type": "string"
+                    },
                     {
                         "name": "q",
                         "in": "query",
@@ -1704,22 +2335,29 @@
             },
             "post": {
                 "tags": [
-                    "Records_-_Query"
+                    "Query_Records"
                 ],
-                "summary": "Query project resources, returning a KML file",
+                "summary": "Query network resources, returning a KML file",
                 "operationId": "queryKMLAsPost",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
-                    "application/vnd.google-earth.kml+xml"
+                    "application/json"
                 ],
                 "parameters": [
                     {
-                        "name": "query",
+                        "name": "entity",
+                        "in": "path",
+                        "description": "the network entity to query",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "q",
                         "in": "formData",
                         "description": "the query to run",
-                        "required": false,
+                        "required": true,
                         "type": "string"
                     }
                 ],
@@ -1734,51 +2372,26 @@
             }
         },
         "/records/{entity}/tab": {
-            "post": {
-                "tags": [
-                    "Records_-_Query"
-                ],
-                "summary": "Query project resources, returning a TAB delimited text file",
-                "operationId": "queryTABAsPost",
-                "consumes": [
-                    "application/x-www-form-urlencoded"
-                ],
-                "produces": [
-                    "text/txt"
-                ],
-                "parameters": [
-                    {
-                        "name": "query",
-                        "in": "formData",
-                        "description": "the query to run",
-                        "required": false,
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "default": {
-                        "description": "",
-                        "schema": {
-                            "$ref": "#/definitions/FileResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/records/{entity}/tsv": {
             "get": {
                 "tags": [
-                    "Records_-_Query"
+                    "Query_Records"
                 ],
-                "summary": "Query project resources, returning TAB delimited text file",
+                "summary": "Query network records, returning TAB delimited text file",
                 "operationId": "queryTAB",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
                 "produces": [
-                    "text/txt"
+                    "application/json"
                 ],
                 "parameters": [
+                    {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "the network entity to query",
+                        "required": true,
+                        "type": "string"
+                    },
                     {
                         "name": "q",
                         "in": "query",
@@ -1792,6 +2405,197 @@
                         "description": "",
                         "schema": {
                             "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Query_Records"
+                ],
+                "summary": "Query network records, returning a TAB delimited text file",
+                "operationId": "queryTABAsPost",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "formData",
+                        "description": "",
+                        "required": false,
+                        "type": "string"
+                    },
+                    {
+                        "name": "entity",
+                        "in": "path",
+                        "description": "the network entity to query",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/FileResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tissues/plates//{projectId}": {
+            "get": {
+                "tags": [
+                    "/tissues/plates"
+                ],
+                "operationId": "getPlates",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/tissues/plates//{projectId}/{plateName}": {
+            "get": {
+                "tags": [
+                    "/tissues/plates"
+                ],
+                "operationId": "get",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "plateName",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Plate"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "/tissues/plates"
+                ],
+                "operationId": "create",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "plateName",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "plate",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Plate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PlateResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "/tissues/plates"
+                ],
+                "operationId": "update",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "name": "plateName",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "in": "body",
+                        "name": "plate",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Plate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/PlateResponse"
                         }
                     }
                 }
@@ -1829,17 +2633,16 @@
                 "tags": [
                     "Users"
                 ],
-                "summary": "create a new user.",
-                "description": "must have a valid invite token",
+                "summary": "create a new user",
                 "operationId": "createUser",
                 "produces": [
                     "application/json"
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "inviteId",
                         "in": "query",
-                        "description": "",
+                        "description": "(optional) A valid invite token",
                         "required": false,
                         "type": "string",
                         "format": "uuid"
@@ -1973,12 +2776,6 @@
                         "description": "",
                         "schema": {
                             "$ref": "#/definitions/User-Views.Detailed"
-                        }
-                    },
-                    "403": {
-                        "description": "you must be authenticated to access a users profile<br>you must be a project admin to access another user's profile",
-                        "schema": {
-                            "$ref": "#/definitions/ErrorInfo"
                         }
                     }
                 }
@@ -2116,6 +2913,105 @@
         }
     },
     "definitions": {
+        "UploadResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean"
+                },
+                "messages": {
+                    "$ref": "#/definitions/EntityMessages"
+                }
+            }
+        },
+        "EntityMessages": {
+            "type": "object",
+            "properties": {
+                "conceptAlias": {
+                    "type": "string"
+                },
+                "sheetName": {
+                    "type": "string"
+                },
+                "errorMessages": {
+                    "$ref": "#/definitions/MessagesGroupCollection"
+                },
+                "warningMessages": {
+                    "$ref": "#/definitions/MessagesGroupCollection"
+                },
+                "warnings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/MessagesGroup"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/MessagesGroup"
+                    }
+                },
+                "entity": {
+                    "type": "string"
+                }
+            }
+        },
+        "MessagesGroupCollection": {
+            "type": "object",
+            "properties": {
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/MessagesGroup"
+                    }
+                }
+            }
+        },
+        "MessagesGroup": {
+            "type": "object",
+            "properties": {
+                "groupMessage": {
+                    "type": "string"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Message"
+                    }
+                }
+            }
+        },
+        "Message": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "Resources-PhotosResource-UploadEntry": {
+            "type": "object",
+            "properties": {
+                "size": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "projectId": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "expeditionCode": {
+                    "type": "string"
+                },
+                "lastUpdated": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "targetFile": {
+                    "$ref": "#/definitions/JavaFile"
+                }
+            }
+        },
         "DataSourceMetadata": {
             "type": "object",
             "properties": {
@@ -2349,71 +3245,6 @@
                 }
             }
         },
-        "EntityMessages": {
-            "type": "object",
-            "properties": {
-                "conceptAlias": {
-                    "type": "string"
-                },
-                "sheetName": {
-                    "type": "string"
-                },
-                "errorMessages": {
-                    "$ref": "#/definitions/MessagesGroupCollection"
-                },
-                "warningMessages": {
-                    "$ref": "#/definitions/MessagesGroupCollection"
-                },
-                "warnings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/MessagesGroup"
-                    }
-                },
-                "errors": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/MessagesGroup"
-                    }
-                },
-                "entity": {
-                    "type": "string"
-                }
-            }
-        },
-        "MessagesGroupCollection": {
-            "type": "object",
-            "properties": {
-                "messages": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/MessagesGroup"
-                    }
-                }
-            }
-        },
-        "MessagesGroup": {
-            "type": "object",
-            "properties": {
-                "groupMessage": {
-                    "type": "string"
-                },
-                "messages": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Message"
-                    }
-                }
-            }
-        },
-        "Message": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "FileResponse": {
             "type": "object",
             "properties": {
@@ -2422,224 +3253,289 @@
                 }
             }
         },
-        "ErrorInfo": {
+        "Plate": {
             "type": "object",
             "properties": {
-                "httpStatusCode": {
+                "rows": {
+                    "$ref": "#/definitions/Map"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "PlateResponse": {
+            "type": "object",
+            "properties": {
+                "plate": {
+                    "$ref": "#/definitions/Plate"
+                },
+                "validationMessages": {
+                    "$ref": "#/definitions/EntityMessages"
+                }
+            }
+        },
+        "Network-Views.DetailedConfig": {
+            "type": "object",
+            "properties": {
+                "id": {
                     "type": "integer",
                     "format": "int32"
                 },
-                "usrMessage": {
-                    "$ref": "#/definitions/Object"
-                },
-                "developerMessage": {
-                    "$ref": "#/definitions/Object"
-                },
-                "e": {
-                    "$ref": "#/definitions/Exception"
-                },
-                "ts": {
-                    "$ref": "#/definitions/Timestamp"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "Exception": {
-            "type": "object",
-            "properties": {
-                "detailMessage": {
+                "title": {
                     "type": "string"
                 },
-                "cause": {
-                    "$ref": "#/definitions/Throwable"
-                },
-                "stackTrace": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/StackTraceElement"
-                    }
-                },
-                "suppressedExceptions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Throwable"
-                    }
-                },
-                "message": {
+                "description": {
                     "type": "string"
                 },
-                "localizedMessage": {
-                    "type": "string"
+                "config": {
+                    "$ref": "#/definitions/NetworkConfig-Views.DetailedConfig"
                 },
-                "suppressed": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Throwable"
-                    }
-                }
-            }
-        },
-        "Throwable": {
-            "type": "object",
-            "properties": {
-                "detailMessage": {
-                    "type": "string"
-                },
-                "cause": {
-                    "$ref": "#/definitions/Throwable"
-                },
-                "stackTrace": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/StackTraceElement"
-                    }
-                },
-                "suppressedExceptions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Throwable"
-                    }
-                },
-                "message": {
-                    "type": "string"
-                },
-                "localizedMessage": {
-                    "type": "string"
-                },
-                "suppressed": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Throwable"
-                    }
-                }
-            }
-        },
-        "Timestamp": {
-            "type": "object",
-            "properties": {
-                "time": {
-                    "type": "integer",
-                    "format": "int64"
-                },
-                "nanos": {
-                    "type": "integer",
-                    "format": "int32"
-                }
-            }
-        },
-        "Page": {
-            "type": "object",
-            "properties": {
-                "number": {
-                    "type": "integer",
-                    "format": "int32",
-                    "description": "the number of the current {@link Slice}."
-                },
-                "size": {
-                    "type": "integer",
-                    "format": "int32",
-                    "description": "the size of the {@link Slice}."
-                },
-                "numberOfElements": {
-                    "type": "integer",
-                    "format": "int32",
-                    "description": "the number of elements currently on this {@link Slice}."
-                },
-                "content": {
-                    "type": "array",
-                    "description": "Returns the page content as {@link List}.",
-                    "items": {
-                        "$ref": "#/definitions/T"
-                    }
-                },
-                "sort": {
-                    "$ref": "#/definitions/Sort"
-                },
-                "first": {
-                    "type": "boolean"
-                },
-                "last": {
-                    "type": "boolean"
-                },
-                "totalPages": {
-                    "type": "integer",
-                    "format": "int32",
-                    "description": "the number of toral pages"
-                },
-                "totalElements": {
-                    "type": "integer",
-                    "format": "int64",
-                    "description": "the total amount of elements"
-                }
-            }
-        },
-        "Sort": {
-            "type": "object",
-            "properties": {
-                "orders": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Sort-Order"
-                    }
-                }
-            }
-        },
-        "Sort-Order": {
-            "type": "object",
-            "properties": {
-                "direction": {
+                "created": {
                     "type": "string",
-                    "description": "Returns the order the property shall be sorted for.",
+                    "format": "date-time"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "user": {
+                    "$ref": "#/definitions/User-Views.DetailedConfig"
+                }
+            }
+        },
+        "NetworkConfig-Views.DetailedConfig": {
+            "type": "object",
+            "properties": {
+                "entities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Entity"
+                    }
+                },
+                "lists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/List"
+                    }
+                },
+                "expeditionMetadataProperties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ExpeditionMetadataProperty"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "validated": {
+                    "type": "boolean"
+                },
+                "multiSheetEntity": {
+                    "type": "boolean"
+                },
+                "parentEntity": {
+                    "type": "boolean"
+                },
+                "entityChildDescendent": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Entity-Views.DetailedConfig": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "discriminator": "type",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Attribute"
+                    }
+                },
+                "rules": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "$ref": "#/definitions/Rule"
+                    }
+                },
+                "worksheet": {
+                    "type": "string"
+                },
+                "uniqueKey": {
+                    "type": "string"
+                },
+                "uniqueAcrossProject": {
+                    "type": "boolean"
+                },
+                "hashed": {
+                    "type": "boolean"
+                },
+                "conceptAlias": {
+                    "type": "string"
+                },
+                "conceptURI": {
+                    "type": "string"
+                },
+                "parentEntity": {
+                    "type": "string"
+                },
+                "recordType": {
+                    "$ref": "#/definitions/Class"
+                },
+                "valid": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "Attribute-Views.DetailedConfig": {
+            "type": "object",
+            "properties": {
+                "column": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                },
+                "dataType": {
+                    "type": "string",
                     "enum": [
-                        "ASC",
-                        "DESC"
+                        "INTEGER",
+                        "STRING",
+                        "DATE",
+                        "DATETIME",
+                        "TIME",
+                        "FLOAT",
+                        "BOOLEAN"
                     ]
                 },
-                "property": {
-                    "type": "string",
-                    "description": "Returns the property to order for."
-                },
-                "ignoreCase": {
+                "internal": {
                     "type": "boolean"
                 },
-                "nullHandling": {
-                    "type": "string",
-                    "description": "Returns the used {@link NullHandling} hint, which can but may not be respected by the used datastore.",
-                    "enum": [
-                        "NATIVE",
-                        "NULLS_FIRST",
-                        "NULLS_LAST"
-                    ]
+                "definedBy": {
+                    "type": "string"
                 },
-                "ascending": {
+                "dataFormat": {
+                    "type": "string"
+                },
+                "delimitedBy": {
+                    "type": "string"
+                },
+                "group": {
+                    "type": "string"
+                },
+                "definition": {
+                    "type": "string"
+                },
+                "allowUnknown": {
+                    "type": "boolean",
+                    "description": "Used w/ INTEGER, FLOAT, DATE, DATETIME, & TIME DataTypes"
+                }
+            }
+        },
+        "List-Views.DetailedConfig": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string",
+                    "description": "return the alias for which this list is known"
+                },
+                "caseInsensitive": {
+                    "type": "boolean"
+                },
+                "fields": {
+                    "type": "array",
+                    "description": "Get the set of fields that belong to this list",
+                    "items": {
+                        "$ref": "#/definitions/Field"
+                    }
+                }
+            }
+        },
+        "Field-Views.DetailedConfig": {
+            "type": "object",
+            "properties": {
+                "uri": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                },
+                "definedBy": {
+                    "type": "string"
+                },
+                "definition": {
+                    "type": "string"
+                }
+            }
+        },
+        "ExpeditionMetadataProperty-Views.DetailedConfig": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "isNetworkProp": {
                     "type": "boolean"
                 }
             }
         },
-        "Flag": {
+        "User-Views.DetailedConfig": {
             "type": "object",
             "properties": {
-                "isPresent": {
-                    "type": "boolean"
-                },
-                "present": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "Project-Views.Detailed": {
-            "type": "object",
-            "properties": {
-                "projectId": {
+                "userId": {
                     "type": "integer",
                     "format": "int32"
                 },
-                "projectCode": {
+                "username": {
                     "type": "string"
                 },
-                "projectTitle": {
+                "password": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "institution": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "valid": {
+                    "type": "boolean"
+                },
+                "subscribed": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Network-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "description": {
                     "type": "string"
                 },
                 "created": {
@@ -2650,20 +3546,8 @@
                     "type": "string",
                     "format": "date-time"
                 },
-                "validationXml": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "isPublic": {
-                    "type": "boolean"
-                },
                 "user": {
                     "$ref": "#/definitions/User-Views.Detailed"
-                },
-                "public": {
-                    "type": "boolean"
                 }
             }
         },
@@ -2680,14 +3564,8 @@
                 "password": {
                     "type": "string"
                 },
-                "hasSetPassword": {
-                    "type": "boolean"
-                },
                 "email": {
                     "type": "string"
-                },
-                "projectAdmin": {
-                    "type": "boolean"
                 },
                 "institution": {
                     "type": "string"
@@ -2700,21 +3578,27 @@
                 },
                 "valid": {
                     "type": "boolean"
+                },
+                "subscribed": {
+                    "type": "boolean"
                 }
             }
         },
-        "Project": {
+        "Network": {
             "type": "object",
             "properties": {
-                "projectId": {
+                "id": {
                     "type": "integer",
                     "format": "int32"
                 },
-                "projectCode": {
+                "title": {
                     "type": "string"
                 },
-                "projectTitle": {
+                "description": {
                     "type": "string"
+                },
+                "config": {
+                    "$ref": "#/definitions/NetworkConfig"
                 },
                 "created": {
                     "type": "string",
@@ -2724,19 +3608,195 @@
                     "type": "string",
                     "format": "date-time"
                 },
-                "validationXml": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "isPublic": {
-                    "type": "boolean"
-                },
                 "user": {
                     "$ref": "#/definitions/User"
+                }
+            }
+        },
+        "NetworkConfig": {
+            "type": "object",
+            "properties": {
+                "entities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Entity"
+                    }
                 },
-                "public": {
+                "lists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/List"
+                    }
+                },
+                "expeditionMetadataProperties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ExpeditionMetadataProperty"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "validated": {
+                    "type": "boolean"
+                },
+                "multiSheetEntity": {
+                    "type": "boolean"
+                },
+                "parentEntity": {
+                    "type": "boolean"
+                },
+                "entityChildDescendent": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Entity": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "discriminator": "type",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Attribute"
+                    }
+                },
+                "rules": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "$ref": "#/definitions/Rule"
+                    }
+                },
+                "worksheet": {
+                    "type": "string"
+                },
+                "uniqueKey": {
+                    "type": "string"
+                },
+                "uniqueAcrossProject": {
+                    "type": "boolean"
+                },
+                "hashed": {
+                    "type": "boolean"
+                },
+                "conceptAlias": {
+                    "type": "string"
+                },
+                "conceptURI": {
+                    "type": "string"
+                },
+                "parentEntity": {
+                    "type": "string"
+                },
+                "recordType": {
+                    "$ref": "#/definitions/Class"
+                },
+                "valid": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "Attribute": {
+            "type": "object",
+            "properties": {
+                "column": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                },
+                "dataType": {
+                    "type": "string",
+                    "enum": [
+                        "INTEGER",
+                        "STRING",
+                        "DATE",
+                        "DATETIME",
+                        "TIME",
+                        "FLOAT",
+                        "BOOLEAN"
+                    ]
+                },
+                "internal": {
+                    "type": "boolean"
+                },
+                "definedBy": {
+                    "type": "string"
+                },
+                "dataFormat": {
+                    "type": "string"
+                },
+                "delimitedBy": {
+                    "type": "string"
+                },
+                "group": {
+                    "type": "string"
+                },
+                "definition": {
+                    "type": "string"
+                },
+                "allowUnknown": {
+                    "type": "boolean",
+                    "description": "Used w/ INTEGER, FLOAT, DATE, DATETIME, & TIME DataTypes"
+                }
+            }
+        },
+        "List": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string",
+                    "description": "return the alias for which this list is known"
+                },
+                "caseInsensitive": {
+                    "type": "boolean"
+                },
+                "fields": {
+                    "type": "array",
+                    "description": "Get the set of fields that belong to this list",
+                    "items": {
+                        "$ref": "#/definitions/Field"
+                    }
+                }
+            }
+        },
+        "Field": {
+            "type": "object",
+            "properties": {
+                "uri": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                },
+                "definedBy": {
+                    "type": "string"
+                },
+                "definition": {
+                    "type": "string"
+                }
+            }
+        },
+        "ExpeditionMetadataProperty": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "isNetworkProp": {
                     "type": "boolean"
                 }
             }
@@ -2754,14 +3814,8 @@
                 "password": {
                     "type": "string"
                 },
-                "hasSetPassword": {
-                    "type": "boolean"
-                },
                 "email": {
                     "type": "string"
-                },
-                "projectAdmin": {
-                    "type": "boolean"
                 },
                 "institution": {
                     "type": "string"
@@ -2773,6 +3827,9 @@
                     "type": "string"
                 },
                 "valid": {
+                    "type": "boolean"
+                },
+                "subscribed": {
                     "type": "boolean"
                 }
             }
@@ -2884,7 +3941,665 @@
                 }
             }
         },
-        "ProjectTemplate-Views.Detailed": {
+        "Flag": {
+            "type": "object",
+            "properties": {
+                "isPresent": {
+                    "type": "boolean"
+                },
+                "present": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ErrorInfo": {
+            "type": "object",
+            "properties": {
+                "httpStatusCode": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "usrMessage": {
+                    "$ref": "#/definitions/Object"
+                },
+                "developerMessage": {
+                    "$ref": "#/definitions/Object"
+                },
+                "e": {
+                    "$ref": "#/definitions/Exception"
+                },
+                "ts": {
+                    "$ref": "#/definitions/Timestamp"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "Exception": {
+            "type": "object",
+            "properties": {
+                "detailMessage": {
+                    "type": "string"
+                },
+                "cause": {
+                    "$ref": "#/definitions/Throwable"
+                },
+                "stackTrace": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/StackTraceElement"
+                    }
+                },
+                "suppressedExceptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Throwable"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "localizedMessage": {
+                    "type": "string"
+                },
+                "suppressed": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Throwable"
+                    }
+                }
+            }
+        },
+        "Throwable": {
+            "type": "object",
+            "properties": {
+                "detailMessage": {
+                    "type": "string"
+                },
+                "cause": {
+                    "$ref": "#/definitions/Throwable"
+                },
+                "stackTrace": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/StackTraceElement"
+                    }
+                },
+                "suppressedExceptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Throwable"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "localizedMessage": {
+                    "type": "string"
+                },
+                "suppressed": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Throwable"
+                    }
+                }
+            }
+        },
+        "Timestamp": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "nanos": {
+                    "type": "integer",
+                    "format": "int32"
+                }
+            }
+        },
+        "RecordResponse": {
+            "type": "object",
+            "properties": {
+                "projectId": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "parent": {
+                    "$ref": "#/definitions/Map"
+                },
+                "record": {
+                    "$ref": "#/definitions/Map"
+                },
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Map"
+                    }
+                }
+            }
+        },
+        "ConfirmationResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Page": {
+            "type": "object",
+            "properties": {
+                "number": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "the number of the current {@link Slice}."
+                },
+                "size": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "the size of the {@link Slice}."
+                },
+                "numberOfElements": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "the number of elements currently on this {@link Slice}."
+                },
+                "content": {
+                    "type": "array",
+                    "description": "Returns the page content as {@link List}.",
+                    "items": {
+                        "$ref": "#/definitions/T"
+                    }
+                },
+                "sort": {
+                    "$ref": "#/definitions/Sort"
+                },
+                "first": {
+                    "type": "boolean"
+                },
+                "last": {
+                    "type": "boolean"
+                },
+                "totalPages": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "the number of toral pages"
+                },
+                "totalElements": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "the total amount of elements"
+                }
+            }
+        },
+        "Sort": {
+            "type": "object",
+            "properties": {
+                "orders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Sort-Order"
+                    }
+                }
+            }
+        },
+        "Sort-Order": {
+            "type": "object",
+            "properties": {
+                "direction": {
+                    "type": "string",
+                    "description": "Returns the order the property shall be sorted for.",
+                    "enum": [
+                        "ASC",
+                        "DESC"
+                    ]
+                },
+                "property": {
+                    "type": "string",
+                    "description": "Returns the property to order for."
+                },
+                "ignoreCase": {
+                    "type": "boolean"
+                },
+                "nullHandling": {
+                    "type": "string",
+                    "description": "Returns the used {@link NullHandling} hint, which can but may not be respected by the used datastore.",
+                    "enum": [
+                        "NATIVE",
+                        "NULLS_FIRST",
+                        "NULLS_LAST"
+                    ]
+                },
+                "ascending": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Project-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "projectId": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "projectCode": {
+                    "type": "string"
+                },
+                "projectTitle": {
+                    "type": "string"
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "projectConfiguration": {
+                    "$ref": "#/definitions/ProjectConfiguration-Views.Detailed"
+                },
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "user": {
+                    "$ref": "#/definitions/User-Views.Detailed"
+                },
+                "network": {
+                    "$ref": "#/definitions/Network-Views.Detailed"
+                },
+                "public": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ProjectConfiguration-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/definitions/ProjectConfig-Views.Detailed"
+                },
+                "networkApproved": {
+                    "type": "boolean"
+                },
+                "configChanged": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ProjectConfig-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "entities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Entity"
+                    }
+                },
+                "lists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/List"
+                    }
+                },
+                "expeditionMetadataProperties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ExpeditionMetadataProperty"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "validated": {
+                    "type": "boolean"
+                },
+                "multiSheetEntity": {
+                    "type": "boolean"
+                },
+                "parentEntity": {
+                    "type": "boolean"
+                },
+                "entityChildDescendent": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Entity-Views.Detailed": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "discriminator": "type",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Attribute"
+                    }
+                },
+                "rules": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                        "$ref": "#/definitions/Rule"
+                    }
+                },
+                "worksheet": {
+                    "type": "string"
+                },
+                "uniqueKey": {
+                    "type": "string"
+                },
+                "uniqueAcrossProject": {
+                    "type": "boolean"
+                },
+                "hashed": {
+                    "type": "boolean"
+                },
+                "conceptAlias": {
+                    "type": "string"
+                },
+                "conceptURI": {
+                    "type": "string"
+                },
+                "parentEntity": {
+                    "type": "string"
+                },
+                "recordType": {
+                    "$ref": "#/definitions/Class"
+                },
+                "valid": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "Attribute-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "column": {
+                    "type": "string"
+                },
+                "uri": {
+                    "type": "string"
+                },
+                "dataType": {
+                    "type": "string",
+                    "enum": [
+                        "INTEGER",
+                        "STRING",
+                        "DATE",
+                        "DATETIME",
+                        "TIME",
+                        "FLOAT",
+                        "BOOLEAN"
+                    ]
+                },
+                "internal": {
+                    "type": "boolean"
+                },
+                "definedBy": {
+                    "type": "string"
+                },
+                "dataFormat": {
+                    "type": "string"
+                },
+                "delimitedBy": {
+                    "type": "string"
+                },
+                "group": {
+                    "type": "string"
+                },
+                "definition": {
+                    "type": "string"
+                },
+                "allowUnknown": {
+                    "type": "boolean",
+                    "description": "Used w/ INTEGER, FLOAT, DATE, DATETIME, & TIME DataTypes"
+                }
+            }
+        },
+        "List-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string",
+                    "description": "return the alias for which this list is known"
+                },
+                "caseInsensitive": {
+                    "type": "boolean"
+                },
+                "fields": {
+                    "type": "array",
+                    "description": "Get the set of fields that belong to this list",
+                    "items": {
+                        "$ref": "#/definitions/Field"
+                    }
+                }
+            }
+        },
+        "Field-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "uri": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                },
+                "definedBy": {
+                    "type": "string"
+                },
+                "definition": {
+                    "type": "string"
+                }
+            }
+        },
+        "ExpeditionMetadataProperty-Views.Detailed": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "isNetworkProp": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Resources-ProjectsResource-NewProject": {
+            "type": "object",
+            "properties": {
+                "projectId": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "projectCode": {
+                    "type": "string"
+                },
+                "projectTitle": {
+                    "type": "string"
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "projectConfiguration": {
+                    "$ref": "#/definitions/ProjectConfiguration"
+                },
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "user": {
+                    "$ref": "#/definitions/User"
+                },
+                "network": {
+                    "$ref": "#/definitions/Network"
+                },
+                "projectConfig": {
+                    "$ref": "#/definitions/ProjectConfig"
+                },
+                "public": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ProjectConfiguration": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/definitions/ProjectConfig"
+                },
+                "networkApproved": {
+                    "type": "boolean"
+                },
+                "configChanged": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ProjectConfig": {
+            "type": "object",
+            "properties": {
+                "entities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Entity"
+                    }
+                },
+                "lists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/List"
+                    }
+                },
+                "expeditionMetadataProperties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ExpeditionMetadataProperty"
+                    }
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "validated": {
+                    "type": "boolean"
+                },
+                "multiSheetEntity": {
+                    "type": "boolean"
+                },
+                "parentEntity": {
+                    "type": "boolean"
+                },
+                "entityChildDescendent": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Project": {
+            "type": "object",
+            "properties": {
+                "projectId": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "projectCode": {
+                    "type": "string"
+                },
+                "projectTitle": {
+                    "type": "string"
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "projectConfiguration": {
+                    "$ref": "#/definitions/ProjectConfiguration"
+                },
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "user": {
+                    "$ref": "#/definitions/User"
+                },
+                "network": {
+                    "$ref": "#/definitions/Network"
+                },
+                "projectConfig": {
+                    "$ref": "#/definitions/ProjectConfig"
+                },
+                "public": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "WorksheetTemplate-Views.Detailed": {
             "type": "object",
             "properties": {
                 "name": {
@@ -2907,7 +4622,7 @@
                 }
             }
         },
-        "ProjectTemplate": {
+        "WorksheetTemplate": {
             "type": "object",
             "properties": {
                 "name": {
@@ -3016,15 +4731,60 @@
                 }
             }
         },
-        "ConfirmationResponse": {
+        "ProjectConfiguration-Views.Summary": {
             "type": "object",
             "properties": {
-                "success": {
+                "id": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "networkApproved": {
+                    "type": "boolean"
+                },
+                "configChanged": {
                     "type": "boolean"
                 }
             }
         },
-        "Config-ProjectConfig": {
+        "ProjectConfiguration-Views.DetailedConfig": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "modified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "config": {
+                    "$ref": "#/definitions/ProjectConfig-Views.DetailedConfig"
+                },
+                "networkApproved": {
+                    "type": "boolean"
+                },
+                "configChanged": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "ProjectConfig-Views.DetailedConfig": {
             "type": "object",
             "properties": {
                 "entities": {
@@ -3038,12 +4798,6 @@
                     "items": {
                         "$ref": "#/definitions/List"
                     }
-                },
-                "expeditionForwardingAddress": {
-                    "type": "string"
-                },
-                "datasetForwardingAddress": {
-                    "type": "string"
                 },
                 "expeditionMetadataProperties": {
                     "type": "array",
@@ -3063,147 +4817,10 @@
                 "multiSheetEntity": {
                     "type": "boolean"
                 },
-                "entityChildDescendent": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "Entity": {
-            "type": "object",
-            "required": [
-                "type"
-            ],
-            "discriminator": "type",
-            "properties": {
-                "attributes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/Attribute"
-                    }
-                },
-                "rules": {
-                    "type": "array",
-                    "uniqueItems": true,
-                    "items": {
-                        "$ref": "#/definitions/Rule"
-                    }
-                },
-                "worksheet": {
-                    "type": "string"
-                },
-                "uniqueKey": {
-                    "type": "string"
-                },
-                "conceptAlias": {
-                    "type": "string"
-                },
-                "conceptURI": {
-                    "type": "string"
-                },
-                "conceptForwardingAddress": {
-                    "type": "string"
-                },
                 "parentEntity": {
-                    "type": "string"
-                },
-                "recordType": {
-                    "$ref": "#/definitions/Class"
-                },
-                "valid": {
                     "type": "boolean"
                 },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "Attribute": {
-            "type": "object",
-            "properties": {
-                "group": {
-                    "type": "string"
-                },
-                "column": {
-                    "type": "string"
-                },
-                "column_internal": {
-                    "type": "string"
-                },
-                "uri": {
-                    "type": "string"
-                },
-                "defined_by": {
-                    "type": "string"
-                },
-                "datatype": {
-                    "type": "string",
-                    "enum": [
-                        "INTEGER",
-                        "STRING",
-                        "DATE",
-                        "DATETIME",
-                        "TIME",
-                        "FLOAT"
-                    ]
-                },
-                "definition": {
-                    "type": "string"
-                },
-                "dataformat": {
-                    "type": "string"
-                },
-                "delimited_by": {
-                    "type": "string"
-                },
-                "displayAnnotationProperty": {
-                    "type": "boolean",
-                    "description": "Default is true"
-                }
-            }
-        },
-        "List": {
-            "type": "object",
-            "properties": {
-                "alias": {
-                    "type": "string",
-                    "description": "return the alias for which this list is known"
-                },
-                "caseInsensitive": {
-                    "type": "boolean"
-                },
-                "fields": {
-                    "type": "array",
-                    "description": "Get the set of fields that belong to this list",
-                    "items": {
-                        "$ref": "#/definitions/Field"
-                    }
-                }
-            }
-        },
-        "Field": {
-            "type": "object",
-            "properties": {
-                "uri": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
-                },
-                "defined_by": {
-                    "type": "string"
-                },
-                "definition": {
-                    "type": "string"
-                }
-            }
-        },
-        "ExpeditionMetadataProperty": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "required": {
+                "entityChildDescendent": {
                     "type": "boolean"
                 }
             }

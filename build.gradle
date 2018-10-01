@@ -21,7 +21,7 @@ import org.biocode.gradle.web.tasks.RestartRemoteJettyTask
 import org.biocode.gradle.web.tasks.HotDeployRemoteJettyTask
 
 if (!project.hasProperty('fimsCommonsVersion')) {
-    ext.fimsCommonsVersion = "1.0.0"
+    ext.fimsCommonsVersion = "1.1.0"
 }
 if (!project.hasProperty('fimsSequencesVersion')) {
     ext.fimsSequencesVersion = "1.0.0"
