@@ -802,6 +802,7 @@
                 "tags": [
                     "Projects"
                 ],
+                "summary": "Create a new project",
                 "operationId": "create",
                 "consumes": [
                     "application/json"
@@ -877,6 +878,43 @@
                         }
                     }
                 }
+            },
+            "delete": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "delete a project",
+                "operationId": "delete",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "path",
+                        "description": "The id of the project to delete",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/ConfirmationResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "not the project's admin",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorInfo"
+                        }
+                    }
+                }
             }
         },
         "/projects/configs": {
@@ -915,6 +953,38 @@
                             "items": {
                                 "$ref": "#/definitions/ProjectConfiguration-Views.Summary"
                             }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Project_Configurations"
+                ],
+                "summary": "Create a new ProjectConfiguration",
+                "operationId": "create",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "configuration",
+                        "description": "",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ProjectConfiguration"
+                        }
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/Response-Views.DetailedConfig"
                         }
                     }
                 }
@@ -3435,14 +3505,8 @@
                 "password": {
                     "type": "string"
                 },
-                "hasSetPassword": {
-                    "type": "boolean"
-                },
                 "email": {
                     "type": "string"
-                },
-                "admin": {
-                    "type": "boolean"
                 },
                 "institution": {
                     "type": "string"
@@ -3454,6 +3518,9 @@
                     "type": "string"
                 },
                 "valid": {
+                    "type": "boolean"
+                },
+                "subscribed": {
                     "type": "boolean"
                 }
             }
@@ -3497,14 +3564,8 @@
                 "password": {
                     "type": "string"
                 },
-                "hasSetPassword": {
-                    "type": "boolean"
-                },
                 "email": {
                     "type": "string"
-                },
-                "admin": {
-                    "type": "boolean"
                 },
                 "institution": {
                     "type": "string"
@@ -3516,6 +3577,9 @@
                     "type": "string"
                 },
                 "valid": {
+                    "type": "boolean"
+                },
+                "subscribed": {
                     "type": "boolean"
                 }
             }
@@ -3750,14 +3814,8 @@
                 "password": {
                     "type": "string"
                 },
-                "hasSetPassword": {
-                    "type": "boolean"
-                },
                 "email": {
                     "type": "string"
-                },
-                "admin": {
-                    "type": "boolean"
                 },
                 "institution": {
                     "type": "string"
@@ -3769,6 +3827,9 @@
                     "type": "string"
                 },
                 "valid": {
+                    "type": "boolean"
+                },
+                "subscribed": {
                     "type": "boolean"
                 }
             }
