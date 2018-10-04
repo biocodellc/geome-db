@@ -58,7 +58,7 @@ jobs:
       - run:
           command: |
             if [ "${CIRCLE_BRANCH}" == "develop" ]; then
-              ssh -o "StrictHostKeyChecking no" deploy@biscicol3.acis.ufl.edu 'cd /home/deploy/code/dev/geome-db/ && ./scripts/development_deploy.sh'
+              ssh -o "StrictHostKeyChecking no" deploy@biscicol3.acis.ufl.edu 'cd /home/deploy/code/dev/geome-db/ && git checkout develop && ./scripts/development_deploy.sh'
             fi
 
 workflows:
