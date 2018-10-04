@@ -49,6 +49,8 @@ Versions are handled automatically using semver
        
 ### Deploy
 
+note: `scripts/deployProduction.sh` automates the following steps
+
 1. log into server
 
 2. `su` as `deploy` user
@@ -57,21 +59,20 @@ Versions are handled automatically using semver
        
 3. `cd` to codebase
 
-       cd ~/code/geome-db
+       cd ~/code/prod/geome-db
        
-4. checkout lastest changes
+4. checkout latest changes
 
        git checkout master
        git pull
-       ./scripts/checkoutChildProjects.sh
        
 5. update any props files as necessary
 
 6. build
 
         ./gradlew clean
-        ./gradlew -Penvironment=production fatWar
-        sudo cp /home/deploy/code/geome-db/dist/geome-db-fat.war /opt/web/prod/webapps/geome-db.war
+        ./gradlew -PforceJars=true -Penvironment=production fatWar
+        sudo cp /home/deploy/code/prod/geome-db/dist/geome-db-fat.war /opt/web/prod/webapps/geome-db.war
         
 7. deploy
 
