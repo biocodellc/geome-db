@@ -9,8 +9,8 @@ ssh deploy@biscicol3.acis.ufl.edu <<'ENDSSH'
     git pull
 
     ./gradlew clean &&
-    ./gradlew -PforceJars=true -Penvironment=production fatWar &&
-    sudo cp /home/deploy/code/prod/geome-db/dist/geome-db-fat.war /opt/web/prod/webapps/geome-db.war &&
+    ./gradlew -PforceJars=true -Penvironment=production war &&
+    sudo cp /home/deploy/code/prod/geome-db/dist/geome-db.war /opt/web/prod/webapps/geome-db.war &&
     sudo /bin/touch /opt/web/prod/webapps/geome-db.xml
 
 ENDSSH

@@ -6,11 +6,9 @@ git fetch
 git checkout develop
 git pull
 
-./scripts/generateDevelopRestApiDocs.sh
-
 ./gradlew clean &&
 ./scripts/generateDevelopRestApiDocs.sh
-./gradlew -Penvironment=development fatWar &&
+./gradlew -Penvironment=development war &&
 
-sudo cp /home/deploy/code/prod/geome-db/dist/geome-db-fat.war /opt/web/prod/webapps/geome-db.war
+sudo cp /home/deploy/code/prod/geome-db/dist/geome-db.war /opt/web/prod/webapps/geome-db.war
 sudo /bin/touch /opt/web/prod/webapps/geome-db.xml
