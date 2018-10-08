@@ -8,7 +8,7 @@ git pull
 
 ./gradlew clean &&
 ./scripts/generateDevelopRestApiDocs.sh
-./gradlew -Penvironment=development fatWar &&
+./gradlew -Penvironment=development war &&
 
-sudo cp /home/deploy/code/dev/geome-db/dist/geome-db-fat.war /opt/web/dev/webapps/geome-db.war
-sudo /bin/touch /opt/web/dev/webapps/geome-db.xml
+sudo cp /home/deploy/code/prod/geome-db/dist/geome-db.war /opt/web/prod/webapps/geome-db.war
+sudo /bin/touch /opt/web/prod/webapps/geome-db.xml

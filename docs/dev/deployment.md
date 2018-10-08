@@ -71,8 +71,8 @@ note: `scripts/deployProduction.sh` automates the following steps
 6. build
 
         ./gradlew clean
-        ./gradlew -PforceJars=true -Penvironment=production fatWar
-        sudo cp /home/deploy/code/prod/geome-db/dist/geome-db-fat.war /opt/web/prod/webapps/geome-db.war
+        ./gradlew -PforceJars=true -Penvironment=production war
+        sudo cp /home/deploy/code/prod/geome-db/dist/geome-db.war /opt/web/prod/webapps/geome-db.war
         
 7. deploy
 
