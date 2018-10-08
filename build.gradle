@@ -77,7 +77,10 @@ dependencies {
     server group: 'javax.el', name: 'javax.el-api', version: '3.0.0'
     server group: 'org.parboiled', name: 'parboiled-java', version: '1.1.8'
     server group: 'com.opencsv', name: 'opencsv', version: '4.2'
+    server group: 'org.hibernate', name: 'hibernate-java8', version: '5.1.0.Final'
     serverRuntime group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.9'
+
+    server group: 'org.glassfish.jersey.media', name: 'jersey-media-moxy', version: '2.27'
 
     server group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
     compile composite.resolveDependency("org.biocode:biocode-fims-commons:${fimsCommonsVersion}", ":biocode-fims-commons")
