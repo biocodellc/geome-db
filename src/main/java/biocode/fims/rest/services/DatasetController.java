@@ -26,6 +26,7 @@ import biocode.fims.reader.DataReaderFactory;
 import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.responses.ValidationResponse;
+import biocode.fims.run.DatasetAuthorizer;
 import biocode.fims.tools.FileCache;
 import biocode.fims.tools.ValidationStore;
 import biocode.fims.repositories.RecordRepository;
@@ -70,6 +71,7 @@ public class DatasetController extends FimsController {
     private final ExpeditionService expeditionService;
     private final RecordValidatorFactory validatorFactory;
     private final RecordRepository recordRepository;
+    private final DatasetAuthorizer datasetAuthorizer;
     private final ProjectService projectService;
     private final DataReaderFactory readerFactory;
     private final DataConverterFactory dataConverterFactory;
@@ -81,13 +83,15 @@ public class DatasetController extends FimsController {
 
     public DatasetController(ExpeditionService expeditionService, DataReaderFactory readerFactory,
                              RecordValidatorFactory validatorFactory, RecordRepository recordRepository,
-                             ProjectService projectService, QueryAuthorizer queryAuthorizer, FileCache fileCache,
+                             DatasetAuthorizer datasetAuthorizer, ProjectService projectService,
+                             QueryAuthorizer queryAuthorizer, FileCache fileCache,
                              DataConverterFactory dataConverterFactory, FimsProperties props) {
         super(props);
         this.expeditionService = expeditionService;
         this.readerFactory = readerFactory;
         this.validatorFactory = validatorFactory;
         this.recordRepository = recordRepository;
+        this.datasetAuthorizer = datasetAuthorizer;
         this.projectService = projectService;
         this.queryAuthorizer = queryAuthorizer;
         this.fileCache = fileCache;
@@ -142,7 +146,7 @@ public class DatasetController extends FimsController {
         // create a new processorStatus
         ProcessorStatus processorStatus = new ProcessorStatus();
 
-        Project project = projectService.getProjectWithExpeditions(projectId);
+        Project project = projectService.getProject(projectId);
 
         if (project == null) {
             throw new FimsRuntimeException(ProjectCode.INVALID_PROJECT, 400);
@@ -154,7 +158,7 @@ public class DatasetController extends FimsController {
                 .dataConverterFactory(dataConverterFactory)
                 .recordRepository(recordRepository)
                 .validatorFactory(validatorFactory)
-                .ignoreUser(props.ignoreUser() || project.getUser().equals(userContext.getUser())) // projectAdmin can modify expedition data
+                .datasetAuthorizer(datasetAuthorizer)
                 .serverDataDir(props.serverRoot())
                 .upload()
                 .writeToServer()

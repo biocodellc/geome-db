@@ -17,6 +17,7 @@ import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.*;
 import biocode.fims.records.*;
 import biocode.fims.repositories.RecordRepository;
+import biocode.fims.run.DatasetAuthorizer;
 import biocode.fims.run.DatasetProcessor;
 import biocode.fims.run.ProcessorStatus;
 import biocode.fims.tissues.*;
@@ -37,12 +38,15 @@ public class PlateService {
     private final TissueRepository tissueRepository;
     private final RecordRepository recordRepository;
     private final RecordValidatorFactory validatorFactory;
+    private final DatasetAuthorizer datasetAuthorizer;
     private final GeomeProperties props;
 
-    public PlateService(TissueRepository tissueRepository, RecordRepository recordRepository, RecordValidatorFactory validatorFactory, GeomeProperties props) {
+    public PlateService(TissueRepository tissueRepository, RecordRepository recordRepository,
+                        RecordValidatorFactory validatorFactory, DatasetAuthorizer datasetAuthorizer, GeomeProperties props) {
         this.tissueRepository = tissueRepository;
         this.recordRepository = recordRepository;
         this.validatorFactory = validatorFactory;
+        this.datasetAuthorizer = datasetAuthorizer;
         this.props = props;
     }
 
@@ -168,7 +172,7 @@ public class PlateService {
                 .user(user)
                 .recordRepository(recordRepository)
                 .validatorFactory(validatorFactory)
-                .ignoreUser(props.ignoreUser() || project.getUser().equals(user)) // projectAdmin can modify expedition data
+                .datasetAuthorizer(datasetAuthorizer)
                 .serverDataDir(props.serverRoot())
                 .uploadValid();
 
