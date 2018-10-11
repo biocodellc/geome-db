@@ -73,8 +73,10 @@ public class PlateService {
         Entity entity = getTissueEntity(project);
 
         Attribute plateAttribute = entity.getAttributeByUri(props.tissuePlateUri());
+        ProjectExpression projectExpression = new ProjectExpression(Collections.singletonList(project.getProjectId()));
         ComparisonExpression plateExp = new ComparisonExpression(plateAttribute.getColumn(), plateName, ComparisonOperator.EQUALS);
-        SelectExpression exp = new SelectExpression(entity.getParentEntity(), plateExp);
+        LogicalExpression logicalExpression = new LogicalExpression(LogicalOperator.AND, projectExpression, plateExp);
+        SelectExpression exp = new SelectExpression(entity.getParentEntity(), logicalExpression);
         QueryBuilder qb = new QueryBuilder(config, project.getNetwork().getId(), entity.getConceptAlias());
         Query query = new Query(qb, config, exp);
 
