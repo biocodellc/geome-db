@@ -59,6 +59,15 @@
           "internal": false
         },
         {
+          "column": "municipality",
+          "uri": "urn:municipality",
+          "definedBy": "http://rs.tdwg.org/dwc/terms/municipality",
+          "dataType": "STRING",
+          "allowUnknown": false,
+          "definition": "The full, unabbreviated name of the next smaller administrative region than county (city, municipality, etc.) in which the Location occurs. Do not use this term for a nearby named place that does not contain the actual location.",
+          "internal": false
+        },
+        {
           "column": "county",
           "uri": "urn:county",
           "definedBy": "ttp://rs.tdwg.org/dwc/terms/county",
@@ -74,6 +83,15 @@
           "dataType": "INTEGER",
           "allowUnknown": true,
           "definition": "The day the collecting event took place.",
+          "internal": false
+        },
+        {
+          "column": "locationRemarks",
+          "uri": "urn:locationRemarks",
+          "definedBy": "http://rs.tdwg.org/dwc/terms/locationRemarks",
+          "dataType": "STRING",
+          "allowUnknown": false,
+          "definition": "Comments or notes about the Location.",
           "internal": false
         },
         {
@@ -149,6 +167,15 @@
           "internal": false
         },
         {
+          "column": "waterBody",
+          "uri": "urn:waterBody",
+          "definedBy": "http://rs.tdwg.org/dwc/terms/waterBody",
+          "dataType": "STRING",
+          "allowUnknown": false,
+          "definition": "The name of the water body in which the Location occurs.",
+          "internal": false
+        },
+        {
           "column": "landowner",
           "uri": "urn:landowner",
           "definedBy": "urn:landowner",
@@ -185,12 +212,30 @@
           "internal": false
         },
         {
+          "column": "verbatimElevation",
+          "uri": "urn:verbatimElevation",
+          "definedBy": "http://rs.tdwg.org/dwc/terms/verbatimElevation",
+          "dataType": "STRING",
+          "allowUnknown": false,
+          "definition": "The original description of the elevation (altitude, usually above sea level) of the Location.",
+          "internal": false
+        },
+        {
           "column": "coordinateUncertaintyInMeters",
           "uri": "urn:coordinateUncertaintyInMeters",
           "definedBy": "http://rs.tdwg.org/dwc/terms/coordinateUncertaintyInMeters",
           "dataType": "INTEGER",
           "allowUnknown": false,
           "definition": "The horizontal distance (in meters) from the given decimalLatitude and decimalLongitude describing the smallest circle containing the whole of the Location. Leave the value empty if the uncertainty is unknown, cannot be estimated, or is not applicable (because there are no coordinates). Zero is not a valid value for this term.",
+          "internal": false
+        },
+        {
+          "column": "coordinatePrecision",
+          "uri": "urn:coordinatePrecision",
+          "definedBy": "http://rs.tdwg.org/dwc/terms/coordinatePrecision",
+          "dataType": "FLOAT",
+          "allowUnknown": false,
+          "definition": "A decimal representation of the precision of the coordinates given in the decimalLatitude and decimalLongitude.",
           "internal": false
         },
         {
@@ -218,6 +263,15 @@
           "dataType": "INTEGER",
           "allowUnknown": false,
           "definition": "The lesser depth of a range of depth below the local surface, in meters.",
+          "internal": false
+        },
+        {
+          "column": "verbatimDepth",
+          "uri": "urn:verbatimDepth",
+          "definedBy": "http://rs.tdwg.org/dwc/terms/verbatimDepth",
+          "dataType": "STRING",
+          "allowUnknown": false,
+          "definition": "The original description of the depth below the local surface.",
           "internal": false
         },
         {
@@ -334,6 +388,7 @@
           "name": "RequiredValue",
           "level": "ERROR",
           "columns": [
+            "locality",
             "yearCollected"
           ]
         },
@@ -360,15 +415,6 @@
           "level": "ERROR",
           "column": "decimalLongitude",
           "otherColumn": "decimalLatitude"
-        },
-        {
-          "name": "RequiredValueInGroup",
-          "level": "ERROR",
-          "columns": [
-            "locality",
-            "decimalLatitude",
-            "decimalLongitude"
-          ]
         },
         {
           "name": "ControlledVocabulary",
@@ -497,6 +543,16 @@
         },
         {
           "group": "Protocol and Storage Details",
+          "column": "collectionCode",
+          "uri": "urn:collectionCode",
+          "definedBy": "http://rs.tdwg.org/dwc/terms/collectionCode",
+          "dataType": "STRING",
+          "allowUnknown": false,
+          "definition": "The name, acronym, coden, or initialism identifying the collection or data set from which the record was derived.",
+          "internal": false
+        },
+        {
+          "group": "Protocol and Storage Details",
           "column": "individualCount",
           "uri": "urn:individualCount",
           "definedBy": "http://rs.tdwg.org/dwc/terms/individualCount",
@@ -593,6 +649,16 @@
           "dataType": "STRING",
           "allowUnknown": false,
           "definition": "The Biocode GUID identifier for the record within the dataset. It is a legacy identifier as the expedition_code + specimen_num_collector is the current unique identifier",
+          "internal": false
+        },
+        {
+          "group": "Record and Owner Details",
+          "column": "fieldNumber",
+          "uri": "urn:fieldNumber",
+          "definedBy": "http://rs.tdwg.org/dwc/terms/fieldNumber",
+          "dataType": "STRING",
+          "allowUnknown": false,
+          "definition": "An identifier given to the event in the field. Often serves as a link between field notes and the Event.",
           "internal": false
         },
         {
@@ -793,6 +859,16 @@
           "dataType": "STRING",
           "allowUnknown": false,
           "definition": "A list (concatenated and separated) of names of people, groups, or organizations who assigned the Taxon to the subject.",
+          "internal": false
+        },
+        {
+          "group": "Taxonomy and Life History",
+          "column": "identificationVerificationStatus",
+          "uri": "urn:identificationVerificationStatus",
+          "definedBy": "http://rs.tdwg.org/dwc/terms/identificationVerificationStatus",
+          "dataType": "STRING",
+          "allowUnknown": false,
+          "definition": "A categorical indicator of the extent to which the taxonomic identification has been verified to be correct.",
           "internal": false
         },
         {
@@ -1037,7 +1113,7 @@
         },
         {
           "group": "Taxonomy and Life History",
-          "column": "taxonCertainty",
+          "column": "taxonRemarks",
           "uri": "urn:taxonRemarks",
           "definedBy": "http://rs.tdwg.org/dwc/terms/taxonRemarks",
           "dataType": "STRING",
