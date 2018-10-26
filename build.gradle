@@ -21,7 +21,7 @@ if (!project.hasProperty('fimsCommonsVersion')) {
     ext.fimsCommonsVersion = "1.1.2"
 }
 if (!project.hasProperty('fimsSequencesVersion')) {
-    ext.fimsSequencesVersion = "1.0.1"
+    ext.fimsSequencesVersion = "1.0.2"
 }
 if (!project.hasProperty('fimsPhotosVersion')) {
     ext.fimsPhotosVersion = "1.0.1"
