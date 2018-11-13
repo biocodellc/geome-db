@@ -45,7 +45,7 @@ public class PlateResource extends FimsController {
     @GET
     public List<String> getPlates(@PathParam("projectId") Integer projectId) {
         User user = userContext.getUser();
-        Project project = projectService.getProjectWithExpeditions(projectId);
+        Project project = projectService.getProject(projectId);
 
         if (project == null) {
             throw new BadRequestException("Invalid project");
@@ -63,7 +63,7 @@ public class PlateResource extends FimsController {
     public Plate get(@PathParam("projectId") Integer projectId,
                      @PathParam("plateName") String plateName) {
         User user = userContext.getUser();
-        Project project = projectService.getProjectWithExpeditions(projectId);
+        Project project = projectService.getProject(projectId);
 
         if (project == null) {
             throw new BadRequestException("Invalid project");
@@ -89,7 +89,7 @@ public class PlateResource extends FimsController {
                                 @PathParam("plateName") String plateName,
                                 Plate plate) {
         User user = userContext.getUser();
-        Project project = projectService.getProjectWithExpeditions(projectId);
+        Project project = projectService.getProject(projectId);
 
         if (project == null) {
             throw new BadRequestException("Invalid project");
@@ -107,7 +107,7 @@ public class PlateResource extends FimsController {
                                 @PathParam("plateName") String plateName,
                                 Plate plate) {
         User user = userContext.getUser();
-        Project project = projectService.getProjectWithExpeditions(projectId);
+        Project project = projectService.getProject(projectId);
 
         if (project == null) {
             throw new BadRequestException("Invalid project");

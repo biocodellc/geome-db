@@ -17,6 +17,7 @@ import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.*;
 import biocode.fims.records.*;
 import biocode.fims.repositories.RecordRepository;
+import biocode.fims.run.DatasetAuthorizer;
 import biocode.fims.run.DatasetProcessor;
 import biocode.fims.run.ProcessorStatus;
 import biocode.fims.tissues.*;
@@ -37,12 +38,15 @@ public class PlateService {
     private final TissueRepository tissueRepository;
     private final RecordRepository recordRepository;
     private final RecordValidatorFactory validatorFactory;
+    private final DatasetAuthorizer datasetAuthorizer;
     private final GeomeProperties props;
 
-    public PlateService(TissueRepository tissueRepository, RecordRepository recordRepository, RecordValidatorFactory validatorFactory, GeomeProperties props) {
+    public PlateService(TissueRepository tissueRepository, RecordRepository recordRepository,
+                        RecordValidatorFactory validatorFactory, DatasetAuthorizer datasetAuthorizer, GeomeProperties props) {
         this.tissueRepository = tissueRepository;
         this.recordRepository = recordRepository;
         this.validatorFactory = validatorFactory;
+        this.datasetAuthorizer = datasetAuthorizer;
         this.props = props;
     }
 
@@ -69,8 +73,10 @@ public class PlateService {
         Entity entity = getTissueEntity(project);
 
         Attribute plateAttribute = entity.getAttributeByUri(props.tissuePlateUri());
+        ProjectExpression projectExpression = new ProjectExpression(Collections.singletonList(project.getProjectId()));
         ComparisonExpression plateExp = new ComparisonExpression(plateAttribute.getColumn(), plateName, ComparisonOperator.EQUALS);
-        SelectExpression exp = new SelectExpression(entity.getParentEntity(), plateExp);
+        LogicalExpression logicalExpression = new LogicalExpression(LogicalOperator.AND, projectExpression, plateExp);
+        SelectExpression exp = new SelectExpression(entity.getParentEntity(), logicalExpression);
         QueryBuilder qb = new QueryBuilder(config, project.getNetwork().getId(), entity.getConceptAlias());
         Query query = new Query(qb, config, exp);
 
@@ -168,7 +174,7 @@ public class PlateService {
                 .user(user)
                 .recordRepository(recordRepository)
                 .validatorFactory(validatorFactory)
-                .ignoreUser(props.ignoreUser() || project.getUser().equals(user)) // projectAdmin can modify expedition data
+                .datasetAuthorizer(datasetAuthorizer)
                 .serverDataDir(props.serverRoot())
                 .uploadValid();
 

@@ -278,7 +278,7 @@ public class QueryController extends FimsController {
         Config config = getConfig();
 
         Entity e = config.entity(entity);
-        if (!(e instanceof FastaEntity)) {
+        if (!(Objects.equals(e.type(), FastaEntity.TYPE))) {
             throw new BadRequestException("queryEntity is not a FastaEntity");
         }
 

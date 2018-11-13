@@ -30,6 +30,9 @@ import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
 import biocode.fims.repositories.PostgresRecordRepository;
 import biocode.fims.repositories.RecordRepository;
+import biocode.fims.run.DatasetAuthorizer;
+import biocode.fims.run.FimsDatasetAuthorizer;
+import biocode.fims.run.GeomeDatasetAuthorizer;
 import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tissues.PostgresTissueRepository;
@@ -141,8 +144,8 @@ public class GeomeAppConfig {
     }
 
     @Bean
-    public BulkPhotoLoader bulkPhotoLoader(FimsProperties props) {
-        return new BulkPhotoLoader(dataReaderFactory(), recordValidatorFactory(), recordRepository(), dataConverterFactory(), props);
+    public BulkPhotoLoader bulkPhotoLoader(FimsProperties props, GeomeDatasetAuthorizer geomeDatasetAuthorizer) {
+        return new BulkPhotoLoader(dataReaderFactory(), recordValidatorFactory(), recordRepository(), dataConverterFactory(), geomeDatasetAuthorizer, props);
     }
 
     @Bean
@@ -159,4 +162,9 @@ public class GeomeAppConfig {
         return new GeomeProperties(env);
     }
 
+    @Primary
+    @Bean
+    public GeomeDatasetAuthorizer geomeDatasetAuthorizer(ProjectService projectService, FimsDatasetAuthorizer fimsDatasetAuthorizer) {
+        return new GeomeDatasetAuthorizer(projectService, fimsDatasetAuthorizer);
+    }
 }
