@@ -3439,6 +3439,10 @@
                 "allowUnknown": {
                     "type": "boolean",
                     "description": "Used w/ INTEGER, FLOAT, DATE, DATETIME, & TIME DataTypes"
+                },
+                "allowTBD": {
+                    "type": "boolean",
+                    "description": "Used w/ INTEGER, FLOAT, DATE, DATETIME, & TIME DataTypes"
                 }
             }
         },
@@ -3486,6 +3490,20 @@
                 },
                 "required": {
                     "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "STRING",
+                        "LIST",
+                        "BOOLEAN"
+                    ]
+                },
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "isNetworkProp": {
                     "type": "boolean"
@@ -3748,6 +3766,10 @@
                 "allowUnknown": {
                     "type": "boolean",
                     "description": "Used w/ INTEGER, FLOAT, DATE, DATETIME, & TIME DataTypes"
+                },
+                "allowTBD": {
+                    "type": "boolean",
+                    "description": "Used w/ INTEGER, FLOAT, DATE, DATETIME, & TIME DataTypes"
                 }
             }
         },
@@ -3795,6 +3817,20 @@
                 },
                 "required": {
                     "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "STRING",
+                        "LIST",
+                        "BOOLEAN"
+                    ]
+                },
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "isNetworkProp": {
                     "type": "boolean"
@@ -4385,6 +4421,10 @@
                 "allowUnknown": {
                     "type": "boolean",
                     "description": "Used w/ INTEGER, FLOAT, DATE, DATETIME, & TIME DataTypes"
+                },
+                "allowTBD": {
+                    "type": "boolean",
+                    "description": "Used w/ INTEGER, FLOAT, DATE, DATETIME, & TIME DataTypes"
                 }
             }
         },
@@ -4432,6 +4472,20 @@
                 },
                 "required": {
                     "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "STRING",
+                        "LIST",
+                        "BOOLEAN"
+                    ]
+                },
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "isNetworkProp": {
                     "type": "boolean"
