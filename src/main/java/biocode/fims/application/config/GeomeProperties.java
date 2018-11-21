@@ -15,16 +15,4 @@ public class GeomeProperties extends FimsProperties implements NetworkProperties
     public Integer networkId() {
         return env.getRequiredProperty("networkId", int.class);
     }
-
-    public String tissueEntity() {
-        return env.getRequiredProperty("tissueEntity").trim();
-    }
-
-    public String tissuePlateUri() {
-        return env.getRequiredProperty("tissuePlateUri").trim();
-    }
-
-    public String tissueWellUri() {
-        return env.getRequiredProperty("tissueWellUri").trim();
-    }
 }

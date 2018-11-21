@@ -20,8 +20,8 @@ apply plugin: "org.biocode.fims-web"
 if (!project.hasProperty('fimsCommonsVersion')) {
     ext.fimsCommonsVersion = "1.2.2"
 }
-if (!project.hasProperty('fimsSequencesVersion')) {
-    ext.fimsSequencesVersion = "1.0.2"
+if (!project.hasProperty('fimsTissuesVersion')) {
+    ext.fimsTissuesVersion = "1.0.2"
 }
 if (!project.hasProperty('fimsPhotosVersion')) {
     ext.fimsPhotosVersion = "1.1.0"
@@ -56,7 +56,7 @@ dependencies {
 
     compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
     compile composite.resolveDependency("org.biocode:biocode-fims-commons:${fimsCommonsVersion}", ":biocode-fims-commons")
-    compile composite.resolveDependency("org.biocode:biocode-fims-sequences:${fimsSequencesVersion}", ":biocode-fims-sequences")
+    compile composite.resolveDependency("org.biocode:biocode-fims-tissues:${fimsTissuesVersion}", ":biocode-fims-tissues")
     compile composite.resolveDependency("org.biocode:biocode-fims-photos:${fimsPhotosVersion}", ":biocode-fims-photos")
 
     additionalSources(group: 'org.springframework.data', name: 'spring-data-commons', version: '1.10.1.RELEASE', classifier: 'sources') {
@@ -65,7 +65,7 @@ dependencies {
     additionalSources(group: 'org.biocode', name: 'biocode-fims-commons', version: "${fimsCommonsVersion}", classifier: 'sources') {
         transitive = false
     }
-    additionalSources(group: 'org.biocode', name: 'biocode-fims-sequences', version: "${fimsSequencesVersion}", classifier: 'sources') {
+    additionalSources(group: 'org.biocode', name: 'biocode-fims-tissues', version: "${fimsTissuesVersion}", classifier: 'sources') {
         transitive = false
     }
     additionalSources(group: 'org.biocode', name: 'biocode-fims-photos', version: "${fimsPhotosVersion}", classifier: 'sources') {

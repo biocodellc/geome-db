@@ -26,7 +26,7 @@ jobs:
 
       # git clone & co same branch on biocode-fims-commons
       - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-commons; cd repo; git checkout ${CIRCLE_BRANCH}
-      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-sequences; cd repo; git checkout ${CIRCLE_BRANCH}
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-tissues; cd repo; git checkout ${CIRCLE_BRANCH}
       - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-photos; cd repo; git checkout ${CIRCLE_BRANCH}
 
       # Download and cache dependencies

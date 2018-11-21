@@ -25,8 +25,8 @@ function publishLocal()
 
 echo "attempting to run publishToMavenLocal task for biocode-fims-commons subproject"
 commonsVersion=$(publishLocal "biocodeFimsCommonsDir")
-echo "attempting to run publishToMavenLocal task for biocode-fims-sequences subproject"
-sequencesVersion=$(publishLocal "biocodeFimsSequencesDir")
+echo "attempting to run publishToMavenLocal task for biocode-fims-tissues subproject"
+tissuesVersion=$(publishLocal "biocodeFimsTissuesDir")
 echo "attempting to run publishToMavenLocal task for biocode-fims-photos subproject"
 photosVersion=$(publishLocal "biocodeFimsPhotosDir")
 
@@ -38,8 +38,8 @@ if [ ! -z "$commonsVersion" ]; then
     args="$args -PfimsCommonsVersion=$commonsVersion"
 fi;
 
-if [ ! -z "$sequencesVersion" ]; then
-    args="$args -PfimsSequencesVersion=$sequencesVersion"
+if [ ! -z "$tissuesVersion" ]; then
+    args="$args -PfimsTissuesVersion=$tissuesVersion"
 fi;
 
 if [ ! -z "$photosVersion" ]; then
