@@ -22,7 +22,7 @@
           "internal": false
         },
         {
-          "column": "collectionMethod",
+          "column": "samplingProtocol",
           "uri": "urn:samplingProtocol",
           "definedBy": "http://rs.tdwg.org/dwc/terms/samplingProtocol",
           "dataType": "STRING",
@@ -3651,36 +3651,6 @@
         },
         {
           "value": "University of Waikato"
-        },
-        {
-          "value": "University of Wellington"
-        },
-        {
-          "value": "Université de Polynésie Française Herbarium"
-        },
-        {
-          "value": "Watling Lab"
-        },
-        {
-          "value": "To be determined"
-        },
-        {
-          "value": "Unknown"
-        }
-      ]
-    },
-    {
-        {
-          "value": "University of California Museum of Paleontology"
-        },
-        {
-          "value": "University of Florida"
-        },
-        {
-          "value": "University of Guelph"
-        },
-        {
-          "value": "University of Otago"
         },
         {
           "value": "University of Wellington"
