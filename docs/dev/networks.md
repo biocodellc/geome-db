@@ -55,3 +55,10 @@ Issue the following sql cmd against the db you wish to create the network in:
     or
     select create_network(1, 'GeOMe Network', ${USER_ID});
 
+## Update a network config
+
+This requires making a PUT request to upload the config JSON file
+
+using (HTTPie)[https://httpie.org]
+
+    http PUT "http://localhost:8080/network/config?access_token=dXfdC5bBr3gXDHkjjjCp" < docs/geome.json
