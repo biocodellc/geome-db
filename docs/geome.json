@@ -3455,6 +3455,12 @@
       "caseInsensitive": false,
       "fields": [
         {
+          "value": "Aukland University of Technology"
+        },
+        {
+          "value": "Auckland War Memorial Museum Tāmaki Paenga Hira"
+        },
+        {
           "value": "Australian Museum"
         },
         {
@@ -3479,7 +3485,13 @@
           "value": "Canadian National Collection of Insects, Arachnids and Nematodes"
         },
         {
+          "value": "Cawthron Institute"
+        },
+        {
           "value": "Criobe"
+        },
+        {
+          "value": "Department of Conservation"
         },
         {
           "value": "Duke University"
@@ -3489,6 +3501,9 @@
         },
         {
           "value": "Essig Museum of Entomology"
+        },
+        {
+          "value": "Genomics for Aotearoa New Zealand"
         },
         {
           "value": "Gump Station"
@@ -3524,6 +3539,15 @@
           "value": "Laboratoire Biométrie et Biologie Evolutive, University Lyon 1"
         },
         {
+          "value": "Lincoln University"
+        },
+        {
+          "value": "Manaaki Whenua - Landcare Research"
+        },
+        {
+          "value": "Massey University Te Kunenga ki Pūrehuroa"
+        },
+        {
           "value": "MBARI"
         },
         {
@@ -3548,22 +3572,19 @@
           "value": "Muséum National d'Histoire Naturelle"
         },
         {
+          "value": "National Institue of Water and Atmospheric Research"
+        },
+        {
           "value": "National Museum Bloemfontein"
         },
         {
           "value": "Natural History Museum of Los Angeles County"
         },
         {
-          "value": "No Voucher"
-        },
-        {
           "value": "Norenburg Lab"
         },
         {
           "value": "North Carolina State University"
-        },
-        {
-          "value": "Other"
         },
         {
           "value": "Oxford University Museum of Natural History"
@@ -3576,6 +3597,9 @@
         },
         {
           "value": "Planes's Lab"
+        },
+        {
+          "value": "Plant and Food Research Rangahau Ahumara Kai"
         },
         {
           "value": "Queensland Museum"
@@ -3593,6 +3617,9 @@
           "value": "Southwest Fisheries Science Center (SWFSC)"
         },
         {
+          "value": "Te Papa Tongrewa"
+        },
+        {
           "value": "The University and Jepson Herbaria"
         },
         {
@@ -3605,6 +3632,45 @@
           "value": "University of Adelaide"
         },
         {
+          "value": "University of Auckland"
+        },
+        {
+          "value": "University of California Museum of Paleontology"
+        },
+        {
+          "value": "University of Canterbury"
+        },
+        {
+          "value": "University of Florida"
+        },
+        {
+          "value": "University of Guelph"
+        },
+        {
+          "value": "University of Otago"
+        },
+        {
+          "value": "University of Waikato"
+        },
+        {
+          "value": "University of Wellington"
+        },
+        {
+          "value": "Université de Polynésie Française Herbarium"
+        },
+        {
+          "value": "Watling Lab"
+        },
+        {
+          "value": "To be determined"
+        },
+        {
+          "value": "Unknown"
+        }
+      ]
+    },
+    {
+        {
           "value": "University of California Museum of Paleontology"
         },
         {
@@ -3614,10 +3680,22 @@
           "value": "University of Guelph"
         },
         {
+          "value": "University of Otago"
+        },
+        {
+          "value": "University of Wellington"
+        },
+        {
           "value": "Université de Polynésie Française Herbarium"
         },
         {
           "value": "Watling Lab"
+        },
+        {
+          "value": "To be determined"
+        },
+        {
+          "value": "Unknown"
         }
       ]
     },
