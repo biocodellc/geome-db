@@ -1238,7 +1238,7 @@
       "recordType": "biocode.fims.records.GenericRecord"
     },
     {
-      "type": "DefaultEntity",
+      "type": "Tissue",
       "attributes": [
         {
           "column": "tissueID",
