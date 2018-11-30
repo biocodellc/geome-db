@@ -38,5 +38,5 @@ function checkout()
 }
 
 checkout "biocodeFimsCommonsDir"
-checkout "biocodeFimsSequencesDir"
+checkout "biocodeFimsTissuesDir"
 checkout "biocodeFimsPhotosDir"

@@ -274,11 +274,11 @@ public class QueryController extends FimsController {
     @GET
     @Path("/fasta/")
     @Consumes(MediaType.APPLICATION_JSON)
-    public FileResponse queryFasta(@QueryParam("q") String queryString) {
+    public FileResponse queryFasta(@QueryParam("q") @DefaultValue("") String queryString) {
         Config config = getConfig();
 
         Entity e = config.entity(entity);
-        if (!(Objects.equals(e.type(), FastaEntity.TYPE))) {
+        if (e == null || !e.type().equals(FastaEntity.TYPE)) {
             throw new BadRequestException("queryEntity is not a FastaEntity");
         }
 

@@ -2,7 +2,7 @@
 
 ### Package releases
 
-The following steps need to happen for each package (commons, photos, sequences, etc). Complete all steps for each 
+The following steps need to happen for each package (commons, photos, tissues, etc). Complete all steps for each 
 package before moving on to the next. You'll also need to start with the most depended upon package first (biocode-fims-commons)
 and work your way up the dependency tree.
 
