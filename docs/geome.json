@@ -381,6 +381,15 @@
           "allowUnknown": false,
           "definition": "Any notes taken in the field, or a link to those notes: population size, ecological info, etc.",
           "internal": false
+        },
+        {
+          "column": "substratum",
+          "uri": "urn:substratum",
+          "definedBy": "http://purl.obolibrary.org/obo/ENVO_00010483",
+          "dataType": "STRING",
+          "allowUnknown": false,
+          "definition": "Substrate from which the individual was sampled. This could be abiotic or biotic (host organism).",
+          "internal": false
         }
       ],
       "rules": [
@@ -503,16 +512,6 @@
           "dataType": "STRING",
           "allowUnknown": false,
           "definition": "Units of the weight of Organism measument.",
-          "internal": false
-        },
-        {
-          "group": "Locality and Habitat",
-          "column": "substratum",
-          "uri": "urn:substratum",
-          "definedBy": "http://purl.obolibrary.org/obo/ENVO_00010483",
-          "dataType": "STRING",
-          "allowUnknown": false,
-          "definition": "Substrate from which the individual was sampled. This could be abiotic or biotic (host organism).",
           "internal": false
         },
         {
