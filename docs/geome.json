@@ -197,7 +197,7 @@
           "column": "maximumDepthInMeters",
           "uri": "urn:maximumDepthInMeters",
           "definedBy": "http://rs.tdwg.org/dwc/terms/maximumDepthInMeters",
-          "dataType": "INTEGER",
+          "dataType": "FLOAT",
           "allowUnknown": false,
           "definition": "The greater depth of a range of depth below the local surface, in meters.",
           "internal": false
@@ -206,7 +206,7 @@
           "column": "maximumElevationInMeters",
           "uri": "urn:maximumDistanceAboveSurfaceInMeters",
           "definedBy": "http://rs.tdwg.org/dwc/terms/maximumDistanceAboveSurfaceInMeters",
-          "dataType": "INTEGER",
+          "dataType": "FLOAT",
           "allowUnknown": false,
           "definition": "The greater distance in a range of distance from a reference surface in the vertical direction, in meters. Use positive values for locations above the surface, negative values for locations below. If depth measures are given, the reference surface is the location given by the depth, otherwise the reference surface is the location given by the elevation.",
           "internal": false
@@ -260,7 +260,7 @@
           "column": "minimumDepthInMeters",
           "uri": "urn:minimumDepthInMeters",
           "definedBy": "http://rs.tdwg.org/dwc/terms/minimumDepthInMeters",
-          "dataType": "INTEGER",
+          "dataType": "FLOAT",
           "allowUnknown": false,
           "definition": "The lesser depth of a range of depth below the local surface, in meters.",
           "internal": false
@@ -278,7 +278,7 @@
           "column": "minimumElevationInMeters",
           "uri": "urn:minimumDistanceAboveSurfaceInMeters",
           "definedBy": "http://rs.tdwg.org/dwc/terms/minimumDistanceAboveSurfaceInMeters",
-          "dataType": "INTEGER",
+          "dataType": "FLOAT",
           "allowUnknown": false,
           "definition": "The lesser distance in a range of distance from a reference surface in the vertical direction, in meters. Use positive values for locations above the surface, negative values for locations below. If depth measures are given, the reference surface is the location given by the depth, otherwise the reference surface is the location given by the elevation.",
           "internal": false
