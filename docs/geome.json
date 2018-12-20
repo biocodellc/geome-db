@@ -3823,7 +3823,16 @@
           "value": "Acanthocephala"
         },
         {
-          "value": "Acoelomorpha"
+          "value": "Acavomonidia"
+        },
+        {
+          "value": "Acidobacteria"
+        },
+        {
+          "value": "Actinobacteria"
+        },
+        {
+          "value": "Amoebozoa"
         },
         {
           "value": "Annelida"
@@ -3832,7 +3841,25 @@
           "value": "Anthocerotophyta"
         },
         {
+          "value": "Aquificae"
+        },
+        {
+          "value": "Armatimonadetes"
+        },
+        {
           "value": "Arthropoda"
+        },
+        {
+          "value": "Ascomycota"
+        },
+        {
+          "value": "Bacteroidetes"
+        },
+        {
+          "value": "Basidiomycota"
+        },
+        {
+          "value": "Bigyra"
         },
         {
           "value": "Brachiopoda"
@@ -3844,13 +3871,46 @@
           "value": "Bryozoa"
         },
         {
+          "value": "Calcitarcha"
+        },
+        {
+          "value": "Caldiserica"
+        },
+        {
+          "value": "Cephalorhyncha"
+        },
+        {
+          "value": "Cercozoa"
+        },
+        {
           "value": "Chaetognatha"
+        },
+        {
+          "value": "Charophyta"
+        },
+        {
+          "value": "Chlamydiae"
+        },
+        {
+          "value": "Chlorobi"
+        },
+        {
+          "value": "Chloroflexi"
         },
         {
           "value": "Chlorophyta"
         },
         {
+          "value": "Choanozoa"
+        },
+        {
           "value": "Chordata"
+        },
+        {
+          "value": "Chrysiogenetes"
+        },
+        {
+          "value": "Chytridiomycota"
         },
         {
           "value": "Ciliophora"
@@ -3859,7 +3919,10 @@
           "value": "Cnidaria"
         },
         {
-          "value": "Coniferophyta"
+          "value": "Crenarchaeota"
+        },
+        {
+          "value": "Cryptista"
         },
         {
           "value": "Ctenophora"
@@ -3868,34 +3931,55 @@
           "value": "Cyanobacteria"
         },
         {
-          "value": "Cycadophyta"
-        },
-        {
           "value": "Cycliophora"
         },
         {
-          "value": "Cyrtotreta"
+          "value": "Deferribacteres"
         },
         {
-          "value": "Dikaryomycota"
+          "value": "Deinococcus-thermus"
+        },
+        {
+          "value": "Dictyoglomi"
+        },
+        {
+          "value": "Dicyemida"
         },
         {
           "value": "Echinodermata"
         },
         {
-          "value": "Echiura"
-        },
-        {
-          "value": "Enteropneusta"
+          "value": "Elusimicrobia"
         },
         {
           "value": "Entoprocta"
         },
         {
+          "value": "Euglenozoa"
+        },
+        {
+          "value": "Euryarchaeota"
+        },
+        {
+          "value": "Fibrobacteres"
+        },
+        {
+          "value": "Firmicutes"
+        },
+        {
           "value": "Foraminifera"
         },
         {
+          "value": "Fusobacteria"
+        },
+        {
           "value": "Gastrotricha"
+        },
+        {
+          "value": "Gemmatimonadetes"
+        },
+        {
+          "value": "Glaucophyta"
         },
         {
           "value": "Glomeromycota"
@@ -3904,28 +3988,40 @@
           "value": "Gnathostomulida"
         },
         {
-          "value": "Granuloreticulosa"
+          "value": "Haptophyta"
+        },
+        {
+          "value": "Heliozoa"
         },
         {
           "value": "Hemichordata"
         },
         {
-          "value": "Kinorhyncha"
+          "value": "Lentisphaerae"
         },
         {
-          "value": "Loricifera"
-        },
-        {
-          "value": "Magnoliophyta"
+          "value": "Loukozoa"
         },
         {
           "value": "Marchantiophyta"
         },
         {
-          "value": "Metazoa"
+          "value": "Metamonada"
+        },
+        {
+          "value": "Micrognathozoa"
+        },
+        {
+          "value": "Microsporidia"
+        },
+        {
+          "value": "Miozoa"
         },
         {
           "value": "Mollusca"
+        },
+        {
+          "value": "Mycetozoa"
         },
         {
           "value": "Myxozoa"
@@ -3940,28 +4036,34 @@
           "value": "Nemertea"
         },
         {
+          "value": "Nitrospira"
+        },
+        {
           "value": "Ochrophyta"
         },
         {
           "value": "Onychophora"
         },
         {
-          "value": "Phaeophyta"
+          "value": "Oomycota"
+        },
+        {
+          "value": "Orthonectida"
+        },
+        {
+          "value": "Percolozoa"
         },
         {
           "value": "Phoronida"
         },
         {
-          "value": "Pinophyta"
-        },
-        {
-          "value": "PlaceHolder"
+          "value": "Picozoa"
         },
         {
           "value": "Placozoa"
         },
         {
-          "value": "Plantae"
+          "value": "Planctomycetes"
         },
         {
           "value": "Platyhelminthes"
@@ -3970,19 +4072,10 @@
           "value": "Porifera"
         },
         {
-          "value": "Priapulida"
+          "value": "Proteobacteria"
         },
         {
-          "value": "Protista"
-        },
-        {
-          "value": "Pteridophyta"
-        },
-        {
-          "value": "Pterobranchia"
-        },
-        {
-          "value": "Rhizaria"
+          "value": "Radiozoa"
         },
         {
           "value": "Rhodophyta"
@@ -3997,10 +4090,25 @@
           "value": "Sipuncula"
         },
         {
-          "value": "Streptophyta"
+          "value": "Spirochaetae"
+        },
+        {
+          "value": "Sulcozoa"
+        },
+        {
+          "value": "Synergistetes"
         },
         {
           "value": "Tardigrada"
+        },
+        {
+          "value": "Tenericutes"
+        },
+        {
+          "value": "Thermodesulfobacteria"
+        },
+        {
+          "value": "Thermotogae"
         },
         {
           "value": "Tracheophyta"
@@ -4009,7 +4117,13 @@
           "value": "Unknown"
         },
         {
-          "value": "Xenocoelamorpha"
+          "value": "Verrucomicrobia"
+        },
+        {
+          "value": "Xenacoelomorpha"
+        },
+        {
+          "value": "Zygomycota"
         }
       ]
     },
