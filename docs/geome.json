@@ -961,7 +961,7 @@
           "definedBy": "http://rs.tdwg.org/dwc/terms/phylum",
           "dataType": "STRING",
           "allowUnknown": false,
-          "definition": "The full scientific name of the phylum in which the taxon is classified",
+          "definition": "The full scientific name of the phylum in which the taxon is classified.  The list of phyla allowable in GeOMe are taken from the Catalog of Life.  In addition, we have added 'Unknown' as an acceptable value",
           "internal": false
         },
         {
