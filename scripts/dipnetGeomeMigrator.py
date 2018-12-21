@@ -385,17 +385,17 @@ def create_entity_identifiers(psql, project, client_id, client_secret):
         created = []
         for identifier in expedition['entity_identifiers']:
             sql = sql + "(%s, %s, %s), "
-            created.append(identifier['concept_alias'])
+            alias = identifier['concept_alias']
+            alias = ENTITY_MAPPING[alias] if alias in ENTITY_MAPPING else alias
+            identifier['concept_alias'] = alias
+            created.append(alias)
             params.extend([
                 expedition['id'],
-                identifier['concept_alias'],
+                alias,
                 identifier['identifier']
             ])
 
         for entity in project['config']['entities']:
-            alias = entity['conceptAlias']
-            alias = ENTITY_MAPPING[alias] if alias in ENTITY_MAPPING else alias
-            entity['conceptAlias'] = alias
             if entity['conceptAlias'] not in created and not entity_identifier_exists(psql, expedition['id'], entity['conceptAlias']):
                 print("{}\t{}".format(expedition['id'], entity['conceptAlias']))
                 to_create.append({'entity': entity, 'expedition_id': expedition['id'], 'user': expedition['user']})
