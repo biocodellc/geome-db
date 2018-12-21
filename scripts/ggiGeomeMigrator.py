@@ -16,17 +16,18 @@ ES_ENDPOINT = 'http://esr.biocodellc.com:80/'
 # ES_ENDPOINT = 'https://localhost:9200'
 
 ENTITY_MAPPING = {
-    'Sample': 'Resource'
+    'Resource': 'Sample'
 }
 
 COLUMN_MAPPING = {
     'Samples': {
-        'collectorList': 'collectedBy',
+        'collectorList': 'urn:collectedBy',
         'country': 'urn:countryOrOcean',
         'county': 'urn:countyOrMunicipality',
         'infraSpecificEpithet': 'urn:subspecies',
         'institutionCode': 'urn:institutionCode',
-        'materialSampleID': 'urn:fieldNumber',
+        'materialSampleID': 'urn:tissueBarcode',
+        'tissueID': 'urn:tissueBarcode',
         'specificEpithet': 'species',
         'voucherCatalogNumber': 'urn:voucherID',
         'tissueBarcode': 'urn:tissueBarcode',
@@ -57,17 +58,28 @@ EXCLUDE_EXPEDITIONS = []
 
 MONTH_MAP = {
     'january': 1,
+    'jan': 1,
     'february': 2,
+    'feb': 2,
     'march': 3,
+    'mar': 3,
     'april': 4,
+    'apr': 4,
     'may': 5,
     'june': 6,
+    'jun': 6,
     'july': 7,
+    'jul': 7,
     'august': 8,
+    'aug': 8,
     'september': 9,
+    'sep': 9,
     'october': 10,
+    'oct': 10,
     'november': 11,
-    'december': 12
+    'nov': 11,
+    'december': 12,
+    'dec': 12
 }
 
 EXPEDITION_RESOURCE_TYPE = "http://purl.org/dc/dcmitype/Collection"
@@ -82,7 +94,7 @@ expedition_data = {}
 config = {}
 
 def migrate_project(psql, mysql, old_project_id, access_token, entities, client_id, client_secret,
-                    config_id, config_file=None, accept_warnings=False):
+                    config_id, accept_warnings=False):
     project = get_project_data(mysql, old_project_id, entities)
 
     tmp_user_id = get_tmp_user_id(psql, access_token)
@@ -96,10 +108,6 @@ def migrate_project(psql, mysql, old_project_id, access_token, entities, client_
         create_or_update_project(psql, project)
 
         project['config'] = get_project_config(config_id)
-        if config_file and os.path.exists(config_file):
-            # update_project_user(psql, project['id'], tmp_user_id)
-            update_config(config_id, access_token, config_file)
-            project['config'] = get_project_config(config_id)
 
         set_user_projects(psql, project)
         create_project_expeditions(psql, project, client_id, client_secret)
@@ -114,7 +122,7 @@ def migrate_project(psql, mysql, old_project_id, access_token, entities, client_
             if expedition['expedition_code'] in EXCLUDE_EXPEDITIONS:
                 print('SKIPPING EXPEDITION:', expedition['expedition_code'])
             else:
-                migrate(psql, project['id'], expedition, access_token, data[expedition['expedition_code']], project['config'], accept_warnings)
+                migrate(project['id'], expedition, access_token, data[expedition['expedition_code']], project['config'], accept_warnings)
 
         update_project_and_expedition_users(psql, project)
     except BaseException as e:
@@ -226,7 +234,6 @@ def get_project_expeditions(mysql, project_id, entities):
     for (expeditionId, expeditionCode, expeditionTitle, userId, ts, public, identifier, first_name, last_name,
          email) in cursor:
         expeditions.append({
-            'id': expeditionId,
             'expedition_code': expeditionCode,
             'expedition_title': expeditionTitle,
             'user_id': userId,
@@ -237,7 +244,7 @@ def get_project_expeditions(mysql, project_id, entities):
                 'last_name': last_name,
                 'email': email
             },
-            'identifier': identifier,
+            'identifier': identifier if type(identifier) == 'str' else identifier.decode('ascii'),
             'entity_identifiers': get_entity_identifiers(mysql, expeditionId, entities)
         })
 
@@ -263,7 +270,7 @@ def get_entity_identifiers(mysql, expedition_id, entities):
         foundEntityIdentifier[conceptAlias] = True
         entity_identifiers.append({
             'concept_alias': conceptAlias,
-            'identifier': identifier
+            'identifier': identifier if type(identifier) == 'str' else identifier.decode('ascii'),
         })
 
     cursor.close()
@@ -332,13 +339,12 @@ def set_user_projects(psql, project):
 
 def create_project_expeditions(psql, project, client_id, client_secret):
     cursor = psql.cursor()
-    sql = "INSERT INTO expeditions (id, project_id, expedition_code, expedition_title, identifier, visibility, user_id, modified, public) VALUES "
+    sql = "INSERT INTO expeditions (project_id, expedition_code, expedition_title, identifier, visibility, user_id, modified, public) VALUES "
     params = []
 
     for expedition in project['expeditions']:
-        sql = sql + "(%s, %s, %s, %s, %s, %s, %s, %s, %s), "
+        sql = sql + "(%s, %s, %s, %s, %s, %s, %s, %s), "
         params.extend([
-            expedition['id'],
             project['id'],
             expedition['expedition_code'],
             re.sub(' spreadsheet$', '', expedition['expedition_title']),
@@ -349,9 +355,17 @@ def create_project_expeditions(psql, project, client_id, client_secret):
             True if expedition['public'] == 1 else False
         ])
 
-    sql = sql[:-2] + " ON CONFLICT (id) DO UPDATE SET user_id = {}".format(project['tmp_user_id'])
+    sql = sql[:-2] + " ON CONFLICT (project_id, expedition_code) DO UPDATE SET user_id = {}".format(project['tmp_user_id'])
     cursor.execute(sql, params)
     psql.commit()
+
+    query = 'SELECT id, expedition_code FROM expeditions WHERE project_id = %s'
+    cursor.execute(query, [project['id']])
+    for (id, expedition_code) in cursor:
+        for expedition in project['expeditions']:
+            if expedition_code == expedition['expedition_code']:
+                expedition['id'] = id
+                break
     cursor.close()
 
     create_entity_identifiers(psql, project, client_id, client_secret)
@@ -368,17 +382,17 @@ def create_entity_identifiers(psql, project, client_id, client_secret):
         created = []
         for identifier in expedition['entity_identifiers']:
             sql = sql + "(%s, %s, %s), "
-            created.append(identifier['concept_alias'])
+            alias = identifier['concept_alias']
+            alias = ENTITY_MAPPING[alias] if alias in ENTITY_MAPPING else alias
+            identifier['concept_alias'] = alias
+            created.append(alias)
             params.extend([
                 expedition['id'],
-                identifier['concept_alias'],
+                alias,
                 identifier['identifier']
             ])
 
         for entity in project['config']['entities']:
-            alias = entity['conceptAlias']
-            alias = ENTITY_MAPPING[alias] if alias in ENTITY_MAPPING else alias
-            entity['conceptAlias'] = alias
             if entity['conceptAlias'] not in created and not entity_identifier_exists(psql, expedition['id'], entity['conceptAlias']):
                 print("{}\t{}".format(expedition['id'], entity['conceptAlias']))
                 to_create.append({'entity': entity, 'expedition_id': expedition['id'], 'user': expedition['user']})
@@ -472,18 +486,6 @@ def update_project_user(psql, project_id, user_id):
     cursor.close()
 
 
-def update_config(config_id, access_token, config_file):
-    print("Updating project configuration")
-    url = "{}projects/configs/{}?access_token={}".format(ENDPOINT, config_id, access_token)
-
-    with open(config_file) as f:
-        config = json.load(f)
-        response = requests.put(url, json=config)
-        if response.status_code != requests.codes.ok:
-            print(response.text)
-            response.raise_for_status()
-
-
 def get_uri_mapping(project):
     uri_mapping = {}
     for entity in project['config']['entities']:
@@ -522,7 +524,7 @@ def fetch_expedition_data(project_id, expeditionCode, uri_mapping):
     for doc in res['hits']['hits']:
         data = doc['_source']
 
-        # data['urn:materialSampleID'] = data['urn:materialSampleID'].replace('-', '_')
+        data['urn:tissueBarcode'] = data['urn:tissueBarcode'].replace('-', '_').replace('/', '_')
 
         # TODO what about > 10k results
         del data['expedition.expeditionCode']
@@ -569,11 +571,13 @@ def transform_data(data, uri_mapping):
     return transformed
 
 
-def migrate(psql, project_id, expedition, access_token, old_data, config, accept_warnings):
+def migrate(project_id, expedition, access_token, old_data, config, accept_warnings):
     code = expedition['expedition_code']
     print('Migrating data for expedition: ', code)
 
     transformed_data = data_to_worksheets(old_data, config)
+
+    # project_specific_data_fixes(transformed_data, code)
 
     validate_url = "{}data/validate?access_token={}".format(ENDPOINT, access_token)
 
@@ -625,20 +629,21 @@ def migrate(psql, project_id, expedition, access_token, old_data, config, accept
 
         print('\n')
 
-    for entityResults in response.get('messages'):
-        if len(entityResults.get('errors')) > 0:
-            print("\n\n{} found on worksheet: \"{}\" for entity: \"{}\"\n\n".format('Errors', entityResults.get('sheetName'),
-                                                                                    entityResults.get('entity')))
+    if response.get('messages'):
+        for entityResults in response.get('messages'):
+            if len(entityResults.get('errors')) > 0:
+                print("\n\n{} found on worksheet: \"{}\" for entity: \"{}\"\n\n".format('Errors', entityResults.get('sheetName'),
+                                                                                        entityResults.get('entity')))
 
-            for group in entityResults.get('errors'):
-                print_messages(group.get('groupMessage'), group.get('messages'))
+                for group in entityResults.get('errors'):
+                    print_messages(group.get('groupMessage'), group.get('messages'))
 
-        if len(entityResults.get('warnings')) > 0:
-            print("\n\n{} found on worksheet: \"{}\" for entity: \"{}\"\n\n".format('Warnings', entityResults.get('sheetName'),
-                                                                                    entityResults.get('entity')))
+            if len(entityResults.get('warnings')) > 0:
+                print("\n\n{} found on worksheet: \"{}\" for entity: \"{}\"\n\n".format('Warnings', entityResults.get('sheetName'),
+                                                                                        entityResults.get('entity')))
 
-            for group in entityResults.get('warnings'):
-                print_messages(group.get('groupMessage'), group.get('messages'))
+                for group in entityResults.get('warnings'):
+                    print_messages(group.get('groupMessage'), group.get('messages'))
 
     if response.get('hasError'):
         print("Validation error(s) attempting to upload expedition: {}".format(code))
@@ -682,7 +687,7 @@ def data_to_worksheets(old_data, config):
                 def val(v):
                     if col == 'coordinateUncertaintyInMeters' and v == 'NA':
                         v = ''
-                    elif col == 'monthCollected' or col == 'monthIdentifier':
+                    elif col == 'monthCollected' or col == 'monthIdentified':
                         if v.lower() in MONTH_MAP:
                             v = MONTH_MAP[v.lower()]
                     elif col == 'locality' and (v == '' or not v and (v['decimalLatitude'] == '' and v['decimalLongitude'] == '')):
@@ -692,15 +697,34 @@ def data_to_worksheets(old_data, config):
                             v = s['urn:countryOrOcean']
                         else:
                             v = 'Unknown'
-                    elif col == 'phylum' and (v == '' or not v):
-                        v = 'Unknown'
+                    elif col == 'phylum':
+                        if v == 'Bryophyte':
+                            v = 'Bryophyta'
+                        elif v == 'Ochrophyta?':
+                            v = 'Unknown'
+                        elif v == '' or not v:
+                            v = 'Unknown'
                     elif col == 'scientificName' and (v == '' or not v):
                         v = s['genus'] + ' ' + s['specificEpithet']
                         v = v.strip()
                         if v == '':
                             v = 'Unknown'
-                    elif col == 'urn:institutionCode' and (v == '' or not v):
+                    elif col == 'institutionCode' and (v == '' or not v):
                         v = 'Unknown'
+                    elif col == 'decimalLatitude':
+                        if v.lower() == 'unknown':
+                            v = ''
+                        elif v != '' and s['decimalLongitude'] == '':
+                            v = ''
+                        elif v.endswith(' N'):
+                            v = v.replace(' N', '')
+                    elif col == 'decimalLongitude':
+                        if v.lower() == 'unknown':
+                            v = ''
+                        elif v != '' and s['decimalLatitude'] == '':
+                            v = ''
+                        elif v.endswith(' E'):
+                            v = v.replace(' E', '')
 
                     if attribute['dataType'] == 'FLOAT':
                         # converts sci-notation
@@ -747,6 +771,12 @@ def data_to_worksheets(old_data, config):
 
     return data
 
+
+# def project_specific_data_fixes(data, expedition_code):
+#     if (expedition_code == 'PRBVI'):
+#         for s in data['Sample']:
+#             if s['materialSampleID'] == '5160511_14':
+#                 s['dayCollected'] = 16
 
 def data_to_filelike_csv(data):
     # header
