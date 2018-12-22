@@ -197,7 +197,7 @@
           "column": "maximumDepthInMeters",
           "uri": "urn:maximumDepthInMeters",
           "definedBy": "http://rs.tdwg.org/dwc/terms/maximumDepthInMeters",
-          "dataType": "INTEGER",
+          "dataType": "FLOAT",
           "allowUnknown": false,
           "definition": "The greater depth of a range of depth below the local surface, in meters.",
           "internal": false
@@ -206,7 +206,7 @@
           "column": "maximumElevationInMeters",
           "uri": "urn:maximumDistanceAboveSurfaceInMeters",
           "definedBy": "http://rs.tdwg.org/dwc/terms/maximumDistanceAboveSurfaceInMeters",
-          "dataType": "INTEGER",
+          "dataType": "FLOAT",
           "allowUnknown": false,
           "definition": "The greater distance in a range of distance from a reference surface in the vertical direction, in meters. Use positive values for locations above the surface, negative values for locations below. If depth measures are given, the reference surface is the location given by the depth, otherwise the reference surface is the location given by the elevation.",
           "internal": false
@@ -260,7 +260,7 @@
           "column": "minimumDepthInMeters",
           "uri": "urn:minimumDepthInMeters",
           "definedBy": "http://rs.tdwg.org/dwc/terms/minimumDepthInMeters",
-          "dataType": "INTEGER",
+          "dataType": "FLOAT",
           "allowUnknown": false,
           "definition": "The lesser depth of a range of depth below the local surface, in meters.",
           "internal": false
@@ -278,7 +278,7 @@
           "column": "minimumElevationInMeters",
           "uri": "urn:minimumDistanceAboveSurfaceInMeters",
           "definedBy": "http://rs.tdwg.org/dwc/terms/minimumDistanceAboveSurfaceInMeters",
-          "dataType": "INTEGER",
+          "dataType": "FLOAT",
           "allowUnknown": false,
           "definition": "The lesser distance in a range of distance from a reference surface in the vertical direction, in meters. Use positive values for locations above the surface, negative values for locations below. If depth measures are given, the reference surface is the location given by the depth, otherwise the reference surface is the location given by the elevation.",
           "internal": false
@@ -381,6 +381,15 @@
           "allowUnknown": false,
           "definition": "Any notes taken in the field, or a link to those notes: population size, ecological info, etc.",
           "internal": false
+        },
+        {
+          "column": "substratum",
+          "uri": "urn:substratum",
+          "definedBy": "http://purl.obolibrary.org/obo/ENVO_00010483",
+          "dataType": "STRING",
+          "allowUnknown": false,
+          "definition": "Substrate from which the individual was sampled. This could be abiotic or biotic (host organism).",
+          "internal": false
         }
       ],
       "rules": [
@@ -433,12 +442,6 @@
           "level": "ERROR",
           "column": "horizontalDatum",
           "listName": "horizontalDatum"
-        },
-        {
-          "name": "ControlledVocabulary",
-          "level": "ERROR",
-          "column": "taxTeam",
-          "listName": "taxTeam"
         },
         {
           "name": "NumericRange",
@@ -509,16 +512,6 @@
           "dataType": "STRING",
           "allowUnknown": false,
           "definition": "Units of the weight of Organism measument.",
-          "internal": false
-        },
-        {
-          "group": "Locality and Habitat",
-          "column": "substratum",
-          "uri": "urn:substratum",
-          "definedBy": "http://purl.obolibrary.org/obo/ENVO_00010483",
-          "dataType": "STRING",
-          "allowUnknown": false,
-          "definition": "Substrate from which the individual was sampled. This could be abiotic or biotic (host organism).",
           "internal": false
         },
         {
@@ -968,7 +961,7 @@
           "definedBy": "http://rs.tdwg.org/dwc/terms/phylum",
           "dataType": "STRING",
           "allowUnknown": false,
-          "definition": "The full scientific name of the phylum in which the taxon is classified",
+          "definition": "The full scientific name of the phylum in which the taxon is classified.  The list of phyla allowable in GeOMe are taken from the Catalog of Life.  In addition, we have added 'Unknown' as an acceptable value",
           "internal": false
         },
         {
@@ -1196,12 +1189,6 @@
           "level": "ERROR",
           "column": "phylum",
           "listName": "phylum"
-        },
-        {
-          "name": "ControlledVocabulary",
-          "level": "WARNING",
-          "column": "institutionCode",
-          "listName": "institutionCode"
         },
         {
           "name": "ControlledVocabulary",
@@ -3451,225 +3438,6 @@
       ]
     },
     {
-      "alias": "institutionCode",
-      "caseInsensitive": false,
-      "fields": [
-        {
-          "value": "Aukland University of Technology"
-        },
-        {
-          "value": "Auckland War Memorial Museum Tāmaki Paenga Hira"
-        },
-        {
-          "value": "Australian Museum"
-        },
-        {
-          "value": "Australian National Insect Collection"
-        },
-        {
-          "value": "Bishop Museum"
-        },
-        {
-          "value": "Bogor Agricultural University"
-        },
-        {
-          "value": "Brigham Young University"
-        },
-        {
-          "value": "California Academy of Sciences"
-        },
-        {
-          "value": "California State Collection of Arthropods"
-        },
-        {
-          "value": "Canadian National Collection of Insects, Arachnids and Nematodes"
-        },
-        {
-          "value": "Cawthron Institute"
-        },
-        {
-          "value": "Criobe"
-        },
-        {
-          "value": "Department of Conservation"
-        },
-        {
-          "value": "Duke University"
-        },
-        {
-          "value": "Emirates Natural History Group"
-        },
-        {
-          "value": "Essig Museum of Entomology"
-        },
-        {
-          "value": "Genomics for Aotearoa New Zealand"
-        },
-        {
-          "value": "Gump Station"
-        },
-        {
-          "value": "Haddock Lab"
-        },
-        {
-          "value": "Harry Palm Lab"
-        },
-        {
-          "value": "Harvard University"
-        },
-        {
-          "value": "Hochberg Lab"
-        },
-        {
-          "value": "Illinois Natural History Survey"
-        },
-        {
-          "value": "Indonesian Biodiversity Research Center"
-        },
-        {
-          "value": "Institut de Recherche pour le Développement Herbarium"
-        },
-        {
-          "value": "Instituto Nacional de Pesquisas da Amazônia"
-        },
-        {
-          "value": "KwaZulu-Natal Museum"
-        },
-        {
-          "value": "Laboratoire Biométrie et Biologie Evolutive, University Lyon 1"
-        },
-        {
-          "value": "Lincoln University"
-        },
-        {
-          "value": "Manaaki Whenua - Landcare Research"
-        },
-        {
-          "value": "Massey University Te Kunenga ki Pūrehuroa"
-        },
-        {
-          "value": "MBARI"
-        },
-        {
-          "value": "MZ-UCR"
-        },
-        {
-          "value": "Mishler Lab"
-        },
-        {
-          "value": "Moscow State University"
-        },
-        {
-          "value": "Museum Victoria"
-        },
-        {
-          "value": "Museum of Vertebrate Zoology"
-        },
-        {
-          "value": "Museums and Art Galleries of the Northern Territories"
-        },
-        {
-          "value": "Muséum National d'Histoire Naturelle"
-        },
-        {
-          "value": "National Institue of Water and Atmospheric Research"
-        },
-        {
-          "value": "National Museum Bloemfontein"
-        },
-        {
-          "value": "Natural History Museum of Los Angeles County"
-        },
-        {
-          "value": "Norenburg Lab"
-        },
-        {
-          "value": "North Carolina State University"
-        },
-        {
-          "value": "Oxford University Museum of Natural History"
-        },
-        {
-          "value": "PNMNH"
-        },
-        {
-          "value": "Pacific Islands Fisheries Science Cente"
-        },
-        {
-          "value": "Planes's Lab"
-        },
-        {
-          "value": "Plant and Food Research Rangahau Ahumara Kai"
-        },
-        {
-          "value": "Queensland Museum"
-        },
-        {
-          "value": "Raffles Museum of Biodiversity Research"
-        },
-        {
-          "value": "Scripps Institution of Oceanography"
-        },
-        {
-          "value": "Smithsonian"
-        },
-        {
-          "value": "Southwest Fisheries Science Center (SWFSC)"
-        },
-        {
-          "value": "Te Papa Tongrewa"
-        },
-        {
-          "value": "The University and Jepson Herbaria"
-        },
-        {
-          "value": "Tom Cribb Lab"
-        },
-        {
-          "value": "UCLA"
-        },
-        {
-          "value": "University of Adelaide"
-        },
-        {
-          "value": "University of Auckland"
-        },
-        {
-          "value": "University of California Museum of Paleontology"
-        },
-        {
-          "value": "University of Canterbury"
-        },
-        {
-          "value": "University of Florida"
-        },
-        {
-          "value": "University of Guelph"
-        },
-        {
-          "value": "University of Otago"
-        },
-        {
-          "value": "University of Waikato"
-        },
-        {
-          "value": "University of Wellington"
-        },
-        {
-          "value": "Université de Polynésie Française Herbarium"
-        },
-        {
-          "value": "Watling Lab"
-        },
-        {
-          "value": "To be determined"
-        },
-        {
-          "value": "Unknown"
-        }
-      ]
-    },
-    {
       "alias": "lengthUnits",
       "caseInsensitive": false,
       "fields": [
@@ -4055,7 +3823,16 @@
           "value": "Acanthocephala"
         },
         {
-          "value": "Acoelomorpha"
+          "value": "Acavomonidia"
+        },
+        {
+          "value": "Acidobacteria"
+        },
+        {
+          "value": "Actinobacteria"
+        },
+        {
+          "value": "Amoebozoa"
         },
         {
           "value": "Annelida"
@@ -4064,7 +3841,25 @@
           "value": "Anthocerotophyta"
         },
         {
+          "value": "Aquificae"
+        },
+        {
+          "value": "Armatimonadetes"
+        },
+        {
           "value": "Arthropoda"
+        },
+        {
+          "value": "Ascomycota"
+        },
+        {
+          "value": "Bacteroidetes"
+        },
+        {
+          "value": "Basidiomycota"
+        },
+        {
+          "value": "Bigyra"
         },
         {
           "value": "Brachiopoda"
@@ -4076,13 +3871,46 @@
           "value": "Bryozoa"
         },
         {
+          "value": "Calcitarcha"
+        },
+        {
+          "value": "Caldiserica"
+        },
+        {
+          "value": "Cephalorhyncha"
+        },
+        {
+          "value": "Cercozoa"
+        },
+        {
           "value": "Chaetognatha"
+        },
+        {
+          "value": "Charophyta"
+        },
+        {
+          "value": "Chlamydiae"
+        },
+        {
+          "value": "Chlorobi"
+        },
+        {
+          "value": "Chloroflexi"
         },
         {
           "value": "Chlorophyta"
         },
         {
+          "value": "Choanozoa"
+        },
+        {
           "value": "Chordata"
+        },
+        {
+          "value": "Chrysiogenetes"
+        },
+        {
+          "value": "Chytridiomycota"
         },
         {
           "value": "Ciliophora"
@@ -4091,7 +3919,10 @@
           "value": "Cnidaria"
         },
         {
-          "value": "Coniferophyta"
+          "value": "Crenarchaeota"
+        },
+        {
+          "value": "Cryptista"
         },
         {
           "value": "Ctenophora"
@@ -4100,34 +3931,55 @@
           "value": "Cyanobacteria"
         },
         {
-          "value": "Cycadophyta"
-        },
-        {
           "value": "Cycliophora"
         },
         {
-          "value": "Cyrtotreta"
+          "value": "Deferribacteres"
         },
         {
-          "value": "Dikaryomycota"
+          "value": "Deinococcus-thermus"
+        },
+        {
+          "value": "Dictyoglomi"
+        },
+        {
+          "value": "Dicyemida"
         },
         {
           "value": "Echinodermata"
         },
         {
-          "value": "Echiura"
-        },
-        {
-          "value": "Enteropneusta"
+          "value": "Elusimicrobia"
         },
         {
           "value": "Entoprocta"
         },
         {
+          "value": "Euglenozoa"
+        },
+        {
+          "value": "Euryarchaeota"
+        },
+        {
+          "value": "Fibrobacteres"
+        },
+        {
+          "value": "Firmicutes"
+        },
+        {
           "value": "Foraminifera"
         },
         {
+          "value": "Fusobacteria"
+        },
+        {
           "value": "Gastrotricha"
+        },
+        {
+          "value": "Gemmatimonadetes"
+        },
+        {
+          "value": "Glaucophyta"
         },
         {
           "value": "Glomeromycota"
@@ -4136,28 +3988,40 @@
           "value": "Gnathostomulida"
         },
         {
-          "value": "Granuloreticulosa"
+          "value": "Haptophyta"
+        },
+        {
+          "value": "Heliozoa"
         },
         {
           "value": "Hemichordata"
         },
         {
-          "value": "Kinorhyncha"
+          "value": "Lentisphaerae"
         },
         {
-          "value": "Loricifera"
-        },
-        {
-          "value": "Magnoliophyta"
+          "value": "Loukozoa"
         },
         {
           "value": "Marchantiophyta"
         },
         {
-          "value": "Metazoa"
+          "value": "Metamonada"
+        },
+        {
+          "value": "Micrognathozoa"
+        },
+        {
+          "value": "Microsporidia"
+        },
+        {
+          "value": "Miozoa"
         },
         {
           "value": "Mollusca"
+        },
+        {
+          "value": "Mycetozoa"
         },
         {
           "value": "Myxozoa"
@@ -4172,28 +4036,34 @@
           "value": "Nemertea"
         },
         {
+          "value": "Nitrospira"
+        },
+        {
           "value": "Ochrophyta"
         },
         {
           "value": "Onychophora"
         },
         {
-          "value": "Phaeophyta"
+          "value": "Oomycota"
+        },
+        {
+          "value": "Orthonectida"
+        },
+        {
+          "value": "Percolozoa"
         },
         {
           "value": "Phoronida"
         },
         {
-          "value": "Pinophyta"
-        },
-        {
-          "value": "PlaceHolder"
+          "value": "Picozoa"
         },
         {
           "value": "Placozoa"
         },
         {
-          "value": "Plantae"
+          "value": "Planctomycetes"
         },
         {
           "value": "Platyhelminthes"
@@ -4202,19 +4072,10 @@
           "value": "Porifera"
         },
         {
-          "value": "Priapulida"
+          "value": "Proteobacteria"
         },
         {
-          "value": "Protista"
-        },
-        {
-          "value": "Pteridophyta"
-        },
-        {
-          "value": "Pterobranchia"
-        },
-        {
-          "value": "Rhizaria"
+          "value": "Radiozoa"
         },
         {
           "value": "Rhodophyta"
@@ -4229,16 +4090,40 @@
           "value": "Sipuncula"
         },
         {
-          "value": "Streptophyta"
+          "value": "Spirochaetae"
+        },
+        {
+          "value": "Sulcozoa"
+        },
+        {
+          "value": "Synergistetes"
         },
         {
           "value": "Tardigrada"
         },
         {
+          "value": "Tenericutes"
+        },
+        {
+          "value": "Thermodesulfobacteria"
+        },
+        {
+          "value": "Thermotogae"
+        },
+        {
           "value": "Tracheophyta"
         },
         {
-          "value": "Xenocoelamorpha"
+          "value": "Unknown"
+        },
+        {
+          "value": "Verrucomicrobia"
+        },
+        {
+          "value": "Xenacoelomorpha"
+        },
+        {
+          "value": "Zygomycota"
         }
       ]
     },
@@ -4488,39 +4373,6 @@
         },
         {
           "value": "simultaneous hermaphrodite"
-        }
-      ]
-    },
-    {
-      "alias": "taxTeam",
-      "caseInsensitive": false,
-      "fields": [
-        {
-          "value": "ALGAE"
-        },
-        {
-          "value": "FUNGI"
-        },
-        {
-          "value": "MINV"
-        },
-        {
-          "value": "MVERTS"
-        },
-        {
-          "value": "OUTREACH"
-        },
-        {
-          "value": "PLANTS"
-        },
-        {
-          "value": "POC"
-        },
-        {
-          "value": "TINV"
-        },
-        {
-          "value": "TVERTS"
         }
       ]
     },
