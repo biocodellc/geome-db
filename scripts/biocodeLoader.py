@@ -4,7 +4,7 @@ import sys, argparse, requests, json
 from os import listdir, path
 from os.path import isfile, join
 
-ENDPOINT = 'https://api.develop.geome-db.org/'
+ENDPOINT = 'https://api.geome-db.org/'
 
 EVENTS_FILE = "{}_Collecting_Events.txt"
 SPECIMENS_FILE = "{}_Specimens.txt"
@@ -22,9 +22,9 @@ def upload_files(project_id, access_token, dir, accept_warnings=False):
 
     for code in expeditions:
         if not isfile(join(dir, EVENTS_FILE.format(code))) or \
-                not isfile(join(dir, SPECIMENS_FILE.format(code))) \
-                or not isfile(join(dir, TISSUES_FILE.format(code))):
-            raise Exception("Could not find all 3 required files for expedition: {}".format(code))
+                not isfile(join(dir, SPECIMENS_FILE.format(code))): 
+            #    or not isfile(join(dir, TISSUES_FILE.format(code))):
+            raise Exception("Could not find at least 2 required files for expedition: {}".format(code))
 
     for code in expeditions:
         create_expedition(project_id, code, access_token)
@@ -66,7 +66,11 @@ def upload_data(project_id, code, access_token, base_dir, accept_warnings):
         'reloadWorkbooks': True,
     }
 
-    hasTissues = sum(1 for line in open(join(base_dir, TISSUES_FILE.format(code)))) > 1
+    hasTissues = False
+    if not isfile(join(base_dir, TISSUES_FILE.format(code))):
+	hasTissues = False
+    else:
+	hasTissues = sum(1 for line in open(join(base_dir, TISSUES_FILE.format(code)))) > 1
 
     metadata = [
         {
