@@ -1,6 +1,7 @@
 expeditionStats: >
-  SELECT e.expedition_code AS "expeditionCode", e.expedition_title AS "expeditionTitle", e.identifier as "expeditionIdentifier" ${entityCounts}
+  SELECT e.expedition_code AS "expeditionCode", e.expedition_title AS "expeditionTitle", e.identifier as "expeditionIdentifier", u.first_name as "ownerFirstName", u.last_name as "ownerLastName", u.email as "ownerEmail" ${entityCounts}
   FROM expeditions AS e
+  LEFT JOIN users AS u on e.user_id = u.id
   ${entityJoins}
   WHERE e.project_id = ${projectId} AND (e.public = true OR e.public <> ${includePrivate})
   ORDER BY lower(e.expedition_code)
