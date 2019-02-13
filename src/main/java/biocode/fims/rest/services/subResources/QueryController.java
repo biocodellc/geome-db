@@ -37,6 +37,7 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
@@ -287,8 +288,8 @@ public class QueryController extends FimsController {
             parentEntity = config.entity(parentEntity.getParentEntity());
         } while (parentEntity.isChildEntity());
 
-        List<String> entities = config.entitiesInRelation(parentEntity, e).stream()
-                .map(Entity::getConceptAlias)
+        List<String> entities = config.getEntityRelations(parentEntity, e).stream()
+                .flatMap(r -> Stream.of(r.getChildEntity().getConceptAlias(), r.getParentEntity().getConceptAlias()))
                 .collect(Collectors.toList());
 
         queryString += " _select_:[" + String.join(",", entities) + "]";
