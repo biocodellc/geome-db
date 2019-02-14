@@ -456,7 +456,7 @@ public class QueryController extends FimsController {
     private Query buildQuery(String queryString, Integer page, Integer limit) {
         network = getNetwork();
 
-        Query query = Query.factory(network, entity, queryString, page, limit);
+        Query query = Query.build(network, entity, queryString, page, limit);
 
         List<Integer> projects = query.projects();
 
