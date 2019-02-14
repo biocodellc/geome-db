@@ -42,6 +42,7 @@ import java.io.File;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * project API endpoints
@@ -99,8 +100,8 @@ public class ProjectController extends BaseProjectsController {
             parentEntity = config.entity(parentEntity.getParentEntity());
         } while (parentEntity.isChildEntity());
 
-        List<String> entities = config.entitiesInRelation(parentEntity, e).stream()
-                .map(Entity::getConceptAlias)
+        List<String> entities = config.getEntityRelations(parentEntity, e).stream()
+                .flatMap(r -> Stream.of(r.getChildEntity().getConceptAlias(), r.getParentEntity().getConceptAlias()))
                 .collect(Collectors.toList());
 
         ExpeditionExpression expeditionExpression = new ExpeditionExpression(expeditionCode);
@@ -120,7 +121,7 @@ public class ProjectController extends BaseProjectsController {
 
         if (queryResults.isEmpty()) return null;
 
-        SraMetadataMapper metadataMapper = new GeomeSraMetadataMapper(config,e, queryResults);
+        SraMetadataMapper metadataMapper = new GeomeSraMetadataMapper(config, e, queryResults);
         BioSampleMapper bioSampleMapper = new GeomeBioSampleMapper(config, e, queryResults);
 
         File bioSampleFile = BioSampleAttributesGenerator.generateFile(bioSampleMapper);

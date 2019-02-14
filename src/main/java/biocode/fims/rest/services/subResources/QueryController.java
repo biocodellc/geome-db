@@ -6,6 +6,7 @@ import biocode.fims.config.Config;
 import biocode.fims.config.models.FastaEntity;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.models.Network;
+import biocode.fims.models.User;
 import biocode.fims.query.QueryResult;
 import biocode.fims.records.RecordSources;
 import biocode.fims.config.models.Attribute;
@@ -37,6 +38,7 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
@@ -287,8 +289,8 @@ public class QueryController extends FimsController {
             parentEntity = config.entity(parentEntity.getParentEntity());
         } while (parentEntity.isChildEntity());
 
-        List<String> entities = config.entitiesInRelation(parentEntity, e).stream()
-                .map(Entity::getConceptAlias)
+        List<String> entities = config.getEntityRelations(parentEntity, e).stream()
+                .flatMap(r -> Stream.of(r.getChildEntity().getConceptAlias(), r.getParentEntity().getConceptAlias()))
                 .collect(Collectors.toList());
 
         queryString += " _select_:[" + String.join(",", entities) + "]";
@@ -454,16 +456,21 @@ public class QueryController extends FimsController {
 
     private Query buildQuery(String queryString, Integer page, Integer limit) {
         network = getNetwork();
+        User user = userContext.getUser();
 
-        Query query = Query.factory(network, entity, queryString, page, limit);
+        Query query = Query.build(network, entity, queryString, page, limit);
 
         List<Integer> projects = query.projects();
 
         if (projects.isEmpty()) {
+            // If no projects are specified, we must restrict the query to public projects & those projects that a user
+            // is a member of
 
-            // TODO need to authorize network query? Currently the repo will only query public expeditions if none are specified
-            // possible to just query public projects if none are specified?
+            List<Integer> restrictToProjects = projectService.getProjects(user, true).stream()
+                    .map(Project::getProjectId)
+                    .collect(Collectors.toList());
 
+            query.restrictToProjects(restrictToProjects);
         } else {
             if (projects.size() == 1) {
                 project = projectService.getProject(projects.get(0));
@@ -477,6 +484,9 @@ public class QueryController extends FimsController {
                 throw new ForbiddenRequestException("unauthorized query.");
             }
         }
+
+        // Only public expeditions are queryable for non-authenticated users
+        if (user == null) query.restrictToPublicExpeditions();
 
         return query;
     }

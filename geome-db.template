@@ -4,7 +4,7 @@
 serverRoot = /location/on/server/
 
 # the relative path from the appRoot where a user can create an account
-accountCreatePath = user/create?id=${id}&email=${email}
+accountCreatePath = register?inviteId=${id}&email=${email}
 
 # the relative path from the appRoot where a user can reset their password
 resetPasswordPath = resetPass?resetToken=${token}
