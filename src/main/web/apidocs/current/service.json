@@ -831,6 +831,34 @@
                 }
             }
         },
+        "/projects//exists/{projectTitle}": {
+            "get": {
+                "tags": [
+                    "Projects"
+                ],
+                "operationId": "projectExists",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "projectTitle",
+                        "in": "path",
+                        "description": "",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                }
+            }
+        },
         "/projects//{projectId}": {
             "put": {
                 "tags": [
@@ -3462,6 +3490,12 @@
                     "items": {
                         "$ref": "#/definitions/Field"
                     }
+                },
+                "isNetworkList": {
+                    "type": "boolean"
+                },
+                "networkList": {
+                    "type": "boolean"
                 }
             }
         },
@@ -3789,6 +3823,12 @@
                     "items": {
                         "$ref": "#/definitions/Field"
                     }
+                },
+                "isNetworkList": {
+                    "type": "boolean"
+                },
+                "networkList": {
+                    "type": "boolean"
                 }
             }
         },
@@ -4444,6 +4484,12 @@
                     "items": {
                         "$ref": "#/definitions/Field"
                     }
+                },
+                "isNetworkList": {
+                    "type": "boolean"
+                },
+                "networkList": {
+                    "type": "boolean"
                 }
             }
         },
