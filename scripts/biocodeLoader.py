@@ -4,7 +4,7 @@ import sys, argparse, requests, json
 from os import listdir, path
 from os.path import isfile, join
 
-ENDPOINT = 'https://api.geome-db.org/'
+ENDPOINT = 'https://api.develop.geome-db.org/'
 
 EVENTS_FILE = "{}_Collecting_Events.txt"
 SPECIMENS_FILE = "{}_Specimens.txt"
@@ -47,6 +47,10 @@ def create_expedition(project_id, code, access_token):
     if response.status_code == 400 and response.json().get('usrMessage').find('already exists.') > -1:
         print("Expedition \"{}\" already exists".format(code))
     elif response.status_code > 400:
+        print('\nERROR: ' + response.json().get('usrMessage'))
+        print('\n')
+        response.raise_for_status()
+    elif response.status_code == 400:
         print('\nERROR: ' + response.json().get('usrMessage'))
         print('\n')
         response.raise_for_status()
@@ -133,7 +137,10 @@ def upload_data(project_id, code, access_token, base_dir, accept_warnings):
         print("\t{}:\n".format(groupMessage))
 
         for message in messages:
-            print("\t\t" + message.get('message'))
+	    try:
+		print("\t\t" + message.get('message'))
+	    except ValueError:
+		print('\t\tBAD ENCODING, TRY AGAIN: ' +message.get('message').encode('cp1252'))
 
         print('\n')
 
