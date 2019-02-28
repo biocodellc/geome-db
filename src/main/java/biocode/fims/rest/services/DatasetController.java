@@ -400,10 +400,15 @@ public class DatasetController extends FimsController {
                 .filter(c -> !c.equals(queryEntity))
                 .collect(Collectors.toList());
 
-        ExpeditionExpression expeditionExpression = new ExpeditionExpression(expeditionCode);
-        Expression exp = new SelectExpression(
+        Expression exp = new ExpeditionExpression(expeditionCode);
+        exp = new LogicalExpression(
+                LogicalOperator.AND,
+                exp,
+                new ProjectExpression(Collections.singletonList(projectId))
+        );
+        exp = new SelectExpression(
                 String.join(",", entities),
-                expeditionExpression
+                exp
         );
 
         QueryBuilder qb = new QueryBuilder(config, expedition.getProject().getNetwork().getId(), queryEntity);
