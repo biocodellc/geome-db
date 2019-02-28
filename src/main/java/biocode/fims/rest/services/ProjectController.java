@@ -19,10 +19,7 @@ import biocode.fims.ncbi.sra.submission.SraMetadataMapper;
 import biocode.fims.query.PostgresUtils;
 import biocode.fims.query.QueryBuilder;
 import biocode.fims.query.QueryResults;
-import biocode.fims.query.dsl.ExpeditionExpression;
-import biocode.fims.query.dsl.Expression;
-import biocode.fims.query.dsl.Query;
-import biocode.fims.query.dsl.SelectExpression;
+import biocode.fims.query.dsl.*;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.service.ExpeditionService;
@@ -104,10 +101,15 @@ public class ProjectController extends BaseProjectsController {
                 .flatMap(r -> Stream.of(r.getChildEntity().getConceptAlias(), r.getParentEntity().getConceptAlias()))
                 .collect(Collectors.toList());
 
-        ExpeditionExpression expeditionExpression = new ExpeditionExpression(expeditionCode);
-        Expression exp = new SelectExpression(
+        Expression exp = new ExpeditionExpression(expeditionCode);
+        exp = new LogicalExpression(
+                LogicalOperator.AND,
+                exp,
+                new ProjectExpression(Collections.singletonList(projectId))
+        );
+        exp = new SelectExpression(
                 String.join(",", entities),
-                expeditionExpression
+                exp
         );
 
         QueryBuilder qb = new QueryBuilder(config, project.getNetwork().getId(), e.getConceptAlias());
