@@ -151,11 +151,11 @@ public class GeomeAppConfig {
     }
 
     @Bean
-    public SraAccessionHarvester sraAccessionHarvester(GeomeProperties geomeProperties, ProjectService projectService) {
+    public SraAccessionHarvester sraAccessionHarvester(ProjectService projectService) {
         EntrezApiFactoryImpl apiFactory = new EntrezApiFactoryImpl(ClientBuilder.newClient());
         EntrezApiService entrezApiService = new EntrezApiService(apiFactory);
         BioSampleRepository bioSampleRepository = new BioSampleRepository(entrezApiService);
-        return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService, geomeProperties);
+        return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService);
     }
 
     @Primary
