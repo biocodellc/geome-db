@@ -1,5 +1,7 @@
 package biocode.fims.application.config;
 
+import biocode.fims.config.models.FastaEntity;
+import biocode.fims.config.models.FastqEntity;
 import biocode.fims.config.models.PhotoEntity;
 import biocode.fims.config.models.TissueEntity;
 import biocode.fims.fasta.FastaRecord;
@@ -37,6 +39,7 @@ import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tissues.PostgresTissueRepository;
 import biocode.fims.tissues.TissueRepository;
+import biocode.fims.tissues.reader.TissueChildConverter;
 import biocode.fims.tissues.reader.TissueConverter;
 import biocode.fims.validation.RecordValidator;
 import biocode.fims.validation.RecordValidatorFactory;
@@ -96,6 +99,10 @@ public class GeomeAppConfig {
         Map<String, DataConverter> dataConverters = new HashMap<>();
         dataConverters.put(PhotoEntity.TYPE, new PhotoConverter(photosAppConfig.photosSql(), recordRepository()));
         dataConverters.put(TissueEntity.TYPE, new TissueConverter(tissueRepository()));
+
+        TissueChildConverter tcConverter = new TissueChildConverter(tissueRepository());
+        dataConverters.put(FastaEntity.TYPE, tcConverter);
+        dataConverters.put(FastqEntity.TYPE, tcConverter);
 
         return new DataConverterFactory(dataConverters);
     }
