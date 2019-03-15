@@ -1,11 +1,12 @@
 package biocode.fims.rest.services;
 
 import biocode.fims.application.config.GeomeProperties;
-import biocode.fims.service.NetworkService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import javax.ws.rs.*;
+import javax.inject.Singleton;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -16,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 @Controller
 @Path("network")
 @Produces({MediaType.APPLICATION_JSON})
+@Singleton
 public class NetworkController extends BaseNetworksController {
 
     @Autowired

@@ -3,10 +3,10 @@ package biocode.fims.rest.services;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.services.subResources.PhotosResource;
-import org.glassfish.jersey.server.model.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
+import javax.inject.Singleton;
 import javax.ws.rs.Path;
 
 /**
@@ -14,6 +14,7 @@ import javax.ws.rs.Path;
  */
 @Controller
 @Path("/photos")
+@Singleton
 public class PhotoController extends FimsController {
 
     @Autowired
