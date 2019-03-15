@@ -2,42 +2,42 @@ package biocode.fims.rest.services;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
-import biocode.fims.config.models.FastaEntity;
-import biocode.fims.fasta.FastaQueryWriter;
 import biocode.fims.config.models.Entity;
+import biocode.fims.config.models.FastaEntity;
+import biocode.fims.config.project.ProjectConfig;
+import biocode.fims.fasta.FastaQueryWriter;
+import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.*;
 import biocode.fims.fimsExceptions.errorCodes.ProjectCode;
 import biocode.fims.fimsExceptions.errorCodes.QueryCode;
+import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.Expedition;
 import biocode.fims.models.Project;
-import biocode.fims.fimsExceptions.*;
-import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.errorCodes.UploadCode;
 import biocode.fims.models.User;
-import biocode.fims.query.QueryResult;
-import biocode.fims.records.RecordMetadata;
-import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.query.QueryBuilder;
+import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.*;
 import biocode.fims.query.writers.DelimitedTextQueryWriter;
 import biocode.fims.query.writers.QueryWriter;
 import biocode.fims.reader.DataConverterFactory;
 import biocode.fims.reader.DataReaderFactory;
-import biocode.fims.rest.responses.FileResponse;
-import biocode.fims.rest.FimsController;
-import biocode.fims.rest.responses.ValidationResponse;
-import biocode.fims.run.DatasetAuthorizer;
-import biocode.fims.tools.FileCache;
-import biocode.fims.tools.ValidationStore;
+import biocode.fims.records.RecordMetadata;
 import biocode.fims.repositories.RecordRepository;
+import biocode.fims.rest.FimsController;
 import biocode.fims.rest.filters.Authenticated;
+import biocode.fims.rest.responses.FileResponse;
+import biocode.fims.rest.responses.ValidationResponse;
+import biocode.fims.run.DataSourceMetadata;
+import biocode.fims.run.DatasetAuthorizer;
 import biocode.fims.run.DatasetProcessor;
 import biocode.fims.run.ProcessorStatus;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
+import biocode.fims.tools.FileCache;
 import biocode.fims.tools.UploadStore;
+import biocode.fims.tools.ValidationStore;
 import biocode.fims.utils.FileUtils;
-import biocode.fims.run.DataSourceMetadata;
 import biocode.fims.validation.RecordValidatorFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 
+import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -65,6 +66,7 @@ import java.util.stream.Collectors;
 @Controller
 @Path("data")
 @Produces({MediaType.APPLICATION_JSON})
+@Singleton
 public class DatasetController extends FimsController {
     private final static Logger logger = LoggerFactory.getLogger(DatasetController.class);
 

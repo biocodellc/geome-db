@@ -31,6 +31,7 @@ import biocode.fims.utils.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
@@ -42,6 +43,7 @@ import java.util.stream.Stream;
 
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
+@Scope(value = "prototype")
 public class QueryController extends FimsController {
     private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
 
@@ -154,9 +156,9 @@ public class QueryController extends FimsController {
 
         try {
             if (project == null) {
-                System.out.println("project: " + project.getProjectId());
-            } else {
                 System.out.println("project: null");
+            } else {
+                System.out.println("project: " + project.getProjectId());
             }
             QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, ",", getConfig());
 

@@ -3,9 +3,9 @@ package biocode.fims.rest.services;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.application.config.GeomeSql;
 import biocode.fims.authorizers.QueryAuthorizer;
+import biocode.fims.config.models.Entity;
 import biocode.fims.config.models.FastqEntity;
 import biocode.fims.config.project.ProjectConfig;
-import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Controller;
 
+import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -49,6 +50,7 @@ import java.util.stream.Stream;
 @Controller
 @Path("projects")
 @Produces({MediaType.APPLICATION_JSON})
+@Singleton
 public class ProjectController extends BaseProjectsController {
 
     @Context

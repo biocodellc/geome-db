@@ -4,17 +4,18 @@ import biocode.fims.application.config.FimsProperties;
 import biocode.fims.rest.FimsController;
 import biocode.fims.rest.services.subResources.QueryController;
 import biocode.fims.rest.services.subResources.RecordsResource;
-import org.glassfish.jersey.server.model.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import javax.ws.rs.*;
+import javax.inject.Singleton;
+import javax.ws.rs.Path;
 
 /**
  * @resourceTag Records
  */
 @Controller
 @Path("/records")
+@Singleton
 public class RecordController extends FimsController {
 
     @Autowired
