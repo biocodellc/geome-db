@@ -92,7 +92,7 @@ public class HashMigrator {
 
                 int count = 0;
                 for (Record r : recordRepository.getRecords(project, e.getConceptAlias(), GenericRecord.class)) {
-                    Map<String, String> props = new HashMap<>(r.properties());
+                    Map<String, Object> props = new HashMap<>(r.properties());
                     props.remove(e.getUniqueKeyURI());
 
                     Record record = new GenericRecord(props);
