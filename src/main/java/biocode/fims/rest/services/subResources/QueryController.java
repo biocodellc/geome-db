@@ -86,7 +86,7 @@ public class QueryController extends FimsController {
     @POST
     @Path("/json/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public PaginatedResponse<Map<String, List<Map<String, String>>>> queryJsonAsPost(
+    public PaginatedResponse<Map<String, List<Map<String, Object>>>> queryJsonAsPost(
             @FormParam("query") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
@@ -108,7 +108,7 @@ public class QueryController extends FimsController {
     @Compress
     @GET
     @Path("/json/")
-    public PaginatedResponse<Map<String, List<Map<String, String>>>> queryJson(
+    public PaginatedResponse<Map<String, List<Map<String, Object>>>> queryJson(
             @QueryParam("q") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
@@ -116,7 +116,7 @@ public class QueryController extends FimsController {
         return json(queryString, page, limit, s);
     }
 
-    private PaginatedResponse<Map<String, List<Map<String, String>>>> json(String queryString, int page, int limit, String s) {
+    private PaginatedResponse<Map<String, List<Map<String, Object>>>> json(String queryString, int page, int limit, String s) {
         List<String> sources = s != null ? Arrays.asList(s.split(",")) : Collections.emptyList();
 
         Query query = buildQuery(queryString, page, limit);
