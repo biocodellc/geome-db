@@ -18,10 +18,10 @@ apply plugin: "application"
 apply plugin: "org.biocode.fims-web"
 
 if (!project.hasProperty('fimsCommonsVersion')) {
-    ext.fimsCommonsVersion = "2.1.9"
+    ext.fimsCommonsVersion = "2.1.10"
 }
 if (!project.hasProperty('fimsTissuesVersion')) {
-    ext.fimsTissuesVersion = "2.2.7"
+    ext.fimsTissuesVersion = "2.2.8"
 }
 if (!project.hasProperty('fimsPhotosVersion')) {
     ext.fimsPhotosVersion = "2.2.5"
