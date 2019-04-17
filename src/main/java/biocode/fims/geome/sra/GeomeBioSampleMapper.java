@@ -42,6 +42,7 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
     private final Iterator<Record> recordsIt;
     private final RecordJoiner recordJoiner;
     private final String uniqueKeyURI;
+    private final String parentEntity;
 
     public GeomeBioSampleMapper(Config config, Entity fastqEntity, QueryResults queryResults) {
         QueryResult fastqResults = queryResults.getResult(fastqEntity.getConceptAlias());
@@ -53,6 +54,7 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         this.recordsIt = fastqResults.records().iterator();
         this.recordJoiner = new RecordJoiner(config, fastqEntity, queryResults);
         this.uniqueKeyURI = fastqEntity.getUniqueKeyURI();
+        this.parentEntity = fastqEntity.getParentEntity();
     }
 
     @Override
@@ -71,6 +73,7 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         List<String> bioSampleAttributes = new ArrayList<>();
 
         Record sample = recordJoiner.getParent("Sample", record);
+        Record parent = recordJoiner.getParent(this.parentEntity, record);
 
         String organism;
         String species = sample.get("urn:species");
@@ -125,7 +128,7 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         bioSampleAttributes.add(BLANK_ATTRIBUTE);
         // we don't need to entity.buildChildRecord here b/c fastq entity unique key is null
         // and thus only allows a 1-1 mapping to parents
-        bioSampleAttributes.add(sample.rootIdentifier() + record.get(uniqueKeyURI));
+        bioSampleAttributes.add(parent.rootIdentifier() + record.get(uniqueKeyURI));
 
         return bioSampleAttributes;
     }
