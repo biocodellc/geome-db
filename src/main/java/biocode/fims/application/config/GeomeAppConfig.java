@@ -158,9 +158,9 @@ public class GeomeAppConfig {
     }
 
     @Bean
-    public SraAccessionHarvester sraAccessionHarvester(ProjectService projectService) {
-        EntrezApiFactoryImpl apiFactory = new EntrezApiFactoryImpl(ClientBuilder.newClient());
-        EntrezApiService entrezApiService = new EntrezApiService(apiFactory);
+    public SraAccessionHarvester sraAccessionHarvester(ProjectService projectService, GeomeProperties props) {
+        EntrezApiFactoryImpl apiFactory = new EntrezApiFactoryImpl(props.sraApiKey(), ClientBuilder.newClient());
+        EntrezApiService entrezApiService = new EntrezApiService(apiFactory, props.sraFetchWeeksInPast());
         BioSampleRepository bioSampleRepository = new BioSampleRepository(entrezApiService);
         return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService);
     }
