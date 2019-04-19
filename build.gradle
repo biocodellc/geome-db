@@ -112,6 +112,12 @@ task migrateHashes(type: JavaExec) {
     main = "biocode.fims.run.HashMigrator"
 }
 
+task harvestSraBioSamples(type: JavaExec) {
+    classpath = configurations.compile + sourceSets.main.runtimeClasspath
+
+    main = "biocode.fims.run.SraAccessionHarvesterRunner"
+}
+
 startScripts {
     classpath = files(jar.archivePath, configurations.compile, configurations.runtime)
 }
@@ -125,7 +131,7 @@ deployFimsLocal {
 //=============================
 
 war {
-    from ("${projectDir}/docs/helpDocumentation.pdf", {
+    from("${projectDir}/docs/helpDocumentation.pdf", {
         into 'docs'
     })
 }
