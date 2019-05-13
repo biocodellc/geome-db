@@ -8,6 +8,8 @@ import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.models.Network;
 import biocode.fims.models.User;
 import biocode.fims.query.QueryResult;
+import biocode.fims.records.Record;
+import biocode.fims.records.RecordJoiner;
 import biocode.fims.records.RecordSources;
 import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.Entity;
@@ -306,8 +308,15 @@ public class QueryController extends FimsController {
         if (queryResults.isEmpty()) return null;
 
         try {
+            RecordJoiner joiner = new RecordJoiner(getConfig(), e, queryResults);
+
+            LinkedList<Record> tissues = queryResults.getResult(e.getConceptAlias())
+                    .records().stream()
+                    .map(joiner::joinRecords)
+                    .collect(Collectors.toCollection(LinkedList::new));
+
             // call getConfig() again here b/c it will be set to the ProjectConfig if the query was against a single project
-            QueryWriter queryWriter = new FastaQueryWriter(queryResults.getResult(e.getConceptAlias()), getConfig());
+            QueryWriter queryWriter = new FastaQueryWriter(new QueryResult(tissues, e, config.entity(e.getParentEntity())), getConfig());
 
             List<QueryResult> metadataResults = queryResults.results().stream()
                     .filter(r -> !r.entity().equals(e))
