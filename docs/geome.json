@@ -8,7 +8,8 @@
           "level": "ERROR",
           "columns": [
             "locality",
-            "yearCollected"
+            "yearCollected",
+            "country"
           ]
         },
         {
@@ -76,13 +77,6 @@
           "level": "ERROR"
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "eventID",
-      "conceptURI": "http://rs.tdwg.org/dwc/terms/Event",
-      "recordType": "biocode.fims.records.GenericRecord",
-      "conceptAlias": "Event",
-      "worksheet": "Events",
       "attributes": [
         {
           "column": "eventID",
@@ -216,7 +210,7 @@
           "allowTBD": false
         },
         {
-          "column": "enteredBy",
+          "column": "eventEnteredBy",
           "uri": "urn:enteredBy",
           "dataType": "STRING",
           "internal": false,
@@ -515,7 +509,14 @@
           "allowUnknown": false,
           "allowTBD": false
         }
-      ]
+      ],
+      "hashed": false,
+      "uniqueAcrossProject": false,
+      "uniqueKey": "eventID",
+      "conceptURI": "http://rs.tdwg.org/dwc/terms/Event",
+      "recordType": "biocode.fims.records.GenericRecord",
+      "conceptAlias": "Event",
+      "worksheet": "Events"
     },
     {
       "type": "DefaultEntity",
@@ -524,8 +525,7 @@
           "name": "RequiredValue",
           "level": "ERROR",
           "columns": [
-            "eventID",
-            "phylum"
+            "eventID"
           ]
         },
         {
@@ -595,16 +595,14 @@
         {
           "name": "ValidParentIdentifiers",
           "level": "ERROR"
+        },
+        {
+          "name": "ControlledVocabulary",
+          "level": "ERROR",
+          "column": "basisOfRecord",
+          "listName": "basisOfRecord"
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "materialSampleID",
-      "conceptURI": "http://rs.tdwg.org/dwc/terms/MaterialSample",
-      "parentEntity": "Event",
-      "recordType": "biocode.fims.records.GenericRecord",
-      "conceptAlias": "Sample",
-      "worksheet": "Samples",
       "attributes": [
         {
           "column": "length",
@@ -680,6 +678,17 @@
           "definedBy": "http://rs.tdwg.org/dwc/terms/collectionCode",
           "group": "Protocol and Storage Details",
           "definition": "The name, acronym, coden, or initialism identifying the collection or data set from which the record was derived.",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "traditionalKnowledgeNotice",
+          "uri": "urn:traditionalKnowledgeNotice",
+          "dataType": "BOOLEAN",
+          "internal": false,
+          "definedBy": "urn:traditionalKnowledgeNotice",
+          "group": "Protocol and Storage Details",
+          "definition": "The Traditional Knowledge (TK) Notice label tag that appears with GEOME sample metadata serves as a visible notification that there is accompanying cultural rights and responsibilities that need further attention for any future sharing and use of this material.   The TK Notice is intended to be a collective notice and an initiative to elevate recognition of the cultural significance, importance and often placed-based nature of TK. For more information TK Labels visit http://localcontexts.org/tk-labels/",
           "allowUnknown": false,
           "allowTBD": false
         },
@@ -772,7 +781,7 @@
           "allowTBD": false
         },
         {
-          "column": "enteredBy",
+          "column": "sampleEnteredBy",
           "uri": "urn:EnteredBy",
           "dataType": "STRING",
           "internal": false,
@@ -904,6 +913,17 @@
           "allowTBD": false
         },
         {
+          "column": "boldProcessID",
+          "uri": "urn:boldProcessID",
+          "dataType": "STRING",
+          "internal": false,
+          "definedBy": "urn:boldProcessID",
+          "group": "Record and Owner Details",
+          "definition": "BOLD Process IDs are unique codes automatically generated for each new record added to a project within the Barcode of Life Database. They serve to connect specimen information, such as taxonomy, collection data and images, to the DNA barcode sequence for that specimen.  BOLD Process IDs consist of a standard format including the project code and sequential numbers, followed by the year the record was added to the database. For example, the first record uploaded to project PROJ in 2012 would be assigned BOLD Process ID PROJ001-12 . This format ensures BOLD Process IDs are always unique in the system, as well as identifying the year the record was uploaded and the original project it was uploaded to.",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
           "column": "voucherURI",
           "uri": "urn:voucherURI",
           "dataType": "STRING",
@@ -999,6 +1019,17 @@
           "definedBy": "urn:dayIdentified",
           "group": "Taxonomy and Life History",
           "definition": "The day on which the subject was identified as representing the Taxon. ",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "basisOfRecord",
+          "uri": "urn:basisOfRecord",
+          "dataType": "STRING",
+          "internal": false,
+          "definedBy": "http://rs.tdwg.org/dwc/terms/basisOfRecord",
+          "group": "Taxonomy and Life History",
+          "definition": "The specific nature of the data record.  Examples include PreservedSpecimen, FossilSpecimen, LivingSpecimen, MaterialSample, Event, HumanObservation, MachineObservation, Taxon, Occurrence",
           "allowUnknown": false,
           "allowTBD": false
         },
@@ -1353,8 +1384,146 @@
           "definition": "The year on which the subject was identified as representing the Taxon. ",
           "allowUnknown": false,
           "allowTBD": false
+        },
+        {
+          "column": "sampleType",
+          "uri": "urn:sampleType",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "Type of sample tested: eg, swabbing, blood, skin, liver",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "diseaseLineage",
+          "uri": "urn:diseaseLineage",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "Specific genetic lineage detected (if available) NCBI URI (e.g., http://www.ncbi.nlm.nih.gov/biosample/xxxxxxx",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "genotypeMethod",
+          "uri": "urn:genotypeMethod",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "Genotyping methods used to determine diseaseLineage if present (e.g., whole genome sequencing, ITS sequencing, multilocus nuclear sequencing).",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "diseaseTested",
+          "uri": "urn:diseaseTested",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "Controlled vocabulary: Bd, Bsal, Bd+Bsal, Other",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "specimenDisposition",
+          "uri": "urn:specimenDisposition",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "Post-sampling status",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "diseaseDetected",
+          "uri": "urn:diseaseDetected",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "Result of disease testing: True=Positive, False=Negative, No Confidence=Ambiguous",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "fatal",
+          "uri": "urn:fatal",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "At time of sampling, presumed cause of death to be diseaseTested, mark [FALSE] if unknown",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "testMethod",
+          "uri": "urn:testMethod",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "traditional PCR, quantitive PCR, realtime PCR, histology, Other",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "quantityDected",
+          "uri": "urn:quantityDected",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "Number of zoospore detected. Needed to calculate Zoospore Equivalent Score (ZEscore), a measure of infection intensity (see Vredenburg et al 2010 doi: 10.1073/pnas.0914111107)",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "dilutionFactor",
+          "uri": "urn:dilutionFactor",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "The dilution factor is needed to calculate Zoospore Equivalent Score (ZEscore), a measure of infection intensity (see Vredenburg et al 2010 doi: 10.1073/pnas.0914111107)",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "cycleTimeFirstDetection",
+          "uri": "urn:cycleTimeFirstDetection",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "Cycle number (c(t)) at which the qPCR machine first detects a positive for chytrid ( a measure of the amount of Bd or Bsal present)",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "diagnosticLab",
+          "uri": "urn:diagnosticLab",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "Record the diagnostic lab if different than the diagnostic lab listed in the Project details or if more than one are used.",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "zeScore",
+          "uri": "urn:zeScore",
+          "dataType": "STRING",
+          "internal": false,
+          "group": "diseaseSampling",
+          "definition": "If present, these values may be entered (otherwise it will be calculated from the quantityDetected and dilutionFactor).",
+          "allowUnknown": false,
+          "allowTBD": false
         }
-      ]
+      ],
+      "hashed": false,
+      "uniqueAcrossProject": false,
+      "uniqueKey": "materialSampleID",
+      "conceptURI": "http://rs.tdwg.org/dwc/terms/MaterialSample",
+      "parentEntity": "Event",
+      "recordType": "biocode.fims.records.GenericRecord",
+      "conceptAlias": "Sample",
+      "worksheet": "Samples"
     },
     {
       "type": "Tissue",
@@ -1419,14 +1588,6 @@
           "level": "ERROR"
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "tissueID",
-      "conceptURI": "http://rs.tdwg.org/dwc/terms/MaterialSample",
-      "parentEntity": "Sample",
-      "recordType": "biocode.fims.records.GenericRecord",
-      "conceptAlias": "Tissue",
-      "worksheet": "Tissues",
       "attributes": [
         {
           "column": "tissueID",
@@ -1434,7 +1595,7 @@
           "dataType": "STRING",
           "internal": false,
           "definedBy": "urn:tissueID",
-          "definition": "",
+          "definition": "The unique identifier for the tissue.  This identifier can be assigned either automatically or defined by the user.",
           "allowUnknown": false,
           "allowTBD": false
         },
@@ -1494,7 +1655,7 @@
           "dataType": "STRING",
           "internal": false,
           "definedBy": "urn:tissueStorageID",
-          "definition": "Tissue Barcode",
+          "definition": "The barcode on the long-term tissue storage vial. Typically the tissue barcode represents a 2D barcode on a FluidX vial which can be read using the tube scanner.",
           "allowUnknown": false,
           "allowTBD": false
         },
@@ -1608,7 +1769,15 @@
           "allowUnknown": false,
           "allowTBD": false
         }
-      ]
+      ],
+      "hashed": false,
+      "uniqueAcrossProject": false,
+      "uniqueKey": "tissueID",
+      "conceptURI": "http://rs.tdwg.org/dwc/terms/MaterialSample",
+      "parentEntity": "Sample",
+      "recordType": "biocode.fims.records.GenericRecord",
+      "conceptAlias": "Tissue",
+      "worksheet": "Tissues"
     },
     {
       "type": "Photo",
@@ -1635,22 +1804,10 @@
           ]
         },
         {
-          "name": "RequiredValueInGroup",
-          "level": "WARNING",
-          "columns": [
-            "originalUrl",
-            "bulkLoadFile"
-          ]
+          "name": "ValidPhotoFile",
+          "level": "ERROR"
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "photoID",
-      "conceptURI": "http://rs.tdwg.org/dwc/terms/associatedMedia",
-      "parentEntity": "Sample",
-      "recordType": "biocode.fims.photos.PhotoRecord",
-      "conceptAlias": "Sample_Photo",
-      "worksheet": "sample_photos",
       "attributes": [
         {
           "column": "materialSampleID",
@@ -1753,6 +1910,14 @@
           "allowTBD": false
         },
         {
+          "column": "filename",
+          "uri": "filename",
+          "dataType": "STRING",
+          "internal": false,
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
           "column": "photographer",
           "uri": "urn:samplePhotographer",
           "dataType": "STRING",
@@ -1760,7 +1925,15 @@
           "allowUnknown": false,
           "allowTBD": false
         }
-      ]
+      ],
+      "hashed": false,
+      "uniqueAcrossProject": false,
+      "uniqueKey": "photoID",
+      "conceptURI": "http://rs.tdwg.org/dwc/terms/associatedMedia",
+      "parentEntity": "Sample",
+      "recordType": "biocode.fims.photos.PhotoRecord",
+      "conceptAlias": "Sample_Photo",
+      "worksheet": "sample_photos"
     },
     {
       "type": "Photo",
@@ -1787,22 +1960,10 @@
           ]
         },
         {
-          "name": "RequiredValueInGroup",
-          "level": "WARNING",
-          "columns": [
-            "originalUrl",
-            "bulkLoadFile"
-          ]
+          "name": "ValidPhotoFile",
+          "level": "ERROR"
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "photoID",
-      "conceptURI": "http://rs.tdwg.org/dwc/terms/associatedMedia",
-      "parentEntity": "Event",
-      "recordType": "biocode.fims.photos.PhotoRecord",
-      "conceptAlias": "Event_Photo",
-      "worksheet": "event_photos",
       "attributes": [
         {
           "column": "eventID",
@@ -1912,7 +2073,15 @@
           "allowUnknown": false,
           "allowTBD": false
         }
-      ]
+      ],
+      "hashed": false,
+      "uniqueAcrossProject": false,
+      "uniqueKey": "photoID",
+      "conceptURI": "http://rs.tdwg.org/dwc/terms/associatedMedia",
+      "parentEntity": "Event",
+      "recordType": "biocode.fims.photos.PhotoRecord",
+      "conceptAlias": "Event_Photo",
+      "worksheet": "event_photos"
     },
     {
       "type": "Fasta",
@@ -1940,13 +2109,6 @@
           "uniqueAcrossProject": false
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "identifier",
-      "conceptURI": "urn:fastaSequence",
-      "parentEntity": "Tissue",
-      "recordType": "biocode.fims.fasta.FastaRecord",
-      "conceptAlias": "fastaSequence",
       "attributes": [
         {
           "column": "sequence",
@@ -1993,7 +2155,14 @@
           "allowUnknown": false,
           "allowTBD": false
         }
-      ]
+      ],
+      "hashed": false,
+      "uniqueAcrossProject": false,
+      "uniqueKey": "identifier",
+      "conceptURI": "urn:fastaSequence",
+      "parentEntity": "Tissue",
+      "recordType": "biocode.fims.fasta.FastaRecord",
+      "conceptAlias": "fastaSequence"
     },
     {
       "type": "Fastq",
@@ -2036,13 +2205,6 @@
           "level": "ERROR"
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "identifier",
-      "conceptURI": "urn:fastqMetadata",
-      "parentEntity": "Tissue",
-      "recordType": "biocode.fims.fastq.FastqRecord",
-      "conceptAlias": "fastqMetadata",
       "attributes": [
         {
           "column": "libraryLayout",
@@ -2145,7 +2307,14 @@
           "allowUnknown": false,
           "allowTBD": false
         }
-      ]
+      ],
+      "hashed": false,
+      "uniqueAcrossProject": false,
+      "uniqueKey": "identifier",
+      "conceptURI": "urn:fastqMetadata",
+      "parentEntity": "Tissue",
+      "recordType": "biocode.fims.fastq.FastqRecord",
+      "conceptAlias": "fastqMetadata"
     }
   ],
   "lists": [
@@ -2414,6 +2583,40 @@
         },
         {
           "value": "microscope_slide"
+        }
+      ],
+      "networkList": true
+    },
+    {
+      "alias": "basisOfRecord",
+      "caseInsensitive": false,
+      "fields": [
+        {
+          "value": "PreservedSpecimen"
+        },
+        {
+          "value": "FossilSpecimen"
+        },
+        {
+          "value": "LivingSpecimen"
+        },
+        {
+          "value": "MaterialSample"
+        },
+        {
+          "value": "Event"
+        },
+        {
+          "value": "HumanObservation"
+        },
+        {
+          "value": "MachineObservation"
+        },
+        {
+          "value": "Taxon"
+        },
+        {
+          "value": "Occurrence"
         }
       ],
       "networkList": true
