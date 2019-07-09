@@ -6,11 +6,7 @@
         {
           "name": "RequiredValue",
           "level": "ERROR",
-          "columns": [
-            "locality",
-            "yearCollected",
-            "country"
-          ]
+          "columns": ["locality", "yearCollected", "country"]
         },
         {
           "name": "MinMaxNumber",
@@ -72,10 +68,7 @@
           "column": "dayCollected",
           "range": ">=1|<=31"
         },
-        {
-          "name": "ValidDataTypeFormat",
-          "level": "ERROR"
-        }
+        { "name": "ValidDataTypeFormat", "level": "ERROR" }
       ],
       "attributes": [
         {
@@ -510,29 +503,29 @@
           "allowTBD": false
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "eventID",
       "conceptURI": "http://rs.tdwg.org/dwc/terms/Event",
-      "recordType": "biocode.fims.records.GenericRecord",
       "conceptAlias": "Event",
-      "worksheet": "Events"
+      "worksheet": "Events",
+      "uniqueKey": "eventID",
+      "uniqueAcrossProject": false,
+      "hashed": false,
+      "recordType": "biocode.fims.records.GenericRecord"
     },
     {
       "type": "DefaultEntity",
       "rules": [
-        {
-          "name": "RequiredValue",
-          "level": "ERROR",
-          "columns": [
-            "eventID"
-          ]
-        },
+        { "name": "RequiredValue", "level": "ERROR", "columns": ["eventID"] },
         {
           "name": "ControlledVocabulary",
           "level": "ERROR",
           "column": "lengthUnits",
           "listName": "lengthUnits"
+        },
+        {
+          "name": "ControlledVocabulary",
+          "level": "ERROR",
+          "column": "traditionalKnowledgeNotice",
+          "listName": "trueFalse"
         },
         {
           "name": "ControlledVocabulary",
@@ -588,14 +581,8 @@
           "column": "dayIdentified",
           "range": ">=1|<=31"
         },
-        {
-          "name": "ValidDataTypeFormat",
-          "level": "ERROR"
-        },
-        {
-          "name": "ValidParentIdentifiers",
-          "level": "ERROR"
-        },
+        { "name": "ValidDataTypeFormat", "level": "ERROR" },
+        { "name": "ValidParentIdentifiers", "level": "ERROR" },
         {
           "name": "ControlledVocabulary",
           "level": "ERROR",
@@ -687,8 +674,8 @@
           "dataType": "BOOLEAN",
           "internal": false,
           "definedBy": "urn:traditionalKnowledgeNotice",
-          "group": "Protocol and Storage Details",
-          "definition": "The Traditional Knowledge (TK) Notice label tag that appears with GEOME sample metadata serves as a visible notification that there is accompanying cultural rights and responsibilities that need further attention for any future sharing and use of this material.   The TK Notice is intended to be a collective notice and an initiative to elevate recognition of the cultural significance, importance and often placed-based nature of TK. For more information TK Labels visit http://localcontexts.org/tk-labels/",
+          "group": "Record and Owner Details",
+          "definition": "The Traditional Knowledge (TK) Notice label tag that appears with GEOME sample metadata serves as a visible notification that there is accompanying cultural rights and responsibilities that need further attention for any future sharing and use of this material.   The TK Notice is intended to be a collective notice and an initiative to elevate recognition of the cultural significance, importance and often placed-based nature of TK. For more information TK Labels visit http://localcontexts.org/tk-labels/  Accepts TRUE or FALSE",
           "allowUnknown": false,
           "allowTBD": false
         },
@@ -1384,6 +1371,48 @@
           "definition": "The year on which the subject was identified as representing the Taxon. ",
           "allowUnknown": false,
           "allowTBD": false
+        }
+      ],
+      "conceptURI": "http://rs.tdwg.org/dwc/terms/MaterialSample",
+      "conceptAlias": "Sample",
+      "parentEntity": "Event",
+      "worksheet": "Samples",
+      "uniqueKey": "materialSampleID",
+      "uniqueAcrossProject": false,
+      "hashed": false,
+      "recordType": "biocode.fims.records.GenericRecord"
+    },
+    {
+      "type": "DefaultEntity",
+      "rules": [
+        { "name": "ValidDataTypeFormat", "level": "ERROR" },
+        { "name": "ValidParentIdentifiers", "level": "ERROR" },
+        {
+          "name": "RequiredValue",
+          "level": "ERROR",
+          "columns": ["diagnosticID", "materialSampleID"]
+        }
+      ],
+      "attributes": [
+        {
+          "column": "diagnosticID",
+          "uri": "urn:diagnosticID",
+          "dataType": "STRING",
+          "internal": false,
+          "definedBy": "http://rs.tdwg.org/dwc/terms/measurementID",
+          "definition": "The identifier for the diagnostic procedure.",
+          "allowUnknown": false,
+          "allowTBD": false
+        },
+        {
+          "column": "materialSampleID",
+          "uri": "urn:materialSampleID",
+          "dataType": "STRING",
+          "internal": false,
+          "definedBy": "http://rs.tdwg.org/dwc/terms/MaterialSampleID",
+          "definition": "The collector's specimen number. This number must be unique among the IDs within the expedition.",
+          "allowUnknown": false,
+          "allowTBD": false
         },
         {
           "column": "sampleType",
@@ -1516,14 +1545,14 @@
           "allowTBD": false
         }
       ],
-      "hashed": false,
+      "conceptURI": "http://rs.tdwg.org/dwc/terms/MeasurementOrFact",
+      "conceptAlias": "Diagnostics",
+      "parentEntity": "Sample",
+      "worksheet": "Diagnostics",
+      "uniqueKey": "diagnosticID",
       "uniqueAcrossProject": false,
-      "uniqueKey": "materialSampleID",
-      "conceptURI": "http://rs.tdwg.org/dwc/terms/MaterialSample",
-      "parentEntity": "Event",
-      "recordType": "biocode.fims.records.GenericRecord",
-      "conceptAlias": "Sample",
-      "worksheet": "Samples"
+      "hashed": false,
+      "recordType": "biocode.fims.records.GenericRecord"
     },
     {
       "type": "Tissue",
@@ -1574,19 +1603,10 @@
         {
           "name": "CompositeUniqueValue",
           "level": "ERROR",
-          "columns": [
-            "tissuePlate",
-            "tissueWell"
-          ]
+          "columns": ["tissuePlate", "tissueWell"]
         },
-        {
-          "name": "ValidDataTypeFormat",
-          "level": "ERROR"
-        },
-        {
-          "name": "ValidParentIdentifiers",
-          "level": "ERROR"
-        }
+        { "name": "ValidDataTypeFormat", "level": "ERROR" },
+        { "name": "ValidParentIdentifiers", "level": "ERROR" }
       ],
       "attributes": [
         {
@@ -1768,16 +1788,26 @@
           "definition": "Identifier of tissue that this tissue was derived from, if available.",
           "allowUnknown": false,
           "allowTBD": false
+        },
+        {
+          "column": "tissueBlocked",
+          "uri": "urn:tissueBlocked",
+          "dataType": "BOOLEAN",
+          "internal": false,
+          "definedBy": "https://terms.tdwg.org/wiki/ggbn:blocked",
+          "definition": "Sample or specimen data can not be ordered/loaned in general, but are visible via portals. Accepts TRUE or FALSE.",
+          "allowUnknown": false,
+          "allowTBD": false
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "tissueID",
       "conceptURI": "http://rs.tdwg.org/dwc/terms/MaterialSample",
-      "parentEntity": "Sample",
-      "recordType": "biocode.fims.records.GenericRecord",
       "conceptAlias": "Tissue",
-      "worksheet": "Tissues"
+      "parentEntity": "Sample",
+      "worksheet": "Tissues",
+      "uniqueKey": "tissueID",
+      "uniqueAcrossProject": false,
+      "hashed": false,
+      "recordType": "biocode.fims.records.GenericRecord"
     },
     {
       "type": "Photo",
@@ -1788,25 +1818,10 @@
           "column": "qualityScore",
           "range": ">=0|<=5"
         },
-        {
-          "name": "ValidDataTypeFormat",
-          "level": "ERROR"
-        },
-        {
-          "name": "ValidParentIdentifiers",
-          "level": "ERROR"
-        },
-        {
-          "name": "RequiredValue",
-          "level": "ERROR",
-          "columns": [
-            "photoID"
-          ]
-        },
-        {
-          "name": "ValidPhotoFile",
-          "level": "ERROR"
-        }
+        { "name": "ValidDataTypeFormat", "level": "ERROR" },
+        { "name": "ValidParentIdentifiers", "level": "ERROR" },
+        { "name": "RequiredValue", "level": "ERROR", "columns": ["photoID"] },
+        { "name": "ValidPhotoFile", "level": "ERROR" }
       ],
       "attributes": [
         {
@@ -1913,7 +1928,7 @@
           "column": "filename",
           "uri": "filename",
           "dataType": "STRING",
-          "internal": false,
+          "internal": true,
           "allowUnknown": false,
           "allowTBD": false
         },
@@ -1926,14 +1941,14 @@
           "allowTBD": false
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "photoID",
       "conceptURI": "http://rs.tdwg.org/dwc/terms/associatedMedia",
-      "parentEntity": "Sample",
-      "recordType": "biocode.fims.photos.PhotoRecord",
       "conceptAlias": "Sample_Photo",
-      "worksheet": "sample_photos"
+      "parentEntity": "Sample",
+      "worksheet": "sample_photos",
+      "uniqueKey": "photoID",
+      "uniqueAcrossProject": false,
+      "hashed": false,
+      "recordType": "biocode.fims.photos.PhotoRecord"
     },
     {
       "type": "Photo",
@@ -1944,25 +1959,10 @@
           "column": "qualityScore",
           "range": ">=0|<=5"
         },
-        {
-          "name": "ValidDataTypeFormat",
-          "level": "ERROR"
-        },
-        {
-          "name": "ValidParentIdentifiers",
-          "level": "ERROR"
-        },
-        {
-          "name": "RequiredValue",
-          "level": "ERROR",
-          "columns": [
-            "photoID"
-          ]
-        },
-        {
-          "name": "ValidPhotoFile",
-          "level": "ERROR"
-        }
+        { "name": "ValidDataTypeFormat", "level": "ERROR" },
+        { "name": "ValidParentIdentifiers", "level": "ERROR" },
+        { "name": "RequiredValue", "level": "ERROR", "columns": ["photoID"] },
+        { "name": "ValidPhotoFile", "level": "ERROR" }
       ],
       "attributes": [
         {
@@ -2072,35 +2072,34 @@
           "internal": false,
           "allowUnknown": false,
           "allowTBD": false
+        },
+        {
+          "column": "filename",
+          "uri": "filename",
+          "dataType": "STRING",
+          "internal": true,
+          "allowUnknown": false,
+          "allowTBD": false
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "photoID",
       "conceptURI": "http://rs.tdwg.org/dwc/terms/associatedMedia",
-      "parentEntity": "Event",
-      "recordType": "biocode.fims.photos.PhotoRecord",
       "conceptAlias": "Event_Photo",
-      "worksheet": "event_photos"
+      "parentEntity": "Event",
+      "worksheet": "event_photos",
+      "uniqueKey": "photoID",
+      "uniqueAcrossProject": false,
+      "hashed": false,
+      "recordType": "biocode.fims.photos.PhotoRecord"
     },
     {
       "type": "Fasta",
       "rules": [
-        {
-          "name": "ValidDataTypeFormat",
-          "level": "ERROR"
-        },
-        {
-          "name": "ValidParentIdentifiers",
-          "level": "ERROR"
-        },
+        { "name": "ValidDataTypeFormat", "level": "ERROR" },
+        { "name": "ValidParentIdentifiers", "level": "ERROR" },
         {
           "name": "RequiredValue",
           "level": "ERROR",
-          "columns": [
-            "sequence",
-            "identifier"
-          ]
+          "columns": ["sequence", "identifier"]
         },
         {
           "name": "UniqueValue",
@@ -2136,16 +2135,6 @@
           "allowTBD": false
         },
         {
-          "column": "materialSampleID",
-          "uri": "urn:materialSampleID",
-          "dataType": "STRING",
-          "internal": false,
-          "definedBy": "http://rs.tdwg.org/dwc/terms/MaterialSampleID",
-          "definition": "",
-          "allowUnknown": false,
-          "allowTBD": false
-        },
-        {
           "column": "tissueID",
           "uri": "urn:tissueID",
           "dataType": "STRING",
@@ -2156,13 +2145,13 @@
           "allowTBD": false
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "identifier",
       "conceptURI": "urn:fastaSequence",
+      "conceptAlias": "fastaSequence",
       "parentEntity": "Tissue",
-      "recordType": "biocode.fims.fasta.FastaRecord",
-      "conceptAlias": "fastaSequence"
+      "uniqueKey": "identifier",
+      "uniqueAcrossProject": false,
+      "hashed": false,
+      "recordType": "biocode.fims.fasta.FastaRecord"
     },
     {
       "type": "Fastq",
@@ -2188,22 +2177,10 @@
           "column": "identifier",
           "uniqueAcrossProject": false
         },
-        {
-          "name": "ValidParentIdentifiers",
-          "level": "ERROR"
-        },
-        {
-          "name": "ValidFastqLibraryLayout",
-          "level": "ERROR"
-        },
-        {
-          "name": "ValidFastqFilenames",
-          "level": "ERROR"
-        },
-        {
-          "name": "ValidFastqMetadata",
-          "level": "ERROR"
-        }
+        { "name": "ValidParentIdentifiers", "level": "ERROR" },
+        { "name": "ValidFastqLibraryLayout", "level": "ERROR" },
+        { "name": "ValidFastqFilenames", "level": "ERROR" },
+        { "name": "ValidFastqMetadata", "level": "ERROR" }
       ],
       "attributes": [
         {
@@ -2296,62 +2273,38 @@
           "definition": "",
           "allowUnknown": false,
           "allowTBD": false
-        },
-        {
-          "column": "materialSampleID",
-          "uri": "urn:materialSampleID",
-          "dataType": "STRING",
-          "internal": false,
-          "definedBy": "http://rs.tdwg.org/dwc/terms/MaterialSampleID",
-          "definition": "The collector's specimen number. This number must be unique among the IDs within the expedition.",
-          "allowUnknown": false,
-          "allowTBD": false
         }
       ],
-      "hashed": false,
-      "uniqueAcrossProject": false,
-      "uniqueKey": "identifier",
       "conceptURI": "urn:fastqMetadata",
+      "conceptAlias": "fastqMetadata",
       "parentEntity": "Tissue",
-      "recordType": "biocode.fims.fastq.FastqRecord",
-      "conceptAlias": "fastqMetadata"
+      "uniqueKey": "identifier",
+      "uniqueAcrossProject": false,
+      "hashed": false,
+      "recordType": "biocode.fims.fastq.FastqRecord"
     }
   ],
   "lists": [
     {
+      "alias": "trueFalse",
+      "caseInsensitive": false,
+      "fields": [{ "value": "TRUE" }, { "value": "FALSE" }],
+      "networkList": true
+    },
+    {
       "alias": "ABI_SOLID",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "AB 5500 Genetic Analyzer"
-        },
-        {
-          "value": "AB 5500x-Wl Genetic Analyzer"
-        },
-        {
-          "value": "AB 5500xl Genetic Analyzer"
-        },
-        {
-          "value": "AB SOLiD 3 Plus System"
-        },
-        {
-          "value": "AB SOLiD 4 System"
-        },
-        {
-          "value": "AB SOLiD 4hq System"
-        },
-        {
-          "value": "AB SOLiD PI System"
-        },
-        {
-          "value": "AB SOLiD System"
-        },
-        {
-          "value": "AB SOLiD System 2.0"
-        },
-        {
-          "value": "AB SOLiD System 3.0"
-        }
+        { "value": "AB 5500 Genetic Analyzer" },
+        { "value": "AB 5500x-Wl Genetic Analyzer" },
+        { "value": "AB 5500xl Genetic Analyzer" },
+        { "value": "AB SOLiD 3 Plus System" },
+        { "value": "AB SOLiD 4 System" },
+        { "value": "AB SOLiD 4hq System" },
+        { "value": "AB SOLiD PI System" },
+        { "value": "AB SOLiD System" },
+        { "value": "AB SOLiD System 2.0" },
+        { "value": "AB SOLiD System 3.0" }
       ],
       "networkList": true
     },
@@ -2359,99 +2312,47 @@
       "alias": "CAPILLARY",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "AB 310 Genetic Analyzer"
-        },
-        {
-          "value": "AB 3130 Genetic Analyzer"
-        },
-        {
-          "value": "AB 3130xL Genetic Analyzer"
-        },
-        {
-          "value": "AB 3500 Genetic Analyzer"
-        },
-        {
-          "value": "AB 3500xL Genetic Analyzer"
-        },
-        {
-          "value": "AB 3730 Genetic Analyzer"
-        },
-        {
-          "value": "AB 3730xL Genetic Analyzer"
-        }
+        { "value": "AB 310 Genetic Analyzer" },
+        { "value": "AB 3130 Genetic Analyzer" },
+        { "value": "AB 3130xL Genetic Analyzer" },
+        { "value": "AB 3500 Genetic Analyzer" },
+        { "value": "AB 3500xL Genetic Analyzer" },
+        { "value": "AB 3730 Genetic Analyzer" },
+        { "value": "AB 3730xL Genetic Analyzer" }
       ],
       "networkList": true
     },
     {
       "alias": "COMPLETE_GENOMICS",
       "caseInsensitive": false,
-      "fields": [
-        {
-          "value": "Complete Genomics"
-        }
-      ],
+      "fields": [{ "value": "Complete Genomics" }],
       "networkList": true
     },
     {
       "alias": "HELICOS",
       "caseInsensitive": false,
-      "fields": [
-        {
-          "value": "Helicos HeliScope"
-        }
-      ],
+      "fields": [{ "value": "Helicos HeliScope" }],
       "networkList": true
     },
     {
       "alias": "ILLUMINA",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "HiSeq X Five"
-        },
-        {
-          "value": "HiSeq X Ten"
-        },
-        {
-          "value": "Illumina Genome Analyzer"
-        },
-        {
-          "value": "Illumina Genome Analyzer II"
-        },
-        {
-          "value": "Illumina Genome Analyzer IIx"
-        },
-        {
-          "value": "Illumina HiScanSQ"
-        },
-        {
-          "value": "Illumina HiSeq 1000"
-        },
-        {
-          "value": "Illumina HiSeq 1500"
-        },
-        {
-          "value": "Illumina HiSeq 2000"
-        },
-        {
-          "value": "Illumina HiSeq 2500"
-        },
-        {
-          "value": "Illumina HiSeq 3000"
-        },
-        {
-          "value": "Illumina HiSeq 4000"
-        },
-        {
-          "value": "Illumina MiSeq"
-        },
-        {
-          "value": "NextSeq 500"
-        },
-        {
-          "value": "NextSeq 550"
-        }
+        { "value": "HiSeq X Five" },
+        { "value": "HiSeq X Ten" },
+        { "value": "Illumina Genome Analyzer" },
+        { "value": "Illumina Genome Analyzer II" },
+        { "value": "Illumina Genome Analyzer IIx" },
+        { "value": "Illumina HiScanSQ" },
+        { "value": "Illumina HiSeq 1000" },
+        { "value": "Illumina HiSeq 1500" },
+        { "value": "Illumina HiSeq 2000" },
+        { "value": "Illumina HiSeq 2500" },
+        { "value": "Illumina HiSeq 3000" },
+        { "value": "Illumina HiSeq 4000" },
+        { "value": "Illumina MiSeq" },
+        { "value": "NextSeq 500" },
+        { "value": "NextSeq 550" }
       ],
       "networkList": true
     },
@@ -2459,63 +2360,33 @@
       "alias": "ION_TORRENT",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "Ion Torrent PGM"
-        },
-        {
-          "value": "Ion Torrent Proton"
-        }
+        { "value": "Ion Torrent PGM" },
+        { "value": "Ion Torrent Proton" }
       ],
       "networkList": true
     },
     {
       "alias": "OXFORD_NANOPORE",
       "caseInsensitive": false,
-      "fields": [
-        {
-          "value": "GridION"
-        },
-        {
-          "value": "MinION"
-        }
-      ],
+      "fields": [{ "value": "GridION" }, { "value": "MinION" }],
       "networkList": true
     },
     {
       "alias": "PACBIO_SMRT",
       "caseInsensitive": false,
-      "fields": [
-        {
-          "value": "PacBio RS"
-        },
-        {
-          "value": "PacBio RS II"
-        }
-      ],
+      "fields": [{ "value": "PacBio RS" }, { "value": "PacBio RS II" }],
       "networkList": true
     },
     {
       "alias": "_LS454",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "454 GS"
-        },
-        {
-          "value": "454 GS 20"
-        },
-        {
-          "value": "454 GS FLX"
-        },
-        {
-          "value": "454 GS FLX Titanium"
-        },
-        {
-          "value": "454 GS FLX+"
-        },
-        {
-          "value": "454 GS Junior"
-        }
+        { "value": "454 GS" },
+        { "value": "454 GS 20" },
+        { "value": "454 GS FLX" },
+        { "value": "454 GS FLX Titanium" },
+        { "value": "454 GS FLX+" },
+        { "value": "454 GS Junior" }
       ],
       "networkList": true
     },
@@ -2523,15 +2394,9 @@
       "alias": "basisOfIdentification",
       "caseInsensitive": true,
       "fields": [
-        {
-          "value": "Genetics"
-        },
-        {
-          "value": "Morphology"
-        },
-        {
-          "value": "Other"
-        }
+        { "value": "Genetics" },
+        { "value": "Morphology" },
+        { "value": "Other" }
       ],
       "networkList": true
     },
@@ -2539,51 +2404,21 @@
       "alias": "container",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "0.65 eppendorf"
-        },
-        {
-          "value": "1.2 ul Cryovial"
-        },
-        {
-          "value": "1.4 ml TrackMate 2D barcoded storage tube"
-        },
-        {
-          "value": "1.5 Eppindorf Tube"
-        },
-        {
-          "value": "15 ml Falcon Tube"
-        },
-        {
-          "value": "2 ml 96 well assay block"
-        },
-        {
-          "value": "2.0 ml Cryovial"
-        },
-        {
-          "value": "2.0 ul Cryovial"
-        },
-        {
-          "value": "2.5 ml biopsy vial"
-        },
-        {
-          "value": "50 ml Falcon Tube"
-        },
-        {
-          "value": "FTA 96 well sheet"
-        },
-        {
-          "value": "Whirlpack"
-        },
-        {
-          "value": "bag in ziploc with silica gel"
-        },
-        {
-          "value": "glass vial"
-        },
-        {
-          "value": "microscope_slide"
-        }
+        { "value": "0.65 eppendorf" },
+        { "value": "1.2 ul Cryovial" },
+        { "value": "1.4 ml TrackMate 2D barcoded storage tube" },
+        { "value": "1.5 Eppindorf Tube" },
+        { "value": "15 ml Falcon Tube" },
+        { "value": "2 ml 96 well assay block" },
+        { "value": "2.0 ml Cryovial" },
+        { "value": "2.0 ul Cryovial" },
+        { "value": "2.5 ml biopsy vial" },
+        { "value": "50 ml Falcon Tube" },
+        { "value": "FTA 96 well sheet" },
+        { "value": "Whirlpack" },
+        { "value": "bag in ziploc with silica gel" },
+        { "value": "glass vial" },
+        { "value": "microscope_slide" }
       ],
       "networkList": true
     },
@@ -2591,33 +2426,15 @@
       "alias": "basisOfRecord",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "PreservedSpecimen"
-        },
-        {
-          "value": "FossilSpecimen"
-        },
-        {
-          "value": "LivingSpecimen"
-        },
-        {
-          "value": "MaterialSample"
-        },
-        {
-          "value": "Event"
-        },
-        {
-          "value": "HumanObservation"
-        },
-        {
-          "value": "MachineObservation"
-        },
-        {
-          "value": "Taxon"
-        },
-        {
-          "value": "Occurrence"
-        }
+        { "value": "PreservedSpecimen" },
+        { "value": "FossilSpecimen" },
+        { "value": "LivingSpecimen" },
+        { "value": "MaterialSample" },
+        { "value": "Event" },
+        { "value": "HumanObservation" },
+        { "value": "MachineObservation" },
+        { "value": "Taxon" },
+        { "value": "Occurrence" }
       ],
       "networkList": true
     },
@@ -2625,852 +2442,288 @@
       "alias": "country",
       "caseInsensitive": true,
       "fields": [
-        {
-          "value": "Afghanistan"
-        },
-        {
-          "value": "Albania"
-        },
-        {
-          "value": "Algeria"
-        },
-        {
-          "value": "American Samoa"
-        },
-        {
-          "value": "Andorra"
-        },
-        {
-          "value": "Angola"
-        },
-        {
-          "value": "Anguilla"
-        },
-        {
-          "value": "Antarctica"
-        },
-        {
-          "value": "Antigua and Barbuda"
-        },
-        {
-          "value": "Arctic Ocean"
-        },
-        {
-          "value": "Argentina"
-        },
-        {
-          "value": "Armenia"
-        },
-        {
-          "value": "Aruba"
-        },
-        {
-          "value": "Ashmore and Cartier Islands"
-        },
-        {
-          "value": "Atlantic Ocean"
-        },
-        {
-          "value": "Australia"
-        },
-        {
-          "value": "Austria"
-        },
-        {
-          "value": "Azerbaijan"
-        },
-        {
-          "value": "Bahamas"
-        },
-        {
-          "value": "Bahrain"
-        },
-        {
-          "value": "Baker Island"
-        },
-        {
-          "value": "Baltic Sea"
-        },
-        {
-          "value": "Bangladesh"
-        },
-        {
-          "value": "Barbados"
-        },
-        {
-          "value": "Bassas da India"
-        },
-        {
-          "value": "Belarus"
-        },
-        {
-          "value": "Belgium"
-        },
-        {
-          "value": "Belize"
-        },
-        {
-          "value": "Benin"
-        },
-        {
-          "value": "Bermuda"
-        },
-        {
-          "value": "Bhutan"
-        },
-        {
-          "value": "Bolivia"
-        },
-        {
-          "value": "Borneo"
-        },
-        {
-          "value": "Bosnia and Herzegovina"
-        },
-        {
-          "value": "Botswana"
-        },
-        {
-          "value": "Bouvet Island"
-        },
-        {
-          "value": "Brazil"
-        },
-        {
-          "value": "British Indian Ocean Territory"
-        },
-        {
-          "value": "British Virgin Islands"
-        },
-        {
-          "value": "Brunei"
-        },
-        {
-          "value": "Bulgaria"
-        },
-        {
-          "value": "Burkina Faso"
-        },
-        {
-          "value": "Burundi"
-        },
-        {
-          "value": "Cambodia"
-        },
-        {
-          "value": "Cameroon"
-        },
-        {
-          "value": "Canada"
-        },
-        {
-          "value": "Cape Verde"
-        },
-        {
-          "value": "Cayman Islands"
-        },
-        {
-          "value": "Central African Republic"
-        },
-        {
-          "value": "Chad"
-        },
-        {
-          "value": "Chile"
-        },
-        {
-          "value": "China"
-        },
-        {
-          "value": "Christmas Island"
-        },
-        {
-          "value": "Clipperton Island"
-        },
-        {
-          "value": "Cocos Islands"
-        },
-        {
-          "value": "Colombia"
-        },
-        {
-          "value": "Comoros"
-        },
-        {
-          "value": "Cook Islands"
-        },
-        {
-          "value": "Coral Sea Islands"
-        },
-        {
-          "value": "Costa Rica"
-        },
-        {
-          "value": "Cote d'Ivoire"
-        },
-        {
-          "value": "Croatia"
-        },
-        {
-          "value": "Cuba"
-        },
-        {
-          "value": "Curacao"
-        },
-        {
-          "value": "Cyprus"
-        },
-        {
-          "value": "Czech Republic"
-        },
-        {
-          "value": "Democratic Republic of the Congo"
-        },
-        {
-          "value": "Denmark"
-        },
-        {
-          "value": "Djibouti"
-        },
-        {
-          "value": "Dominica"
-        },
-        {
-          "value": "Dominican Republic"
-        },
-        {
-          "value": "East Timor"
-        },
-        {
-          "value": "Ecuador"
-        },
-        {
-          "value": "Egypt"
-        },
-        {
-          "value": "El Salvador"
-        },
-        {
-          "value": "Equatorial Guinea"
-        },
-        {
-          "value": "Eritrea"
-        },
-        {
-          "value": "Estonia"
-        },
-        {
-          "value": "Ethiopia"
-        },
-        {
-          "value": "Europa Island"
-        },
-        {
-          "value": "Falkland Islands (Islas Malvinas)"
-        },
-        {
-          "value": "Faroe Islands"
-        },
-        {
-          "value": "Fiji"
-        },
-        {
-          "value": "Finland"
-        },
-        {
-          "value": "France"
-        },
-        {
-          "value": "French Guiana"
-        },
-        {
-          "value": "French Polynesia"
-        },
-        {
-          "value": "French Southern and Antarctic Lands"
-        },
-        {
-          "value": "Gabon"
-        },
-        {
-          "value": "Gambia"
-        },
-        {
-          "value": "Gaza Strip"
-        },
-        {
-          "value": "Georgia"
-        },
-        {
-          "value": "Germany"
-        },
-        {
-          "value": "Ghana"
-        },
-        {
-          "value": "Gibraltar"
-        },
-        {
-          "value": "Glorioso Islands"
-        },
-        {
-          "value": "Greece"
-        },
-        {
-          "value": "Greenland"
-        },
-        {
-          "value": "Grenada"
-        },
-        {
-          "value": "Guadeloupe"
-        },
-        {
-          "value": "Guam"
-        },
-        {
-          "value": "Guatemala"
-        },
-        {
-          "value": "Guernsey"
-        },
-        {
-          "value": "Guinea"
-        },
-        {
-          "value": "Guinea-Bissau"
-        },
-        {
-          "value": "Guyana"
-        },
-        {
-          "value": "Haiti"
-        },
-        {
-          "value": "Heard Island and McDonald Islands"
-        },
-        {
-          "value": "Honduras"
-        },
-        {
-          "value": "Hong Kong"
-        },
-        {
-          "value": "Howland Island"
-        },
-        {
-          "value": "Hungary"
-        },
-        {
-          "value": "Iceland"
-        },
-        {
-          "value": "India"
-        },
-        {
-          "value": "Indian Ocean"
-        },
-        {
-          "value": "Indonesia"
-        },
-        {
-          "value": "Iran"
-        },
-        {
-          "value": "Iraq"
-        },
-        {
-          "value": "Ireland"
-        },
-        {
-          "value": "Isle of Man"
-        },
-        {
-          "value": "Israel"
-        },
-        {
-          "value": "Italy"
-        },
-        {
-          "value": "Jamaica"
-        },
-        {
-          "value": "Jan Mayen"
-        },
-        {
-          "value": "Japan"
-        },
-        {
-          "value": "Jarvis Island"
-        },
-        {
-          "value": "Jersey"
-        },
-        {
-          "value": "Johnston Atoll"
-        },
-        {
-          "value": "Jordan"
-        },
-        {
-          "value": "Juan de Nova Island"
-        },
-        {
-          "value": "Kazakhstan"
-        },
-        {
-          "value": "Kenya"
-        },
-        {
-          "value": "Kerguelen Archipelago"
-        },
-        {
-          "value": "Kingman Reef"
-        },
-        {
-          "value": "Kiribati"
-        },
-        {
-          "value": "Kosovo"
-        },
-        {
-          "value": "Kuwait"
-        },
-        {
-          "value": "Kyrgyzstan"
-        },
-        {
-          "value": "Laos"
-        },
-        {
-          "value": "Latvia"
-        },
-        {
-          "value": "Lebanon"
-        },
-        {
-          "value": "Lesotho"
-        },
-        {
-          "value": "Liberia"
-        },
-        {
-          "value": "Libya"
-        },
-        {
-          "value": "Liechtenstein"
-        },
-        {
-          "value": "Line Islands"
-        },
-        {
-          "value": "Lithuania"
-        },
-        {
-          "value": "Luxembourg"
-        },
-        {
-          "value": "Macau"
-        },
-        {
-          "value": "Macedonia"
-        },
-        {
-          "value": "Madagascar"
-        },
-        {
-          "value": "Malawi"
-        },
-        {
-          "value": "Malaysia"
-        },
-        {
-          "value": "Maldives"
-        },
-        {
-          "value": "Mali"
-        },
-        {
-          "value": "Malta"
-        },
-        {
-          "value": "Marshall Islands"
-        },
-        {
-          "value": "Martinique"
-        },
-        {
-          "value": "Mauritania"
-        },
-        {
-          "value": "Mauritius"
-        },
-        {
-          "value": "Mayotte"
-        },
-        {
-          "value": "Mediterranean Sea"
-        },
-        {
-          "value": "Mexico"
-        },
-        {
-          "value": "Micronesia"
-        },
-        {
-          "value": "Midway Islands"
-        },
-        {
-          "value": "Moldova"
-        },
-        {
-          "value": "Monaco"
-        },
-        {
-          "value": "Mongolia"
-        },
-        {
-          "value": "Montenegro"
-        },
-        {
-          "value": "Montserrat"
-        },
-        {
-          "value": "Morocco"
-        },
-        {
-          "value": "Mozambique"
-        },
-        {
-          "value": "Myanmar"
-        },
-        {
-          "value": "Namibia"
-        },
-        {
-          "value": "Nauru"
-        },
-        {
-          "value": "Navassa Island"
-        },
-        {
-          "value": "Nepal"
-        },
-        {
-          "value": "Netherlands"
-        },
-        {
-          "value": "New Caledonia"
-        },
-        {
-          "value": "New Zealand"
-        },
-        {
-          "value": "Nicaragua"
-        },
-        {
-          "value": "Niger"
-        },
-        {
-          "value": "Nigeria"
-        },
-        {
-          "value": "Niue"
-        },
-        {
-          "value": "Norfolk Island"
-        },
-        {
-          "value": "North Korea"
-        },
-        {
-          "value": "North Sea"
-        },
-        {
-          "value": "Northern Mariana Islands"
-        },
-        {
-          "value": "Norway"
-        },
-        {
-          "value": "Oman"
-        },
-        {
-          "value": "Pacific Ocean"
-        },
-        {
-          "value": "Pakistan"
-        },
-        {
-          "value": "Palau"
-        },
-        {
-          "value": "Palmyra Atoll"
-        },
-        {
-          "value": "Panama"
-        },
-        {
-          "value": "Papua New Guinea"
-        },
-        {
-          "value": "Paracel Islands"
-        },
-        {
-          "value": "Paraguay"
-        },
-        {
-          "value": "Peru"
-        },
-        {
-          "value": "Philippines"
-        },
-        {
-          "value": "Pitcairn Islands"
-        },
-        {
-          "value": "Poland"
-        },
-        {
-          "value": "Portugal"
-        },
-        {
-          "value": "Puerto Rico"
-        },
-        {
-          "value": "Qatar"
-        },
-        {
-          "value": "Republic of the Congo"
-        },
-        {
-          "value": "Reunion"
-        },
-        {
-          "value": "Romania"
-        },
-        {
-          "value": "Ross Sea"
-        },
-        {
-          "value": "Russia"
-        },
-        {
-          "value": "Rwanda"
-        },
-        {
-          "value": "Saint Helena"
-        },
-        {
-          "value": "Saint Kitts and Nevis"
-        },
-        {
-          "value": "Saint Lucia"
-        },
-        {
-          "value": "Saint Pierre and Miquelon"
-        },
-        {
-          "value": "Saint Vincent and the Grenadines"
-        },
-        {
-          "value": "Samoa"
-        },
-        {
-          "value": "San Marino"
-        },
-        {
-          "value": "Sao Tome and Principe"
-        },
-        {
-          "value": "Saudi Arabia"
-        },
-        {
-          "value": "Senegal"
-        },
-        {
-          "value": "Serbia"
-        },
-        {
-          "value": "Seychelles"
-        },
-        {
-          "value": "Sierra Leone"
-        },
-        {
-          "value": "Singapore"
-        },
-        {
-          "value": "Sint Maarten"
-        },
-        {
-          "value": "Slovakia"
-        },
-        {
-          "value": "Slovenia"
-        },
-        {
-          "value": "Solomon Islands"
-        },
-        {
-          "value": "Somalia"
-        },
-        {
-          "value": "South Africa"
-        },
-        {
-          "value": "South Georgia and the South Sandwich Islands"
-        },
-        {
-          "value": "South Korea"
-        },
-        {
-          "value": "South Sudan"
-        },
-        {
-          "value": "Southern Ocean"
-        },
-        {
-          "value": "Spain"
-        },
-        {
-          "value": "Spratly Islands"
-        },
-        {
-          "value": "Sri Lanka"
-        },
-        {
-          "value": "State of Palestine"
-        },
-        {
-          "value": "Sudan"
-        },
-        {
-          "value": "Suriname"
-        },
-        {
-          "value": "Svalbard"
-        },
-        {
-          "value": "Swaziland"
-        },
-        {
-          "value": "Sweden"
-        },
-        {
-          "value": "Switzerland"
-        },
-        {
-          "value": "Syria"
-        },
-        {
-          "value": "Taiwan"
-        },
-        {
-          "value": "Tajikistan"
-        },
-        {
-          "value": "Tanzania"
-        },
-        {
-          "value": "Tasman Sea"
-        },
-        {
-          "value": "Thailand"
-        },
-        {
-          "value": "To Be Determined"
-        },
-        {
-          "value": "TBD"
-        },
-        {
-          "value": "Togo"
-        },
-        {
-          "value": "Tokelau"
-        },
-        {
-          "value": "Tonga"
-        },
-        {
-          "value": "Trinidad and Tobago"
-        },
-        {
-          "value": "Tromelin Island"
-        },
-        {
-          "value": "Tunisia"
-        },
-        {
-          "value": "Turkey"
-        },
-        {
-          "value": "Turkmenistan"
-        },
-        {
-          "value": "Turks and Caicos Islands"
-        },
-        {
-          "value": "Tuvalu"
-        },
-        {
-          "value": "USA"
-        },
-        {
-          "value": "Uganda"
-        },
-        {
-          "value": "Ukraine"
-        },
-        {
-          "value": "Unknown"
-        },
-        {
-          "value": "United Arab Emirates"
-        },
-        {
-          "value": "United Kingdom"
-        },
-        {
-          "value": "Uruguay"
-        },
-        {
-          "value": "Uzbekistan"
-        },
-        {
-          "value": "Vanuatu"
-        },
-        {
-          "value": "Venezuela"
-        },
-        {
-          "value": "Vietnam"
-        },
-        {
-          "value": "Virgin Islands"
-        },
-        {
-          "value": "Wake Island"
-        },
-        {
-          "value": "Wallis and Futuna"
-        },
-        {
-          "value": "West Bank"
-        },
-        {
-          "value": "Western Sahara"
-        },
-        {
-          "value": "Yemen"
-        },
-        {
-          "value": "Zambia"
-        },
-        {
-          "value": "Zimbabwe"
-        }
+        { "value": "Afghanistan" },
+        { "value": "Albania" },
+        { "value": "Algeria" },
+        { "value": "American Samoa" },
+        { "value": "Andorra" },
+        { "value": "Angola" },
+        { "value": "Anguilla" },
+        { "value": "Antarctica" },
+        { "value": "Antigua and Barbuda" },
+        { "value": "Arctic Ocean" },
+        { "value": "Argentina" },
+        { "value": "Armenia" },
+        { "value": "Aruba" },
+        { "value": "Ashmore and Cartier Islands" },
+        { "value": "Atlantic Ocean" },
+        { "value": "Australia" },
+        { "value": "Austria" },
+        { "value": "Azerbaijan" },
+        { "value": "Bahamas" },
+        { "value": "Bahrain" },
+        { "value": "Baker Island" },
+        { "value": "Baltic Sea" },
+        { "value": "Bangladesh" },
+        { "value": "Barbados" },
+        { "value": "Bassas da India" },
+        { "value": "Belarus" },
+        { "value": "Belgium" },
+        { "value": "Belize" },
+        { "value": "Benin" },
+        { "value": "Bermuda" },
+        { "value": "Bhutan" },
+        { "value": "Bolivia" },
+        { "value": "Borneo" },
+        { "value": "Bosnia and Herzegovina" },
+        { "value": "Botswana" },
+        { "value": "Bouvet Island" },
+        { "value": "Brazil" },
+        { "value": "British Indian Ocean Territory" },
+        { "value": "British Virgin Islands" },
+        { "value": "Brunei" },
+        { "value": "Bulgaria" },
+        { "value": "Burkina Faso" },
+        { "value": "Burundi" },
+        { "value": "Cambodia" },
+        { "value": "Cameroon" },
+        { "value": "Canada" },
+        { "value": "Cape Verde" },
+        { "value": "Cayman Islands" },
+        { "value": "Central African Republic" },
+        { "value": "Chad" },
+        { "value": "Chile" },
+        { "value": "China" },
+        { "value": "Christmas Island" },
+        { "value": "Clipperton Island" },
+        { "value": "Cocos Islands" },
+        { "value": "Colombia" },
+        { "value": "Comoros" },
+        { "value": "Cook Islands" },
+        { "value": "Coral Sea Islands" },
+        { "value": "Costa Rica" },
+        { "value": "Cote d'Ivoire" },
+        { "value": "Croatia" },
+        { "value": "Cuba" },
+        { "value": "Curacao" },
+        { "value": "Cyprus" },
+        { "value": "Czech Republic" },
+        { "value": "Democratic Republic of the Congo" },
+        { "value": "Denmark" },
+        { "value": "Djibouti" },
+        { "value": "Dominica" },
+        { "value": "Dominican Republic" },
+        { "value": "East Timor" },
+        { "value": "Ecuador" },
+        { "value": "Egypt" },
+        { "value": "El Salvador" },
+        { "value": "Equatorial Guinea" },
+        { "value": "Eritrea" },
+        { "value": "Estonia" },
+        { "value": "Ethiopia" },
+        { "value": "Europa Island" },
+        { "value": "Falkland Islands (Islas Malvinas)" },
+        { "value": "Faroe Islands" },
+        { "value": "Fiji" },
+        { "value": "Finland" },
+        { "value": "France" },
+        { "value": "French Guiana" },
+        { "value": "French Polynesia" },
+        { "value": "French Southern and Antarctic Lands" },
+        { "value": "Gabon" },
+        { "value": "Gambia" },
+        { "value": "Gaza Strip" },
+        { "value": "Georgia" },
+        { "value": "Germany" },
+        { "value": "Ghana" },
+        { "value": "Gibraltar" },
+        { "value": "Glorioso Islands" },
+        { "value": "Greece" },
+        { "value": "Greenland" },
+        { "value": "Grenada" },
+        { "value": "Guadeloupe" },
+        { "value": "Guam" },
+        { "value": "Guatemala" },
+        { "value": "Guernsey" },
+        { "value": "Guinea" },
+        { "value": "Guinea-Bissau" },
+        { "value": "Guyana" },
+        { "value": "Haiti" },
+        { "value": "Heard Island and McDonald Islands" },
+        { "value": "Honduras" },
+        { "value": "Hong Kong" },
+        { "value": "Howland Island" },
+        { "value": "Hungary" },
+        { "value": "Iceland" },
+        { "value": "India" },
+        { "value": "Indian Ocean" },
+        { "value": "Indonesia" },
+        { "value": "Iran" },
+        { "value": "Iraq" },
+        { "value": "Ireland" },
+        { "value": "Isle of Man" },
+        { "value": "Israel" },
+        { "value": "Italy" },
+        { "value": "Jamaica" },
+        { "value": "Jan Mayen" },
+        { "value": "Japan" },
+        { "value": "Jarvis Island" },
+        { "value": "Jersey" },
+        { "value": "Johnston Atoll" },
+        { "value": "Jordan" },
+        { "value": "Juan de Nova Island" },
+        { "value": "Kazakhstan" },
+        { "value": "Kenya" },
+        { "value": "Kerguelen Archipelago" },
+        { "value": "Kingman Reef" },
+        { "value": "Kiribati" },
+        { "value": "Kosovo" },
+        { "value": "Kuwait" },
+        { "value": "Kyrgyzstan" },
+        { "value": "Laos" },
+        { "value": "Latvia" },
+        { "value": "Lebanon" },
+        { "value": "Lesotho" },
+        { "value": "Liberia" },
+        { "value": "Libya" },
+        { "value": "Liechtenstein" },
+        { "value": "Line Islands" },
+        { "value": "Lithuania" },
+        { "value": "Luxembourg" },
+        { "value": "Macau" },
+        { "value": "Macedonia" },
+        { "value": "Madagascar" },
+        { "value": "Malawi" },
+        { "value": "Malaysia" },
+        { "value": "Maldives" },
+        { "value": "Mali" },
+        { "value": "Malta" },
+        { "value": "Marshall Islands" },
+        { "value": "Martinique" },
+        { "value": "Mauritania" },
+        { "value": "Mauritius" },
+        { "value": "Mayotte" },
+        { "value": "Mediterranean Sea" },
+        { "value": "Mexico" },
+        { "value": "Micronesia" },
+        { "value": "Midway Islands" },
+        { "value": "Moldova" },
+        { "value": "Monaco" },
+        { "value": "Mongolia" },
+        { "value": "Montenegro" },
+        { "value": "Montserrat" },
+        { "value": "Morocco" },
+        { "value": "Mozambique" },
+        { "value": "Myanmar" },
+        { "value": "Namibia" },
+        { "value": "Nauru" },
+        { "value": "Navassa Island" },
+        { "value": "Nepal" },
+        { "value": "Netherlands" },
+        { "value": "New Caledonia" },
+        { "value": "New Zealand" },
+        { "value": "Nicaragua" },
+        { "value": "Niger" },
+        { "value": "Nigeria" },
+        { "value": "Niue" },
+        { "value": "Norfolk Island" },
+        { "value": "North Korea" },
+        { "value": "North Sea" },
+        { "value": "Northern Mariana Islands" },
+        { "value": "Norway" },
+        { "value": "Oman" },
+        { "value": "Pacific Ocean" },
+        { "value": "Pakistan" },
+        { "value": "Palau" },
+        { "value": "Palmyra Atoll" },
+        { "value": "Panama" },
+        { "value": "Papua New Guinea" },
+        { "value": "Paracel Islands" },
+        { "value": "Paraguay" },
+        { "value": "Peru" },
+        { "value": "Philippines" },
+        { "value": "Pitcairn Islands" },
+        { "value": "Poland" },
+        { "value": "Portugal" },
+        { "value": "Puerto Rico" },
+        { "value": "Qatar" },
+        { "value": "Republic of the Congo" },
+        { "value": "Reunion" },
+        { "value": "Romania" },
+        { "value": "Ross Sea" },
+        { "value": "Russia" },
+        { "value": "Rwanda" },
+        { "value": "Saint Helena" },
+        { "value": "Saint Kitts and Nevis" },
+        { "value": "Saint Lucia" },
+        { "value": "Saint Pierre and Miquelon" },
+        { "value": "Saint Vincent and the Grenadines" },
+        { "value": "Samoa" },
+        { "value": "San Marino" },
+        { "value": "Sao Tome and Principe" },
+        { "value": "Saudi Arabia" },
+        { "value": "Senegal" },
+        { "value": "Serbia" },
+        { "value": "Seychelles" },
+        { "value": "Sierra Leone" },
+        { "value": "Singapore" },
+        { "value": "Sint Maarten" },
+        { "value": "Slovakia" },
+        { "value": "Slovenia" },
+        { "value": "Solomon Islands" },
+        { "value": "Somalia" },
+        { "value": "South Africa" },
+        { "value": "South Georgia and the South Sandwich Islands" },
+        { "value": "South Korea" },
+        { "value": "South Sudan" },
+        { "value": "Southern Ocean" },
+        { "value": "Spain" },
+        { "value": "Spratly Islands" },
+        { "value": "Sri Lanka" },
+        { "value": "State of Palestine" },
+        { "value": "Sudan" },
+        { "value": "Suriname" },
+        { "value": "Svalbard" },
+        { "value": "Swaziland" },
+        { "value": "Sweden" },
+        { "value": "Switzerland" },
+        { "value": "Syria" },
+        { "value": "Taiwan" },
+        { "value": "Tajikistan" },
+        { "value": "Tanzania" },
+        { "value": "Tasman Sea" },
+        { "value": "Thailand" },
+        { "value": "To Be Determined" },
+        { "value": "TBD" },
+        { "value": "Togo" },
+        { "value": "Tokelau" },
+        { "value": "Tonga" },
+        { "value": "Trinidad and Tobago" },
+        { "value": "Tromelin Island" },
+        { "value": "Tunisia" },
+        { "value": "Turkey" },
+        { "value": "Turkmenistan" },
+        { "value": "Turks and Caicos Islands" },
+        { "value": "Tuvalu" },
+        { "value": "USA" },
+        { "value": "Uganda" },
+        { "value": "Ukraine" },
+        { "value": "Unknown" },
+        { "value": "United Arab Emirates" },
+        { "value": "United Kingdom" },
+        { "value": "Uruguay" },
+        { "value": "Uzbekistan" },
+        { "value": "Vanuatu" },
+        { "value": "Venezuela" },
+        { "value": "Vietnam" },
+        { "value": "Virgin Islands" },
+        { "value": "Wake Island" },
+        { "value": "Wallis and Futuna" },
+        { "value": "West Bank" },
+        { "value": "Western Sahara" },
+        { "value": "Yemen" },
+        { "value": "Zambia" },
+        { "value": "Zimbabwe" }
       ],
       "networkList": true
     },
@@ -3478,21 +2731,11 @@
       "alias": "establishmentMeans",
       "caseInsensitive": true,
       "fields": [
-        {
-          "value": "introduced"
-        },
-        {
-          "value": "invasive"
-        },
-        {
-          "value": "managed"
-        },
-        {
-          "value": "native"
-        },
-        {
-          "value": "naturalized"
-        }
+        { "value": "introduced" },
+        { "value": "invasive" },
+        { "value": "managed" },
+        { "value": "native" },
+        { "value": "naturalized" }
       ],
       "networkList": true
     },
@@ -3975,59 +3218,31 @@
       "alias": "horizontalDatum",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "NAD1927"
-        },
-        {
-          "value": "NAD1983"
-        },
-        {
-          "value": "WGS1984"
-        },
-        {
-          "value": "unknown"
-        }
+        { "value": "NAD1927" },
+        { "value": "NAD1983" },
+        { "value": "WGS1984" },
+        { "value": "unknown" }
       ],
       "networkList": true
     },
     {
       "alias": "lengthUnits",
       "caseInsensitive": false,
-      "fields": [
-        {
-          "value": "meters"
-        },
-        {
-          "value": "millimeters"
-        }
-      ],
+      "fields": [{ "value": "meters" }, { "value": "millimeters" }],
       "networkList": true
     },
     {
       "alias": "libraryLayout",
       "caseInsensitive": false,
-      "fields": [
-        {
-          "value": "paired"
-        },
-        {
-          "value": "single"
-        }
-      ],
+      "fields": [{ "value": "paired" }, { "value": "single" }],
       "networkList": true
     },
     {
       "alias": "librarySelection",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "CAGE",
-          "definition": "Cap-analysis gene expression"
-        },
-        {
-          "value": "ChIP",
-          "definition": "Chromatin immunoprecipitation"
-        },
+        { "value": "CAGE", "definition": "Cap-analysis gene expression" },
+        { "value": "ChIP", "definition": "Chromatin immunoprecipitation" },
         {
           "value": "Padlock probes capture method",
           "definition": "Circularized oligonucleotide probes"
@@ -4068,10 +3283,7 @@
           "value": "unspecified",
           "definition": "Library enrichment, screening, or selection is not specified (please include additional info in the “design description”)"
         },
-        {
-          "value": "MF",
-          "definition": "Methyl Filtrated"
-        },
+        { "value": "MF", "definition": "Methyl Filtrated" },
         {
           "value": "MSLL",
           "definition": "Methylation Spanning Linking Library"
@@ -4080,10 +3292,7 @@
           "value": "MNase",
           "definition": "Micrococcal Nuclease (MNase) digestion"
         },
-        {
-          "value": "MDA",
-          "definition": "Multiple displacement amplification"
-        },
+        { "value": "MDA", "definition": "Multiple displacement amplification" },
         {
           "value": "other",
           "definition": "Other library enrichment, screening, or selection process (please include additional info in the “design description”)"
@@ -4096,10 +3305,7 @@
           "value": "RANDOM",
           "definition": "Random selection by shearing or other method"
         },
-        {
-          "value": "RACE",
-          "definition": "Rapid Amplification of cDNA Ends"
-        },
+        { "value": "RACE", "definition": "Rapid Amplification of cDNA Ends" },
         {
           "value": "Reduced Representation",
           "definition": "Reproducible genomic subsets, often generated by restriction fragment size selection, containing a manageable number of loci to facilitate re-sampling"
@@ -4124,10 +3330,7 @@
           "value": "RT-PCR",
           "definition": "Source material was selected by reverse transcription PCR"
         },
-        {
-          "value": "cDNA",
-          "definition": "complementary DNA"
-        }
+        { "value": "cDNA", "definition": "complementary DNA" }
       ],
       "networkList": true
     },
@@ -4147,10 +3350,7 @@
           "value": "OTHER",
           "definition": "Other, unspecified, or unknown library source material (please include additional info in the “design description”)"
         },
-        {
-          "value": "SYNTHETIC",
-          "definition": "Synthetic DNA"
-        },
+        { "value": "SYNTHETIC", "definition": "Synthetic DNA" },
         {
           "value": "METATRANSCRIPTOMIC",
           "definition": "Transcription products from community targets"
@@ -4159,10 +3359,7 @@
           "value": "TRANSCRIPTOMIC",
           "definition": "Transcription products or non genomic DNA (EST, cDNA, RT-PCR, screened libraries)"
         },
-        {
-          "value": "VIRAL RNA",
-          "definition": "Viral RNA"
-        }
+        { "value": "VIRAL RNA", "definition": "Viral RNA" }
       ],
       "networkList": true
     },
@@ -4174,10 +3371,7 @@
           "value": "CLONEEND",
           "definition": "Clone end (5', 3', or both) sequencing"
         },
-        {
-          "value": "CTS",
-          "definition": "Concatenated Tag Sequencing"
-        },
+        { "value": "CTS", "definition": "Concatenated Tag Sequencing" },
         {
           "value": "MNase-Seq",
           "definition": "Direct sequencing following MNase digestion"
@@ -4262,9 +3456,7 @@
           "value": "EST",
           "definition": "Single pass sequencing of cDNA templates"
         },
-        {
-          "value": "Synthetic-Long-Read"
-        }
+        { "value": "Synthetic-Long-Read" }
       ],
       "networkList": true
     },
@@ -4272,48 +3464,20 @@
       "alias": "lifeStage",
       "caseInsensitive": true,
       "fields": [
-        {
-          "value": "Not Applicable"
-        },
-        {
-          "value": "Not Collected"
-        },
-        {
-          "value": "adult"
-        },
-        {
-          "value": "egg"
-        },
-        {
-          "value": "gametophyte"
-        },
-        {
-          "value": "immature"
-        },
-        {
-          "value": "juvenile"
-        },
-        {
-          "value": "larva"
-        },
-        {
-          "value": "larva"
-        },
-        {
-          "value": "naiad"
-        },
-        {
-          "value": "nymph"
-        },
-        {
-          "value": "penultimate"
-        },
-        {
-          "value": "sporophyte"
-        },
-        {
-          "value": "subadult"
-        }
+        { "value": "Not Applicable" },
+        { "value": "Not Collected" },
+        { "value": "adult" },
+        { "value": "egg" },
+        { "value": "gametophyte" },
+        { "value": "immature" },
+        { "value": "juvenile" },
+        { "value": "larva" },
+        { "value": "larva" },
+        { "value": "naiad" },
+        { "value": "nymph" },
+        { "value": "penultimate" },
+        { "value": "sporophyte" },
+        { "value": "subadult" }
       ],
       "networkList": true
     },
@@ -4321,38 +3485,17 @@
       "alias": "markers",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "18S",
-          "definition": "18S ribosomal RNA"
-        },
-        {
-          "value": "S7",
-          "definition": "S7 ribosomal protein gene"
-        },
-        {
-          "value": "TMO",
-          "definition": "TMO 4C4 gene"
-        },
+        { "value": "18S", "definition": "18S ribosomal RNA" },
+        { "value": "S7", "definition": "S7 ribosomal protein gene" },
+        { "value": "TMO", "definition": "TMO 4C4 gene" },
         {
           "value": "GnRH",
           "definition": "gonadotropin-releasing hormone gene"
         },
-        {
-          "value": "NEW_MARKER",
-          "definition": "marker not listed"
-        },
-        {
-          "value": "ND2",
-          "definition": "mitochondiral ND2 protein"
-        },
-        {
-          "value": "16S",
-          "definition": "mitochondrial 16S ribosomal RNA"
-        },
-        {
-          "value": "CR",
-          "definition": "mitochondrial control region"
-        },
+        { "value": "NEW_MARKER", "definition": "marker not listed" },
+        { "value": "ND2", "definition": "mitochondiral ND2 protein" },
+        { "value": "16S", "definition": "mitochondrial 16S ribosomal RNA" },
+        { "value": "CR", "definition": "mitochondrial control region" },
         {
           "value": "CO1",
           "definition": "mitochondrial cytochrome c oxidase subunit 1"
@@ -4361,17 +3504,9 @@
           "value": "CO2",
           "definition": "mitochondrial cytochrome c oxidase subunit 2"
         },
-        {
-          "value": "CYB",
-          "definition": "mitochondrial cytocrhome B"
-        },
-        {
-          "value": "RAG",
-          "definition": "recombination-activating gene"
-        },
-        {
-          "value": "A68"
-        }
+        { "value": "CYB", "definition": "mitochondrial cytocrhome B" },
+        { "value": "RAG", "definition": "recombination-activating gene" },
+        { "value": "A68" }
       ],
       "networkList": true
     },
@@ -4379,318 +3514,110 @@
       "alias": "phylum",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "Acanthocephala"
-        },
-        {
-          "value": "Acavomonidia"
-        },
-        {
-          "value": "Acidobacteria"
-        },
-        {
-          "value": "Actinobacteria"
-        },
-        {
-          "value": "Amoebozoa"
-        },
-        {
-          "value": "Annelida"
-        },
-        {
-          "value": "Anthocerotophyta"
-        },
-        {
-          "value": "Aquificae"
-        },
-        {
-          "value": "Armatimonadetes"
-        },
-        {
-          "value": "Arthropoda"
-        },
-        {
-          "value": "Ascomycota"
-        },
-        {
-          "value": "Bacteroidetes"
-        },
-        {
-          "value": "Basidiomycota"
-        },
-        {
-          "value": "Bigyra"
-        },
-        {
-          "value": "Brachiopoda"
-        },
-        {
-          "value": "Bryophyta"
-        },
-        {
-          "value": "Bryozoa"
-        },
-        {
-          "value": "Calcitarcha"
-        },
-        {
-          "value": "Caldiserica"
-        },
-        {
-          "value": "Cephalorhyncha"
-        },
-        {
-          "value": "Cercozoa"
-        },
-        {
-          "value": "Chaetognatha"
-        },
-        {
-          "value": "Charophyta"
-        },
-        {
-          "value": "Chlamydiae"
-        },
-        {
-          "value": "Chlorobi"
-        },
-        {
-          "value": "Chloroflexi"
-        },
-        {
-          "value": "Chlorophyta"
-        },
-        {
-          "value": "Choanozoa"
-        },
-        {
-          "value": "Chordata"
-        },
-        {
-          "value": "Chrysiogenetes"
-        },
-        {
-          "value": "Chytridiomycota"
-        },
-        {
-          "value": "Ciliophora"
-        },
-        {
-          "value": "Cnidaria"
-        },
-        {
-          "value": "Crenarchaeota"
-        },
-        {
-          "value": "Cryptista"
-        },
-        {
-          "value": "Ctenophora"
-        },
-        {
-          "value": "Cyanobacteria"
-        },
-        {
-          "value": "Cycliophora"
-        },
-        {
-          "value": "Deferribacteres"
-        },
-        {
-          "value": "Deinococcus-thermus"
-        },
-        {
-          "value": "Dictyoglomi"
-        },
-        {
-          "value": "Dicyemida"
-        },
-        {
-          "value": "Dikaryomycota"
-        },
-        {
-          "value": "Echinodermata"
-        },
-        {
-          "value": "Elusimicrobia"
-        },
-        {
-          "value": "Entoprocta"
-        },
-        {
-          "value": "Euglenozoa"
-        },
-        {
-          "value": "Euryarchaeota"
-        },
-        {
-          "value": "Fibrobacteres"
-        },
-        {
-          "value": "Firmicutes"
-        },
-        {
-          "value": "Foraminifera"
-        },
-        {
-          "value": "Fusobacteria"
-        },
-        {
-          "value": "Gastrotricha"
-        },
-        {
-          "value": "Gemmatimonadetes"
-        },
-        {
-          "value": "Glaucophyta"
-        },
-        {
-          "value": "Glomeromycota"
-        },
-        {
-          "value": "Gnathostomulida"
-        },
-        {
-          "value": "Haptophyta"
-        },
-        {
-          "value": "Heliozoa"
-        },
-        {
-          "value": "Hemichordata"
-        },
-        {
-          "value": "Lentisphaerae"
-        },
-        {
-          "value": "Loukozoa"
-        },
-        {
-          "value": "Marchantiophyta"
-        },
-        {
-          "value": "Metamonada"
-        },
-        {
-          "value": "Metazoa"
-        },
-        {
-          "value": "Micrognathozoa"
-        },
-        {
-          "value": "Microsporidia"
-        },
-        {
-          "value": "Miozoa"
-        },
-        {
-          "value": "Mollusca"
-        },
-        {
-          "value": "Mycetozoa"
-        },
-        {
-          "value": "Myxozoa"
-        },
-        {
-          "value": "Nematoda"
-        },
-        {
-          "value": "Nematomorpha"
-        },
-        {
-          "value": "Nemertea"
-        },
-        {
-          "value": "Nitrospira"
-        },
-        {
-          "value": "Ochrophyta"
-        },
-        {
-          "value": "Onychophora"
-        },
-        {
-          "value": "Oomycota"
-        },
-        {
-          "value": "Orthonectida"
-        },
-        {
-          "value": "Percolozoa"
-        },
-        {
-          "value": "Phoronida"
-        },
-        {
-          "value": "Picozoa"
-        },
-        {
-          "value": "Placozoa"
-        },
-        {
-          "value": "Planctomycetes"
-        },
-        {
-          "value": "Platyhelminthes"
-        },
-        {
-          "value": "Porifera"
-        },
-        {
-          "value": "Proteobacteria"
-        },
-        {
-          "value": "Radiozoa"
-        },
-        {
-          "value": "Rhodophyta"
-        },
-        {
-          "value": "Rotifera"
-        },
-        {
-          "value": "Sarcomastigophora"
-        },
-        {
-          "value": "Sipuncula"
-        },
-        {
-          "value": "Spirochaetae"
-        },
-        {
-          "value": "Sulcozoa"
-        },
-        {
-          "value": "Synergistetes"
-        },
-        {
-          "value": "Tardigrada"
-        },
-        {
-          "value": "Tenericutes"
-        },
-        {
-          "value": "Thermodesulfobacteria"
-        },
-        {
-          "value": "Thermotogae"
-        },
-        {
-          "value": "Tracheophyta"
-        },
-        {
-          "value": "Unknown"
-        },
-        {
-          "value": "Verrucomicrobia"
-        },
-        {
-          "value": "Xenacoelomorpha"
-        },
-        {
-          "value": "Zygomycota"
-        }
+        { "value": "Acanthocephala" },
+        { "value": "Acavomonidia" },
+        { "value": "Acidobacteria" },
+        { "value": "Actinobacteria" },
+        { "value": "Amoebozoa" },
+        { "value": "Annelida" },
+        { "value": "Anthocerotophyta" },
+        { "value": "Aquificae" },
+        { "value": "Armatimonadetes" },
+        { "value": "Arthropoda" },
+        { "value": "Ascomycota" },
+        { "value": "Bacteroidetes" },
+        { "value": "Basidiomycota" },
+        { "value": "Bigyra" },
+        { "value": "Brachiopoda" },
+        { "value": "Bryophyta" },
+        { "value": "Bryozoa" },
+        { "value": "Calcitarcha" },
+        { "value": "Caldiserica" },
+        { "value": "Cephalorhyncha" },
+        { "value": "Cercozoa" },
+        { "value": "Chaetognatha" },
+        { "value": "Charophyta" },
+        { "value": "Chlamydiae" },
+        { "value": "Chlorobi" },
+        { "value": "Chloroflexi" },
+        { "value": "Chlorophyta" },
+        { "value": "Choanozoa" },
+        { "value": "Chordata" },
+        { "value": "Chrysiogenetes" },
+        { "value": "Chytridiomycota" },
+        { "value": "Ciliophora" },
+        { "value": "Cnidaria" },
+        { "value": "Crenarchaeota" },
+        { "value": "Cryptista" },
+        { "value": "Ctenophora" },
+        { "value": "Cyanobacteria" },
+        { "value": "Cycliophora" },
+        { "value": "Deferribacteres" },
+        { "value": "Deinococcus-thermus" },
+        { "value": "Dictyoglomi" },
+        { "value": "Dicyemida" },
+        { "value": "Dikaryomycota" },
+        { "value": "Echinodermata" },
+        { "value": "Elusimicrobia" },
+        { "value": "Entoprocta" },
+        { "value": "Euglenozoa" },
+        { "value": "Euryarchaeota" },
+        { "value": "Fibrobacteres" },
+        { "value": "Firmicutes" },
+        { "value": "Foraminifera" },
+        { "value": "Fusobacteria" },
+        { "value": "Gastrotricha" },
+        { "value": "Gemmatimonadetes" },
+        { "value": "Glaucophyta" },
+        { "value": "Glomeromycota" },
+        { "value": "Gnathostomulida" },
+        { "value": "Haptophyta" },
+        { "value": "Heliozoa" },
+        { "value": "Hemichordata" },
+        { "value": "Lentisphaerae" },
+        { "value": "Loukozoa" },
+        { "value": "Marchantiophyta" },
+        { "value": "Metamonada" },
+        { "value": "Metazoa" },
+        { "value": "Micrognathozoa" },
+        { "value": "Microsporidia" },
+        { "value": "Miozoa" },
+        { "value": "Mollusca" },
+        { "value": "Mycetozoa" },
+        { "value": "Myxozoa" },
+        { "value": "Nematoda" },
+        { "value": "Nematomorpha" },
+        { "value": "Nemertea" },
+        { "value": "Nitrospira" },
+        { "value": "Ochrophyta" },
+        { "value": "Onychophora" },
+        { "value": "Oomycota" },
+        { "value": "Orthonectida" },
+        { "value": "Percolozoa" },
+        { "value": "Phoronida" },
+        { "value": "Picozoa" },
+        { "value": "Placozoa" },
+        { "value": "Planctomycetes" },
+        { "value": "Platyhelminthes" },
+        { "value": "Porifera" },
+        { "value": "Proteobacteria" },
+        { "value": "Radiozoa" },
+        { "value": "Rhodophyta" },
+        { "value": "Rotifera" },
+        { "value": "Sarcomastigophora" },
+        { "value": "Sipuncula" },
+        { "value": "Spirochaetae" },
+        { "value": "Sulcozoa" },
+        { "value": "Synergistetes" },
+        { "value": "Tardigrada" },
+        { "value": "Tenericutes" },
+        { "value": "Thermodesulfobacteria" },
+        { "value": "Thermotogae" },
+        { "value": "Tracheophyta" },
+        { "value": "Unknown" },
+        { "value": "Verrucomicrobia" },
+        { "value": "Xenacoelomorpha" },
+        { "value": "Zygomycota" }
       ],
       "networkList": true
     },
@@ -4698,33 +3625,15 @@
       "alias": "platform",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "ABI_SOLID"
-        },
-        {
-          "value": "CAPILLARY"
-        },
-        {
-          "value": "COMPLETE_GENOMICS"
-        },
-        {
-          "value": "HELICOS"
-        },
-        {
-          "value": "ILLUMINA"
-        },
-        {
-          "value": "ION_TORRENT"
-        },
-        {
-          "value": "OXFORD_NANOPORE"
-        },
-        {
-          "value": "PACBIO_SMRT"
-        },
-        {
-          "value": "_LS454"
-        }
+        { "value": "ABI_SOLID" },
+        { "value": "CAPILLARY" },
+        { "value": "COMPLETE_GENOMICS" },
+        { "value": "HELICOS" },
+        { "value": "ILLUMINA" },
+        { "value": "ION_TORRENT" },
+        { "value": "OXFORD_NANOPORE" },
+        { "value": "PACBIO_SMRT" },
+        { "value": "_LS454" }
       ],
       "networkList": true
     },
@@ -4732,33 +3641,15 @@
       "alias": "preparationType",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "card_mount"
-        },
-        {
-          "value": "envelope"
-        },
-        {
-          "value": "fluid"
-        },
-        {
-          "value": "other"
-        },
-        {
-          "value": "pin"
-        },
-        {
-          "value": "pin_genitalia_vial"
-        },
-        {
-          "value": "resin_mount"
-        },
-        {
-          "value": "riker_mount"
-        },
-        {
-          "value": "slide"
-        }
+        { "value": "card_mount" },
+        { "value": "envelope" },
+        { "value": "fluid" },
+        { "value": "other" },
+        { "value": "pin" },
+        { "value": "pin_genitalia_vial" },
+        { "value": "resin_mount" },
+        { "value": "riker_mount" },
+        { "value": "slide" }
       ],
       "networkList": true
     },
@@ -4766,93 +3657,35 @@
       "alias": "preservative",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "10% formalin"
-        },
-        {
-          "value": "10% formalin and 75% ethanol"
-        },
-        {
-          "value": "100% ethanol"
-        },
-        {
-          "value": "75% ethanol"
-        },
-        {
-          "value": "80% ethanol"
-        },
-        {
-          "value": "80% isopropanol"
-        },
-        {
-          "value": "90% ethanol"
-        },
-        {
-          "value": "95% ethanol"
-        },
-        {
-          "value": "96% ethanol"
-        },
-        {
-          "value": "Bouin's fixative"
-        },
-        {
-          "value": "DMSO"
-        },
-        {
-          "value": "FTA paper"
-        },
-        {
-          "value": "Longmire's solution"
-        },
-        {
-          "value": "M2 buffer"
-        },
-        {
-          "value": "RNAlater"
-        },
-        {
-          "value": "block"
-        },
-        {
-          "value": "dry"
-        },
-        {
-          "value": "ethanol"
-        },
-        {
-          "value": "formalin"
-        },
-        {
-          "value": "formalin and 75% ethanol"
-        },
-        {
-          "value": "formalin and 95% ethanol"
-        },
-        {
-          "value": "frozen formalin"
-        },
-        {
-          "value": "glutaraldehyde"
-        },
-        {
-          "value": "leash"
-        },
-        {
-          "value": "liquid nitrogen"
-        },
-        {
-          "value": "none (for -20)"
-        },
-        {
-          "value": "none (for -80)"
-        },
-        {
-          "value": "osmium tetroxide"
-        },
-        {
-          "value": "silica gel"
-        }
+        { "value": "10% formalin" },
+        { "value": "10% formalin and 75% ethanol" },
+        { "value": "100% ethanol" },
+        { "value": "75% ethanol" },
+        { "value": "80% ethanol" },
+        { "value": "80% isopropanol" },
+        { "value": "90% ethanol" },
+        { "value": "95% ethanol" },
+        { "value": "96% ethanol" },
+        { "value": "Bouin's fixative" },
+        { "value": "DMSO" },
+        { "value": "FTA paper" },
+        { "value": "Longmire's solution" },
+        { "value": "M2 buffer" },
+        { "value": "RNAlater" },
+        { "value": "block" },
+        { "value": "dry" },
+        { "value": "ethanol" },
+        { "value": "formalin" },
+        { "value": "formalin and 75% ethanol" },
+        { "value": "formalin and 95% ethanol" },
+        { "value": "frozen formalin" },
+        { "value": "glutaraldehyde" },
+        { "value": "leash" },
+        { "value": "liquid nitrogen" },
+        { "value": "none (for -20)" },
+        { "value": "none (for -80)" },
+        { "value": "osmium tetroxide" },
+        { "value": "silica gel" }
       ],
       "networkList": true
     },
@@ -4860,51 +3693,21 @@
       "alias": "relaxant",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "</metadata>"
-        },
-        {
-          "value": "Kibble"
-        },
-        {
-          "value": "MgCl"
-        },
-        {
-          "value": "Tricaine"
-        },
-        {
-          "value": "chloretone"
-        },
-        {
-          "value": "clove oil"
-        },
-        {
-          "value": "ethyl acetate"
-        },
-        {
-          "value": "ethylene glycol"
-        },
-        {
-          "value": "freezer"
-        },
-        {
-          "value": "frozen"
-        },
-        {
-          "value": "ice"
-        },
-        {
-          "value": "menthol"
-        },
-        {
-          "value": "nicotine"
-        },
-        {
-          "value": "propylene phenoxitol"
-        },
-        {
-          "value": "refrigeration"
-        }
+        { "value": "</metadata>" },
+        { "value": "Kibble" },
+        { "value": "MgCl" },
+        { "value": "Tricaine" },
+        { "value": "chloretone" },
+        { "value": "clove oil" },
+        { "value": "ethyl acetate" },
+        { "value": "ethylene glycol" },
+        { "value": "freezer" },
+        { "value": "frozen" },
+        { "value": "ice" },
+        { "value": "menthol" },
+        { "value": "nicotine" },
+        { "value": "propylene phenoxitol" },
+        { "value": "refrigeration" }
       ],
       "networkList": true
     },
@@ -4912,39 +3715,17 @@
       "alias": "sex",
       "caseInsensitive": true,
       "fields": [
-        {
-          "value": "female"
-        },
-        {
-          "value": "hermaphrodite"
-        },
-        {
-          "value": "intersex"
-        },
-        {
-          "value": "male"
-        },
-        {
-          "value": "missing"
-        },
-        {
-          "value": "neuter"
-        },
-        {
-          "value": "not applicable"
-        },
-        {
-          "value": "not collected"
-        },
-        {
-          "value": "not determined"
-        },
-        {
-          "value": "pooled male and female"
-        },
-        {
-          "value": "simultaneous hermaphrodite"
-        }
+        { "value": "female" },
+        { "value": "hermaphrodite" },
+        { "value": "intersex" },
+        { "value": "male" },
+        { "value": "missing" },
+        { "value": "neuter" },
+        { "value": "not applicable" },
+        { "value": "not collected" },
+        { "value": "not determined" },
+        { "value": "pooled male and female" },
+        { "value": "simultaneous hermaphrodite" }
       ],
       "networkList": true
     },
@@ -4952,80 +3733,33 @@
       "alias": "taxonRank",
       "caseInsensitive": false,
       "fields": [
-        {
-          "value": "class"
-        },
-        {
-          "value": "family"
-        },
-        {
-          "value": "genus"
-        },
-        {
-          "value": "infraClass"
-        },
-        {
-          "value": "infraOrder"
-        },
-        {
-          "value": "infraspecficEpithet"
-        },
-        {
-          "value": "kingdom"
-        },
-        {
-          "value": "order"
-        },
-        {
-          "value": "phylum"
-        },
-        {
-          "value": "specificEpithet"
-        },
-        {
-          "value": "subClass"
-        },
-        {
-          "value": "subFamily"
-        },
-        {
-          "value": "subGenus"
-        },
-        {
-          "value": "subOrder"
-        },
-        {
-          "value": "subPhylum"
-        },
-        {
-          "value": "subTribe"
-        },
-        {
-          "value": "superClass"
-        },
-        {
-          "value": "superFamily"
-        },
-        {
-          "value": "superOrder"
-        },
-        {
-          "value": "tribe"
-        }
+        { "value": "class" },
+        { "value": "family" },
+        { "value": "genus" },
+        { "value": "infraClass" },
+        { "value": "infraOrder" },
+        { "value": "infraspecficEpithet" },
+        { "value": "kingdom" },
+        { "value": "order" },
+        { "value": "phylum" },
+        { "value": "specificEpithet" },
+        { "value": "subClass" },
+        { "value": "subFamily" },
+        { "value": "subGenus" },
+        { "value": "subOrder" },
+        { "value": "subPhylum" },
+        { "value": "subTribe" },
+        { "value": "superClass" },
+        { "value": "superFamily" },
+        { "value": "superOrder" },
+        { "value": "tribe" }
       ],
       "networkList": true
     },
     {
       "alias": "weightUnits",
       "caseInsensitive": false,
-      "fields": [
-        {
-          "value": "grams"
-        },
-        {
-          "value": "kilograms"
-        }
-      ],
+      "fields": [{ "value": "grams" }, { "value": "kilograms" }],
       "networkList": true
     }
   ],
