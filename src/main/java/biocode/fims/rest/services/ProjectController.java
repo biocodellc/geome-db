@@ -218,6 +218,8 @@ public class ProjectController extends BaseProjectsController {
     public List<Map> projectStats(@QueryParam("includePublic") @DefaultValue("true") Boolean includePublic) {
         Network network = networkService.getNetwork(geomeProps.networkId());
 
+        if (!includePublic && userContext.getUser() === null) includePublic = true;
+
         String countsSql = geomeSql.statsEntityCounts();
         String joinsSql = geomeSql.projectStatsEntityJoins();
         String sql = geomeSql.projectStats();
