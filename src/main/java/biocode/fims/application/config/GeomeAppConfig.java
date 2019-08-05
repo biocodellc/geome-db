@@ -33,6 +33,7 @@ import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
 import biocode.fims.repositories.PostgresRecordRepository;
 import biocode.fims.repositories.RecordRepository;
+import biocode.fims.run.DatasetAction;
 import biocode.fims.run.FimsDatasetAuthorizer;
 import biocode.fims.run.GeomeDatasetAuthorizer;
 import biocode.fims.service.NetworkService;
@@ -44,6 +45,11 @@ import biocode.fims.tissues.reader.TissueConverter;
 import biocode.fims.validation.RecordValidator;
 import biocode.fims.validation.RecordValidatorFactory;
 import biocode.fims.validation.ValidatorInstantiator;
+import biocoe.fims.application.config.EvolutionAppConfig;
+import biocoe.fims.application.config.EvolutionProperties;
+import biocoe.fims.evolution.processing.EvolutionTaskExecutor;
+import biocoe.fims.evolution.service.EvolutionService;
+import biocoe.fims.run.EvolutionDatasetAction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
@@ -58,7 +64,7 @@ import java.util.concurrent.Executors;
  * Configuration class for and GeOMe-db-Fims application. Including cli and webapps
  */
 @Configuration
-@Import({FimsAppConfig.class, PhotosAppConfig.class})
+@Import({FimsAppConfig.class, PhotosAppConfig.class, EvolutionAppConfig.class})
 // declaring this here allows us to override any properties that are also included in geome-db.props
 @PropertySource(value = "classpath:biocode-fims.props", ignoreResourceNotFound = true)
 @PropertySource("classpath:geome-db.props")
@@ -67,12 +73,13 @@ public class GeomeAppConfig {
     FimsAppConfig fimsAppConfig;
     @Autowired
     PhotosAppConfig photosAppConfig;
+    @Autowired
+    EvolutionAppConfig evolutionAppConfig;
 
     @Autowired
     NetworkService networkService;
     @Autowired
     PhotosProperties photosProperties;
-
 
     @Bean
     public DataReaderFactory dataReaderFactory() {
@@ -105,6 +112,13 @@ public class GeomeAppConfig {
         dataConverters.put(FastqEntity.TYPE, tcConverter);
 
         return new DataConverterFactory(dataConverters);
+    }
+
+    @Bean
+    public List<DatasetAction> datasetActions() {
+        List<DatasetAction> actions = new ArrayList<>();
+        actions.add(evolutionAppConfig.evolutionDatasetAction());
+        return actions;
     }
 
     @Bean
@@ -154,7 +168,7 @@ public class GeomeAppConfig {
 
     @Bean
     public BulkPhotoLoader bulkPhotoLoader(FimsProperties props, GeomeDatasetAuthorizer geomeDatasetAuthorizer) {
-        return new BulkPhotoLoader(dataReaderFactory(), recordValidatorFactory(), recordRepository(), dataConverterFactory(), geomeDatasetAuthorizer, props);
+        return new BulkPhotoLoader(dataReaderFactory(), recordValidatorFactory(), recordRepository(), dataConverterFactory(), geomeDatasetAuthorizer, datasetActions(), props);
     }
 
     @Bean
