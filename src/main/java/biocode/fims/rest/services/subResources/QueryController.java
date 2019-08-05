@@ -30,6 +30,10 @@ import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tools.FileCache;
 import biocode.fims.utils.FileUtils;
+import biocoe.fims.evolution.models.EvolutionRecordReference;
+import biocoe.fims.evolution.processing.EvolutionDiscoveryTask;
+import biocoe.fims.evolution.processing.EvolutionTaskExecutor;
+import biocoe.fims.evolution.service.EvolutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +56,8 @@ public class QueryController extends FimsController {
     private final GeomeProperties props;
     private final RecordRepository recordRepository;
     private final QueryAuthorizer queryAuthorizer;
+    private final EvolutionTaskExecutor taskExecutor;
+    private final EvolutionService evolutionService;
     private final ProjectService projectService;
     private final NetworkService networkService;
     private final FileCache fileCache;
@@ -63,11 +69,14 @@ public class QueryController extends FimsController {
 
     @Autowired
     QueryController(GeomeProperties props, RecordRepository recordRepository, QueryAuthorizer queryAuthorizer,
-                    ProjectService projectService, NetworkService networkService, FileCache fileCache) {
+                    EvolutionTaskExecutor taskExecutor, EvolutionService evolutionService, ProjectService projectService,
+                    NetworkService networkService, FileCache fileCache) {
         super(props);
         this.props = props;
         this.recordRepository = recordRepository;
         this.queryAuthorizer = queryAuthorizer;
+        this.taskExecutor = taskExecutor;
+        this.evolutionService = evolutionService;
         this.projectService = projectService;
         this.networkService = networkService;
         this.fileCache = fileCache;
@@ -122,7 +131,22 @@ public class QueryController extends FimsController {
         List<String> sources = s != null ? Arrays.asList(s.split(",")) : Collections.emptyList();
 
         Query query = buildQuery(queryString, page, limit);
-        return recordRepository.query(query, RecordSources.factory(sources, entity), true);
+        PaginatedResponse<Map<String, List<Map<String, Object>>>> response = recordRepository.query(query, RecordSources.factory(sources, entity), true);
+
+        try {
+            for (Map.Entry<String, List<Map<String, Object>>> entry : response.content.entrySet()) {
+                List<EvolutionRecordReference> references = entry.getValue()
+                        .stream()
+                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid"))))
+                        .collect(Collectors.toList());
+
+                EvolutionDiscoveryTask task = new EvolutionDiscoveryTask(evolutionService, references);
+                taskExecutor.addTask(task);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to execute EvolutionDiscoveryTask");
+        }
+        return response;
     }
 
     /**
