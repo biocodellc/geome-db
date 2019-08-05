@@ -18,16 +18,24 @@ public class GeomeSql {
         return get("expeditionStats");
     }
 
+    public String projectStats() {
+        return get("projectStats");
+    }
+
     public String singleExpeditionStats() {
         return get("singleExpeditionStats");
     }
 
-    public String expeditionStatsEntityCounts() {
-        return get("expeditionStatsEntityCounts");
+    public String statsEntityCounts() {
+        return get("statsEntityCounts");
     }
 
     public String expeditionStatsEntityJoins() {
         return get("expeditionStatsEntityJoins");
+    }
+
+    public String projectStatsEntityJoins() {
+        return get("projectStatsEntityJoins");
     }
 
     private String get(String prop) {
