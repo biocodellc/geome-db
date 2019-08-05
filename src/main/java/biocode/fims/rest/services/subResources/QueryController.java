@@ -32,6 +32,7 @@ import biocode.fims.tools.FileCache;
 import biocode.fims.utils.FileUtils;
 import biocoe.fims.evolution.models.EvolutionRecordReference;
 import biocoe.fims.evolution.processing.EvolutionDiscoveryTask;
+import biocoe.fims.evolution.processing.EvolutionRetrievalTask;
 import biocoe.fims.evolution.processing.EvolutionTaskExecutor;
 import biocoe.fims.evolution.service.EvolutionService;
 import org.slf4j.Logger;
@@ -146,6 +147,7 @@ public class QueryController extends FimsController {
         } catch (Exception e) {
             logger.error("Failed to execute EvolutionDiscoveryTask");
         }
+
         return response;
     }
 
@@ -179,6 +181,7 @@ public class QueryController extends FimsController {
 
     private FileResponse csv(String queryString) {
         QueryResults queryResults = run(queryString);
+        notifyEvolutionOfRetrivals(queryResults);
 
         try {
             if (project == null) {
@@ -230,6 +233,7 @@ public class QueryController extends FimsController {
     private FileResponse kml(String queryString) {
         Query query = buildQuery(queryString);
         QueryResults queryResults = recordRepository.query(query);
+        notifyEvolutionOfRetrivals(queryResults);
 
         if (queryResults.results().size() > 1) {
             throw new FimsRuntimeException(QueryCode.UNSUPPORTED_QUERY, "Multi-select queries not supported", 400);
@@ -280,6 +284,7 @@ public class QueryController extends FimsController {
     public FileResponse queryCspace(@QueryParam("q") String queryString) {
 
         QueryResults queryResults = run(queryString);
+        notifyEvolutionOfRetrivals(queryResults);
 
         if (queryResults.results().size() > 1) {
             throw new FimsRuntimeException(QueryCode.UNSUPPORTED_QUERY, "Multi-select queries not supported", 400);
@@ -331,6 +336,7 @@ public class QueryController extends FimsController {
         QueryResults queryResults = run(queryString);
         if (queryResults.isEmpty()) return null;
 
+        notifyEvolutionOfRetrivals(queryResults);
         try {
             RecordJoiner joiner = new RecordJoiner(getConfig(), e, queryResults);
 
@@ -394,6 +400,7 @@ public class QueryController extends FimsController {
 
     private FileResponse tsv(String queryString) {
         QueryResults queryResults = run(queryString);
+        notifyEvolutionOfRetrivals(queryResults);
 
         try {
             QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, "\t", getConfig());
@@ -441,6 +448,7 @@ public class QueryController extends FimsController {
     private FileResponse excel(String queryString) {
         Query query = buildQuery(queryString);
         QueryResults queryResults = recordRepository.query(query);
+        notifyEvolutionOfRetrivals(queryResults);
 
         try {
             // If project, then this is a single project query
@@ -457,6 +465,22 @@ public class QueryController extends FimsController {
             }
 
             throw e;
+        }
+    }
+
+    private void notifyEvolutionOfRetrivals(QueryResults queryResults) {
+        try {
+            for (QueryResult queryResult: queryResults) {
+                List<EvolutionRecordReference> references = queryResult.get(false)
+                        .stream()
+                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid"))))
+                        .collect(Collectors.toList());
+
+                EvolutionRetrievalTask task = new EvolutionRetrievalTask(evolutionService, references);
+                taskExecutor.addTask(task);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to execute EvolutionRetrievalTask", e);
         }
     }
 
