@@ -78,17 +78,26 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         String organism;
         String species = sample.get("urn:species");
         String genus = sample.get("urn:genus");
+        String scientificName = sample.get("urn:scientificName");
 
         if (!genus.equals("")) {
             organism = genus;
             if (!species.equals("")) {
                 organism += " " + species;
             }
-        } else {
+        } else if (!scientificName.equals("")) { 
+            organism = scientificName;
+	else {
             organism = sample.get("urn:phylum");
         }
 
-        bioSampleAttributes.add(sample.get("urn:materialSampleID"));
+	String bcid = sample.get("urn:materialSampleID");
+	if (!bcid.contains("http")) {
+        	bioSampleAttributes.add("https://n2t.net/" + sample.get("urn:materialSampleID"));
+	} else {
+        	bioSampleAttributes.add(sample.get("urn:materialSampleID"));
+	}
+
         bioSampleAttributes.add(record.libraryStrategy() + "_" + organism.replace(" ", "_"));
         bioSampleAttributes.add(organism);
         bioSampleAttributes.add(getCollectionDate(sample));
