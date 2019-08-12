@@ -72,6 +72,8 @@ public class GeomeAppConfig {
     NetworkService networkService;
     @Autowired
     PhotosProperties photosProperties;
+    @Autowired
+    FimsProperties fimsProperties;
 
 
     @Bean
@@ -136,7 +138,7 @@ public class GeomeAppConfig {
         rowMappers.put(GenericRecord.class, new GenericRecordRowMapper());
         rowMappers.put(FastqRecord.class, new FastqRecordRowMapper());
 
-        return new PostgresRecordRepository(fimsAppConfig.jdbcTemplate, yaml.getObject(), rowMappers);
+        return new PostgresRecordRepository(fimsAppConfig.jdbcTemplate, yaml.getObject(), rowMappers, fimsProperties);
     }
 
     @Bean
@@ -178,7 +180,7 @@ public class GeomeAppConfig {
         EntrezApiFactoryImpl apiFactory = new EntrezApiFactoryImpl(props.sraApiKey(), ClientBuilder.newClient());
         EntrezApiService entrezApiService = new EntrezApiService(apiFactory, props.sraFetchWeeksInPast());
         BioSampleRepository bioSampleRepository = new BioSampleRepository(entrezApiService);
-        return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService);
+        return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService, fimsProperties);
     }
 
     @Primary

@@ -316,7 +316,7 @@ public class QueryController extends FimsController {
                     .collect(Collectors.toCollection(LinkedList::new));
 
             // call getConfig() again here b/c it will be set to the ProjectConfig if the query was against a single project
-            QueryWriter queryWriter = new FastaQueryWriter(new QueryResult(tissues, e, config.entity(e.getParentEntity())), getConfig());
+            QueryWriter queryWriter = new FastaQueryWriter(new QueryResult(tissues, e, config.entity(e.getParentEntity()), props.bcidResolverPrefix()), getConfig());
 
             List<QueryResult> metadataResults = queryResults.results().stream()
                     .filter(r -> !r.entity().equals(e))

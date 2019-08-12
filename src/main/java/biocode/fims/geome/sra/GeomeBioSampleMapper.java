@@ -1,5 +1,6 @@
 package biocode.fims.geome.sra;
 
+import biocode.fims.bcid.BcidBuilder;
 import biocode.fims.config.Config;
 import biocode.fims.config.models.Entity;
 import biocode.fims.exceptions.SraCode;
@@ -41,10 +42,10 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
 
     private final Iterator<Record> recordsIt;
     private final RecordJoiner recordJoiner;
-    private final String uniqueKeyURI;
     private final String parentEntity;
+    private final BcidBuilder bcidBuilder;
 
-    public GeomeBioSampleMapper(Config config, Entity fastqEntity, QueryResults queryResults) {
+    public GeomeBioSampleMapper(Config config, Entity fastqEntity, QueryResults queryResults, String bcidResolverPrefix) {
         QueryResult fastqResults = queryResults.getResult(fastqEntity.getConceptAlias());
 
         if (fastqResults.records().size() == 0) {
@@ -53,8 +54,9 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
 
         this.recordsIt = fastqResults.records().iterator();
         this.recordJoiner = new RecordJoiner(config, fastqEntity, queryResults);
-        this.uniqueKeyURI = fastqEntity.getUniqueKeyURI();
         this.parentEntity = fastqEntity.getParentEntity();
+        Entity parent = config.entity(parentEntity);
+        this.bcidBuilder = new BcidBuilder(parent, config.entity(parent.getParentEntity()), bcidResolverPrefix);
     }
 
     @Override
@@ -78,8 +80,11 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         String organism;
         String species = sample.get("urn:species");
         String genus = sample.get("urn:genus");
+        String scientificName = sample.get("urn:scientificName");
 
-        if (!genus.equals("")) {
+        if (!scientificName.equals("")) {
+            organism = scientificName;
+        } else if (!genus.equals("")) {
             organism = genus;
             if (!species.equals("")) {
                 organism += " " + species;
@@ -126,9 +131,8 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         bioSampleAttributes.add(BLANK_ATTRIBUTE);
         bioSampleAttributes.add(BLANK_ATTRIBUTE);
         bioSampleAttributes.add(BLANK_ATTRIBUTE);
-        // we don't need to entity.buildChildRecord here b/c fastq entity unique key is null
-        // and thus only allows a 1-1 mapping to parents
-        bioSampleAttributes.add(parent.rootIdentifier() + record.get(uniqueKeyURI));
+        // this is the BioSample bcid, which in our case should be the Tissue
+        bioSampleAttributes.add(bcidBuilder.build(parent));
 
         return bioSampleAttributes;
     }
