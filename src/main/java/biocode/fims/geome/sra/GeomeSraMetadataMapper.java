@@ -11,6 +11,7 @@ import biocode.fims.ncbi.sra.submission.AbstractSraMetadataMapper;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.records.RecordJoiner;
+import biocode.fims.tissues.TissueProps;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -59,8 +60,8 @@ public class GeomeSraMetadataMapper extends AbstractSraMetadataMapper {
             title = record.libraryStrategy() + "_" + joinedRecord.get("urn:phylum");
         }
 
-        metadata.add(record.get(FastqProps.IDENTIFIER.toString()));
-        metadata.add(record.get(FastqProps.IDENTIFIER.toString()));
+        metadata.add(joinedRecord.get(TissueProps.IDENTIFIER.uri()));
+        metadata.add(joinedRecord.get(TissueProps.IDENTIFIER.uri()));
         metadata.add(title);
         metadata.add(record.libraryStrategy());
         metadata.add(record.librarySource());
