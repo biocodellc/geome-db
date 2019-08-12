@@ -6,11 +6,11 @@ import biocode.fims.config.models.PhotoEntity;
 import biocode.fims.config.models.TissueEntity;
 import biocode.fims.fasta.FastaRecord;
 import biocode.fims.fasta.FastaValidator;
+import biocode.fims.fasta.reader.FastaConverter;
 import biocode.fims.fasta.reader.FastaDataReaderType;
 import biocode.fims.fasta.reader.FastaReader;
-import biocode.fims.fastq.FastqRecord;
-import biocode.fims.fastq.FastqRecordRowMapper;
-import biocode.fims.fastq.FastqValidator;
+import biocode.fims.fastq.*;
+import biocode.fims.fastq.reader.FastqConverter;
 import biocode.fims.fastq.reader.FastqDataReaderType;
 import biocode.fims.fastq.reader.FastqReader;
 import biocode.fims.ncbi.entrez.BioSampleRepository;
@@ -96,13 +96,21 @@ public class GeomeAppConfig {
 
     @Bean
     public DataConverterFactory dataConverterFactory() {
-        Map<String, DataConverter> dataConverters = new HashMap<>();
-        dataConverters.put(PhotoEntity.TYPE, new PhotoConverter(photosAppConfig.photosSql(), recordRepository()));
-        dataConverters.put(TissueEntity.TYPE, new TissueConverter(tissueRepository()));
+        Map<String, List<DataConverter>> dataConverters = new HashMap<>();
+        dataConverters.put(PhotoEntity.TYPE, Collections.singletonList(new PhotoConverter(photosAppConfig.photosSql(), recordRepository())));
+        dataConverters.put(TissueEntity.TYPE, Collections.singletonList(new TissueConverter(tissueRepository())));
 
         TissueChildConverter tcConverter = new TissueChildConverter(tissueRepository());
-        dataConverters.put(FastaEntity.TYPE, tcConverter);
-        dataConverters.put(FastqEntity.TYPE, tcConverter);
+
+        List<DataConverter> fastaConverters = new ArrayList<>();
+        fastaConverters.add(tcConverter);
+        fastaConverters.add(new FastaConverter());
+        dataConverters.put(FastaEntity.TYPE, fastaConverters);
+
+        List<DataConverter> fastqConverters = new ArrayList<>();
+        fastqConverters.add(tcConverter);
+        fastqConverters.add(new FastqConverter(fastqRepository()));
+        dataConverters.put(FastqEntity.TYPE, fastqConverters);
 
         return new DataConverterFactory(dataConverters);
     }
@@ -137,6 +145,14 @@ public class GeomeAppConfig {
         yaml.setResources(new ClassPathResource("tissue-repository-sql.yml"));
 
         return new PostgresTissueRepository(fimsAppConfig.jdbcTemplate, yaml.getObject());
+    }
+
+    @Bean
+    public FastqRepository fastqRepository() {
+        YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
+        yaml.setResources(new ClassPathResource("fastq-repository-sql.yml"));
+
+        return new PostgresFastqRepository(fimsAppConfig.jdbcTemplate, yaml.getObject());
     }
 
     @Bean
