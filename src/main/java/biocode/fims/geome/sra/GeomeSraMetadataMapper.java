@@ -61,7 +61,7 @@ public class GeomeSraMetadataMapper extends AbstractSraMetadataMapper {
         }
 
         metadata.add(joinedRecord.get(TissueProps.IDENTIFIER.uri()));
-        metadata.add(joinedRecord.get(TissueProps.IDENTIFIER.uri()));
+        metadata.add(joinedRecord.get(FastqProps.IDENTIFIER.uri()));
         metadata.add(title);
         metadata.add(record.libraryStrategy());
         metadata.add(record.librarySource());
