@@ -6,7 +6,6 @@ import biocode.fims.config.models.Entity;
 import biocode.fims.config.models.FastqEntity;
 import biocode.fims.exceptions.SraCode;
 import biocode.fims.fastq.FastqProps;
-import biocode.fims.fastq.FastqRecord;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.records.Record;
 import biocode.fims.ncbi.sra.submission.BioSampleMapper;
@@ -25,6 +24,10 @@ import java.util.stream.Collectors;
  */
 public class GeomeBioSampleMapper implements BioSampleMapper {
     private static final String BLANK_ATTRIBUTE = "missing";
+    private static final List<String> BIOSAMPLE_HEADERS_TO_EXCLUDE = new ArrayList<String>() {{
+        add("urn:country");
+    }};
+
     private static final Map<String, String> BIOSAMPLE_MAPPING = new LinkedHashMap<String, String>() {{
         put("sample_name", TissueProps.IDENTIFIER.uri());
         put("tissue", "urn:geneticTissueType");
@@ -52,13 +55,13 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
     }};
 
     private final Iterator<Record> recordsIt;
-    //    private final RecordJoiner recordJoiner;
     private final String parentEntity;
     private final BcidBuilder bcidBuilder;
     private final List<Record> records;
     private final RecordJoiner recordJoiner;
     private final QueryResults queryResults;
     private List<String> additionalDataUris = new ArrayList<>();
+    private Set<String> existingTissues = new HashSet<>();
 
     public GeomeBioSampleMapper(Config config, Entity fastqEntity, QueryResults queryResults, String bcidResolverPrefix) {
         this.queryResults = queryResults;
@@ -69,13 +72,12 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         }
 
 
-//        this.recordsIt = fastqResults.records().iterator();
         this.parentEntity = fastqEntity.getParentEntity();
         Entity parent = config.entity(parentEntity);
         this.bcidBuilder = new BcidBuilder(parent, config.entity(parent.getParentEntity()), bcidResolverPrefix);
 
         this.recordJoiner = new RecordJoiner(config, fastqEntity, queryResults);
-        this.records = fastqResults.records().stream().map(recordJoiner::joinRecords).collect(Collectors.toList());
+        this.records = queryResults.getResult(parentEntity).records().stream().map(recordJoiner::joinRecords).collect(Collectors.toList());
         this.recordsIt = records.iterator();
     }
 
@@ -107,7 +109,7 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
 
         Collection<String> existingValues = BIOSAMPLE_MAPPING.values();
         additionalDataUris = uriToColumns.keySet().stream()
-                .filter(uri -> !existingValues.contains(uri))
+                .filter(uri -> !existingValues.contains(uri) && !BIOSAMPLE_HEADERS_TO_EXCLUDE.contains(uri))
                 .collect(Collectors.toList());
         headers.addAll(additionalDataUris.stream().map(uriToColumns::get).collect(Collectors.toList()));
 
@@ -122,6 +124,12 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
     @Override
     public List<String> getBioSampleAttributes() {
         Record record = recordsIt.next();
+
+        // don't output duplicate tissues
+        String tissueID = record.get(TissueProps.IDENTIFIER.uri());
+        if (existingTissues.contains(tissueID)) return Collections.emptyList();
+        existingTissues.add(tissueID);
+
         List<String> bioSampleAttributes = new ArrayList<>();
 
         for (String uri : BIOSAMPLE_MAPPING.values()) {
@@ -208,10 +216,10 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
             collectionDate.append(dayCollected);
             collectionDate.append("-");
 
-            collectionDate.append(new DateFormatSymbols().getMonths()[Integer.parseInt(monthCollected) - 1]);
+            collectionDate.append(new DateFormatSymbols().getShortMonths()[Integer.parseInt(monthCollected) - 1]);
             collectionDate.append("-");
         } else if (!StringUtils.isBlank(monthCollected)) {
-            collectionDate.append(new DateFormatSymbols().getMonths()[Integer.parseInt(monthCollected) - 1]);
+            collectionDate.append(new DateFormatSymbols().getShortMonths()[Integer.parseInt(monthCollected) - 1]);
             collectionDate.append("-");
         }
 
