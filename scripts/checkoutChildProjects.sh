@@ -40,3 +40,4 @@ function checkout()
 checkout "biocodeFimsCommonsDir"
 checkout "biocodeFimsTissuesDir"
 checkout "biocodeFimsPhotosDir"
+checkout "biocodeFimsEvolutionDir"

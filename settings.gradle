@@ -19,7 +19,7 @@ if (hasProperty("biocodeFimsPhotosDir")) {
     project(":biocode-fims-photos").projectDir = file(biocodeFimsPhotosDir)
 }
 
-if (hasProperty("evolutionFimsDir")) {
+if (hasProperty("biocodeFimsEvolutionDir")) {
     include ":biocode-fims-evolution"
     project(":biocode-fims-evolution").projectDir = file(evolutionFimsDir)
 }
