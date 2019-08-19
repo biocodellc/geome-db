@@ -46,10 +46,6 @@ import biocode.fims.validation.RecordValidator;
 import biocode.fims.validation.RecordValidatorFactory;
 import biocode.fims.validation.ValidatorInstantiator;
 import biocoe.fims.application.config.EvolutionAppConfig;
-import biocoe.fims.application.config.EvolutionProperties;
-import biocoe.fims.evolution.processing.EvolutionTaskExecutor;
-import biocoe.fims.evolution.service.EvolutionService;
-import biocoe.fims.run.EvolutionDatasetAction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.context.annotation.*;
@@ -73,8 +69,6 @@ public class GeomeAppConfig {
     FimsAppConfig fimsAppConfig;
     @Autowired
     PhotosAppConfig photosAppConfig;
-    @Autowired
-    EvolutionAppConfig evolutionAppConfig;
 
     @Autowired
     NetworkService networkService;
@@ -125,7 +119,7 @@ public class GeomeAppConfig {
     }
 
     @Bean
-    public List<DatasetAction> datasetActions() {
+    public List<DatasetAction> datasetActions(EvolutionAppConfig evolutionAppConfig) {
         List<DatasetAction> actions = new ArrayList<>();
         actions.add(evolutionAppConfig.evolutionDatasetAction());
         return actions;
@@ -185,8 +179,8 @@ public class GeomeAppConfig {
     }
 
     @Bean
-    public BulkPhotoLoader bulkPhotoLoader(FimsProperties props, GeomeDatasetAuthorizer geomeDatasetAuthorizer) {
-        return new BulkPhotoLoader(dataReaderFactory(), recordValidatorFactory(), recordRepository(), dataConverterFactory(), geomeDatasetAuthorizer, datasetActions(), props);
+    public BulkPhotoLoader bulkPhotoLoader(FimsProperties props, GeomeDatasetAuthorizer geomeDatasetAuthorizer, EvolutionAppConfig evolutionAppConfig) {
+        return new BulkPhotoLoader(dataReaderFactory(), recordValidatorFactory(), recordRepository(), dataConverterFactory(), geomeDatasetAuthorizer, datasetActions(evolutionAppConfig), props);
     }
 
     @Bean
