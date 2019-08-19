@@ -26,6 +26,9 @@ if (!project.hasProperty('fimsTissuesVersion')) {
 if (!project.hasProperty('fimsPhotosVersion')) {
     ext.fimsPhotosVersion = "2.2.8"
 }
+if (!project.hasProperty('fimsEvolutionVersion')) {
+    ext.fimsEvolutionVersion = "0.0.1"
+}
 
 fims {
     maven {
@@ -58,6 +61,7 @@ dependencies {
     compile composite.resolveDependency("org.biocode:biocode-fims-commons:${fimsCommonsVersion}", ":biocode-fims-commons")
     compile composite.resolveDependency("org.biocode:biocode-fims-tissues:${fimsTissuesVersion}", ":biocode-fims-tissues")
     compile composite.resolveDependency("org.biocode:biocode-fims-photos:${fimsPhotosVersion}", ":biocode-fims-photos")
+    compile composite.resolveDependency("org.biocode:biocode-fims-evolution:${fimsEvolutionVersion}", ":biocode-fims-evolution")
 
     additionalSources(group: 'org.springframework.data', name: 'spring-data-commons', version: '1.10.1.RELEASE', classifier: 'sources') {
         transitive = false
