@@ -28,6 +28,7 @@ jobs:
       - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-commons; cd repo; git checkout ${CIRCLE_BRANCH}
       - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-tissues; cd repo; git checkout ${CIRCLE_BRANCH}
       - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-photos; cd repo; git checkout ${CIRCLE_BRANCH}
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-evolution; cd repo; git checkout ${CIRCLE_BRANCH}
 
       # Download and cache dependencies
       - restore_cache:
