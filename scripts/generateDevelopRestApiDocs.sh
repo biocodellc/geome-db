@@ -29,6 +29,8 @@ echo "attempting to run publishToMavenLocal task for biocode-fims-tissues subpro
 tissuesVersion=$(publishLocal "biocodeFimsTissuesDir")
 echo "attempting to run publishToMavenLocal task for biocode-fims-photos subproject"
 photosVersion=$(publishLocal "biocodeFimsPhotosDir")
+echo "attempting to run publishToMavenLocal task for biocode-fims-evolution subproject"
+evolutionVersion=$(publishLocal "biocodeFimsEvolutionDir")
 
 cd "${scriptDir}/../"
 
@@ -44,6 +46,10 @@ fi;
 
 if [ ! -z "$photosVersion" ]; then
     args="$args -PfimsPhotosVersion=$photosVersion"
+fi;
+
+if [ ! -z "$evolutionVersion" ]; then
+    args="$args -PfimsEvolutionVersion=$evolutionVersion"
 fi;
 
 echo "running    ->    ./gradlew ${args} generateRestApiDocs"
