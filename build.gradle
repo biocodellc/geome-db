@@ -122,6 +122,12 @@ task harvestSraBioSamples(type: JavaExec) {
     main = "biocode.fims.run.SraAccessionHarvesterRunner"
 }
 
+task loadEvolutionData(type: JavaExec) {
+    classpath = configurations.compile + sourceSets.main.runtimeClasspath
+
+    main = "biocode.fims.run.EvolutionDataLoader"
+}
+
 startScripts {
     classpath = files(jar.archivePath, configurations.compile, configurations.runtime)
 }
