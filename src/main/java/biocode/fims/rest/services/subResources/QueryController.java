@@ -135,10 +135,11 @@ public class QueryController extends FimsController {
         PaginatedResponse<Map<String, List<Map<String, Object>>>> response = recordRepository.query(query, RecordSources.factory(sources, entity), true);
 
         try {
+            String eventId = UUID.randomUUID().toString();
             for (Map.Entry<String, List<Map<String, Object>>> entry : response.content.entrySet()) {
                 List<EvolutionRecordReference> references = entry.getValue()
                         .stream()
-                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid"))))
+                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid")), eventId))
                         .collect(Collectors.toList());
 
                 EvolutionDiscoveryTask task = new EvolutionDiscoveryTask(evolutionService, references);
@@ -181,7 +182,7 @@ public class QueryController extends FimsController {
 
     private FileResponse csv(String queryString) {
         QueryResults queryResults = run(queryString);
-        notifyEvolutionOfRetrivals(queryResults);
+        notifyEvolutionOfRetrievals(queryResults);
 
         try {
             if (project == null) {
@@ -233,7 +234,7 @@ public class QueryController extends FimsController {
     private FileResponse kml(String queryString) {
         Query query = buildQuery(queryString);
         QueryResults queryResults = recordRepository.query(query);
-        notifyEvolutionOfRetrivals(queryResults);
+        notifyEvolutionOfRetrievals(queryResults);
 
         if (queryResults.results().size() > 1) {
             throw new FimsRuntimeException(QueryCode.UNSUPPORTED_QUERY, "Multi-select queries not supported", 400);
@@ -284,7 +285,7 @@ public class QueryController extends FimsController {
     public FileResponse queryCspace(@QueryParam("q") String queryString) {
 
         QueryResults queryResults = run(queryString);
-        notifyEvolutionOfRetrivals(queryResults);
+        notifyEvolutionOfRetrievals(queryResults);
 
         if (queryResults.results().size() > 1) {
             throw new FimsRuntimeException(QueryCode.UNSUPPORTED_QUERY, "Multi-select queries not supported", 400);
@@ -336,7 +337,7 @@ public class QueryController extends FimsController {
         QueryResults queryResults = run(queryString);
         if (queryResults.isEmpty()) return null;
 
-        notifyEvolutionOfRetrivals(queryResults);
+        notifyEvolutionOfRetrievals(queryResults);
         try {
             RecordJoiner joiner = new RecordJoiner(getConfig(), e, queryResults);
 
@@ -400,7 +401,7 @@ public class QueryController extends FimsController {
 
     private FileResponse tsv(String queryString) {
         QueryResults queryResults = run(queryString);
-        notifyEvolutionOfRetrivals(queryResults);
+        notifyEvolutionOfRetrievals(queryResults);
 
         try {
             QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, "\t", getConfig());
@@ -448,7 +449,7 @@ public class QueryController extends FimsController {
     private FileResponse excel(String queryString) {
         Query query = buildQuery(queryString);
         QueryResults queryResults = recordRepository.query(query);
-        notifyEvolutionOfRetrivals(queryResults);
+        notifyEvolutionOfRetrievals(queryResults);
 
         try {
             // If project, then this is a single project query
@@ -468,12 +469,13 @@ public class QueryController extends FimsController {
         }
     }
 
-    private void notifyEvolutionOfRetrivals(QueryResults queryResults) {
+    private void notifyEvolutionOfRetrievals(QueryResults queryResults) {
         try {
+            String eventId = UUID.randomUUID().toString();
             for (QueryResult queryResult: queryResults) {
                 List<EvolutionRecordReference> references = queryResult.get(false)
                         .stream()
-                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid"))))
+                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid")), eventId))
                         .collect(Collectors.toList());
 
                 EvolutionRetrievalTask task = new EvolutionRetrievalTask(evolutionService, references);
