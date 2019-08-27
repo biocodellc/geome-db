@@ -136,10 +136,11 @@ public class QueryController extends FimsController {
 
         try {
             String eventId = UUID.randomUUID().toString();
+            String userId = userContext.getUser() != null ? props.userURIPrefix() + userContext.getUser().getUserId() : null;
             for (Map.Entry<String, List<Map<String, Object>>> entry : response.content.entrySet()) {
                 List<EvolutionRecordReference> references = entry.getValue()
                         .stream()
-                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid")), eventId))
+                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid")), eventId, userId))
                         .collect(Collectors.toList());
 
                 EvolutionDiscoveryTask task = new EvolutionDiscoveryTask(evolutionService, references);
@@ -472,10 +473,11 @@ public class QueryController extends FimsController {
     private void notifyEvolutionOfRetrievals(QueryResults queryResults) {
         try {
             String eventId = UUID.randomUUID().toString();
+            String userId = userContext.getUser() != null ? props.userURIPrefix() + userContext.getUser().getUserId() : null;
             for (QueryResult queryResult: queryResults) {
                 List<EvolutionRecordReference> references = queryResult.get(false)
                         .stream()
-                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid")), eventId))
+                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid")), eventId, userId))
                         .collect(Collectors.toList());
 
                 EvolutionRetrievalTask task = new EvolutionRetrievalTask(evolutionService, references);

@@ -63,7 +63,8 @@ public class RecordController extends FimsController {
                               @QueryParam("includeParent") @DefaultValue("false") Flag includeParent,
                               @PathParam("identifier") String arkID) {
         RecordResponse response = recordsResource.get(includeChildren, includeParent, arkID);
-        EvolutionRecordReference reference = new EvolutionRecordReference((String) response.record.get("bcid"), UUID.randomUUID().toString());
+        String userId = userContext.getUser() != null ? props.userURIPrefix() + userContext.getUser().getUserId() : null;
+        EvolutionRecordReference reference = new EvolutionRecordReference((String) response.record.get("bcid"), UUID.randomUUID().toString(), userId);
         EvolutionRetrievalTask task = new EvolutionRetrievalTask(evolutionService, Collections.singletonList(reference));
         taskExecutor.addTask(task);
         return response;
