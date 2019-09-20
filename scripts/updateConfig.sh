@@ -11,7 +11,8 @@ set -e
 
 # update network_1.tissue t left join expeditions e on e.id = t.expedition_id set data = data || jsonb_build_object('urn:tissueID', data->>'urn:materialSampleID') where e.project_id = 2;
 
-jq_query='.entities |= map( if .conceptAlias=="Tissue" then .additionalProps |= {"generateID": true} | .uniqueKey |= "tissueID" | .attributes += [{"uri": "urn:tissueID"}] else . end)'
+#jq_query='.entities |= map( if .conceptAlias=="Tissue" then .additionalProps |= {"generateID": true} | .uniqueKey |= "tissueID" | .attributes += [{"uri": "urn:tissueID"}] else . end)'
+jq_query='.entities |= map( if .conceptAlias=="Sample" then .attributes |= map( if .uri=="urn:quantityDected" then .uri |= "urn:quantityDetected" else . end) else . end)'
 
 # loop through each line
 while read -r result
@@ -27,4 +28,4 @@ do
 
   # persist the updated config
 #  psql -X -A -t -d biscicoldev -c "update project_configurations set config = '$updated_config' where id = $id;"
-done <<< $(psql -X -A -t -d biscicoldev -c 'select id, config from project_configurations where id = 1;')
+done <<< $(psql -X -A -t -d biscicoldev -c "select id, config from project_configurations where config::text like '%urn:quantityDected%' limit 1;")
