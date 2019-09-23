@@ -125,6 +125,10 @@ task harvestSraBioSamples(type: JavaExec) {
 task loadEvolutionData(type: JavaExec) {
     classpath = configurations.compile + sourceSets.main.runtimeClasspath
 
+    if (project.hasProperty("appArgs")) {
+        args Eval.me(appArgs)
+    }
+
     main = "biocode.fims.run.EvolutionDataLoader"
 }
 

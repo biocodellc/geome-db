@@ -8,17 +8,21 @@ import biocode.fims.evolution.service.EvolutionService;
 import biocode.fims.models.Project;
 import biocode.fims.query.QueryBuilder;
 import biocode.fims.query.QueryResult;
+import biocode.fims.query.QueryResults;
 import biocode.fims.query.dsl.ProjectExpression;
 import biocode.fims.query.dsl.Query;
 import biocode.fims.query.dsl.SelectExpression;
+import biocode.fims.records.RecordSet;
 import biocode.fims.repositories.RecordRepository;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
+import org.apache.commons.cli.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A script to backload all existing data into Evolution.
@@ -45,10 +49,11 @@ public class EvolutionDataLoader {
     }
 
 
-    private void load() {
+    private void load(List<Integer> projects) {
         String resolverEndpoint = evolutionProperties.resolverEndpoint();
 
         for (Project project : projectService.getProjects()) {
+            if (projects != null && !projects.contains(project.getProjectId())) continue;
             System.out.println("Loading project: " + project.getProjectTitle());
             List<String> entities = project.getProjectConfig()
                     .entities()
@@ -62,10 +67,31 @@ public class EvolutionDataLoader {
             QueryBuilder qb = new QueryBuilder(project.getProjectConfig(), project.getNetwork().getId(), entities.get(0));
             Query query = new Query(qb, project.getProjectConfig(), q);
 
-            for (QueryResult result : recordRepository.query(query)) {
+            QueryResults queryResults = recordRepository.query(query);
+
+            for (QueryResult result : queryResults) {
                 System.out.println("Loading Entity: " + result.entity().getConceptAlias());
                 BcidBuilder bcidBuilder = new BcidBuilder(result.entity(), result.entity().isChildEntity() ? project.getProjectConfig().entity(result.entity().getParentEntity()) : null, props.bcidResolverPrefix());
-                new EvolutionUpdateCreateTask(evolutionService, expeditionService, bcidBuilder, result.records(), Collections.emptyList(), resolverEndpoint, props.userURIPrefix()).run();
+                BcidBuilder parentBcidBuilder = null;
+                RecordSet parentRecordSet = null;
+
+                if (result.entity().isChildEntity()) {
+                    QueryResult parent = queryResults.getResult(result.entity().getParentEntity());
+                    parentRecordSet = new RecordSet(parent.entity(), parent.records(), false);
+                    parentBcidBuilder = new BcidBuilder(parent.entity(), parent.entity().isChildEntity() ? queryResults.getResult(parent.entity().getParentEntity()).entity() : null, props.bcidResolverPrefix());
+                }
+
+                new EvolutionUpdateCreateTask(
+                        evolutionService,
+                        expeditionService,
+                        bcidBuilder,
+                        result.records(),
+                        Collections.emptyList(),
+                        parentRecordSet,
+                        parentBcidBuilder,
+                        resolverEndpoint,
+                        props.userURIPrefix()
+                ).run();
             }
         }
     }
@@ -79,7 +105,26 @@ public class EvolutionDataLoader {
         FimsProperties props = applicationContext.getBean(FimsProperties.class);
         EvolutionProperties evolutionProps = applicationContext.getBean(EvolutionProperties.class);
 
+        // Some classes to help us
+        CommandLineParser clp = new DefaultParser();
+        CommandLine cl;
+
+        Options options = new Options();
+        options.addOption("p", "projects", true, "The projects to load. Defaults to loading all.");
+
+        try {
+            cl = clp.parse(options, args);
+        } catch (ParseException e) {
+            System.out.println("Error: " + e.getMessage());
+            return;
+        }
+
+        List<Integer> projects = null;
+        if (cl.hasOption("p")) {
+            projects = Stream.of(cl.getOptionValues("p")).map(Integer::parseInt).collect(Collectors.toList());
+        }
+
         EvolutionDataLoader dataLoader = new EvolutionDataLoader(projectService, recordRepository, evolutionService, expeditionService, props, evolutionProps);
-        dataLoader.load();
+        dataLoader.load(projects);
     }
 }

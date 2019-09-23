@@ -2,12 +2,14 @@ package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.GeomeProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
+import biocode.fims.bcid.BcidBuilder;
 import biocode.fims.config.Config;
 import biocode.fims.config.models.FastaEntity;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.models.Network;
 import biocode.fims.models.User;
 import biocode.fims.query.QueryResult;
+import biocode.fims.records.GenericRecord;
 import biocode.fims.records.Record;
 import biocode.fims.records.RecordJoiner;
 import biocode.fims.records.RecordSources;
@@ -140,7 +142,7 @@ public class QueryController extends FimsController {
             for (Map.Entry<String, List<Map<String, Object>>> entry : response.content.entrySet()) {
                 List<EvolutionRecordReference> references = entry.getValue()
                         .stream()
-                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid")), eventId, userId))
+                        .map(r -> new EvolutionRecordReference(props.bcidResolverPrefix() + String.valueOf(r.get("bcid")), eventId, userId))
                         .collect(Collectors.toList());
 
                 EvolutionDiscoveryTask task = new EvolutionDiscoveryTask(evolutionService, references);
@@ -477,7 +479,7 @@ public class QueryController extends FimsController {
             for (QueryResult queryResult: queryResults) {
                 List<EvolutionRecordReference> references = queryResult.get(false, true)
                         .stream()
-                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid")), eventId, userId))
+                        .map(r -> new EvolutionRecordReference(props.bcidResolverPrefix() + String.valueOf(r.get("bcid")), eventId, userId))
                         .collect(Collectors.toList());
 
                 EvolutionRetrievalTask task = new EvolutionRetrievalTask(evolutionService, references);
