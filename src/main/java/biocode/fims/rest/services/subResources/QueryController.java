@@ -132,7 +132,7 @@ public class QueryController extends FimsController {
         List<String> sources = s != null ? Arrays.asList(s.split(",")) : Collections.emptyList();
 
         Query query = buildQuery(queryString, page, limit);
-        PaginatedResponse<Map<String, List<Map<String, Object>>>> response = recordRepository.query(query, RecordSources.factory(sources, entity), true);
+        PaginatedResponse<Map<String, List<Map<String, Object>>>> response = recordRepository.query(query, RecordSources.factory(sources, entity), true, false);
 
         try {
             String eventId = UUID.randomUUID().toString();
@@ -475,7 +475,7 @@ public class QueryController extends FimsController {
             String eventId = UUID.randomUUID().toString();
             String userId = userContext.getUser() != null ? props.userURIPrefix() + userContext.getUser().getUserId() : null;
             for (QueryResult queryResult: queryResults) {
-                List<EvolutionRecordReference> references = queryResult.get(false)
+                List<EvolutionRecordReference> references = queryResult.get(false, true)
                         .stream()
                         .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid")), eventId, userId))
                         .collect(Collectors.toList());
