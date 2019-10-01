@@ -479,7 +479,7 @@ public class QueryController extends FimsController {
             for (QueryResult queryResult: queryResults) {
                 List<EvolutionRecordReference> references = queryResult.get(false, true)
                         .stream()
-                        .map(r -> new EvolutionRecordReference(props.bcidResolverPrefix() + String.valueOf(r.get("bcid")), eventId, userId))
+                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid")), eventId, userId))
                         .collect(Collectors.toList());
 
                 EvolutionRetrievalTask task = new EvolutionRetrievalTask(evolutionService, references);
