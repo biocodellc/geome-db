@@ -18,13 +18,16 @@ apply plugin: "application"
 apply plugin: "org.biocode.fims-web"
 
 if (!project.hasProperty('fimsCommonsVersion')) {
-    ext.fimsCommonsVersion = "2.1.18"
+    ext.fimsCommonsVersion = "2.2.0"
 }
 if (!project.hasProperty('fimsTissuesVersion')) {
-    ext.fimsTissuesVersion = "2.2.14"
+    ext.fimsTissuesVersion = "2.3.0"
 }
 if (!project.hasProperty('fimsPhotosVersion')) {
-    ext.fimsPhotosVersion = "2.2.8"
+    ext.fimsPhotosVersion = "2.3.0"
+}
+if (!project.hasProperty('fimsEvolutionVersion')) {
+    ext.fimsEvolutionVersion = "1.0.0"
 }
 
 fims {
@@ -58,6 +61,7 @@ dependencies {
     compile composite.resolveDependency("org.biocode:biocode-fims-commons:${fimsCommonsVersion}", ":biocode-fims-commons")
     compile composite.resolveDependency("org.biocode:biocode-fims-tissues:${fimsTissuesVersion}", ":biocode-fims-tissues")
     compile composite.resolveDependency("org.biocode:biocode-fims-photos:${fimsPhotosVersion}", ":biocode-fims-photos")
+    compile composite.resolveDependency("org.biocode:biocode-fims-evolution:${fimsEvolutionVersion}", ":biocode-fims-evolution")
 
     additionalSources(group: 'org.springframework.data', name: 'spring-data-commons', version: '1.10.1.RELEASE', classifier: 'sources') {
         transitive = false
@@ -116,6 +120,16 @@ task harvestSraBioSamples(type: JavaExec) {
     classpath = configurations.compile + sourceSets.main.runtimeClasspath
 
     main = "biocode.fims.run.SraAccessionHarvesterRunner"
+}
+
+task loadEvolutionData(type: JavaExec) {
+    classpath = configurations.compile + sourceSets.main.runtimeClasspath
+
+    if (project.hasProperty("appArgs")) {
+        args Eval.me(appArgs)
+    }
+
+    main = "biocode.fims.run.EvolutionDataLoader"
 }
 
 startScripts {

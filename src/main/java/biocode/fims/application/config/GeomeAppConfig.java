@@ -33,6 +33,7 @@ import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
 import biocode.fims.repositories.PostgresRecordRepository;
 import biocode.fims.repositories.RecordRepository;
+import biocode.fims.run.DatasetAction;
 import biocode.fims.run.FimsDatasetAuthorizer;
 import biocode.fims.run.GeomeDatasetAuthorizer;
 import biocode.fims.service.NetworkService;
@@ -58,7 +59,7 @@ import java.util.concurrent.Executors;
  * Configuration class for and GeOMe-db-Fims application. Including cli and webapps
  */
 @Configuration
-@Import({FimsAppConfig.class, PhotosAppConfig.class})
+@Import({FimsAppConfig.class, PhotosAppConfig.class, EvolutionAppConfig.class})
 // declaring this here allows us to override any properties that are also included in geome-db.props
 @PropertySource(value = "classpath:biocode-fims.props", ignoreResourceNotFound = true)
 @PropertySource("classpath:geome-db.props")
@@ -74,7 +75,6 @@ public class GeomeAppConfig {
     PhotosProperties photosProperties;
     @Autowired
     FimsProperties fimsProperties;
-
 
     @Bean
     public DataReaderFactory dataReaderFactory() {
@@ -115,6 +115,13 @@ public class GeomeAppConfig {
         dataConverters.put(FastqEntity.TYPE, fastqConverters);
 
         return new DataConverterFactory(dataConverters);
+    }
+
+    @Bean
+    public List<DatasetAction> datasetActions(EvolutionAppConfig evolutionAppConfig) {
+        List<DatasetAction> actions = new ArrayList<>();
+        actions.add(evolutionAppConfig.evolutionDatasetAction());
+        return actions;
     }
 
     @Bean
@@ -171,8 +178,8 @@ public class GeomeAppConfig {
     }
 
     @Bean
-    public BulkPhotoLoader bulkPhotoLoader(FimsProperties props, GeomeDatasetAuthorizer geomeDatasetAuthorizer) {
-        return new BulkPhotoLoader(dataReaderFactory(), recordValidatorFactory(), recordRepository(), dataConverterFactory(), geomeDatasetAuthorizer, props);
+    public BulkPhotoLoader bulkPhotoLoader(FimsProperties props, GeomeDatasetAuthorizer geomeDatasetAuthorizer, EvolutionAppConfig evolutionAppConfig) {
+        return new BulkPhotoLoader(dataReaderFactory(), recordValidatorFactory(), recordRepository(), dataConverterFactory(), geomeDatasetAuthorizer, datasetActions(evolutionAppConfig), props);
     }
 
     @Bean

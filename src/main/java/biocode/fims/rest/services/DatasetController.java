@@ -28,10 +28,7 @@ import biocode.fims.rest.FimsController;
 import biocode.fims.rest.filters.Authenticated;
 import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.rest.responses.ValidationResponse;
-import biocode.fims.run.DataSourceMetadata;
-import biocode.fims.run.DatasetAuthorizer;
-import biocode.fims.run.DatasetProcessor;
-import biocode.fims.run.ProcessorStatus;
+import biocode.fims.run.*;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tools.FileCache;
@@ -77,6 +74,7 @@ public class DatasetController extends FimsController {
     private final ProjectService projectService;
     private final DataReaderFactory readerFactory;
     private final DataConverterFactory dataConverterFactory;
+    private final List<DatasetAction> datasetActions;
     private final QueryAuthorizer queryAuthorizer;
     private final FileCache fileCache;
 
@@ -86,7 +84,7 @@ public class DatasetController extends FimsController {
     public DatasetController(ExpeditionService expeditionService, DataReaderFactory readerFactory,
                              RecordValidatorFactory validatorFactory, RecordRepository recordRepository,
                              DatasetAuthorizer datasetAuthorizer, ProjectService projectService,
-                             QueryAuthorizer queryAuthorizer, FileCache fileCache,
+                             QueryAuthorizer queryAuthorizer, FileCache fileCache, List<DatasetAction> datasetActions,
                              DataConverterFactory dataConverterFactory, FimsProperties props) {
         super(props);
         this.expeditionService = expeditionService;
@@ -94,6 +92,7 @@ public class DatasetController extends FimsController {
         this.validatorFactory = validatorFactory;
         this.recordRepository = recordRepository;
         this.datasetAuthorizer = datasetAuthorizer;
+        this.datasetActions = datasetActions;
         this.projectService = projectService;
         this.queryAuthorizer = queryAuthorizer;
         this.fileCache = fileCache;
@@ -156,6 +155,7 @@ public class DatasetController extends FimsController {
                 .recordRepository(recordRepository)
                 .validatorFactory(validatorFactory)
                 .datasetAuthorizer(datasetAuthorizer)
+                .datasetActions(datasetActions)
                 .serverDataDir(props.serverRoot())
                 .upload()
                 .writeToServer()
