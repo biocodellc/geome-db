@@ -102,6 +102,7 @@ public class EvolutionDataLoader {
         }
 
         System.out.println("Waiting for submitted tasks to finish");
+        this.executorService.shutdown();
         this.executorService.awaitTermination(5, TimeUnit.DAYS);
         System.out.println("All tasks have completed.");
     }
