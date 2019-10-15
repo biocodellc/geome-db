@@ -21,6 +21,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,6 +40,7 @@ public class EvolutionDataLoader {
     private final EvolutionService evolutionService;
     private final FimsProperties props;
     private final EvolutionProperties evolutionProperties;
+    private final ExecutorService executorService;
     private ExpeditionService expeditionService;
 
     public EvolutionDataLoader(ProjectService projectService, RecordRepository recordRepository, EvolutionService evolutionService, ExpeditionService expeditionService, FimsProperties props, EvolutionProperties evolutionProperties) {
@@ -46,10 +50,11 @@ public class EvolutionDataLoader {
         this.expeditionService = expeditionService;
         this.props = props;
         this.evolutionProperties = evolutionProperties;
+        this.executorService = Executors.newFixedThreadPool(5);
     }
 
 
-    private void load(List<Integer> projects) {
+    private void load(List<Integer> projects) throws InterruptedException {
         String resolverEndpoint = evolutionProperties.resolverEndpoint();
 
         for (Project project : projectService.getProjects()) {
@@ -81,22 +86,27 @@ public class EvolutionDataLoader {
                     parentBcidBuilder = new BcidBuilder(parent.entity(), parent.entity().isChildEntity() ? queryResults.getResult(parent.entity().getParentEntity()).entity() : null, props.bcidResolverPrefix());
                 }
 
-                new EvolutionUpdateCreateTask(
-                        evolutionService,
-                        expeditionService,
-                        bcidBuilder,
-                        result.records(),
-                        Collections.emptyList(),
-                        parentRecordSet,
-                        parentBcidBuilder,
-                        resolverEndpoint,
-                        props.userURIPrefix()
-                ).run();
+                this.executorService.submit(
+                        new EvolutionUpdateCreateTask(
+                                evolutionService,
+                                expeditionService,
+                                bcidBuilder,
+                                result.records(),
+                                Collections.emptyList(),
+                                parentRecordSet,
+                                parentBcidBuilder,
+                                resolverEndpoint,
+                                props.userURIPrefix()
+                        ));
             }
         }
+
+        System.out.println("Waiting for submitted tasks to finish");
+        this.executorService.awaitTermination(5, TimeUnit.DAYS);
+        System.out.println("All tasks have completed.");
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         ApplicationContext applicationContext = new AnnotationConfigApplicationContext(GeomeAppConfig.class);
         ProjectService projectService = applicationContext.getBean(ProjectService.class);
         EvolutionService evolutionService = applicationContext.getBean(EvolutionService.class);
