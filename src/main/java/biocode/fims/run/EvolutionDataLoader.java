@@ -21,9 +21,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,7 +37,6 @@ public class EvolutionDataLoader {
     private final EvolutionService evolutionService;
     private final FimsProperties props;
     private final EvolutionProperties evolutionProperties;
-    private final ExecutorService executorService;
     private ExpeditionService expeditionService;
 
     public EvolutionDataLoader(ProjectService projectService, RecordRepository recordRepository, EvolutionService evolutionService, ExpeditionService expeditionService, FimsProperties props, EvolutionProperties evolutionProperties) {
