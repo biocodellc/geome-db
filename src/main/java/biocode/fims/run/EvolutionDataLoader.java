@@ -50,12 +50,13 @@ public class EvolutionDataLoader {
         this.expeditionService = expeditionService;
         this.props = props;
         this.evolutionProperties = evolutionProperties;
-        this.executorService = Executors.newFixedThreadPool(5);
     }
 
 
     private void load(List<Integer> projects) throws InterruptedException {
         String resolverEndpoint = evolutionProperties.resolverEndpoint();
+
+        int total = 0;
 
         for (Project project : projectService.getProjects()) {
             if (projects != null && !projects.contains(project.getProjectId())) continue;
@@ -75,7 +76,8 @@ public class EvolutionDataLoader {
             QueryResults queryResults = recordRepository.query(query);
 
             for (QueryResult result : queryResults) {
-                System.out.println("Loading Entity: " + result.entity().getConceptAlias());
+                total += result.records().size();
+                System.out.println("Loading Entity: " + result.entity().getConceptAlias() + " - " + result.records().size());
                 BcidBuilder bcidBuilder = new BcidBuilder(result.entity(), result.entity().isChildEntity() ? project.getProjectConfig().entity(result.entity().getParentEntity()) : null, props.bcidResolverPrefix());
                 BcidBuilder parentBcidBuilder = null;
                 RecordSet parentRecordSet = null;
@@ -86,25 +88,21 @@ public class EvolutionDataLoader {
                     parentBcidBuilder = new BcidBuilder(parent.entity(), parent.entity().isChildEntity() ? queryResults.getResult(parent.entity().getParentEntity()).entity() : null, props.bcidResolverPrefix());
                 }
 
-                this.executorService.submit(
-                        new EvolutionUpdateCreateTask(
-                                evolutionService,
-                                expeditionService,
-                                bcidBuilder,
-                                result.records(),
-                                Collections.emptyList(),
-                                parentRecordSet,
-                                parentBcidBuilder,
-                                resolverEndpoint,
-                                props.userURIPrefix()
-                        ));
+                new EvolutionUpdateCreateTask(
+                        evolutionService,
+                        expeditionService,
+                        bcidBuilder,
+                        result.records(),
+                        Collections.emptyList(),
+                        parentRecordSet,
+                        parentBcidBuilder,
+                        resolverEndpoint,
+                        props.userURIPrefix()
+                ).run();
             }
         }
 
-        System.out.println("Waiting for submitted tasks to finish");
-        this.executorService.shutdown();
-        this.executorService.awaitTermination(5, TimeUnit.DAYS);
-        System.out.println("All tasks have completed.");
+        System.out.println(total + " records submitted to Evolution");
     }
 
     public static void main(String[] args) throws InterruptedException {
