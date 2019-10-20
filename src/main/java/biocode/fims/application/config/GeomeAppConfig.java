@@ -187,7 +187,7 @@ public class GeomeAppConfig {
         EntrezApiFactoryImpl apiFactory = new EntrezApiFactoryImpl(props.sraApiKey(), ClientBuilder.newClient());
         EntrezApiService entrezApiService = new EntrezApiService(apiFactory, props.sraFetchWeeksInPast());
         BioSampleRepository bioSampleRepository = new BioSampleRepository(entrezApiService);
-        return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService);
+        return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService, props);
     }
 
     @Primary
