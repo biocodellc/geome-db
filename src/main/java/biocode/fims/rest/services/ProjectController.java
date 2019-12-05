@@ -3,54 +3,26 @@ package biocode.fims.rest.services;
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.application.config.GeomeProperties;
 import biocode.fims.application.config.GeomeSql;
-import biocode.fims.authorizers.QueryAuthorizer;
 import biocode.fims.config.models.Entity;
-import biocode.fims.config.models.FastqEntity;
-import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.BadRequestException;
-import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
-import biocode.fims.geome.sra.GeomeBioSampleMapper;
-import biocode.fims.geome.sra.GeomeSraMetadataMapper;
 import biocode.fims.models.Network;
 import biocode.fims.models.Project;
-import biocode.fims.models.User;
-import biocode.fims.models.dataTypes.JacksonUtil;
-import biocode.fims.ncbi.sra.submission.BioSampleAttributesGenerator;
-import biocode.fims.ncbi.sra.submission.BioSampleMapper;
-import biocode.fims.ncbi.sra.submission.SraMetadataGenerator;
-import biocode.fims.ncbi.sra.submission.SraMetadataMapper;
 import biocode.fims.query.PostgresUtils;
-import biocode.fims.query.QueryBuilder;
-import biocode.fims.query.QueryResults;
-import biocode.fims.query.dsl.*;
 import biocode.fims.repositories.RecordRepository;
-import biocode.fims.rest.FimsObjectMapper;
-import biocode.fims.rest.responses.FileResponse;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.tools.FileCache;
-import biocode.fims.utils.FileUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Controller;
 
 import javax.inject.Singleton;
-import javax.servlet.ServletContext;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.io.File;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * project API endpoints
@@ -63,100 +35,22 @@ import java.util.stream.Stream;
 @Singleton
 public class ProjectController extends BaseProjectsController {
 
-    @Context
-    private ServletContext context;
     private final GeomeSql geomeSql;
-    private final QueryAuthorizer queryAuthorizer;
     private final RecordRepository recordRepository;
-    private final FileCache fileCache;
     private final NetworkService networkService;
     private final GeomeProperties geomeProps;
 
     @Autowired
     ProjectController(ExpeditionService expeditionService, FimsProperties props, GeomeSql geomeSql,
-                      ProjectService projectService, QueryAuthorizer queryAuthorizer,
-                      RecordRepository recordRepository, FileCache fileCache, NetworkService networkService,
+                      ProjectService projectService, RecordRepository recordRepository, NetworkService networkService,
                       GeomeProperties geomeProps) {
         super(expeditionService, props, projectService);
         this.geomeSql = geomeSql;
-        this.queryAuthorizer = queryAuthorizer;
         this.recordRepository = recordRepository;
-        this.fileCache = fileCache;
         this.networkService = networkService;
         this.geomeProps = geomeProps;
     }
 
-    /**
-     * TODO find a more suitable place for this. & Re-write *Mappers to be more robust
-     *
-     * @param projectId
-     * @param expeditionCode
-     * @return
-     */
-    @GET
-    @Path("/{projectId}/expeditions/{expeditionCode}/generateSraFiles")
-    public FileResponse generateSraFiles(@PathParam("projectId") int projectId,
-                                         @PathParam("expeditionCode") String expeditionCode) {
-
-        Project project = projectService.getProject(projectId);
-
-
-        ProjectConfig config = project.getProjectConfig();
-
-        Entity e = config.entities()
-                .stream()
-                .filter(FastqEntity.class::isInstance)
-                .findFirst()
-                .orElseThrow((Supplier<RuntimeException>) () -> new BadRequestException("Could not find FastqEntity for provided project"));
-
-
-        Entity parentEntity = e;
-        do {
-            parentEntity = config.entity(parentEntity.getParentEntity());
-        } while (parentEntity.isChildEntity());
-
-        List<String> entities = config.getEntityRelations(parentEntity, e).stream()
-                .flatMap(r -> Stream.of(r.getChildEntity().getConceptAlias(), r.getParentEntity().getConceptAlias()))
-                .collect(Collectors.toList());
-
-        Expression exp = new ExpeditionExpression(expeditionCode);
-        exp = new LogicalExpression(
-                LogicalOperator.AND,
-                exp,
-                new ProjectExpression(Collections.singletonList(projectId))
-        );
-        exp = new SelectExpression(
-                String.join(",", entities),
-                exp
-        );
-
-        QueryBuilder qb = new QueryBuilder(config, project.getNetwork().getId(), e.getConceptAlias());
-        Query query = new Query(qb, config, exp);
-
-        if (!queryAuthorizer.authorizedQuery(Collections.singletonList(projectId), new ArrayList<>(query.expeditions()), userContext.getUser())) {
-            throw new FimsRuntimeException(GenericErrorCode.UNAUTHORIZED, 403);
-        }
-
-        QueryResults queryResults = recordRepository.query(query);
-
-        if (queryResults.isEmpty()) return null;
-
-        SraMetadataMapper metadataMapper = new GeomeSraMetadataMapper(config, e, queryResults);
-        BioSampleMapper bioSampleMapper = new GeomeBioSampleMapper(config, e, queryResults, props.bcidResolverPrefix());
-
-        File bioSampleFile = BioSampleAttributesGenerator.generateFile(bioSampleMapper);
-        File sraMetadataFile = SraMetadataGenerator.generateFile(metadataMapper);
-
-        Map<String, File> fileMap = new HashMap<>();
-        fileMap.put("bioSample-attributes.tsv", bioSampleFile);
-        fileMap.put("sra-metadata.tsv", sraMetadataFile);
-        fileMap.put("sra-step-by-step-instructions.pdf", new File(context.getRealPath("docs/sra-step-by-step-instructions.pdf")));
-
-        File zip = FileUtils.zip(fileMap, defaultOutputDirectory());
-        String fileId = fileCache.cacheFileForUser(zip, userContext.getUser(), "sra-files.zip");
-
-        return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
-    }
 
     /**
      * Fetch an overview of all expeditions in a project.

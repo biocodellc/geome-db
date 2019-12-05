@@ -13,10 +13,16 @@ import biocode.fims.fastq.*;
 import biocode.fims.fastq.reader.FastqConverter;
 import biocode.fims.fastq.reader.FastqDataReaderType;
 import biocode.fims.fastq.reader.FastqReader;
+import biocode.fims.geome.sra.GeomeBioSampleMapper;
+import biocode.fims.geome.sra.GeomeSraMetadataMapper;
 import biocode.fims.ncbi.entrez.BioSampleRepository;
 import biocode.fims.ncbi.entrez.EntrezApiFactoryImpl;
 import biocode.fims.ncbi.entrez.EntrezApiService;
 import biocode.fims.ncbi.sra.SraAccessionHarvester;
+import biocode.fims.ncbi.sra.submission.BioSampleMapper;
+import biocode.fims.ncbi.sra.submission.SraMetadataMapper;
+import biocode.fims.ncbi.sra.submission.SubmissionReporter;
+import biocode.fims.ncbi.sra.submission.SubmissionTaskExecuter;
 import biocode.fims.photos.BulkPhotoLoader;
 import biocode.fims.records.FimsRowMapper;
 import biocode.fims.records.GenericRecord;
@@ -31,15 +37,12 @@ import biocode.fims.reader.*;
 import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
-import biocode.fims.repositories.PostgresRecordRepository;
-import biocode.fims.repositories.RecordRepository;
+import biocode.fims.repositories.*;
 import biocode.fims.run.DatasetAction;
 import biocode.fims.run.FimsDatasetAuthorizer;
 import biocode.fims.run.GeomeDatasetAuthorizer;
 import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.tissues.PostgresTissueRepository;
-import biocode.fims.tissues.TissueRepository;
 import biocode.fims.tissues.reader.TissueChildConverter;
 import biocode.fims.tissues.reader.TissueConverter;
 import biocode.fims.validation.RecordValidator;
@@ -59,7 +62,7 @@ import java.util.concurrent.Executors;
  * Configuration class for and GeOMe-db-Fims application. Including cli and webapps
  */
 @Configuration
-@Import({FimsAppConfig.class, PhotosAppConfig.class, EvolutionAppConfig.class})
+@Import({FimsAppConfig.class, PhotosAppConfig.class, EvolutionAppConfig.class, TissueProperties.class})
 // declaring this here allows us to override any properties that are also included in geome-db.props
 @PropertySource(value = "classpath:biocode-fims.props", ignoreResourceNotFound = true)
 @PropertySource("classpath:geome-db.props")
@@ -200,5 +203,25 @@ public class GeomeAppConfig {
     @Bean
     public GeomeDatasetAuthorizer geomeDatasetAuthorizer(ProjectService projectService, FimsDatasetAuthorizer fimsDatasetAuthorizer) {
         return new GeomeDatasetAuthorizer(projectService, fimsDatasetAuthorizer);
+    }
+
+    @Bean
+    public BioSampleMapper bioSampleMapper() {
+        return new GeomeBioSampleMapper();
+    }
+
+    @Bean
+    public SraMetadataMapper sraMetadataMapper() {
+        return new GeomeSraMetadataMapper();
+    }
+
+    @Bean
+    public SubmissionTaskExecuter submissionTaskExecuter(SraSubmissionRepository submissionRepository, TissueProperties tissueProperties) {
+        return new SubmissionTaskExecuter(submissionRepository, tissueProperties);
+    }
+
+    @Bean
+    public SubmissionReporter submissionReporter(SraSubmissionRepository submissionRepository, TissueProperties tissueProperties) {
+        return new SubmissionReporter(submissionRepository, tissueProperties);
     }
 }

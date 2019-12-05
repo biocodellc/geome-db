@@ -32,7 +32,7 @@ import biocode.fims.run.*;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tools.FileCache;
-import biocode.fims.tools.UploadStore;
+import biocode.fims.rest.models.DataProcessorUploadStore;
 import biocode.fims.tools.ValidationStore;
 import biocode.fims.utils.FileUtils;
 import biocode.fims.validation.RecordValidatorFactory;
@@ -78,7 +78,7 @@ public class DatasetController extends FimsController {
     private final QueryAuthorizer queryAuthorizer;
     private final FileCache fileCache;
 
-    private final UploadStore uploadStore;
+    private final DataProcessorUploadStore uploadStore;
     private final ValidationStore validationStore;
 
     public DatasetController(ExpeditionService expeditionService, DataReaderFactory readerFactory,
@@ -98,7 +98,7 @@ public class DatasetController extends FimsController {
         this.fileCache = fileCache;
         this.dataConverterFactory = dataConverterFactory;
 
-        this.uploadStore = new UploadStore();
+        this.uploadStore = new DataProcessorUploadStore();
         this.validationStore = new ValidationStore();
     }
 

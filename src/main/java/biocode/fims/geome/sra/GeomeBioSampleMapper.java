@@ -5,8 +5,8 @@ import biocode.fims.config.Config;
 import biocode.fims.config.models.Entity;
 import biocode.fims.config.models.FastqEntity;
 import biocode.fims.exceptions.SraCode;
-import biocode.fims.fastq.FastqProps;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.ncbi.models.SubmittableBioSample;
 import biocode.fims.records.Record;
 import biocode.fims.ncbi.sra.submission.BioSampleMapper;
 import biocode.fims.query.QueryResult;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * Class that maps geome project attributes to sra BioSample attributes
  */
 public class GeomeBioSampleMapper implements BioSampleMapper {
-    private static final String BLANK_ATTRIBUTE = "missing";
+    private static final String BLANK_ATTRIBUTE = "";
     private static final List<String> BIOSAMPLE_HEADERS_TO_EXCLUDE = new ArrayList<String>() {{
         add("urn:country");
     }};
@@ -54,13 +54,14 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         add("bcid");
     }};
 
-    private final Iterator<Record> recordsIt;
-    private final String parentEntity;
-    private final BcidBuilder bcidBuilder;
-    private final List<Record> records;
-    private final RecordJoiner recordJoiner;
-    private final QueryResults queryResults;
+    private Iterator<Record> recordsIt;
+    private String parentEntity;
+    private BcidBuilder bcidBuilder;
+    private List<Record> records;
+    private RecordJoiner recordJoiner;
+    private QueryResults queryResults;
     private List<String> additionalDataUris = new ArrayList<>();
+    private List<String> headers;
     private Set<String> existingTissues = new HashSet<>();
 
     public GeomeBioSampleMapper(Config config, Entity fastqEntity, QueryResults queryResults, String bcidResolverPrefix) {
@@ -81,6 +82,9 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         this.recordsIt = records.iterator();
     }
 
+    public GeomeBioSampleMapper() {
+    }
+
     @Override
     public boolean hasNextSample() {
         return recordsIt.hasNext();
@@ -88,6 +92,7 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
 
     @Override
     public List<String> getHeaderValues() {
+        if (headers != null) return headers;
         Map<String, String> uriToColumns = new HashMap<>();
 
         // Get all attributes that contain a value, excluding fastqMetadata attributes
@@ -105,35 +110,42 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
                         }
                 );
 
-        List<String> headers = new ArrayList<>(BIOSAMPLE_HEADERS);
+        headers = new ArrayList<>(BIOSAMPLE_HEADERS);
 
         Collection<String> existingValues = BIOSAMPLE_MAPPING.values();
         additionalDataUris = uriToColumns.keySet().stream()
                 .filter(uri -> !existingValues.contains(uri) && !BIOSAMPLE_HEADERS_TO_EXCLUDE.contains(uri))
+                .sorted()
                 .collect(Collectors.toList());
         headers.addAll(additionalDataUris.stream().map(uriToColumns::get).collect(Collectors.toList()));
 
         return headers;
     }
 
-    /**
-     * note: getHeaderValues needs to be called before this method
-     *
-     * @return
-     */
+    @Override
+    public List<SubmittableBioSample> getSubmittableBioSamples() {
+        return records.stream().map(this::recordToBioSample).collect(Collectors.toList());
+    }
+
     @Override
     public List<String> getBioSampleAttributes() {
-        Record record = recordsIt.next();
+        return new ArrayList<>(recordToBioSample(recordsIt.next()).values());
+    }
+
+    private SubmittableBioSample recordToBioSample(Record record) {
+        if (headers == null) getHeaderValues();
+
+        SubmittableBioSample bioSample = new SubmittableBioSample();
 
         // don't output duplicate tissues
         String tissueID = record.get(TissueProps.IDENTIFIER.uri());
-        if (existingTissues.contains(tissueID)) return Collections.emptyList();
+        if (existingTissues.contains(tissueID)) return bioSample;
         existingTissues.add(tissueID);
 
-        List<String> bioSampleAttributes = new ArrayList<>();
-
+        int i = 0;
         for (String uri : BIOSAMPLE_MAPPING.values()) {
-            bioSampleAttributes.add(modifyBlankAttribute(record.get(uri)));
+            bioSample.put(headers.get(i), modifyBlankAttribute(record.get(uri)));
+            i++;
         }
 
         String organism;
@@ -152,9 +164,12 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
             organism = record.get("urn:phylum");
         }
 
-        bioSampleAttributes.add(record.get(FastqProps.LIBRARY_STRATEGY.uri()) + "_" + organism.replace(" ", "_"));
-        bioSampleAttributes.add(organism);
-        bioSampleAttributes.add(getCollectionDate(record));
+        bioSample.put(headers.get(i), organism.replace(" ", "_"));
+        i++;
+        bioSample.put(headers.get(i), organism);
+        i++;
+        bioSample.put(headers.get(i), getCollectionDate(record));
+        i++;
 
         StringBuilder geoLocSb = new StringBuilder();
         geoLocSb.append(record.get("urn:country"));
@@ -163,7 +178,8 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
             geoLocSb.append(": ");
             geoLocSb.append(record.get("urn:locality"));
         }
-        bioSampleAttributes.add(modifyBlankAttribute(geoLocSb.toString()));
+        bioSample.put(headers.get(i), modifyBlankAttribute(geoLocSb.toString()));
+        i++;
 
         StringBuilder depthSb = new StringBuilder();
         if (!StringUtils.isBlank(record.get("urn:minimumDepthInMeters"))) {
@@ -174,24 +190,31 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
                 depthSb.append(record.get("urn:maximumDepthInMeters"));
             }
         }
-        bioSampleAttributes.add(modifyBlankAttribute(depthSb.toString()));
+        bioSample.put(headers.get(i), modifyBlankAttribute(depthSb.toString()));
+        i++;
 
-        bioSampleAttributes.add(modifyBlankAttribute(getLatLong(record)));
+        bioSample.put(headers.get(i), modifyBlankAttribute(getLatLong(record)));
+        i++;
 
-        bioSampleAttributes.add(BLANK_ATTRIBUTE);
-        bioSampleAttributes.add(BLANK_ATTRIBUTE);
-        bioSampleAttributes.add(BLANK_ATTRIBUTE);
+        bioSample.put(headers.get(i), BLANK_ATTRIBUTE);
+        i++;
+        bioSample.put(headers.get(i), BLANK_ATTRIBUTE);
+        i++;
+        bioSample.put(headers.get(i), BLANK_ATTRIBUTE);
+        i++;
 
         // this is the BioSample bcid, which in our case should be the Tissue
         Record tissue = recordJoiner.getParent(this.parentEntity, record);
-        bioSampleAttributes.add(bcidBuilder.build(tissue));
+        bioSample.put(headers.get(i), bcidBuilder.build(tissue));
+        i++;
 
         // add all non-empty data
         for (String uri : additionalDataUris) {
-            bioSampleAttributes.add(record.get(uri));
+            bioSample.put(headers.get(i), record.get(uri));
+            i++;
         }
 
-        return bioSampleAttributes;
+        return bioSample;
     }
 
     private String modifyBlankAttribute(String attribute) {
@@ -272,5 +295,9 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         }
 
         return latLongSb.toString();
+    }
+
+    public GeomeBioSampleMapper newInstance(Config config, Entity fastqEntity, QueryResults queryResults, String bcidResolverPrefix) {
+        return new GeomeBioSampleMapper(config, fastqEntity, queryResults, bcidResolverPrefix);
     }
 }
