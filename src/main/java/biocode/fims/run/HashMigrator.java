@@ -92,7 +92,7 @@ public class HashMigrator {
 
                 int count = 0;
                 for (Record r : recordRepository.getRecords(project, e.getConceptAlias(), GenericRecord.class)) {
-                    Map<String, String> props = new HashMap<>(r.properties());
+                    Map<String, Object> props = new HashMap<>(r.properties());
                     props.remove(e.getUniqueKeyURI());
 
                     Record record = new GenericRecord(props);
@@ -125,7 +125,7 @@ public class HashMigrator {
 
                     for (Entity c : childEntities) {
                         String qs = e.getUniqueKey() + "=" + oldHash + " and _expeditions_:" + r.expeditionCode() + " and _projects_:" + r.projectId();
-                        Query query = Query.factory(project, c.getConceptAlias(), qs);
+                        Query query = Query.build(project, c.getConceptAlias(), qs);
                         QueryResult queryResult = recordRepository.query(query).getResult(c.getConceptAlias());
 
                         String childTable = PostgresUtils.entityTable(project.getNetwork().getId(), c.getConceptAlias());

@@ -15,4 +15,12 @@ public class GeomeProperties extends FimsProperties implements NetworkProperties
     public Integer networkId() {
         return env.getRequiredProperty("networkId", int.class);
     }
+
+    public int sraFetchWeeksInPast() {
+        return env.getProperty("sraFetchWeeksInPast", int.class, 2);
+    }
+
+    public String sraApiKey() {
+        return env.getRequiredProperty("sraApiKey");
+    }
 }

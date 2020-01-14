@@ -6,22 +6,27 @@ import biocode.fims.config.models.Entity;
 import biocode.fims.exceptions.SraCode;
 import biocode.fims.fastq.FastqRecord;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.ncbi.models.SraMetadata;
+import biocode.fims.ncbi.sra.submission.SraMetadataMapper;
 import biocode.fims.records.Record;
 import biocode.fims.ncbi.sra.submission.AbstractSraMetadataMapper;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
 import biocode.fims.records.RecordJoiner;
+import biocode.fims.tissues.TissueProps;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Class that maps geome project attributes to sra metadata
  */
 public class GeomeSraMetadataMapper extends AbstractSraMetadataMapper {
 
-    private final Iterator<Record> recordIt;
-    private final RecordJoiner recordJoiner;
+    private Iterator<Record> recordIt;
+    private RecordJoiner recordJoiner;
+    private List<Record> records;
 
     public GeomeSraMetadataMapper(Config config, Entity fastqEntity, QueryResults queryResults) {
         QueryResult fastqResults = queryResults.getResult(fastqEntity.getConceptAlias());
@@ -30,8 +35,12 @@ public class GeomeSraMetadataMapper extends AbstractSraMetadataMapper {
             throw new FimsRuntimeException(SraCode.MISSING_DATASET, 400);
         }
 
-        this.recordIt = fastqResults.records().iterator();
+        this.records = fastqResults.records();
+        this.recordIt = records.iterator();
         this.recordJoiner = new RecordJoiner(config, fastqEntity, queryResults);
+    }
+
+    public GeomeSraMetadataMapper() {
     }
 
     @Override
@@ -40,9 +49,20 @@ public class GeomeSraMetadataMapper extends AbstractSraMetadataMapper {
     }
 
     @Override
+    public List<SraMetadata> getResourceMetadataAsMap() {
+        return records.stream().map(this::recordToMetadata).collect(Collectors.toList());
+    }
+
+    @Override
     public List<String> getResourceMetadata() {
-        FastqRecord record = (FastqRecord) recordIt.next();
-        List<String> metadata = new ArrayList<>();
+        return new ArrayList<>(recordToMetadata(recordIt.next()).values());
+    }
+
+    private SraMetadata recordToMetadata(Record r) {
+        FastqRecord record = (FastqRecord) r;
+
+        SraMetadata metadata = new SraMetadata();
+        List<String> headers = getHeaderValues();
 
         Record joinedRecord = recordJoiner.joinRecords(record);
 
@@ -59,25 +79,44 @@ public class GeomeSraMetadataMapper extends AbstractSraMetadataMapper {
             title = record.libraryStrategy() + "_" + joinedRecord.get("urn:phylum");
         }
 
-        metadata.add(record.get(FastqProps.IDENTIFIER.toString()));
-        metadata.add(record.get(FastqProps.IDENTIFIER.toString()));
-        metadata.add(title);
-        metadata.add(record.libraryStrategy());
-        metadata.add(record.librarySource());
-        metadata.add(record.librarySelection());
-        metadata.add(record.libraryLayout());
-        metadata.add(record.platform());
-        metadata.add(record.instrumentModel());
-        metadata.add(record.designDescription());
-        metadata.add("fastq");
-        metadata.add(record.filenames().get(0));
+        int i = 0;
+        metadata.put(headers.get(i), joinedRecord.get(TissueProps.IDENTIFIER.uri()));
+        i++;
+        metadata.put(headers.get(i), joinedRecord.get(FastqProps.IDENTIFIER.uri()));
+        i++;
+        metadata.put(headers.get(i), title);
+        i++;
+        metadata.put(headers.get(i), record.libraryStrategy());
+        i++;
+        metadata.put(headers.get(i), record.librarySource());
+        i++;
+        metadata.put(headers.get(i), record.librarySelection());
+        i++;
+        metadata.put(headers.get(i), record.libraryLayout());
+        i++;
+        metadata.put(headers.get(i), record.platform());
+        i++;
+        metadata.put(headers.get(i), record.instrumentModel());
+        i++;
+        metadata.put(headers.get(i), record.designDescription());
+        i++;
+        metadata.put(headers.get(i), "fastq");
+        i++;
+        metadata.put(headers.get(i), record.filenames().get(0));
+        i++;
 
         if (record.libraryLayout().equals("paired")) {
-            metadata.add(record.filenames().get(1));
+            metadata.put(headers.get(i), record.filenames().get(1));
         } else {
-            metadata.add("");
+            metadata.put(headers.get(i), "");
         }
+        i++;
 
         return metadata;
+    }
+
+    @Override
+    public SraMetadataMapper newInstance(Config config, Entity fastqEntity, QueryResults queryResults) {
+        return new GeomeSraMetadataMapper(config, fastqEntity, queryResults);
     }
 }

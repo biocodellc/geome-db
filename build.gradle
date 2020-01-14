@@ -18,13 +18,16 @@ apply plugin: "application"
 apply plugin: "org.biocode.fims-web"
 
 if (!project.hasProperty('fimsCommonsVersion')) {
-    ext.fimsCommonsVersion = "2.0.0"
+    ext.fimsCommonsVersion = "2.2.2"
 }
 if (!project.hasProperty('fimsTissuesVersion')) {
-    ext.fimsTissuesVersion = "2.1.0"
+    ext.fimsTissuesVersion = "2.3.1"
 }
 if (!project.hasProperty('fimsPhotosVersion')) {
-    ext.fimsPhotosVersion = "2.1.0"
+    ext.fimsPhotosVersion = "2.3.0"
+}
+if (!project.hasProperty('fimsEvolutionVersion')) {
+    ext.fimsEvolutionVersion = "1.0.1"
 }
 
 fims {
@@ -58,6 +61,7 @@ dependencies {
     compile composite.resolveDependency("org.biocode:biocode-fims-commons:${fimsCommonsVersion}", ":biocode-fims-commons")
     compile composite.resolveDependency("org.biocode:biocode-fims-tissues:${fimsTissuesVersion}", ":biocode-fims-tissues")
     compile composite.resolveDependency("org.biocode:biocode-fims-photos:${fimsPhotosVersion}", ":biocode-fims-photos")
+    compile composite.resolveDependency("org.biocode:biocode-fims-evolution:${fimsEvolutionVersion}", ":biocode-fims-evolution")
 
     additionalSources(group: 'org.springframework.data', name: 'spring-data-commons', version: '1.10.1.RELEASE', classifier: 'sources') {
         transitive = false
@@ -71,7 +75,7 @@ dependencies {
     additionalSources(group: 'org.biocode', name: 'biocode-fims-photos', version: "${fimsPhotosVersion}", classifier: 'sources') {
         transitive = false
     }
-
+    
     testCompile "junit:junit-dep:4.10"
     integrationTestRuntime group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.9'
     // need to use the following until https://github.com/gradle/gradle/issues/1553 is resolved. Then we can update DependencyResolver dependency substitution code
@@ -112,6 +116,22 @@ task migrateHashes(type: JavaExec) {
     main = "biocode.fims.run.HashMigrator"
 }
 
+task harvestSraBioSamples(type: JavaExec) {
+    classpath = configurations.compile + sourceSets.main.runtimeClasspath
+
+    main = "biocode.fims.run.SraAccessionHarvesterRunner"
+}
+
+task loadEvolutionData(type: JavaExec) {
+    classpath = configurations.compile + sourceSets.main.runtimeClasspath
+
+    if (project.hasProperty("appArgs")) {
+        args Eval.me(appArgs)
+    }
+
+    main = "biocode.fims.run.EvolutionDataLoader"
+}
+
 startScripts {
     classpath = files(jar.archivePath, configurations.compile, configurations.runtime)
 }
@@ -125,7 +145,7 @@ deployFimsLocal {
 //=============================
 
 war {
-    from ("${projectDir}/docs/helpDocumentation.pdf", {
+    from("${projectDir}/docs/helpDocumentation.pdf", {
         into 'docs'
     })
 }

@@ -25,9 +25,10 @@ jobs:
       - checkout
 
       # git clone & co same branch on biocode-fims-commons
-      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-commons; cd repo; git checkout ${CIRCLE_BRANCH}
-      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-tissues; cd repo; git checkout ${CIRCLE_BRANCH}
-      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-photos; cd repo; git checkout ${CIRCLE_BRANCH}
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-commons; cd biocode-fims-commons; git checkout ${CIRCLE_BRANCH}
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-tissues; cd biocode-fims-tissues; git checkout ${CIRCLE_BRANCH}
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-photos; cd biocode-fims-photos; git checkout ${CIRCLE_BRANCH}
+      - run: cd ../; git clone -b ${CIRCLE_BRANCH} https://github.com/biocodellc/biocode-fims-evolution; cd biocode-fims-evolution; git checkout ${CIRCLE_BRANCH}
 
       # Download and cache dependencies
       - restore_cache:
@@ -44,7 +45,7 @@ jobs:
 
       # setup gradle.properties
       - run: cp gradle.template gradle.properties
-      - run: ./gradlew -PbiocodeFimsCommonsDir=../biocode-fims-commons -PmavenUser=${MAVEN_USER} -PmavenPass=${MAVEN_PASS} dependencies
+      - run: ./gradlew -PbiocodeFimsCommonsDir=../biocode-fims-commons -PbiocodeFimsEvolutionDir=../biocode-fims-evolution -PmavenUser=${MAVEN_USER} -PmavenPass=${MAVEN_PASS} dependencies
 
       - save_cache:
           paths:

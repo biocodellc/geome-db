@@ -118,23 +118,24 @@ def migrate_project(psql, mysql, old_project_id, access_token, entities, client_
 
         set_user_projects(psql, project)
         create_project_expeditions(psql, project, client_id, client_secret)
-
-        uri_mapping = get_uri_mapping(project)
-
-        data = {}
-        for expedition in project['expeditions']:
-            data[expedition['expedition_code']] = fetch_expedition_data(old_project_id, expedition['expedition_code'], uri_mapping)
-
-        for expedition in project['expeditions']:
-            if expedition['expedition_code'] in EXCLUDE_EXPEDITIONS:
-                print('SKIPPING EXPEDITION:', expedition['expedition_code'])
-            else:
-                migrate(project['id'], expedition, access_token, data[expedition['expedition_code']], project['config'], accept_warnings)
-
-        update_project_and_expedition_users(psql, project)
+        enable_triggers(psql)
     except BaseException as e:
         enable_triggers(psql)
         raise e
+
+    uri_mapping = get_uri_mapping(project)
+
+    data = {}
+    for expedition in project['expeditions']:
+        data[expedition['expedition_code']] = fetch_expedition_data(old_project_id, expedition['expedition_code'], uri_mapping)
+
+    for expedition in project['expeditions']:
+        if expedition['expedition_code'] in EXCLUDE_EXPEDITIONS:
+            print('SKIPPING EXPEDITION:', expedition['expedition_code'])
+        else:
+            migrate(project['id'], expedition, access_token, data[expedition['expedition_code']], project['config'], accept_warnings)
+
+    update_project_and_expedition_users(psql, project)
 
 
 def disable_triggers(psql):

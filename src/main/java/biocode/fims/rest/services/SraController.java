@@ -2,7 +2,7 @@ package biocode.fims.rest.services;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.rest.FimsController;
-import biocode.fims.rest.services.subResources.PhotosResource;
+import biocode.fims.rest.services.subResources.SraResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -10,23 +10,23 @@ import javax.inject.Singleton;
 import javax.ws.rs.Path;
 
 /**
- * Photo API endpoint
+ * SRA API endpoint
  */
 @Controller
-@Path("/photos")
+@Path("/sra")
 @Singleton
-public class PhotoController extends FimsController {
+public class SraController extends FimsController {
 
     @Autowired
-    PhotoController(FimsProperties props) {
+    SraController(FimsProperties props) {
         super(props);
     }
 
     /**
-     * @responseType biocode.fims.rest.services.subResources.PhotosResource
+     * @responseType biocode.fims.rest.services.subResources.SraResource
      */
     @Path("/")
-    public Class<PhotosResource> getPhotosResource() {
-        return PhotosResource.class;
+    public Class<SraResource> sra() {
+        return SraResource.class;
     }
 }

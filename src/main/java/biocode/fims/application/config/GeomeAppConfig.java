@@ -1,20 +1,28 @@
 package biocode.fims.application.config;
 
+import biocode.fims.config.models.FastaEntity;
+import biocode.fims.config.models.FastqEntity;
 import biocode.fims.config.models.PhotoEntity;
 import biocode.fims.config.models.TissueEntity;
 import biocode.fims.fasta.FastaRecord;
 import biocode.fims.fasta.FastaValidator;
+import biocode.fims.fasta.reader.FastaConverter;
 import biocode.fims.fasta.reader.FastaDataReaderType;
 import biocode.fims.fasta.reader.FastaReader;
-import biocode.fims.fastq.FastqRecord;
-import biocode.fims.fastq.FastqRecordRowMapper;
-import biocode.fims.fastq.FastqValidator;
+import biocode.fims.fastq.*;
+import biocode.fims.fastq.reader.FastqConverter;
 import biocode.fims.fastq.reader.FastqDataReaderType;
 import biocode.fims.fastq.reader.FastqReader;
+import biocode.fims.geome.sra.GeomeBioSampleMapper;
+import biocode.fims.geome.sra.GeomeSraMetadataMapper;
 import biocode.fims.ncbi.entrez.BioSampleRepository;
 import biocode.fims.ncbi.entrez.EntrezApiFactoryImpl;
 import biocode.fims.ncbi.entrez.EntrezApiService;
 import biocode.fims.ncbi.sra.SraAccessionHarvester;
+import biocode.fims.ncbi.sra.submission.BioSampleMapper;
+import biocode.fims.ncbi.sra.submission.SraMetadataMapper;
+import biocode.fims.ncbi.sra.submission.SubmissionReporter;
+import biocode.fims.ncbi.sra.submission.SubmissionTaskExecuter;
 import biocode.fims.photos.BulkPhotoLoader;
 import biocode.fims.records.FimsRowMapper;
 import biocode.fims.records.GenericRecord;
@@ -29,14 +37,13 @@ import biocode.fims.reader.*;
 import biocode.fims.reader.plugins.CSVReader;
 import biocode.fims.reader.plugins.ExcelReader;
 import biocode.fims.reader.plugins.TabReader;
-import biocode.fims.repositories.PostgresRecordRepository;
-import biocode.fims.repositories.RecordRepository;
+import biocode.fims.repositories.*;
+import biocode.fims.run.DatasetAction;
 import biocode.fims.run.FimsDatasetAuthorizer;
 import biocode.fims.run.GeomeDatasetAuthorizer;
 import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectService;
-import biocode.fims.tissues.PostgresTissueRepository;
-import biocode.fims.tissues.TissueRepository;
+import biocode.fims.tissues.reader.TissueChildConverter;
 import biocode.fims.tissues.reader.TissueConverter;
 import biocode.fims.validation.RecordValidator;
 import biocode.fims.validation.RecordValidatorFactory;
@@ -55,7 +62,7 @@ import java.util.concurrent.Executors;
  * Configuration class for and GeOMe-db-Fims application. Including cli and webapps
  */
 @Configuration
-@Import({FimsAppConfig.class, PhotosAppConfig.class})
+@Import({FimsAppConfig.class, PhotosAppConfig.class, EvolutionAppConfig.class, TissueProperties.class})
 // declaring this here allows us to override any properties that are also included in geome-db.props
 @PropertySource(value = "classpath:biocode-fims.props", ignoreResourceNotFound = true)
 @PropertySource("classpath:geome-db.props")
@@ -69,7 +76,8 @@ public class GeomeAppConfig {
     NetworkService networkService;
     @Autowired
     PhotosProperties photosProperties;
-
+    @Autowired
+    FimsProperties fimsProperties;
 
     @Bean
     public DataReaderFactory dataReaderFactory() {
@@ -93,11 +101,30 @@ public class GeomeAppConfig {
 
     @Bean
     public DataConverterFactory dataConverterFactory() {
-        Map<String, DataConverter> dataConverters = new HashMap<>();
-        dataConverters.put(PhotoEntity.TYPE, new PhotoConverter(photosAppConfig.photosSql(), recordRepository()));
-        dataConverters.put(TissueEntity.TYPE, new TissueConverter(tissueRepository()));
+        Map<String, List<DataConverter>> dataConverters = new HashMap<>();
+        dataConverters.put(PhotoEntity.TYPE, Collections.singletonList(new PhotoConverter(photosAppConfig.photosSql(), recordRepository())));
+        dataConverters.put(TissueEntity.TYPE, Collections.singletonList(new TissueConverter(tissueRepository())));
+
+        TissueChildConverter tcConverter = new TissueChildConverter(tissueRepository());
+
+        List<DataConverter> fastaConverters = new ArrayList<>();
+        fastaConverters.add(tcConverter);
+        fastaConverters.add(new FastaConverter());
+        dataConverters.put(FastaEntity.TYPE, fastaConverters);
+
+        List<DataConverter> fastqConverters = new ArrayList<>();
+        fastqConverters.add(tcConverter);
+        fastqConverters.add(new FastqConverter(fastqRepository()));
+        dataConverters.put(FastqEntity.TYPE, fastqConverters);
 
         return new DataConverterFactory(dataConverters);
+    }
+
+    @Bean
+    public List<DatasetAction> datasetActions(EvolutionAppConfig evolutionAppConfig) {
+        List<DatasetAction> actions = new ArrayList<>();
+        actions.add(evolutionAppConfig.evolutionDatasetAction());
+        return actions;
     }
 
     @Bean
@@ -121,7 +148,7 @@ public class GeomeAppConfig {
         rowMappers.put(GenericRecord.class, new GenericRecordRowMapper());
         rowMappers.put(FastqRecord.class, new FastqRecordRowMapper());
 
-        return new PostgresRecordRepository(fimsAppConfig.jdbcTemplate, yaml.getObject(), rowMappers);
+        return new PostgresRecordRepository(fimsAppConfig.jdbcTemplate, yaml.getObject(), rowMappers, fimsProperties);
     }
 
     @Bean
@@ -130,6 +157,14 @@ public class GeomeAppConfig {
         yaml.setResources(new ClassPathResource("tissue-repository-sql.yml"));
 
         return new PostgresTissueRepository(fimsAppConfig.jdbcTemplate, yaml.getObject());
+    }
+
+    @Bean
+    public FastqRepository fastqRepository() {
+        YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
+        yaml.setResources(new ClassPathResource("fastq-repository-sql.yml"));
+
+        return new PostgresFastqRepository(fimsAppConfig.jdbcTemplate, yaml.getObject());
     }
 
     @Bean
@@ -146,16 +181,16 @@ public class GeomeAppConfig {
     }
 
     @Bean
-    public BulkPhotoLoader bulkPhotoLoader(FimsProperties props, GeomeDatasetAuthorizer geomeDatasetAuthorizer) {
-        return new BulkPhotoLoader(dataReaderFactory(), recordValidatorFactory(), recordRepository(), dataConverterFactory(), geomeDatasetAuthorizer, props);
+    public BulkPhotoLoader bulkPhotoLoader(FimsProperties props, GeomeDatasetAuthorizer geomeDatasetAuthorizer, EvolutionAppConfig evolutionAppConfig) {
+        return new BulkPhotoLoader(dataReaderFactory(), recordValidatorFactory(), recordRepository(), dataConverterFactory(), geomeDatasetAuthorizer, datasetActions(evolutionAppConfig), props);
     }
 
     @Bean
-    public SraAccessionHarvester sraAccessionHarvester(GeomeProperties geomeProperties, ProjectService projectService) {
-        EntrezApiFactoryImpl apiFactory = new EntrezApiFactoryImpl(ClientBuilder.newClient());
-        EntrezApiService entrezApiService = new EntrezApiService(apiFactory);
+    public SraAccessionHarvester sraAccessionHarvester(ProjectService projectService, GeomeProperties props) {
+        EntrezApiFactoryImpl apiFactory = new EntrezApiFactoryImpl(props.sraApiKey(), ClientBuilder.newClient());
+        EntrezApiService entrezApiService = new EntrezApiService(apiFactory, props.sraFetchWeeksInPast());
         BioSampleRepository bioSampleRepository = new BioSampleRepository(entrezApiService);
-        return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService, geomeProperties);
+        return new SraAccessionHarvester(recordRepository(), bioSampleRepository, projectService, props);
     }
 
     @Primary
@@ -168,5 +203,25 @@ public class GeomeAppConfig {
     @Bean
     public GeomeDatasetAuthorizer geomeDatasetAuthorizer(ProjectService projectService, FimsDatasetAuthorizer fimsDatasetAuthorizer) {
         return new GeomeDatasetAuthorizer(projectService, fimsDatasetAuthorizer);
+    }
+
+    @Bean
+    public BioSampleMapper bioSampleMapper() {
+        return new GeomeBioSampleMapper();
+    }
+
+    @Bean
+    public SraMetadataMapper sraMetadataMapper() {
+        return new GeomeSraMetadataMapper();
+    }
+
+    @Bean
+    public SubmissionTaskExecuter submissionTaskExecuter(SraSubmissionRepository submissionRepository, TissueProperties tissueProperties) {
+        return new SubmissionTaskExecuter(submissionRepository, tissueProperties);
+    }
+
+    @Bean
+    public SubmissionReporter submissionReporter(SraSubmissionRepository submissionRepository, TissueProperties tissueProperties) {
+        return new SubmissionReporter(submissionRepository, tissueProperties);
     }
 }

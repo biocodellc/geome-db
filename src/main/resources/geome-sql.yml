@@ -1,6 +1,7 @@
 expeditionStats: >
-  SELECT e.expedition_code AS "expeditionCode", e.expedition_title AS "expeditionTitle", e.identifier as "expeditionIdentifier" ${entityCounts}
+  SELECT e.expedition_code AS "expeditionCode", e.expedition_title AS "expeditionTitle", e.identifier as "expeditionIdentifier", u.first_name as "ownerFirstName", u.last_name as "ownerLastName", u.email as "ownerEmail" ${entityCounts}
   FROM expeditions AS e
+  LEFT JOIN users AS u on e.user_id = u.id
   ${entityJoins}
   WHERE e.project_id = ${projectId} AND (e.public = true OR e.public <> ${includePrivate})
   ORDER BY lower(e.expedition_code)
@@ -12,10 +13,35 @@ singleExpeditionStats: >
   WHERE e.project_id = ${projectId} AND e.expedition_code = :expeditionCode
   ORDER BY lower(e.expedition_code)
 
-expeditionStatsEntityCounts: >
+statsEntityCounts: >
   COALESCE(${entity}.ct, 0) as "${entity}Count"
 
 expeditionStatsEntityJoins: >
   LEFT JOIN (
     SELECT expedition_id, count(*) as ct FROM ${table} GROUP BY expedition_id
   ) AS ${entity} on ${entity}.expedition_id = e.id
+
+projectStats: >
+  SELECT
+    p.id AS "projectId", p.project_title AS "projectTitle", p.latest_data_modification as "latestDataModification", p.description AS "description", p.public AS "public",
+    p.principal_investigator AS "principalInvestigator",
+    p.principal_investigator_affiliation AS "principalInvestigatorAffiliation",
+    p.project_contact AS "projectContact",
+    p.project_contact_email AS "projectContactEmail",
+    p.publication_guid AS "publicationGuid",
+    p.project_data_guid AS "projectDataGuid",
+    p.recommended_citation AS "recommendedCitation",
+    pc.id AS "configId", pc.name AS "configName", pc.description AS "configDescription", pc.network_approved AS "configNetworkApproved",
+    u.id AS "userId", u.username AS "username", u.email AS "email"
+    ${entityCounts}
+  FROM projects AS p
+  LEFT JOIN users AS u on p.user_id = u.id
+  LEFT JOIN project_configurations AS pc on p.config_id = pc.id
+  ${entityJoins}
+  WHERE (p.public = ${includePublic} OR p.id in (SELECT project_id from user_projects AS up where up.user_id = ${userId}))
+  ORDER BY lower(p.project_title)
+
+projectStatsEntityJoins: >
+  LEFT JOIN (
+    SELECT project_id, count(*) as ct FROM ${table} LEFT JOIN expeditions e ON e.id = ${table}.expedition_id GROUP BY e.project_id
+  ) AS ${entity} on ${entity}.project_id = p.id

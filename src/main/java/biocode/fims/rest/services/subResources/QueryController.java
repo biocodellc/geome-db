@@ -2,11 +2,16 @@ package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.GeomeProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
+import biocode.fims.bcid.BcidBuilder;
 import biocode.fims.config.Config;
 import biocode.fims.config.models.FastaEntity;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
 import biocode.fims.models.Network;
+import biocode.fims.models.User;
 import biocode.fims.query.QueryResult;
+import biocode.fims.records.GenericRecord;
+import biocode.fims.records.Record;
+import biocode.fims.records.RecordJoiner;
 import biocode.fims.records.RecordSources;
 import biocode.fims.config.models.Attribute;
 import biocode.fims.config.models.Entity;
@@ -27,9 +32,15 @@ import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectService;
 import biocode.fims.tools.FileCache;
 import biocode.fims.utils.FileUtils;
+import biocode.fims.evolution.models.EvolutionRecordReference;
+import biocode.fims.evolution.processing.EvolutionDiscoveryTask;
+import biocode.fims.evolution.processing.EvolutionRetrievalTask;
+import biocode.fims.evolution.processing.EvolutionTaskExecutor;
+import biocode.fims.evolution.service.EvolutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
@@ -37,15 +48,19 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Controller
 @Produces(MediaType.APPLICATION_JSON)
+@Scope(value = "prototype")
 public class QueryController extends FimsController {
     private static final Logger logger = LoggerFactory.getLogger(QueryController.class);
 
     private final GeomeProperties props;
     private final RecordRepository recordRepository;
     private final QueryAuthorizer queryAuthorizer;
+    private final EvolutionTaskExecutor taskExecutor;
+    private final EvolutionService evolutionService;
     private final ProjectService projectService;
     private final NetworkService networkService;
     private final FileCache fileCache;
@@ -57,11 +72,14 @@ public class QueryController extends FimsController {
 
     @Autowired
     QueryController(GeomeProperties props, RecordRepository recordRepository, QueryAuthorizer queryAuthorizer,
-                    ProjectService projectService, NetworkService networkService, FileCache fileCache) {
+                    EvolutionTaskExecutor taskExecutor, EvolutionService evolutionService, ProjectService projectService,
+                    NetworkService networkService, FileCache fileCache) {
         super(props);
         this.props = props;
         this.recordRepository = recordRepository;
         this.queryAuthorizer = queryAuthorizer;
+        this.taskExecutor = taskExecutor;
+        this.evolutionService = evolutionService;
         this.projectService = projectService;
         this.networkService = networkService;
         this.fileCache = fileCache;
@@ -82,7 +100,7 @@ public class QueryController extends FimsController {
     @POST
     @Path("/json/")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public PaginatedResponse<Map<String, List<Map<String, String>>>> queryJsonAsPost(
+    public PaginatedResponse<Map<String, List<Map<String, Object>>>> queryJsonAsPost(
             @FormParam("query") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
@@ -104,7 +122,7 @@ public class QueryController extends FimsController {
     @Compress
     @GET
     @Path("/json/")
-    public PaginatedResponse<Map<String, List<Map<String, String>>>> queryJson(
+    public PaginatedResponse<Map<String, List<Map<String, Object>>>> queryJson(
             @QueryParam("q") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
@@ -112,11 +130,29 @@ public class QueryController extends FimsController {
         return json(queryString, page, limit, s);
     }
 
-    private PaginatedResponse<Map<String, List<Map<String, String>>>> json(String queryString, int page, int limit, String s) {
+    private PaginatedResponse<Map<String, List<Map<String, Object>>>> json(String queryString, int page, int limit, String s) {
         List<String> sources = s != null ? Arrays.asList(s.split(",")) : Collections.emptyList();
 
         Query query = buildQuery(queryString, page, limit);
-        return recordRepository.query(query, RecordSources.factory(sources, entity), true);
+        PaginatedResponse<Map<String, List<Map<String, Object>>>> response = recordRepository.query(query, RecordSources.factory(sources, entity), true, false);
+
+        try {
+            String eventId = UUID.randomUUID().toString();
+            String userId = userContext.getUser() != null ? props.userURIPrefix() + userContext.getUser().getUserId() : null;
+            for (Map.Entry<String, List<Map<String, Object>>> entry : response.content.entrySet()) {
+                List<EvolutionRecordReference> references = entry.getValue()
+                        .stream()
+                        .map(r -> new EvolutionRecordReference(props.bcidResolverPrefix() + String.valueOf(r.get("bcid")), eventId, userId))
+                        .collect(Collectors.toList());
+
+                EvolutionDiscoveryTask task = new EvolutionDiscoveryTask(evolutionService, references);
+                taskExecutor.addTask(task);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to execute EvolutionDiscoveryTask");
+        }
+
+        return response;
     }
 
     /**
@@ -149,8 +185,14 @@ public class QueryController extends FimsController {
 
     private FileResponse csv(String queryString) {
         QueryResults queryResults = run(queryString);
+        notifyEvolutionOfRetrievals(queryResults);
 
         try {
+            if (project == null) {
+                System.out.println("project: null");
+            } else {
+                System.out.println("project: " + project.getProjectId());
+            }
             QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, ",", getConfig());
 
             List<File> files = queryWriter.write();
@@ -195,6 +237,7 @@ public class QueryController extends FimsController {
     private FileResponse kml(String queryString) {
         Query query = buildQuery(queryString);
         QueryResults queryResults = recordRepository.query(query);
+        notifyEvolutionOfRetrievals(queryResults);
 
         if (queryResults.results().size() > 1) {
             throw new FimsRuntimeException(QueryCode.UNSUPPORTED_QUERY, "Multi-select queries not supported", 400);
@@ -245,6 +288,7 @@ public class QueryController extends FimsController {
     public FileResponse queryCspace(@QueryParam("q") String queryString) {
 
         QueryResults queryResults = run(queryString);
+        notifyEvolutionOfRetrievals(queryResults);
 
         if (queryResults.results().size() > 1) {
             throw new FimsRuntimeException(QueryCode.UNSUPPORTED_QUERY, "Multi-select queries not supported", 400);
@@ -287,8 +331,8 @@ public class QueryController extends FimsController {
             parentEntity = config.entity(parentEntity.getParentEntity());
         } while (parentEntity.isChildEntity());
 
-        List<String> entities = config.entitiesInRelation(parentEntity, e).stream()
-                .map(Entity::getConceptAlias)
+        List<String> entities = config.getEntityRelations(parentEntity, e).stream()
+                .flatMap(r -> Stream.of(r.getChildEntity().getConceptAlias(), r.getParentEntity().getConceptAlias()))
                 .collect(Collectors.toList());
 
         queryString += " _select_:[" + String.join(",", entities) + "]";
@@ -296,9 +340,17 @@ public class QueryController extends FimsController {
         QueryResults queryResults = run(queryString);
         if (queryResults.isEmpty()) return null;
 
+        notifyEvolutionOfRetrievals(queryResults);
         try {
+            RecordJoiner joiner = new RecordJoiner(getConfig(), e, queryResults);
+
+            LinkedList<Record> tissues = queryResults.getResult(e.getConceptAlias())
+                    .records().stream()
+                    .map(joiner::joinRecords)
+                    .collect(Collectors.toCollection(LinkedList::new));
+
             // call getConfig() again here b/c it will be set to the ProjectConfig if the query was against a single project
-            QueryWriter queryWriter = new FastaQueryWriter(queryResults.getResult(e.getConceptAlias()), getConfig());
+            QueryWriter queryWriter = new FastaQueryWriter(new QueryResult(tissues, e, config.entity(e.getParentEntity()), props.bcidResolverPrefix()), getConfig());
 
             List<QueryResult> metadataResults = queryResults.results().stream()
                     .filter(r -> !r.entity().equals(e))
@@ -352,6 +404,7 @@ public class QueryController extends FimsController {
 
     private FileResponse tsv(String queryString) {
         QueryResults queryResults = run(queryString);
+        notifyEvolutionOfRetrievals(queryResults);
 
         try {
             QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, "\t", getConfig());
@@ -399,6 +452,7 @@ public class QueryController extends FimsController {
     private FileResponse excel(String queryString) {
         Query query = buildQuery(queryString);
         QueryResults queryResults = recordRepository.query(query);
+        notifyEvolutionOfRetrievals(queryResults);
 
         try {
             // If project, then this is a single project query
@@ -415,6 +469,24 @@ public class QueryController extends FimsController {
             }
 
             throw e;
+        }
+    }
+
+    private void notifyEvolutionOfRetrievals(QueryResults queryResults) {
+        try {
+            String eventId = UUID.randomUUID().toString();
+            String userId = userContext.getUser() != null ? props.userURIPrefix() + userContext.getUser().getUserId() : null;
+            for (QueryResult queryResult: queryResults) {
+                List<EvolutionRecordReference> references = queryResult.get(false, true)
+                        .stream()
+                        .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid")), eventId, userId))
+                        .collect(Collectors.toList());
+
+                EvolutionRetrievalTask task = new EvolutionRetrievalTask(evolutionService, references);
+                taskExecutor.addTask(task);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to execute EvolutionRetrievalTask", e);
         }
     }
 
@@ -454,16 +526,21 @@ public class QueryController extends FimsController {
 
     private Query buildQuery(String queryString, Integer page, Integer limit) {
         network = getNetwork();
+        User user = userContext.getUser();
 
-        Query query = Query.factory(network, entity, queryString, page, limit);
+        Query query = Query.build(network, entity, queryString, page, limit);
 
         List<Integer> projects = query.projects();
 
         if (projects.isEmpty()) {
+            // If no projects are specified, we must restrict the query to public projects & those projects that a user
+            // is a member of
 
-            // TODO need to authorize network query? Currently the repo will only query public expeditions if none are specified
-            // possible to just query public projects if none are specified?
+            List<Integer> restrictToProjects = projectService.getProjects(user, true).stream()
+                    .map(Project::getProjectId)
+                    .collect(Collectors.toList());
 
+            query.restrictToProjects(restrictToProjects);
         } else {
             if (projects.size() == 1) {
                 project = projectService.getProject(projects.get(0));
@@ -477,6 +554,9 @@ public class QueryController extends FimsController {
                 throw new ForbiddenRequestException("unauthorized query.");
             }
         }
+
+        // Only public expeditions are queryable for non-authenticated users
+        if (user == null) query.restrictToPublicExpeditions();
 
         return query;
     }
