@@ -157,6 +157,14 @@ public class ProjectController extends BaseProjectsController {
                     project.put("description", rs.getString("description"));
                     project.put("public", rs.getBoolean("public"));
                     project.put("user", user);
+                    project.put("principalInvestigator", rs.getString("principalInvestigator"));
+                    project.put("principalInvestigatorAffiliation", rs.getString("principalInvestigatorAffiliation"));
+                    project.put("projectContact", rs.getString("projectContact"));
+                    project.put("projectContactEmail", rs.getString("projectContactEmail"));
+                    project.put("publicationGuid", rs.getString("publicationGuid"));
+                    project.put("projectDataGuid", rs.getString("projectDataGuid"));
+                    project.put("recommendedCitation", rs.getString("recommendedCitation"));
+
                     project.put("projectConfiguration", config);
                     project.put("entityStats", entityStats);
 
