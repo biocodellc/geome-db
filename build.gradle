@@ -27,7 +27,7 @@ if (!project.hasProperty('fimsPhotosVersion')) {
     ext.fimsPhotosVersion = "2.3.0"
 }
 if (!project.hasProperty('fimsEvolutionVersion')) {
-    ext.fimsEvolutionVersion = "1.0.1"
+    ext.fimsEvolutionVersion = "1.0.2"
 }
 
 fims {
