@@ -8,6 +8,9 @@ ssh deploy@biscicol3.acis.ufl.edu <<'ENDSSH'
     git checkout master
     git pull
 
+    sudo cp /home/deploy/code/prod/geome-db/deploy/production/crontab.conf /etc/cron.d/geome_production
+    sudo chmod 600 /etc/cron.d/geome_production
+
     ./gradlew clean &&
     ./gradlew -PforceJars=true -Penvironment=production war &&
     sudo cp /home/deploy/code/prod/geome-db/dist/geome-db.war /opt/web/prod/webapps/geome-db.war &&
