@@ -6,7 +6,7 @@ import biocode.fims.config.models.Entity;
 import biocode.fims.config.models.FastqEntity;
 import biocode.fims.exceptions.SraCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
-import biocode.fims.ncbi.models.SubmittableBioSample;
+import biocode.fims.ncbi.models.GeomeBioSample;
 import biocode.fims.records.Record;
 import biocode.fims.ncbi.sra.submission.BioSampleMapper;
 import biocode.fims.query.QueryResult;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * Class that maps geome project attributes to sra BioSample attributes
  */
 public class GeomeBioSampleMapper implements BioSampleMapper {
-    private static final String BLANK_ATTRIBUTE = "";
+    private static final String BLANK_ATTRIBUTE = "missing";
     private static final List<String> BIOSAMPLE_HEADERS_TO_EXCLUDE = new ArrayList<String>() {{
         add("urn:country");
     }};
@@ -123,7 +123,7 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
     }
 
     @Override
-    public List<SubmittableBioSample> getSubmittableBioSamples() {
+    public List<GeomeBioSample> getBioSamples() {
         return records.stream().map(this::recordToBioSample).collect(Collectors.toList());
     }
 
@@ -132,10 +132,10 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
         return new ArrayList<>(recordToBioSample(recordsIt.next()).values());
     }
 
-    private SubmittableBioSample recordToBioSample(Record record) {
+    private GeomeBioSample recordToBioSample(Record record) {
         if (headers == null) getHeaderValues();
 
-        SubmittableBioSample bioSample = new SubmittableBioSample();
+        GeomeBioSample bioSample = new GeomeBioSample();
 
         // don't output duplicate tissues
         String tissueID = record.get(TissueProps.IDENTIFIER.uri());
