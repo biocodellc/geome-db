@@ -1,7 +1,9 @@
 package biocode.fims.rest;
 
 import biocode.fims.application.config.GeomeProperties;
+import biocode.fims.rest.services.subResources.PhotosResource;
 import biocode.fims.rest.services.subResources.QueryController;
+import biocode.fims.rest.services.subResources.SraResource;
 import biocode.fims.tissues.PlateResource;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,8 @@ public class GeomeApplication extends FimsApplication {
         register(GZIPWriterInterceptor.class);
         register(QueryController.class);
         register(PlateResource.class);
+        register(SraResource.class);
+        register(PhotosResource.class);
         register(new SingleNetworkFeature(props.networkId()));
     }
 }
