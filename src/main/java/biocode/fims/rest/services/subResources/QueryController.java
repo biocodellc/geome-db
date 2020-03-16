@@ -333,8 +333,11 @@ public class QueryController extends FimsController {
 
         List<String> entities = config.getEntityRelations(parentEntity, e).stream()
                 .flatMap(r -> Stream.of(r.getChildEntity().getConceptAlias(), r.getParentEntity().getConceptAlias()))
+                .distinct()
                 .collect(Collectors.toList());
 
+        // remove any existing select expression
+        queryString = queryString.replaceAll("_select_:\\[.*?]", "");
         queryString += " _select_:[" + String.join(",", entities) + "]";
 
         QueryResults queryResults = run(queryString);
