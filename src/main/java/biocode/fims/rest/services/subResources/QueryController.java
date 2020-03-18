@@ -188,11 +188,6 @@ public class QueryController extends FimsController {
         notifyEvolutionOfRetrievals(queryResults);
 
         try {
-            if (project == null) {
-                System.out.println("project: null");
-            } else {
-                System.out.println("project: " + project.getProjectId());
-            }
             QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, ",", getConfig());
 
             List<File> files = queryWriter.write();
