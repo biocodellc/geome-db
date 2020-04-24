@@ -31,6 +31,7 @@ projectStats: >
     p.publication_guid AS "publicationGuid",
     p.project_data_guid AS "projectDataGuid",
     p.recommended_citation AS "recommendedCitation",
+    p.license AS "license",
     pc.id AS "configId", pc.name AS "configName", pc.description AS "configDescription", pc.network_approved AS "configNetworkApproved",
     u.id AS "userId", u.username AS "username", u.email AS "email"
     ${entityCounts}
