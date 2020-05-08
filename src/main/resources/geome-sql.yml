@@ -24,6 +24,7 @@ expeditionStatsEntityJoins: >
 projectStats: >
   SELECT
     p.id AS "projectId", p.project_title AS "projectTitle", p.latest_data_modification as "latestDataModification", p.description AS "description", p.public AS "public",
+    p.discoverable AS "discoverable",
     p.principal_investigator AS "principalInvestigator",
     p.principal_investigator_affiliation AS "principalInvestigatorAffiliation",
     p.project_contact AS "projectContact",
@@ -31,6 +32,7 @@ projectStats: >
     p.publication_guid AS "publicationGuid",
     p.project_data_guid AS "projectDataGuid",
     p.recommended_citation AS "recommendedCitation",
+    p.license AS "license",
     pc.id AS "configId", pc.name AS "configName", pc.description AS "configDescription", pc.network_approved AS "configNetworkApproved",
     u.id AS "userId", u.username AS "username", u.email AS "email"
     ${entityCounts}
@@ -38,7 +40,7 @@ projectStats: >
   LEFT JOIN users AS u on p.user_id = u.id
   LEFT JOIN project_configurations AS pc on p.config_id = pc.id
   ${entityJoins}
-  WHERE (p.public = ${includePublic} OR p.id in (SELECT project_id from user_projects AS up where up.user_id = ${userId}))
+  WHERE (p.discoverable = true OR p.public = ${includePublic} OR p.id in (SELECT project_id from user_projects AS up where up.user_id = ${userId}))
   ORDER BY lower(p.project_title)
 
 projectStatsEntityJoins: >

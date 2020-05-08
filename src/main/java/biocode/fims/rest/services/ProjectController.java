@@ -137,7 +137,7 @@ public class ProjectController extends BaseProjectsController {
         params.put("includePublic", includePublic.toString());
         params.put("userId", userContext.getUser() == null ? "0" : String.valueOf(userContext.getUser().getUserId()));
 
-        return recordRepository.query(
+        return recordRepository.query (
                 StrSubstitutor.replace(sql, params),
                 null,
                 (rs, rowNum) -> {
@@ -164,6 +164,8 @@ public class ProjectController extends BaseProjectsController {
                     project.put("publicationGuid", rs.getString("publicationGuid"));
                     project.put("projectDataGuid", rs.getString("projectDataGuid"));
                     project.put("recommendedCitation", rs.getString("recommendedCitation"));
+                    project.put("license", rs.getString("license"));
+                    project.put("discoverable", rs.getBoolean("discoverable"));
 
                     project.put("projectConfiguration", config);
                     project.put("entityStats", entityStats);
