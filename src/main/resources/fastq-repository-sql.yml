@@ -1,0 +1,5 @@
+getRecords: >
+  SELECT data, expedition_code AS "expeditionCode"
+  FROM ${table} t
+  JOIN expeditions e on t.expedition_id = e.id
+  WHERE t.parent_identifier in (:parentIdentifiers) and e.project_id = :projectId
