@@ -3,8 +3,3 @@ rootProject.name = 'geome-db'
 if (hasProperty("gradleFimsDir") && file(gradleFimsDir).exists()) {
     includeBuild gradleFimsDir
 }
-
-if (hasProperty("biocodeFimsEvolutionDir")) {
-    include ":biocode-fims-evolution"
-    project(":biocode-fims-evolution").projectDir = file(biocodeFimsEvolutionDir)
-}
