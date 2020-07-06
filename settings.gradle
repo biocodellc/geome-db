@@ -4,17 +4,6 @@ if (hasProperty("gradleFimsDir") && file(gradleFimsDir).exists()) {
     includeBuild gradleFimsDir
 }
 
-if (hasProperty("biocodeFimsCommonsDir")) {
-//    include ":biocode-fims-commons"
-//    project(":biocode-fims-commons").projectDir = file(biocodeFimsCommonsDir)
-}
-
-include "tissues"
-//if (hasProperty("biocodeFimsTissuesDir")) {
-//    include ":biocode-fims-tissues"
-//    project(":biocode-fims-tissues").projectDir = file(biocodeFimsTissuesDir)
-//}
-
 if (hasProperty("biocodeFimsEvolutionDir")) {
     include ":biocode-fims-evolution"
     project(":biocode-fims-evolution").projectDir = file(biocodeFimsEvolutionDir)
