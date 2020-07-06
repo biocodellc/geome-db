@@ -15,12 +15,7 @@ include "tissues"
 //    project(":biocode-fims-tissues").projectDir = file(biocodeFimsTissuesDir)
 //}
 
-if (hasProperty("biocodeFimsPhotosDir")) {
-//    include ":biocode-fims-photos"
-//    project(":biocode-fims-photos").projectDir = file(biocodeFimsPhotosDir)
-}
-
 if (hasProperty("biocodeFimsEvolutionDir")) {
-//    include ":biocode-fims-evolution"
-//    project(":biocode-fims-evolution").projectDir = file(biocodeFimsEvolutionDir)
+    include ":biocode-fims-evolution"
+    project(":biocode-fims-evolution").projectDir = file(biocodeFimsEvolutionDir)
 }

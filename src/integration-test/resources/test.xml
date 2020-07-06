@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<fims>
+    <metadata></metadata>
+
+    <validation>
+        <worksheet sheetname="Samples">
+
+            <rule type="validForURI" column="eventId" level="error"/>
+            <rule type="uniqueValue" column="eventId" level="error"/>
+        </worksheet>
+
+        <worksheet sheetname="Photos">
+            <rule type="isValidUrl" column="originalPhotoUrl" level="error"/>
+            <rule type="uniqueValue" column="originalPhotoUrl" level="error"/>
+            <rule type="compositeUniqueValue" level="error">
+                <field>eventId</field>
+                <field>photoId</field>
+            </rule>
+
+            <rule type="RequiredColumns" column="RequiredColumns" level="error">
+                <field>eventId</field>
+                <field>photoId</field>
+                <field>originalPhotoUrl</field>
+            </rule>
+
+            <rule type="RequiredColumns" column="RequiredColumns" level="warning">
+                <field>photoNotes</field>
+            </rule>
+        </worksheet>
+    </validation>
+
+    <mapping>
+        <entity worksheet="Samples" uniqueKey="eventId" conceptAlias="Event">
+            <attribute column="eventId" uri="urn:eventId" dataType="string" />
+            <attribute column="principalInvestigator" uri="urn:principalInvestigator"
+                        definedBy="urn:PrincipalInvestigator" />
+        </entity>
+
+        <childEntity worksheet="Photos" conceptAlias="fimsPhotos" parentEntityConceptAlias="Event" uniqueKey="photoId">
+            <attribute column="eventId" uri="urn:eventId" dataType="string" />
+            <attribute column="photoId" uri="urn:photoId" dataType="string" />
+            <attribute column="originalPhotoUrl" uri="urn:originalPhotoUrl" dataType="string" />
+            <attribute column="photoNotes" uri="urn:photoNotes" dataType="string" />
+        </childEntity>
+    </mapping>
+</fims>
