@@ -23,34 +23,9 @@ function publishLocal()
     fi;
 }
 
-echo "attempting to run publishToMavenLocal task for biocode-fims-commons subproject"
-commonsVersion=$(publishLocal "biocodeFimsCommonsDir")
-echo "attempting to run publishToMavenLocal task for biocode-fims-tissues subproject"
-tissuesVersion=$(publishLocal "biocodeFimsTissuesDir")
-echo "attempting to run publishToMavenLocal task for biocode-fims-photos subproject"
-photosVersion=$(publishLocal "biocodeFimsPhotosDir")
-echo "attempting to run publishToMavenLocal task for biocode-fims-evolution subproject"
-evolutionVersion=$(publishLocal "biocodeFimsEvolutionDir")
-
 cd "${scriptDir}/../"
 
 args="-PforceJars=true"
-
-if [ ! -z "$commonsVersion" ]; then
-    args="$args -PfimsCommonsVersion=$commonsVersion"
-fi;
-
-if [ ! -z "$tissuesVersion" ]; then
-    args="$args -PfimsTissuesVersion=$tissuesVersion"
-fi;
-
-if [ ! -z "$photosVersion" ]; then
-    args="$args -PfimsPhotosVersion=$photosVersion"
-fi;
-
-if [ ! -z "$evolutionVersion" ]; then
-    args="$args -PfimsEvolutionVersion=$evolutionVersion"
-fi;
 
 echo "running    ->    ./gradlew ${args} generateRestApiDocs"
 echo ""

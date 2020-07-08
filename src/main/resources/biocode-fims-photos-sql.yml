@@ -1,0 +1,12 @@
+getRecords: >
+  SELECT r.data AS data, e.expedition_code AS "expeditionCode", e.project_id AS "projectID"
+  FROM ${table} AS r
+    INNER JOIN expeditions e on r.expedition_id = e.id
+  WHERE e.expedition_code = :expeditionCode AND parent_identifier IN (:idList)
+
+unprocessedPhotos: >
+  SELECT r.data AS data, e.expedition_code AS "expeditionCode", e.project_id AS "projectID"
+  FROM ${table} AS r
+    INNER JOIN expeditions e on r.expedition_id = e.id
+  WHERE (r.data->>'processed')::boolean = false
+

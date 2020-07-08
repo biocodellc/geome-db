@@ -1,0 +1,6 @@
+eventId,photoId,originalPhotoUrl,photoNotes
+1,1.1,http://ftp.myserver.com/photos/expedition/1,this photo was taken at
+2,2.1,http://ftp.myserver.com/photos/expedition/1,this photo was taken at
+2,2.1,http://ftp.myserver.com/photos/expedition/2,this photo was taken at
+3,3.1,notAUrl,
+,1,http://ftp.myserver.com/photos/expedition/3, some notes

@@ -1,0 +1,114 @@
+insertRecord: >
+  INSERT INTO ${table}
+    (expedition_id, local_identifier, data)
+  VALUES
+    (
+      (SELECT id from expeditions where expedition_code = :expeditionCode and project_id = :projectId),
+      :identifier,
+      to_jsonb(:data::jsonb)
+    )
+  ON CONFLICT (local_identifier, expedition_id)
+    DO UPDATE SET data = to_jsonb(:data::jsonb)
+
+insertChildRecord: >
+  INSERT INTO ${table}
+    (expedition_id, local_identifier, parent_identifier, data)
+  VALUES
+    (
+      (SELECT id from expeditions where expedition_code = :expeditionCode and project_id = :projectId),
+      :identifier,
+      :parent_identifier,
+      to_jsonb(:data::jsonb)
+    )
+  ON CONFLICT (local_identifier, expedition_id)
+    DO UPDATE SET data = to_jsonb(:data::jsonb), parent_identifier = :parent_identifier
+
+insertChildRecordReturning: >
+  WITH t AS (
+    INSERT INTO ${table}
+      (expedition_id, local_identifier, parent_identifier, data)
+    VALUES
+      (
+        (SELECT id from expeditions where expedition_code = :expeditionCode and project_id = :projectId),
+        :identifier,
+        :parent_identifier,
+        to_jsonb(:data::jsonb)
+      )
+    ON CONFLICT (local_identifier, expedition_id)
+      DO UPDATE SET data = to_jsonb(:data::jsonb), parent_identifier = :parent_identifier
+      RETURNING local_identifier, parent_identifier, expedition_id
+  )
+  SELECT CASE
+    WHEN o.parent_identifier != t.parent_identifier THEN o.parent_identifier
+    ELSE NULL
+  END AS parent_identifier
+  FROM ${table} AS o
+    INNER JOIN t on o.local_identifier = t.local_identifier
+  WHERE o.expedition_id = t.expedition_id
+
+selectEntityIdentifier: >
+  SELECT p.network_id AS "networkId", i.expedition_id AS "expeditionId", i.concept_alias AS "conceptAlias"
+  FROM entity_identifiers i
+    JOIN expeditions e on e.id = i.expedition_id
+    JOIN projects p on e.project_id = p.id
+  WHERE i.identifier = :rootIdentifier
+
+selectRecord: >
+  SELECT r.data AS data, e.expedition_code as "expeditionCode", e.project_id as "projectId", '${rootIdentifier}' as "rootIdentifier"
+  FROM ${table} AS r
+    INNER JOIN expeditions e on r.expedition_id = e.id
+  WHERE local_identifier = :localIdentifier AND expedition_id = :expeditionId
+
+selectProjectRecords: >
+  SELECT r.data AS data, e.expedition_code as "expeditionCode", e.project_id as "projectId", i.identifier as "rootIdentifier"
+  FROM ${table} AS r
+    INNER JOIN expeditions e on r.expedition_id = e.id
+    INNER JOIN entity_identifiers i on e.id = i.expedition_id and i.concept_alias = :conceptAlias
+  WHERE e.project_id = :projectId
+
+selectExpeditionRecords: >
+  SELECT r.data AS data, e.expedition_code as "expeditionCode", e.project_id as "projectId", i.identifier as "rootIdentifier"
+  FROM ${table} AS r
+    INNER JOIN expeditions e on r.expedition_id = e.id
+    INNER JOIN entity_identifiers i on e.id = i.expedition_id and i.concept_alias = :conceptAlias
+  WHERE e.expedition_code = :expeditionCode AND e.project_id = :projectId
+
+selectIndividualExpeditionRecords: >
+  SELECT r.data AS data, e.expedition_code as "expeditionCode", e.project_id as "projectId", i.identifier as "rootIdentifier"
+  FROM ${table} AS r
+    INNER JOIN expeditions e on r.expedition_id = e.id
+    INNER JOIN entity_identifiers i on e.id = i.expedition_id and i.concept_alias = :conceptAlias
+  WHERE e.expedition_code = :expeditionCode AND e.project_id = :projectId and r.local_identifier in (:localIdentifiers)
+
+deleteRecord: >
+  DELETE
+  FROM ${table}
+  WHERE expedition_id = :expeditionId and local_identifier = :identifier
+
+deleteRecords: >
+  DELETE
+  FROM ${table}
+  WHERE expedition_id = (SELECT id from expeditions where expedition_code = :expeditionCode and project_id = :projectId)
+
+deleteRecordsIdentifierClause: >
+   and local_identifier not in (:identifiers)
+
+deleteChildRecords: >
+  DELETE
+  FROM ${table}
+  WHERE expedition_id = (SELECT id from expeditions where expedition_code = :expeditionCode and project_id = :projectId)
+
+deleteChildRecordsIdentifierClause: >
+   and (parent_identifier, local_identifier) not in (:identifiers)
+
+deleteOrphanedParentRecords: >
+  DELETE
+  FROM ${table} AS p
+  WHERE p.local_identifier in (:identifiers) AND NOT EXISTS (
+      SELECT 1
+      FROM ${childTable} AS c
+      WHERE c.parent_identifier = p.local_identifier
+        and expedition_id = (SELECT id from expeditions where expedition_code = :expeditionCode and project_id = :projectId)
+   and local_identifier not in (:identifiers)
+  ) and expedition_id = (SELECT id from expeditions where expedition_code = :expeditionCode and project_id = :projectId)
+

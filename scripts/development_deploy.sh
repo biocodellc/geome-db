@@ -6,7 +6,6 @@ git fetch
 git checkout develop
 git pull
 
-./scripts/checkoutChildProjects.sh
 ./gradlew clean &&
 ./scripts/generateDevelopRestApiDocs.sh
 ./gradlew -Penvironment=development war &&
