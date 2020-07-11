@@ -44,10 +44,10 @@ public class PostgresRecordRepository implements RecordRepository {
     private final static Logger logger = LoggerFactory.getLogger(PostgresRecordRepository.class);
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final Properties sql;
-    private final Map<Class<? extends Record>, FimsRowMapper<? extends Record>> rowMappers;
+    private final Map<Class<? extends biocode.fims.records.Record>, FimsRowMapper<? extends biocode.fims.records.Record>> rowMappers;
     private final FimsProperties fimsProperties;
 
-    public PostgresRecordRepository(NamedParameterJdbcTemplate jdbcTemplate, Properties sql, Map<Class<? extends Record>, FimsRowMapper<? extends Record>> rowMappers, FimsProperties fimsProperties) {
+    public PostgresRecordRepository(NamedParameterJdbcTemplate jdbcTemplate, Properties sql, Map<Class<? extends biocode.fims.records.Record>, FimsRowMapper<? extends biocode.fims.records.Record>> rowMappers, FimsProperties fimsProperties) {
         this.jdbcTemplate = jdbcTemplate;
         this.sql = sql;
         this.rowMappers = rowMappers;
@@ -65,7 +65,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
         // TODO do we want to return the actual Record type here?
         try {
-            Record record = jdbcTemplate.queryForObject(
+            biocode.fims.records.Record record = jdbcTemplate.queryForObject(
                     StringSubstitutor.replace(sql.getProperty("selectRecord"), tableMap),
                     new MapSqlParameterSource()
                             .addValue("localIdentifier", localIdentifier)
@@ -112,7 +112,7 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
-    public List<? extends Record> getRecords(Project project, String conceptAlias, Class<? extends Record> recordType) {
+    public List<? extends biocode.fims.records.Record> getRecords(Project project, String conceptAlias, Class<? extends biocode.fims.records.Record> recordType) {
         Map<String, Object> tableMap = PostgresUtils.getTableMap(project.getNetwork().getId(), conceptAlias);
 
         Map<String, Object> sqlParams = new HashMap<>();
@@ -127,7 +127,7 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
-    public List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, Class<? extends Record> recordType) {
+    public List<? extends biocode.fims.records.Record> getRecords(Project project, String expeditionCode, String conceptAlias, Class<? extends biocode.fims.records.Record> recordType) {
         Map<String, Object> tableMap = PostgresUtils.getTableMap(project.getNetwork().getId(), conceptAlias);
 
         Map<String, Object> sqlParams = new HashMap<>();
@@ -143,7 +143,7 @@ public class PostgresRecordRepository implements RecordRepository {
     }
 
     @Override
-    public List<? extends Record> getRecords(Project project, String expeditionCode, String conceptAlias, List<String> localIdentifiers, Class<? extends Record> recordType) {
+    public List<? extends biocode.fims.records.Record> getRecords(Project project, String expeditionCode, String conceptAlias, List<String> localIdentifiers, Class<? extends biocode.fims.records.Record> recordType) {
         Map<String, Object> tableMap = PostgresUtils.getTableMap(project.getNetwork().getId(), conceptAlias);
 
         Map<String, Object> sqlParams = new HashMap<>();
@@ -162,7 +162,7 @@ public class PostgresRecordRepository implements RecordRepository {
     @Override
     @SetFimsUser
     @SuppressWarnings({"unchecked"})
-    public void saveChildRecord(Record record, int networkId, Entity parentEntity, Entity entity) {
+    public void saveChildRecord(biocode.fims.records.Record record, int networkId, Entity parentEntity, Entity entity) {
         Map<String, String> extraValues = new HashMap<>();
 
         String parentIdentifier = record.get(parentEntity.getUniqueKeyURI());
@@ -175,12 +175,12 @@ public class PostgresRecordRepository implements RecordRepository {
     @Override
     @SetFimsUser
     @SuppressWarnings({"unchecked"})
-    public void saveRecord(Record record, int networkId, Entity entity) {
+    public void saveRecord(biocode.fims.records.Record record, int networkId, Entity entity) {
         String s = sql.getProperty("insertRecord");
         save(record, networkId, entity, s, new HashMap<>());
     }
 
-    private void save(Record record, int networkId, Entity entity, String sql, Map<String, String> extraValues) {
+    private void save(biocode.fims.records.Record record, int networkId, Entity entity, String sql, Map<String, String> extraValues) {
         String localIdentifierUri = entity.getUniqueKeyURI();
         Map<String, Object> tableMap = PostgresUtils.getTableMap(networkId, entity.getConceptAlias());
 
@@ -225,7 +225,7 @@ public class PostgresRecordRepository implements RecordRepository {
                 List<String> localIdentifiers = new ArrayList<>();
                 List<String> parentIdentifiers = new ArrayList<>();
 
-                for (Record record : recordSet.recordsToPersist()) {
+                for (biocode.fims.records.Record record : recordSet.recordsToPersist()) {
 
                     HashMap<String, Object> recordParams = new HashMap<>();
                     recordParams.put("expeditionCode", recordSet.expeditionCode());
@@ -422,7 +422,7 @@ public class PostgresRecordRepository implements RecordRepository {
 
     private class RecordRowCallbackHandler implements RowCallbackHandler {
         private final List<Entity> entities;
-        final Map<String, LinkedHashSet<Record>> records;
+        final Map<String, LinkedHashSet<biocode.fims.records.Record>> records;
         final Map<String, String> rootIdentifiers;
 
         private RecordRowCallbackHandler(List<Entity> entities) {
@@ -434,7 +434,7 @@ public class PostgresRecordRepository implements RecordRepository {
         @Override
         public void processRow(ResultSet rs) throws SQLException {
             ResultSetMetaData metadata = rs.getMetaData();
-            Map<String, Record> rowRecords = new LinkedHashMap<>();
+            Map<String, biocode.fims.records.Record> rowRecords = new LinkedHashMap<>();
 
             // process all columns in the row
             for (int i = 1; i <= metadata.getColumnCount(); i++) {
@@ -451,9 +451,9 @@ public class PostgresRecordRepository implements RecordRepository {
             }
 
             // add all records for the row to the records map
-            for (Map.Entry<String, Record> entry : rowRecords.entrySet()) {
+            for (Map.Entry<String, biocode.fims.records.Record> entry : rowRecords.entrySet()) {
                 String conceptAlias = entry.getKey();
-                Record record = entry.getValue();
+                biocode.fims.records.Record record = entry.getValue();
 
                 if (record != null) {
                     // we use a Set for records b/c when selecting related entities, we use a LEFT JOIN
@@ -479,8 +479,8 @@ public class PostgresRecordRepository implements RecordRepository {
             return new QueryResults(results);
         }
 
-        private FimsRowMapper<? extends Record> getRowMapper(String conceptAlias) {
-            FimsRowMapper<? extends Record> rowMapper = rowMappers.get(getEntity(conceptAlias).getRecordType());
+        private FimsRowMapper<? extends biocode.fims.records.Record> getRowMapper(String conceptAlias) {
+            FimsRowMapper<? extends biocode.fims.records.Record> rowMapper = rowMappers.get(getEntity(conceptAlias).getRecordType());
             if (rowMapper == null) {
                 rowMapper = rowMappers.get(GenericRecord.class);
             }

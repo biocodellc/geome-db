@@ -106,7 +106,7 @@ public class PlateService {
         RecordMapper recordMapper = new RecordMapper(bcidBuilder, attributes, false);
         RecordJoiner joiner = new RecordJoiner(config, entity, queryResults);
 
-        List<Record> tissues = queryResults.getResult(entity.getConceptAlias())
+        List<biocode.fims.records.Record> tissues = queryResults.getResult(entity.getConceptAlias())
                 .records().stream()
                 .map(joiner::joinRecords)
                 .map(recordMapper::mapAsRecord)
@@ -178,7 +178,7 @@ public class PlateService {
     private PlateResponse save(User user, PlateTissues plateTissues) {
         Project project = plateTissues.project();
 
-        Map<MultiKey, List<Record>> siblingTissues = getSiblingTissues(plateTissues);
+        Map<MultiKey, List<biocode.fims.records.Record>> siblingTissues = getSiblingTissues(plateTissues);
         Map<String, RecordSet> recordSets = plateTissues.createRecordSets(siblingTissues);
 
         DatasetProcessor.Builder builder = new DatasetProcessor.Builder(project, null, new ProcessorStatus())
@@ -217,9 +217,9 @@ public class PlateService {
      * @param plateTissues
      * @return
      */
-    private Map<MultiKey, List<Record>> getSiblingTissues(PlateTissues plateTissues) {
+    private Map<MultiKey, List<biocode.fims.records.Record>> getSiblingTissues(PlateTissues plateTissues) {
         Project project = plateTissues.project();
-        Map<MultiKey, List<Record>> existingTissues = new HashMap<>();
+        Map<MultiKey, List<biocode.fims.records.Record>> existingTissues = new HashMap<>();
 
         tissueRepository.getTissues(
                 project.getNetwork().getId(),
