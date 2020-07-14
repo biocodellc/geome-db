@@ -34,3 +34,9 @@ ezidpass = pass
 mailUser = someone@gmail.com
 mailFrom = someone@gmail.com
 mailPassword = mypassword
+
+
+
+############ evolution fims #############
+# The url of the Evolution API
+evolutionApi=http://localhost:3030

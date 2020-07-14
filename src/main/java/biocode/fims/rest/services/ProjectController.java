@@ -9,10 +9,13 @@ import biocode.fims.models.Network;
 import biocode.fims.models.Project;
 import biocode.fims.query.PostgresUtils;
 import biocode.fims.repositories.RecordRepository;
+import biocode.fims.rest.FimsController;
+import biocode.fims.rest.services.subResources.*;
 import biocode.fims.service.ExpeditionService;
 import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectService;
 import org.apache.commons.lang3.text.StrSubstitutor;
+import org.glassfish.jersey.server.model.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Controller;
@@ -25,32 +28,88 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * project API endpoints
+ * API endpoints for working with projects. This includes fetching details associated with projects.
+ * Currently, there are no REST services for creating projects, which instead must be added to the Database
+ * manually by an administrator
  *
- * @resourceTag Projects
+ * @exclude
  */
 @Controller
 @Path("projects")
 @Produces({MediaType.APPLICATION_JSON})
 @Singleton
-public class ProjectController extends BaseProjectsController {
-
-    private final GeomeSql geomeSql;
-    private final RecordRepository recordRepository;
-    private final NetworkService networkService;
-    private final GeomeProperties geomeProps;
+public class ProjectController extends FimsController {
+    protected final GeomeSql geomeSql;
+    protected final RecordRepository recordRepository;
+    protected final NetworkService networkService;
+    protected final GeomeProperties geomeProps;
+    protected ExpeditionService expeditionService;
+    protected ProjectService projectService;
 
     @Autowired
-    ProjectController(ExpeditionService expeditionService, FimsProperties props, GeomeSql geomeSql,
-                      ProjectService projectService, RecordRepository recordRepository, NetworkService networkService,
-                      GeomeProperties geomeProps) {
-        super(expeditionService, props, projectService);
+    ProjectController(ExpeditionService expeditionService, FimsProperties props,
+                      ProjectService projectService, GeomeSql geomeSql, RecordRepository recordRepository, NetworkService networkService, GeomeProperties geomeProps) {
+        super(props);
+        this.expeditionService = expeditionService;
+        this.projectService = projectService;
         this.geomeSql = geomeSql;
         this.recordRepository = recordRepository;
         this.networkService = networkService;
         this.geomeProps = geomeProps;
     }
 
+
+    /**
+     * @responseType biocode.fims.rest.services.subResources.ProjectsResource
+     */
+    @Path("/")
+    public Class<ProjectsResource> getProjectsResource() {
+        return ProjectsResource.class;
+    }
+
+    /**
+     * @responseType biocode.fims.rest.services.subResources.ProjectTemplatesResource
+     * @resourceTag Templates
+     */
+    @Path("{projectId}/templates")
+    public Class<ProjectTemplatesResource> getTemplatesResource() {
+        return ProjectTemplatesResource.class;
+    }
+
+    /**
+     * @responseType biocode.fims.rest.services.subResources.ExpeditionsResource
+     * @resourceTag Expeditions
+     */
+    @Path("{projectId}/expeditions")
+    public Class<ExpeditionsResource> getExpeditionsResource() {
+        return ExpeditionsResource.class;
+    }
+
+    /**
+     * @responseType biocode.fims.rest.services.subResources.ProjectMembersResource
+     * @resourceTag Members
+     */
+    @Path("{projectId}/members")
+    public Class<ProjectMembersResource> getProjectMembersResource() {
+        return ProjectMembersResource.class;
+    }
+
+    /**
+     * @responseType biocode.fims.rest.services.subResources.ProjectConfigResource
+     */
+    @Path("/{projectId}/config")
+    public Class<ProjectConfigResource> getProjectConfigResource() {
+        return ProjectConfigResource.class;
+    }
+
+    /**
+     * @responseType biocode.fims.rest.services.subResources.ProjectConfigurationResource
+     * @resourceTag Project Configurations
+     */
+    @Path("/configs")
+    public Class<ProjectConfigurationResource> getProjectConfigurationResource() {
+        return ProjectConfigurationResource.class;
+    }
 
     /**
      * Fetch an overview of all expeditions in a project.

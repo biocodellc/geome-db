@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_2_1.xsd"
+                 version="2.1">
+
+    <named-native-query name="OAuthToken.getOAuthToken" result-set-mapping="OAuthToken">
+        <query>SELECT t.*, c.*, u.*
+            from oauth_tokens t
+            inner join users u on t.user_id = u.id
+            inner join oauth_clients c on t.client_id = c.id
+            where t.refresh_token = :refreshToken and EXTRACT( EPOCH FROM age(now(), t.created) ) &lt;= :expirationInterval
+        </query>
+    </named-native-query>
+
+    <named-native-query name="OAuthNonce.getOAuthNonce" result-set-mapping="OAuthNonce">
+        <query>
+            SELECT n.*, u.*
+            from oauth_nonces n
+            inner join users u on n.user_id = u.id
+            where n.code = :code and n.redirect_uri = :redirectUri and n.client_id = :clientId and EXTRACT( EPOCH FROM age(now(), n.created) ) &lt;= :expirationInterval
+        </query>
+    </named-native-query>
+
+    <named-native-query name="UserInvite.getInvite" result-set-mapping="UserInvite">
+        <query>
+            SELECT u.*
+            from user_invite u
+            where u.id = :id and EXTRACT( EPOCH FROM age(now(), u.created) ) &lt;= :expirationInterval
+        </query>
+    </named-native-query>
+
+</entity-mappings>

@@ -1266,6 +1266,9 @@
                 "isPublic": {
                     "type": "boolean"
                 },
+                "isDiscoverable": {
+                    "type": "boolean"
+                },
                 "latestDataModification": {
                     "format": "date-time",
                     "type": "string"
@@ -1336,6 +1339,9 @@
                     "type": "boolean"
                 },
                 "isPublic": {
+                    "type": "boolean"
+                },
+                "isDiscoverable": {
                     "type": "boolean"
                 },
                 "latestDataModification": {
@@ -1689,6 +1695,9 @@
                     "type": "boolean"
                 },
                 "isPublic": {
+                    "type": "boolean"
+                },
+                "isDiscoverable": {
                     "type": "boolean"
                 },
                 "latestDataModification": {

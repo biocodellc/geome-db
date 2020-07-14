@@ -24,6 +24,7 @@ import biocode.fims.ncbi.sra.submission.SraMetadataMapper;
 import biocode.fims.ncbi.sra.submission.SubmissionReporter;
 import biocode.fims.ncbi.sra.submission.SubmissionTaskExecuter;
 import biocode.fims.photos.BulkPhotoLoader;
+import biocode.fims.plugins.evolution.application.config.EvolutionAppConfig;
 import biocode.fims.records.FimsRowMapper;
 import biocode.fims.records.GenericRecord;
 import biocode.fims.records.GenericRecordRowMapper;
