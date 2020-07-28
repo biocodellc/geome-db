@@ -40,12 +40,11 @@ public class DatasetValidator {
         this.removeDuplicateMessages = new HashMap<>();
     }
 
-    public boolean validate(ProcessorStatus processorStatus) {
+    public boolean validate(ProcessorStatus processorStatus, boolean upload) {
         boolean isValid = true;
 
         removeDuplicateParentRecords();
         Timer.getInstance().lap("removed duplicate parent records");
-
 
 
         for (RecordSet r : dataset) {
@@ -59,8 +58,7 @@ public class DatasetValidator {
 
             RecordValidator validator = validatorFactory.getValidator(r.entity().getRecordType(), config);
 
-            if (!validator.validate(r)) {
-
+            if (!validator.validate(r,upload)) {
                 isValid = false;
                 if (validator.hasError()) {
                     hasError = true;
@@ -69,7 +67,7 @@ public class DatasetValidator {
                 messages.add(validator.messages());
             }
 
-            if (r.expeditionCode() == null) {
+            if (r.expeditionCode() == null && upload) {
                 EntityMessages entityMessages = messages.stream()
                         .filter(e -> e.conceptAlias().equals(r.conceptAlias()))
                         .findFirst()

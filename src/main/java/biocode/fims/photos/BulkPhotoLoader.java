@@ -78,7 +78,7 @@ public class BulkPhotoLoader {
 
         boolean isvalid = false;
         try {
-            isvalid = processor.validate();
+            isvalid = processor.validate(true);
 
             processor.upload();
         } catch (FimsRuntimeException e) {
