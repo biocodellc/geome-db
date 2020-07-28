@@ -31,7 +31,7 @@ public class RecordValidator {
         this.config = config;
     }
 
-    public boolean validate(RecordSet recordSet) {
+    public boolean validate(RecordSet recordSet, boolean upload) {
         Assert.notNull(recordSet);
 
         this.messages = new EntityMessages(recordSet.conceptAlias(), recordSet.entity().getWorksheet());
@@ -39,20 +39,27 @@ public class RecordValidator {
         Set<Rule> rules = recordSet.entity().getRules();
 
         for (Rule r : rules) {
-            r.setProjectConfig(config);
 
-            Timer.getInstance().lap("running rule: " + r.name());
+            // Bypass certain rules for cases where we do are not uploading data
+            // This only runs in cases where upload = false
+            // 1. the ValidForURI rule checks tissueID
+            if (!upload &&
+                    (!r.name().equalsIgnoreCase("ValidForURI"))) {
 
-            if (!r.run(recordSet, messages)) {
+                r.setProjectConfig(config);
 
-                if (r.hasError()) {
-                    hasError = true;
+                Timer.getInstance().lap("running rule: " + r.name());
+
+                if (!r.run(recordSet, messages)) {
+
+                    if (r.hasError()) {
+                        hasError = true;
+                    }
+
+                    isValid = false;
                 }
-
-                isValid = false;
+                Timer.getInstance().lap("finished running rule: " + r.name());
             }
-            Timer.getInstance().lap("finished running rule: " + r.name());
-
         }
         return isValid;
     }

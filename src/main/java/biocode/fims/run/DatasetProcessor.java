@@ -77,7 +77,7 @@ public class DatasetProcessor {
         messages = new ArrayList<>();
     }
 
-    public boolean validate() {
+    public boolean validate(boolean upload) {
         processorStatus.appendStatus("\nValidating...\n");
 
         DatasetBuilder datasetBuilder = new DatasetBuilder(readerFactory, dataConverterFactory,
@@ -104,7 +104,7 @@ public class DatasetProcessor {
         DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, project.getProjectConfig());
 
 
-        boolean valid = validator.validate(processorStatus);
+        boolean valid = validator.validate(processorStatus,upload);
         Timer.getInstance().lap("validator finished");
 
         if (!valid) {
@@ -145,7 +145,7 @@ public class DatasetProcessor {
 
     public boolean upload() {
         if (dataset == null) {
-            if (!validate() && hasError && !uploadValid) {
+            if (!validate(true) && hasError && !uploadValid) {
                 return false;
             }
         }

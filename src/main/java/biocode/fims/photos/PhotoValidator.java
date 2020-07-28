@@ -15,9 +15,9 @@ public class PhotoValidator extends RecordValidator {
     }
 
     @Override
-    public boolean validate(RecordSet recordSet) {
+    public boolean validate(RecordSet recordSet,  boolean upload) {
 
-        return super.validate(recordSet);
+        return super.validate(recordSet,true);
     }
 
     public static class PhotoValidatorInstantiator implements ValidatorInstantiator {

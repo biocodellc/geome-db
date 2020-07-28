@@ -195,7 +195,7 @@ public class PlateService {
 
         DatasetProcessor processor = builder.build();
 
-        boolean isvalid = processor.validate();
+        boolean isvalid = processor.validate(true);
 
         processor.upload();
 
