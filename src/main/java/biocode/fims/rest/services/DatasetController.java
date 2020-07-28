@@ -217,7 +217,7 @@ public class DatasetController extends FimsController {
             DatasetProcessor processor = builder.build();
 
             if (upload) {
-                boolean isvalid = processor.validate();
+                boolean isvalid = processor.validate(true);
 
                 if (processor.hasError()) {
                     return new ValidationResponse(
@@ -245,7 +245,7 @@ public class DatasetController extends FimsController {
                 }
 
             } else {
-                boolean isvalid = processor.validate();
+                boolean isvalid = processor.validate(false);
 
                 return new ValidationResponse(
                         null,

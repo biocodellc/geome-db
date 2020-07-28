@@ -63,7 +63,7 @@ public class DatasetValidatorTest {
 
         DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, config());
 
-        assertFalse(validator.validate(new ProcessorStatus()));
+        assertFalse(validator.validate(new ProcessorStatus(),true));
         assertFalse(validator.hasError());
 
         List<EntityMessages> messages = validator.messages();
@@ -113,7 +113,7 @@ public class DatasetValidatorTest {
 
         DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, config());
 
-        assertTrue(validator.validate(new ProcessorStatus()));
+        assertTrue(validator.validate(new ProcessorStatus(),true));
         assertFalse(validator.hasError());
     }
 
@@ -154,7 +154,7 @@ public class DatasetValidatorTest {
 
         DatasetValidator validator = new DatasetValidator(validatorFactory, dataset, config);
 
-        assertFalse(validator.validate(new ProcessorStatus()));
+        assertFalse(validator.validate(new ProcessorStatus(),true));
         assertTrue(validator.hasError());
 
         List<EntityMessages> messages = validator.messages();

@@ -33,7 +33,7 @@ public class RecordValidatorTest {
     @Test
     public void should_throw_exception_if_project_config_is_null_in_validate() {
         try {
-            new RecordValidator(null).validate(null);
+            new RecordValidator(null).validate(null,true);
             fail();
         } catch (IllegalArgumentException e) {
         }
@@ -41,7 +41,7 @@ public class RecordValidatorTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void should_throw_exception_if_recordSet_is_null_in_validate() {
-        validator.validate(null);
+        validator.validate(null,true);
     }
 
     @Test
@@ -49,7 +49,7 @@ public class RecordValidatorTest {
         RecordSet recordSet = new RecordSet(entity1(), false);
         recordSet.setParent(new RecordSet(entity2(), false));
 
-        assertTrue(validator.validate(recordSet));
+        assertTrue(validator.validate(recordSet,true));
         assertEquals(validator.messages(), new EntityMessages(entity1().getConceptAlias(), entity1().getWorksheet()));
     }
 
@@ -87,7 +87,7 @@ public class RecordValidatorTest {
         r4.set("parentId", "parent2");
         recordSet.add(r4);
 
-        assertFalse(validator.validate(recordSet));
+        assertFalse(validator.validate(recordSet,true));
         assertTrue(validator.hasError());
 
         EntityMessages expectedMessages = new EntityMessages("event", "events");
@@ -140,7 +140,7 @@ public class RecordValidatorTest {
         p1.setProjectId(1);
         recordSet.add(p1);
 
-        assertTrue(validator.validate(recordSet));
+        assertTrue(validator.validate(recordSet,true));
     }
 
     private Entity entity1() {
