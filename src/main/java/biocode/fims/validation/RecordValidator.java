@@ -43,8 +43,9 @@ public class RecordValidator {
             // Bypass certain rules for cases where we do are not uploading data
             // This only runs in cases where upload = false
             // 1. the ValidForURI rule checks tissueID
-            if (!upload &&
-                    (!r.name().equalsIgnoreCase("ValidForURI"))) {
+            if ((!upload &&
+                    (!r.name().equalsIgnoreCase("ValidForURI")) ||
+                    upload)) {
 
                 r.setProjectConfig(config);
 
