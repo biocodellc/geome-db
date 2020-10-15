@@ -67,13 +67,27 @@ public class ValidParentIdentifiersRule extends AbstractRule {
     }
 
     private void setMessages(Set<String> invalidValues, EntityMessages messages, String parentEntityAlias) {
-        messages.addMessage(
-                GROUP_MESSAGE,
-                new Message(
-                        "The following identifiers do not exist in the parent entity \"" + parentEntityAlias + "\": [\"" + String.join("\", \"", invalidValues) + "\"]"
-                ),
-                level()
-        );
+        if (parentEntityAlias.equalsIgnoreCase("Tissue")) {
+            messages.addMessage(
+                             GROUP_MESSAGE,
+                             new Message(
+                                     "The following identifiers did not match a \"" + parentEntityAlias + "\"" +
+                                             " identifier OR if loading FASTQ metadata, the filename regular expression" +
+                                             " is invalid (see user help).  : " +
+                                             "[\"" + String.join("\", \"", invalidValues) + "\"]"
+                             ),
+                             level()
+                     );
+        }   else {
+            messages.addMessage(
+                    GROUP_MESSAGE,
+                    new Message(
+                            "The following identifiers do not exist in the parent entity \"" + parentEntityAlias + "\": [\"" + String.join("\", \"", invalidValues) + "\"]"
+                    ),
+                    level()
+            );
+        }
+
     }
 
     @Override
