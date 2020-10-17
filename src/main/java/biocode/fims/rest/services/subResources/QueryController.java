@@ -6,6 +6,7 @@ import biocode.fims.bcid.BcidBuilder;
 import biocode.fims.config.Config;
 import biocode.fims.config.models.FastaEntity;
 import biocode.fims.fimsExceptions.errorCodes.GenericErrorCode;
+import biocode.fims.models.Expedition;
 import biocode.fims.models.Network;
 import biocode.fims.models.User;
 import biocode.fims.plugins.evolution.models.EvolutionRecordReference;
@@ -45,8 +46,12 @@ import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -64,6 +69,7 @@ public class QueryController extends FimsController {
     private final ProjectService projectService;
     private final NetworkService networkService;
     private final FileCache fileCache;
+
 
     @PathParam("entity")
     private String entity;
@@ -191,6 +197,31 @@ public class QueryController extends FimsController {
             QueryWriter queryWriter = new DelimitedTextQueryWriter(queryResults, ",", getConfig());
 
             List<File> files = queryWriter.write();
+            File temp = null;
+            try {
+                // Create temp file.
+                temp = new File("meta.txt");
+
+                // Delete temp file when program exits.
+                temp.deleteOnExit();
+
+                // Write to temp file
+                BufferedWriter out = new BufferedWriter(new FileWriter(temp));
+                if (project == null) {
+                    out.write("This archive contains data from multiple GEOME projects and so\n" +
+                            "we cannot display project specific metadata.  To get project specific\n" +
+                            "metadata, you can download the CSV Archive from a project's overview.\n");
+                } else {
+                    out.write(project.toTextualDescription());
+                }
+
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }   finally {
+                files.add(temp);
+            }
+            
             return returnFileResults(FileUtils.zip(files), "geome-fims-output-csv.zip");
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == QueryCode.NO_RESOURCES) {
@@ -474,7 +505,7 @@ public class QueryController extends FimsController {
         try {
             String eventId = UUID.randomUUID().toString();
             String userId = userContext.getUser() != null ? props.userURIPrefix() + userContext.getUser().getUserId() : null;
-            for (QueryResult queryResult: queryResults) {
+            for (QueryResult queryResult : queryResults) {
                 List<EvolutionRecordReference> references = queryResult.get(false, true)
                         .stream()
                         .map(r -> new EvolutionRecordReference(String.valueOf(r.get("bcid")), eventId, userId))
