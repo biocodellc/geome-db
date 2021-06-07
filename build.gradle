@@ -1,33 +1,13 @@
-buildscript {
-    repositories {
-        mavenLocal()
-        maven {
-            url "https://repo.biocodellc.com/repository/maven-private/"
-            credentials {
-                username mavenUser
-                password mavenPass
-            }
-        }
-    }
-    dependencies {
-        classpath "org.biocode:gradle-fims:2.0.0"
-    }
-}
-
-apply plugin: "application"
-apply plugin: "org.biocode.fims-web"
-
-fims {
-    maven {
-        username mavenUser
-        password mavenPass
-    }
+plugins {
+    id 'java'
+    id 'war'
 }
 
 repositories {
-    mavenLocal()
-    add(fims.mavenFims())
+    mavenCentral()
 }
+
+apply plugin: "application"
 
 dependencies {
     compile 'jstl:jstl:1.2'
@@ -37,7 +17,8 @@ dependencies {
 
     // this version is temporary until https://github.com/dhatim/fastexcel/pull/75 is merged & released
     // we can remove the above maven-dev-releases as well
-    compile group: 'org.dhatim', name: 'fastexcel', version: '41c4f50-SNAPSHOT'
+    //compile group: 'org.dhatim', name: 'fastexcel', version: '41c4f50-SNAPSHOT'
+    // https://mvnrepository.com/artifact/org.dhatim/fastexcel
     compile group: 'com.github.rzymek', name: 'opczip', version: '1.0.1'
     compile group: 'com.opencsv', name: 'opencsv', version: '4.2'
 
@@ -107,21 +88,17 @@ dependencies {
 
     compile group: 'org.apache.commons', name: 'commons-io', version: '1.3.2'
 
-    additionalSources(group: 'org.springframework.data', name: 'spring-data-commons', version: '1.10.1.RELEASE', classifier: 'sources') {
-        transitive = false
-    }
-
-    provided 'org.eclipse.jetty:jetty-servlet:9.3.3.v20150827'
-
     testCompile "junit:junit-dep:4.10"
     testCompile group: 'org.springframework', name: 'spring-test', version: '4.3.14.RELEASE'
     testCompile 'org.mockito:mockito-all:1.9.5'
     testCompile 'org.powermock:powermock-module-junit4:1.5.6'
     testCompile 'org.powermock:powermock-api-mockito:1.5.6'
-    integrationTestCompile group: 'org.springframework', name: 'spring-test', version: '4.3.14.RELEASE'
-    integrationTestCompile group: 'org.glassfish.jersey.test-framework.providers', name: 'jersey-test-framework-provider-inmemory', version: '2.27'
-    integrationTestCompile group: 'org.hsqldb', name: 'hsqldb', version: '2.4.0'
-    integrationTestRuntime group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.9'
+
+    // tried 0.12.11 failed
+    // tried 0.7.5 failed
+    // tried 0.8.7 failed
+    implementation group: 'org.dhatim', name: 'fastexcel', version: '0.9.13'
+
 }
 
 //=============================
@@ -129,101 +106,36 @@ dependencies {
 //=============================
 mainClassName = ''
 
-distributions {
-    main {
-        contents {
-            into('lib') {
-                from configurations.compile
-            }
-        }
-    }
-}
-
-// registerOAuthClient task with the geome classpath
-// ./gradlew registerOAuthClient -PappArgs="['-c', 'https://localhost:8080/']"
-task registerOAuthClient(type: JavaExec) {
-    classpath = configurations.compile + sourceSets.main.runtimeClasspath
-
-    if (project.hasProperty("appArgs")) {
-        args Eval.me(appArgs)
-    }
-
-    main = "biocode.fims.auth.oauth2.OAuthClientRegisterer"
-}
-
-//=============================
-//= github pages javadoc configuration
-//=============================
-
-//noinspection GroovyAssignabilityCheck
-javadoc {
-    failOnError = false
-}
-
-//gitPublish {
-//    repoUri = "git@github.com:biocodellc/biocode-fims-commons.git"
-//}
-
-task migrateHashes(type: JavaExec) {
-    classpath = configurations.compile + sourceSets.main.runtimeClasspath
-
-    main = "biocode.fims.run.HashMigrator"
-}
-
-task harvestSraBioSamples(type: JavaExec) {
-    classpath = configurations.compile + sourceSets.main.runtimeClasspath
-
-    main = "biocode.fims.run.SraAccessionHarvesterRunner"
-}
-
-task reportSraSubmissions(type: JavaExec) {
-    classpath = configurations.compile + sourceSets.main.runtimeClasspath
-
-    main = "biocode.fims.run.SraSubmissionReporterRunner"
-}
-
-task loadEvolutionData(type: JavaExec) {
-    classpath = configurations.compile + sourceSets.main.runtimeClasspath
-
-    if (project.hasProperty("appArgs")) {
-        args Eval.me(appArgs)
-    }
-
-    main = "biocode.fims.run.EvolutionDataLoader"
-}
 
 startScripts {
     classpath = files(jar.archivePath, configurations.compile, configurations.runtime)
 }
 
-deployFimsLocal {
-    deployDir = localWarDirectory
+task copyDocs(type: Copy) {
+    from('src/main/web/docs')
+    into 'build/classes/docs'
 }
 
-//=============================
-//= war configuration
-//=============================
+task copyApiDocs(type: Copy) {
+    from('src/main/web/apidocs/current')
+    into 'build/classes/apidocs/current'
+}
+
+task copyEnvironmentProps(type: Copy) {
+    from('src/main/environment/' + project.findProperty("environment")) {
+        include '**/*.properties'
+        include '**/*.props'
+    }
+    into 'build/resources/main'
+}
+
+tasks.war.dependsOn("copyEnvironmentProps")
+tasks["copyEnvironmentProps"].dependsOn("copyApiDocs")
+tasks["copyApiDocs"].dependsOn("copyDocs")
+tasks["copyDocs"].dependsOn("processResources")
 
 war {
-    from("${projectDir}/docs/helpDocumentation.pdf", {
-        into 'docs'
-    })
+    enabled = true
+    webXml = file('src/main/environment/' + project.findProperty("environment") + '/web.xml')
 }
 
-//= Rest api docs configuration
-//=============================
-
-// TODO move this from the web plugin to the fims plugin
-generateRestApiDocs {
-    additionalSourcesInclude 'org/springframework/data/domain/*.java', 'biocode/fims/**/*.java'
-    additionalSourcesExclude 'org/springframework', 'biocode/fims/rest/FimsDefaultServlet.java', 'biocode/fims/validation/rules/ControlledVocabularyRule.java'
-
-    swagger {
-        apiInfo = "${projectDir}/swagger/api-info.json"
-        apiVersions = ["v1"]
-        apiBasePath = "/"
-        apiSchemes = ["https", "http"]
-    }
-}
-
-generateRestApiDocs.dependsOn(clean)
