@@ -22,6 +22,12 @@ public class List {
         this.alias = alias;
     }
 
+    /* to fix
+    com.fasterxml.jackson.databind.exc.MismatchedInputException: Cannot construct instance of `biocode.fims.config.models.List` (although at least one Creator exists): cannot deserialize from Object value (no delegate- or property-based Creator)
+ at [Source: (StringReader); line: 1, column: 13] (through reference chain: biocode.fims.config.network.NetworkConfig["lists"]->java.util.ArrayList[0])
+
+     */
+    public List() {}
     /**
      * return the alias for which this list is known
      *
