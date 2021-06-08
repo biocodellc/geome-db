@@ -4,6 +4,7 @@ plugins {
     id "io.swagger.core.v3.swagger-gradle-plugin" version "2.1.9"
 }
 
+// build API endpoint and stores in swagger directory
 resolve {
     outputFileName = 'geomeAPI'
     outputFormat = 'JSON'
@@ -12,6 +13,7 @@ resolve {
     resourcePackages = ['biocode.fims']
     outputDir = file('swagger')
 }
+
 repositories {
     mavenCentral()
 }
@@ -153,9 +155,9 @@ tasks.war.dependsOn("copyEnvironmentProps")
 tasks["copyEnvironmentProps"].dependsOn("copyApiDocs")
 tasks["copyApiDocs"].dependsOn("copyDocs")
 tasks["copyDocs"].dependsOn("processResources")
-
 war {
     enabled = true
     webXml = file('src/main/environment/' + project.findProperty("environment") + '/web.xml')
+    from 'swagger/' 
 }
 
