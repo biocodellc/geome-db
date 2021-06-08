@@ -1,8 +1,17 @@
 plugins {
     id 'java'
     id 'war'
+    id "io.swagger.core.v3.swagger-gradle-plugin" version "2.1.9"
 }
 
+resolve {
+    outputFileName = 'geomeAPI'
+    outputFormat = 'JSON'
+    prettyPrint = 'TRUE'
+    classpath = sourceSets.main.runtimeClasspath
+    resourcePackages = ['biocode.fims']
+    outputDir = file('swagger')
+}
 repositories {
     mavenCentral()
 }

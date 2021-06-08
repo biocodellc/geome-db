@@ -1,0 +1,4404 @@
+{
+  "openapi" : "3.0.1",
+  "paths" : {
+    "/data/export/{projectId}/{expeditionCode}" : {
+      "get" : {
+        "operationId" : "export",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "expeditionCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/validate/{id}" : {
+      "get" : {
+        "operationId" : "status",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ValidationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/upload/{id}" : {
+      "put" : {
+        "operationId" : "upload",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : { }
+            }
+          }
+        }
+      }
+    },
+    "/data/validate" : {
+      "post" : {
+        "operationId" : "validate",
+        "parameters" : [ {
+          "name" : "waitForCompletion",
+          "in" : "query",
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "projectId" : {
+                    "type" : "integer",
+                    "format" : "int32"
+                  },
+                  "expeditionCode" : {
+                    "type" : "string"
+                  },
+                  "dataSourceMetadata" : {
+                    "type" : "array",
+                    "items" : {
+                      "$ref" : "#/components/schemas/DataSourceMetadata"
+                    }
+                  },
+                  "dataSourceFiles" : {
+                    "type" : "array",
+                    "items" : {
+                      "$ref" : "#/components/schemas/FormDataBodyPart"
+                    }
+                  },
+                  "workbooks" : {
+                    "type" : "array",
+                    "items" : {
+                      "$ref" : "#/components/schemas/FormDataBodyPart"
+                    }
+                  },
+                  "upload" : {
+                    "type" : "boolean"
+                  },
+                  "reloadWorkbooks" : {
+                    "type" : "boolean",
+                    "default" : false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ValidationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/{id}" : {
+      "get" : {
+        "operationId" : "getFile",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/file" : { }
+            }
+          }
+        }
+      }
+    },
+    "/network/{networkId}/config" : {
+      "get" : {
+        "operationId" : "getConfig",
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NetworkConfig"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "operationId" : "update",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NetworkConfig"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : { }
+            }
+          }
+        }
+      }
+    },
+    "/network/{networkId}" : {
+      "get" : {
+        "operationId" : "getNetwork",
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Network_DetailedConfig"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "operationId" : "updateNetwork",
+        "parameters" : [ {
+          "name" : "networkId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Network_Detailed"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Network_Detailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/network" : {
+      "get" : {
+        "operationId" : "getNetworks",
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Network_Detailed"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth/accessToken" : {
+      "post" : {
+        "operationId" : "access_token",
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "code" : {
+                    "type" : "string"
+                  },
+                  "client_id" : {
+                    "type" : "string"
+                  },
+                  "client_secret" : {
+                    "type" : "string"
+                  },
+                  "redirect_uri" : {
+                    "type" : "string"
+                  },
+                  "grant_type" : {
+                    "type" : "string",
+                    "default" : "authorization_code"
+                  },
+                  "username" : {
+                    "type" : "string"
+                  },
+                  "password" : {
+                    "type" : "string"
+                  },
+                  "state" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : { }
+            }
+          }
+        }
+      }
+    },
+    "/oauth/authorize" : {
+      "get" : {
+        "operationId" : "authorize",
+        "parameters" : [ {
+          "name" : "client_id",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "redirect_uri",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "state",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "text/html" : { }
+            }
+          }
+        }
+      }
+    },
+    "/oauth/invalidate" : {
+      "post" : {
+        "operationId" : "logout",
+        "requestBody" : {
+          "content" : {
+            "*/*" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "client_id" : {
+                    "type" : "string"
+                  },
+                  "token" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AcknowledgedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth/refresh" : {
+      "post" : {
+        "operationId" : "refresh",
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "client_id" : {
+                    "type" : "string"
+                  },
+                  "refresh_token" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : { }
+            }
+          }
+        }
+      }
+    },
+    "/photos/{entity}/upload" : {
+      "put" : {
+        "operationId" : "bulkUpload",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "expeditionCode",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "type",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "NEW", "RESUMABLE", "RESUME" ]
+          }
+        }, {
+          "name" : "ignoreId",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Flag"
+          }
+        }, {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/zip" : {
+              "schema" : {
+                "type" : "object"
+              }
+            },
+            "application/octet-stream" : {
+              "schema" : {
+                "type" : "object"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UploadResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/photos/{entity}/upload/progress" : {
+      "get" : {
+        "operationId" : "status_1",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "expeditionCode",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UploadEntry"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tissues/plates/{projectId}/{plateName}" : {
+      "get" : {
+        "operationId" : "get",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "plateName",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Plate"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "operationId" : "update_1",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "plateName",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "*/*" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Plate"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlateResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "operationId" : "create",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "plateName",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "*/*" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Plate"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PlateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tissues/plates/{projectId}" : {
+      "get" : {
+        "operationId" : "getPlates",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/expeditions/stats" : {
+      "get" : {
+        "operationId" : "expeditionStats",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "expeditionCode",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "object",
+                    "additionalProperties" : {
+                      "type" : "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/expeditions/{expeditionCode}" : {
+      "get" : {
+        "operationId" : "getExpedition",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "expeditionCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Expedition_Detailed"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "operationId" : "updateExpedition",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "expeditionCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Expedition"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Expedition"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "operationId" : "createExpedition",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "expeditionCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Expedition_Detailed"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Expedition_Detailed"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "operationId" : "deleteExpedition",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "expeditionCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfirmationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/expeditions" : {
+      "get" : {
+        "operationId" : "listExpeditions",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "admin",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Flag_Detailed"
+          }
+        }, {
+          "name" : "user",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Flag_Detailed"
+          }
+        }, {
+          "name" : "includePrivate",
+          "in" : "query",
+          "schema" : {
+            "type" : "boolean",
+            "default" : false
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Expedition_Detailed"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "operationId" : "updateExpeditions",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/Expedition"
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Expedition"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/config" : {
+      "get" : {
+        "operationId" : "getConfig_1",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProjectConfig"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/configs" : {
+      "get" : {
+        "operationId" : "all",
+        "parameters" : [ {
+          "name" : "networkApproved",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Flag_Summary"
+          }
+        }, {
+          "name" : "user",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Flag_Summary"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ProjectConfiguration_Summary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "operationId" : "create_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ProjectConfiguration_DetailedConfig"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : { }
+            }
+          }
+        }
+      }
+    },
+    "/projects/configs/{id}" : {
+      "get" : {
+        "operationId" : "get_1",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProjectConfiguration_DetailedConfig"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "operationId" : "update_2",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ProjectConfiguration"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : { }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/members/{username}" : {
+      "put" : {
+        "operationId" : "addMember",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "username",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : { }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "operationId" : "removeMember",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "username",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : { }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/members" : {
+      "get" : {
+        "operationId" : "getMembers",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/User_Detailed"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects" : {
+      "get" : {
+        "operationId" : "getProjects",
+        "parameters" : [ {
+          "name" : "includePublic",
+          "in" : "query",
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "name" : "projectTitle",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "admin",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Flag_Detailed"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Project_Detailed"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "operationId" : "create_2",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/NewProject_DetailedConfig"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : { }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}" : {
+      "put" : {
+        "operationId" : "updateProject",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/Project_Detailed"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : { }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "operationId" : "delete",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfirmationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/exists/{projectTitle}" : {
+      "get" : {
+        "operationId" : "projectExists",
+        "parameters" : [ {
+          "name" : "projectTitle",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/templates/{configName}" : {
+      "put" : {
+        "operationId" : "update_3",
+        "parameters" : [ {
+          "name" : "configName",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "columns" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/WorksheetTemplate"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "operationId" : "create_3",
+        "parameters" : [ {
+          "name" : "configName",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "columns" : {
+                    "type" : "array",
+                    "items" : {
+                      "type" : "string"
+                    }
+                  },
+                  "worksheet" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/WorksheetTemplate"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "operationId" : "delete_1",
+        "parameters" : [ {
+          "name" : "configName",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : { }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/templates/generate" : {
+      "post" : {
+        "operationId" : "createExcel",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/WorksheetTemplate"
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/templates" : {
+      "get" : {
+        "operationId" : "getTemplates",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "uniqueItems" : true,
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/WorksheetTemplate_Detailed"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/stats" : {
+      "get" : {
+        "operationId" : "projectStats",
+        "parameters" : [ {
+          "name" : "includePublic",
+          "in" : "query",
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "object",
+                    "additionalProperties" : {
+                      "type" : "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records/{identifier}" : {
+      "get" : {
+        "operationId" : "get_3",
+        "parameters" : [ {
+          "name" : "includeChildren",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Flag"
+          }
+        }, {
+          "name" : "includeParent",
+          "in" : "query",
+          "schema" : {
+            "$ref" : "#/components/schemas/Flag"
+          }
+        }, {
+          "name" : "identifier",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecordResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "operationId" : "delete_2",
+        "parameters" : [ {
+          "name" : "identifier",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfirmationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records/{entity}/csv" : {
+      "get" : {
+        "operationId" : "queryCSV",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "operationId" : "queryCSVAsPost",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "q" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records/{entity}/cspace" : {
+      "get" : {
+        "operationId" : "queryCspace",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records/{entity}/excel" : {
+      "get" : {
+        "operationId" : "queryExcel",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "operationId" : "queryExcelAsPost",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "q" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records/{entity}/fasta" : {
+      "get" : {
+        "operationId" : "queryFasta",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "default" : ""
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records/{entity}/json" : {
+      "get" : {
+        "operationId" : "queryJson",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 100
+          }
+        }, {
+          "name" : "source",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginatedResponseMapStringListMapStringObject"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "operationId" : "queryJsonAsPost",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 100
+          }
+        }, {
+          "name" : "source",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "query" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PaginatedResponseMapStringListMapStringObject"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records/{entity}/kml" : {
+      "get" : {
+        "operationId" : "queryKML",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "operationId" : "queryKMLAsPost",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "q" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records/{entity}/tab" : {
+      "get" : {
+        "operationId" : "queryTAB",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "operationId" : "queryTABAsPost",
+        "parameters" : [ {
+          "name" : "entity",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "q" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bcids/metadata/{identifier}" : {
+      "get" : {
+        "operationId" : "get_4",
+        "parameters" : [ {
+          "name" : "identifier",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RootIdentifierResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sra/upload" : {
+      "put" : {
+        "operationId" : "upload_1",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "type",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "NEW", "RESUMABLE", "RESUME" ]
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/zip" : {
+              "schema" : {
+                "type" : "object"
+              }
+            },
+            "application/octet-stream" : {
+              "schema" : {
+                "type" : "object"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SraUploadResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sra/submissionData" : {
+      "get" : {
+        "operationId" : "getSubmissionData",
+        "parameters" : [ {
+          "name" : "projectId",
+          "in" : "query",
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "expeditionCode",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "format",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "default" : "file"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sra/upload/progress" : {
+      "get" : {
+        "operationId" : "status_2",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UploadEntry"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users" : {
+      "get" : {
+        "operationId" : "getUsers",
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/User_Detailed"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "operationId" : "createUser",
+        "parameters" : [ {
+          "name" : "inviteId",
+          "in" : "query",
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "*/*" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/User_Detailed"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/User_Detailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{username}" : {
+      "get" : {
+        "operationId" : "getUser",
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DynamicViewResponseUser_Detailed"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "operationId" : "updateUser",
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "*/*" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/User_Detailed"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/User_Detailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{userId}" : {
+      "get" : {
+        "operationId" : "getUserById",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DynamicViewResponseUser_Detailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/invite" : {
+      "post" : {
+        "operationId" : "inviteUser",
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "projectId" : {
+                    "type" : "integer",
+                    "format" : "int32"
+                  },
+                  "email" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfirmationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/reset" : {
+      "post" : {
+        "operationId" : "resetPassword",
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "password" : {
+                    "type" : "string"
+                  },
+                  "resetToken" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ConfirmationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{username}/sendResetToken" : {
+      "post" : {
+        "operationId" : "sendResetToken",
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AcknowledgedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{username}/password" : {
+      "put" : {
+        "operationId" : "updateUserPassword",
+        "parameters" : [ {
+          "name" : "username",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "currentPassword" : {
+                    "type" : "string"
+                  },
+                  "newPassword" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses" : {
+          "default" : {
+            "description" : "default response",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/User_Detailed"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "FileResponse" : {
+        "type" : "object",
+        "properties" : {
+          "url" : {
+            "type" : "string"
+          }
+        }
+      },
+      "EntityMessages" : {
+        "type" : "object",
+        "properties" : {
+          "sheetName" : {
+            "type" : "string"
+          },
+          "entity" : {
+            "type" : "string"
+          },
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MessagesGroup"
+            }
+          },
+          "warnings" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MessagesGroup"
+            }
+          }
+        }
+      },
+      "Message" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string"
+          }
+        }
+      },
+      "MessagesGroup" : {
+        "type" : "object",
+        "properties" : {
+          "groupMessage" : {
+            "type" : "string"
+          },
+          "messages" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Message"
+            }
+          }
+        }
+      },
+      "ValidationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "hasError" : {
+            "type" : "boolean"
+          },
+          "exception" : {
+            "type" : "string"
+          },
+          "messages" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EntityMessages"
+            }
+          },
+          "uploadUrl" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "isValid" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "DataSourceMetadata" : {
+        "type" : "object",
+        "properties" : {
+          "dataType" : {
+            "type" : "string"
+          },
+          "filename" : {
+            "type" : "string"
+          },
+          "reload" : {
+            "type" : "boolean"
+          },
+          "metadata" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object"
+            }
+          }
+        }
+      },
+      "BodyPart" : {
+        "type" : "object",
+        "properties" : {
+          "contentDisposition" : {
+            "$ref" : "#/components/schemas/ContentDisposition"
+          },
+          "entity" : {
+            "type" : "object"
+          },
+          "headers" : {
+            "type" : "object",
+            "properties" : {
+              "empty" : {
+                "type" : "boolean"
+              }
+            },
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            }
+          },
+          "mediaType" : {
+            "type" : "object",
+            "properties" : {
+              "type" : {
+                "type" : "string"
+              },
+              "subtype" : {
+                "type" : "string"
+              },
+              "parameters" : {
+                "type" : "object",
+                "additionalProperties" : {
+                  "type" : "string"
+                }
+              },
+              "wildcardType" : {
+                "type" : "boolean"
+              },
+              "wildcardSubtype" : {
+                "type" : "boolean"
+              }
+            }
+          },
+          "messageBodyWorkers" : {
+            "$ref" : "#/components/schemas/MessageBodyWorkers"
+          },
+          "parent" : {
+            "$ref" : "#/components/schemas/MultiPart"
+          },
+          "providers" : {
+            "type" : "object"
+          },
+          "parameterizedHeaders" : {
+            "type" : "object",
+            "properties" : {
+              "empty" : {
+                "type" : "boolean"
+              }
+            },
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/components/schemas/ParameterizedHeader"
+              }
+            }
+          }
+        }
+      },
+      "ContentDisposition" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string"
+          },
+          "parameters" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          },
+          "fileName" : {
+            "type" : "string"
+          },
+          "creationDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modificationDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "readDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "FormDataBodyPart" : {
+        "type" : "object",
+        "properties" : {
+          "contentDisposition" : {
+            "$ref" : "#/components/schemas/ContentDisposition"
+          },
+          "entity" : {
+            "type" : "object"
+          },
+          "headers" : {
+            "type" : "object",
+            "properties" : {
+              "empty" : {
+                "type" : "boolean"
+              }
+            },
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            }
+          },
+          "mediaType" : {
+            "type" : "object",
+            "properties" : {
+              "type" : {
+                "type" : "string"
+              },
+              "subtype" : {
+                "type" : "string"
+              },
+              "parameters" : {
+                "type" : "object",
+                "additionalProperties" : {
+                  "type" : "string"
+                }
+              },
+              "wildcardType" : {
+                "type" : "boolean"
+              },
+              "wildcardSubtype" : {
+                "type" : "boolean"
+              }
+            }
+          },
+          "messageBodyWorkers" : {
+            "$ref" : "#/components/schemas/MessageBodyWorkers"
+          },
+          "parent" : {
+            "$ref" : "#/components/schemas/MultiPart"
+          },
+          "providers" : {
+            "type" : "object"
+          },
+          "formDataContentDisposition" : {
+            "$ref" : "#/components/schemas/FormDataContentDisposition"
+          },
+          "simple" : {
+            "type" : "boolean"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          },
+          "parameterizedHeaders" : {
+            "type" : "object",
+            "properties" : {
+              "empty" : {
+                "type" : "boolean"
+              }
+            },
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/components/schemas/ParameterizedHeader"
+              }
+            }
+          }
+        }
+      },
+      "FormDataContentDisposition" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string"
+          },
+          "parameters" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          },
+          "fileName" : {
+            "type" : "string"
+          },
+          "creationDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modificationDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "readDate" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "MessageBodyWorkers" : {
+        "type" : "object"
+      },
+      "MultiPart" : {
+        "type" : "object",
+        "properties" : {
+          "contentDisposition" : {
+            "$ref" : "#/components/schemas/ContentDisposition"
+          },
+          "entity" : {
+            "type" : "object"
+          },
+          "headers" : {
+            "type" : "object",
+            "properties" : {
+              "empty" : {
+                "type" : "boolean"
+              }
+            },
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            }
+          },
+          "mediaType" : {
+            "type" : "object",
+            "properties" : {
+              "type" : {
+                "type" : "string"
+              },
+              "subtype" : {
+                "type" : "string"
+              },
+              "parameters" : {
+                "type" : "object",
+                "additionalProperties" : {
+                  "type" : "string"
+                }
+              },
+              "wildcardType" : {
+                "type" : "boolean"
+              },
+              "wildcardSubtype" : {
+                "type" : "boolean"
+              }
+            }
+          },
+          "messageBodyWorkers" : {
+            "$ref" : "#/components/schemas/MessageBodyWorkers"
+          },
+          "parent" : {
+            "$ref" : "#/components/schemas/MultiPart"
+          },
+          "providers" : {
+            "type" : "object"
+          },
+          "bodyParts" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BodyPart"
+            }
+          },
+          "parameterizedHeaders" : {
+            "type" : "object",
+            "properties" : {
+              "empty" : {
+                "type" : "boolean"
+              }
+            },
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/components/schemas/ParameterizedHeader"
+              }
+            }
+          }
+        }
+      },
+      "ParameterizedHeader" : {
+        "type" : "object",
+        "properties" : {
+          "value" : {
+            "type" : "string"
+          },
+          "parameters" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "Attribute" : {
+        "type" : "object",
+        "properties" : {
+          "column" : {
+            "type" : "string"
+          },
+          "uri" : {
+            "type" : "string"
+          },
+          "dataType" : {
+            "type" : "string",
+            "enum" : [ "INTEGER", "STRING", "DATE", "DATETIME", "TIME", "FLOAT", "BOOLEAN" ]
+          },
+          "internal" : {
+            "type" : "boolean"
+          },
+          "definedBy" : {
+            "type" : "string"
+          },
+          "dataFormat" : {
+            "type" : "string"
+          },
+          "delimitedBy" : {
+            "type" : "string"
+          },
+          "group" : {
+            "type" : "string"
+          },
+          "definition" : {
+            "type" : "string"
+          },
+          "allowUnknown" : {
+            "type" : "boolean"
+          },
+          "allowTBD" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Entity" : {
+        "required" : [ "type" ],
+        "type" : "object",
+        "properties" : {
+          "conceptAlias" : {
+            "type" : "string"
+          },
+          "worksheet" : {
+            "type" : "string"
+          },
+          "parentEntity" : {
+            "type" : "string"
+          },
+          "hashed" : {
+            "type" : "boolean"
+          },
+          "uniqueAcrossProject" : {
+            "type" : "boolean"
+          },
+          "uniqueKey" : {
+            "type" : "string"
+          },
+          "conceptURI" : {
+            "type" : "string"
+          },
+          "attributes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Attribute"
+            }
+          },
+          "rules" : {
+            "uniqueItems" : true,
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Rule"
+            }
+          },
+          "type" : {
+            "type" : "string"
+          }
+        },
+        "discriminator" : {
+          "propertyName" : "type"
+        }
+      },
+      "ExpeditionMetadataProperty" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "required" : {
+            "type" : "boolean"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "STRING", "LIST", "BOOLEAN" ]
+          },
+          "values" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "Field" : {
+        "type" : "object",
+        "properties" : {
+          "uri" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          },
+          "definedBy" : {
+            "type" : "string"
+          },
+          "definition" : {
+            "type" : "string"
+          }
+        }
+      },
+      "List" : {
+        "type" : "object",
+        "properties" : {
+          "alias" : {
+            "type" : "string"
+          },
+          "caseInsensitive" : {
+            "type" : "boolean"
+          },
+          "fields" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Field"
+            }
+          },
+          "networkList" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "NetworkConfig" : {
+        "type" : "object",
+        "properties" : {
+          "entities" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Entity"
+            }
+          },
+          "lists" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/List"
+            }
+          },
+          "expeditionMetadataProperties" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExpeditionMetadataProperty"
+            }
+          }
+        }
+      },
+      "Rule" : {
+        "required" : [ "name" ],
+        "type" : "object",
+        "properties" : {
+          "level" : {
+            "type" : "string",
+            "enum" : [ "WARNING", "ERROR" ]
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "discriminator" : {
+          "propertyName" : "name"
+        }
+      },
+      "Network_DetailedConfig" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "created" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modified" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User_DetailedConfig"
+          }
+        }
+      },
+      "User_DetailedConfig" : {
+        "type" : "object",
+        "properties" : {
+          "userId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "username" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "institution" : {
+            "type" : "string"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "sraUsername" : {
+            "type" : "string"
+          },
+          "sraEmail" : {
+            "type" : "string"
+          },
+          "sraFirstName" : {
+            "type" : "string"
+          },
+          "sraLastName" : {
+            "type" : "string"
+          },
+          "subscribed" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Network_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "created" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modified" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User_Detailed"
+          }
+        }
+      },
+      "User_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "userId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "username" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "institution" : {
+            "type" : "string"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "sraUsername" : {
+            "type" : "string"
+          },
+          "sraEmail" : {
+            "type" : "string"
+          },
+          "sraFirstName" : {
+            "type" : "string"
+          },
+          "sraLastName" : {
+            "type" : "string"
+          },
+          "subscribed" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "AcknowledgedResponse" : {
+        "type" : "object",
+        "properties" : {
+          "acknowledged" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "UploadResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "messages" : {
+            "$ref" : "#/components/schemas/EntityMessages"
+          }
+        }
+      },
+      "Flag" : {
+        "type" : "object",
+        "properties" : {
+          "present" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "UploadEntry" : {
+        "type" : "object",
+        "properties" : {
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
+      "Plate" : {
+        "type" : "object"
+      },
+      "PlateResponse" : {
+        "type" : "object",
+        "properties" : {
+          "plate" : {
+            "$ref" : "#/components/schemas/Plate"
+          },
+          "validationMessages" : {
+            "$ref" : "#/components/schemas/EntityMessages"
+          }
+        }
+      },
+      "Attribute_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "column" : {
+            "type" : "string"
+          },
+          "uri" : {
+            "type" : "string"
+          },
+          "dataType" : {
+            "type" : "string",
+            "enum" : [ "INTEGER", "STRING", "DATE", "DATETIME", "TIME", "FLOAT", "BOOLEAN" ]
+          },
+          "internal" : {
+            "type" : "boolean"
+          },
+          "definedBy" : {
+            "type" : "string"
+          },
+          "dataFormat" : {
+            "type" : "string"
+          },
+          "delimitedBy" : {
+            "type" : "string"
+          },
+          "group" : {
+            "type" : "string"
+          },
+          "definition" : {
+            "type" : "string"
+          },
+          "allowUnknown" : {
+            "type" : "boolean"
+          },
+          "allowTBD" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "EntityIdentifier_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "expedition" : {
+            "$ref" : "#/components/schemas/Expedition_Detailed"
+          },
+          "conceptAlias" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string",
+            "format" : "uri"
+          }
+        }
+      },
+      "Entity_Detailed" : {
+        "required" : [ "type" ],
+        "type" : "object",
+        "properties" : {
+          "conceptAlias" : {
+            "type" : "string"
+          },
+          "worksheet" : {
+            "type" : "string"
+          },
+          "parentEntity" : {
+            "type" : "string"
+          },
+          "hashed" : {
+            "type" : "boolean"
+          },
+          "uniqueAcrossProject" : {
+            "type" : "boolean"
+          },
+          "uniqueKey" : {
+            "type" : "string"
+          },
+          "conceptURI" : {
+            "type" : "string"
+          },
+          "attributes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Attribute_Detailed"
+            }
+          },
+          "rules" : {
+            "uniqueItems" : true,
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Rule_Detailed"
+            }
+          },
+          "type" : {
+            "type" : "string"
+          }
+        },
+        "discriminator" : {
+          "propertyName" : "type"
+        }
+      },
+      "ExpeditionMetadataProperty_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "required" : {
+            "type" : "boolean"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "STRING", "LIST", "BOOLEAN" ]
+          },
+          "values" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "Expedition_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "expeditionId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "expeditionCode" : {
+            "type" : "string"
+          },
+          "expeditionTitle" : {
+            "type" : "string"
+          },
+          "created" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modified" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "visibility" : {
+            "type" : "string",
+            "enum" : [ "anyone", "project members", "expedition members" ]
+          },
+          "identifier" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "entityIdentifiers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EntityIdentifier_Detailed"
+            }
+          },
+          "metadata" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object"
+            }
+          },
+          "project" : {
+            "$ref" : "#/components/schemas/Project_Detailed"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User_Detailed"
+          },
+          "public" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Field_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "uri" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          },
+          "definedBy" : {
+            "type" : "string"
+          },
+          "definition" : {
+            "type" : "string"
+          }
+        }
+      },
+      "List_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "alias" : {
+            "type" : "string"
+          },
+          "caseInsensitive" : {
+            "type" : "boolean"
+          },
+          "fields" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Field_Detailed"
+            }
+          },
+          "networkList" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "ProjectConfig_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "entities" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Entity_Detailed"
+            }
+          },
+          "lists" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/List_Detailed"
+            }
+          },
+          "expeditionMetadataProperties" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExpeditionMetadataProperty_Detailed"
+            }
+          }
+        }
+      },
+      "ProjectConfiguration_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "created" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modified" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "networkApproved" : {
+            "type" : "boolean"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User_Detailed"
+          },
+          "network" : {
+            "$ref" : "#/components/schemas/Network_Detailed"
+          },
+          "config" : {
+            "$ref" : "#/components/schemas/ProjectConfig_Detailed"
+          }
+        }
+      },
+      "Project_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "projectId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "projectCode" : {
+            "type" : "string"
+          },
+          "projectTitle" : {
+            "type" : "string"
+          },
+          "created" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modified" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "latestDataModification" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "projectConfiguration" : {
+            "$ref" : "#/components/schemas/ProjectConfiguration_Detailed"
+          },
+          "enforceExpeditionAccess" : {
+            "type" : "boolean"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User_Detailed"
+          },
+          "network" : {
+            "$ref" : "#/components/schemas/Network_Detailed"
+          },
+          "principalInvestigator" : {
+            "type" : "string"
+          },
+          "principalInvestigatorAffiliation" : {
+            "type" : "string"
+          },
+          "projectContact" : {
+            "type" : "string"
+          },
+          "projectContactEmail" : {
+            "type" : "string"
+          },
+          "publicationGuid" : {
+            "type" : "string"
+          },
+          "projectDataGuid" : {
+            "type" : "string"
+          },
+          "recommendedCitation" : {
+            "type" : "string"
+          },
+          "license" : {
+            "type" : "string"
+          },
+          "discoverable" : {
+            "type" : "boolean"
+          },
+          "public" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Rule_Detailed" : {
+        "required" : [ "name" ],
+        "type" : "object",
+        "properties" : {
+          "level" : {
+            "type" : "string",
+            "enum" : [ "WARNING", "ERROR" ]
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "discriminator" : {
+          "propertyName" : "name"
+        }
+      },
+      "ConfirmationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Flag_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "present" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "EntityIdentifier" : {
+        "type" : "object",
+        "properties" : {
+          "expedition" : {
+            "$ref" : "#/components/schemas/Expedition"
+          },
+          "conceptAlias" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string",
+            "format" : "uri"
+          }
+        }
+      },
+      "Expedition" : {
+        "type" : "object",
+        "properties" : {
+          "expeditionId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "expeditionCode" : {
+            "type" : "string"
+          },
+          "expeditionTitle" : {
+            "type" : "string"
+          },
+          "created" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modified" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "visibility" : {
+            "type" : "string",
+            "enum" : [ "anyone", "project members", "expedition members" ]
+          },
+          "identifier" : {
+            "type" : "string",
+            "format" : "uri"
+          },
+          "entityIdentifiers" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EntityIdentifier"
+            }
+          },
+          "metadata" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object"
+            }
+          },
+          "project" : {
+            "$ref" : "#/components/schemas/Project"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User"
+          },
+          "public" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Network" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "created" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modified" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User"
+          }
+        }
+      },
+      "Project" : {
+        "type" : "object",
+        "properties" : {
+          "projectId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "projectCode" : {
+            "type" : "string"
+          },
+          "projectTitle" : {
+            "type" : "string"
+          },
+          "created" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modified" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "latestDataModification" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "projectConfiguration" : {
+            "$ref" : "#/components/schemas/ProjectConfiguration"
+          },
+          "enforceExpeditionAccess" : {
+            "type" : "boolean"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User"
+          },
+          "network" : {
+            "$ref" : "#/components/schemas/Network"
+          },
+          "principalInvestigator" : {
+            "type" : "string"
+          },
+          "principalInvestigatorAffiliation" : {
+            "type" : "string"
+          },
+          "projectContact" : {
+            "type" : "string"
+          },
+          "projectContactEmail" : {
+            "type" : "string"
+          },
+          "publicationGuid" : {
+            "type" : "string"
+          },
+          "projectDataGuid" : {
+            "type" : "string"
+          },
+          "recommendedCitation" : {
+            "type" : "string"
+          },
+          "license" : {
+            "type" : "string"
+          },
+          "projectConfig" : {
+            "$ref" : "#/components/schemas/ProjectConfig"
+          },
+          "discoverable" : {
+            "type" : "boolean"
+          },
+          "public" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "ProjectConfig" : {
+        "type" : "object",
+        "properties" : {
+          "entities" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Entity"
+            }
+          },
+          "lists" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/List"
+            }
+          },
+          "expeditionMetadataProperties" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExpeditionMetadataProperty"
+            }
+          }
+        }
+      },
+      "ProjectConfiguration" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "created" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modified" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "networkApproved" : {
+            "type" : "boolean"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User"
+          },
+          "network" : {
+            "$ref" : "#/components/schemas/Network"
+          },
+          "config" : {
+            "$ref" : "#/components/schemas/ProjectConfig"
+          }
+        }
+      },
+      "User" : {
+        "type" : "object",
+        "properties" : {
+          "userId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "username" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "institution" : {
+            "type" : "string"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "sraUsername" : {
+            "type" : "string"
+          },
+          "sraEmail" : {
+            "type" : "string"
+          },
+          "sraFirstName" : {
+            "type" : "string"
+          },
+          "sraLastName" : {
+            "type" : "string"
+          },
+          "subscribed" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "ProjectConfiguration_Summary" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "networkApproved" : {
+            "type" : "boolean"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User_Summary"
+          }
+        }
+      },
+      "User_Summary" : {
+        "type" : "object",
+        "properties" : {
+          "userId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "username" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Flag_Summary" : {
+        "type" : "object",
+        "properties" : {
+          "present" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Attribute_DetailedConfig" : {
+        "type" : "object",
+        "properties" : {
+          "column" : {
+            "type" : "string"
+          },
+          "uri" : {
+            "type" : "string"
+          },
+          "dataType" : {
+            "type" : "string",
+            "enum" : [ "INTEGER", "STRING", "DATE", "DATETIME", "TIME", "FLOAT", "BOOLEAN" ]
+          },
+          "internal" : {
+            "type" : "boolean"
+          },
+          "definedBy" : {
+            "type" : "string"
+          },
+          "dataFormat" : {
+            "type" : "string"
+          },
+          "delimitedBy" : {
+            "type" : "string"
+          },
+          "group" : {
+            "type" : "string"
+          },
+          "definition" : {
+            "type" : "string"
+          },
+          "allowUnknown" : {
+            "type" : "boolean"
+          },
+          "allowTBD" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "Entity_DetailedConfig" : {
+        "required" : [ "type" ],
+        "type" : "object",
+        "properties" : {
+          "conceptAlias" : {
+            "type" : "string"
+          },
+          "worksheet" : {
+            "type" : "string"
+          },
+          "parentEntity" : {
+            "type" : "string"
+          },
+          "hashed" : {
+            "type" : "boolean"
+          },
+          "uniqueAcrossProject" : {
+            "type" : "boolean"
+          },
+          "uniqueKey" : {
+            "type" : "string"
+          },
+          "conceptURI" : {
+            "type" : "string"
+          },
+          "attributes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Attribute_DetailedConfig"
+            }
+          },
+          "rules" : {
+            "uniqueItems" : true,
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Rule_DetailedConfig"
+            }
+          },
+          "type" : {
+            "type" : "string"
+          }
+        },
+        "discriminator" : {
+          "propertyName" : "type"
+        }
+      },
+      "ExpeditionMetadataProperty_DetailedConfig" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "required" : {
+            "type" : "boolean"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "STRING", "LIST", "BOOLEAN" ]
+          },
+          "values" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "Field_DetailedConfig" : {
+        "type" : "object",
+        "properties" : {
+          "uri" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          },
+          "definedBy" : {
+            "type" : "string"
+          },
+          "definition" : {
+            "type" : "string"
+          }
+        }
+      },
+      "List_DetailedConfig" : {
+        "type" : "object",
+        "properties" : {
+          "alias" : {
+            "type" : "string"
+          },
+          "caseInsensitive" : {
+            "type" : "boolean"
+          },
+          "fields" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Field_DetailedConfig"
+            }
+          },
+          "networkList" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "ProjectConfig_DetailedConfig" : {
+        "type" : "object",
+        "properties" : {
+          "entities" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Entity_DetailedConfig"
+            }
+          },
+          "lists" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/List_DetailedConfig"
+            }
+          },
+          "expeditionMetadataProperties" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExpeditionMetadataProperty_DetailedConfig"
+            }
+          }
+        }
+      },
+      "ProjectConfiguration_DetailedConfig" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "created" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modified" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "networkApproved" : {
+            "type" : "boolean"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User_DetailedConfig"
+          },
+          "network" : {
+            "$ref" : "#/components/schemas/Network_DetailedConfig"
+          },
+          "config" : {
+            "$ref" : "#/components/schemas/ProjectConfig_DetailedConfig"
+          }
+        }
+      },
+      "Rule_DetailedConfig" : {
+        "required" : [ "name" ],
+        "type" : "object",
+        "properties" : {
+          "level" : {
+            "type" : "string",
+            "enum" : [ "WARNING", "ERROR" ]
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "discriminator" : {
+          "propertyName" : "name"
+        }
+      },
+      "NewProject_DetailedConfig" : {
+        "type" : "object",
+        "properties" : {
+          "projectId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "projectCode" : {
+            "type" : "string"
+          },
+          "projectTitle" : {
+            "type" : "string"
+          },
+          "created" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modified" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "latestDataModification" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "projectConfiguration" : {
+            "$ref" : "#/components/schemas/ProjectConfiguration_DetailedConfig"
+          },
+          "enforceExpeditionAccess" : {
+            "type" : "boolean"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User_DetailedConfig"
+          },
+          "network" : {
+            "$ref" : "#/components/schemas/Network_DetailedConfig"
+          },
+          "principalInvestigator" : {
+            "type" : "string"
+          },
+          "principalInvestigatorAffiliation" : {
+            "type" : "string"
+          },
+          "projectContact" : {
+            "type" : "string"
+          },
+          "projectContactEmail" : {
+            "type" : "string"
+          },
+          "publicationGuid" : {
+            "type" : "string"
+          },
+          "projectDataGuid" : {
+            "type" : "string"
+          },
+          "recommendedCitation" : {
+            "type" : "string"
+          },
+          "license" : {
+            "type" : "string"
+          },
+          "projectConfig" : {
+            "$ref" : "#/components/schemas/ProjectConfig_DetailedConfig"
+          },
+          "discoverable" : {
+            "type" : "boolean"
+          },
+          "public" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "WorksheetTemplate" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "worksheet" : {
+            "type" : "string"
+          },
+          "columns" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "project" : {
+            "$ref" : "#/components/schemas/Project"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User"
+          }
+        }
+      },
+      "WorksheetTemplate_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "worksheet" : {
+            "type" : "string"
+          },
+          "columns" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "project" : {
+            "$ref" : "#/components/schemas/Project_Detailed"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/User_Detailed"
+          }
+        }
+      },
+      "RecordResponse" : {
+        "type" : "object",
+        "properties" : {
+          "projectId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "parent" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object"
+            }
+          },
+          "record" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object"
+            }
+          },
+          "children" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "additionalProperties" : {
+                "type" : "object"
+              }
+            }
+          }
+        }
+      },
+      "PaginatedResponseMapStringListMapStringObject" : {
+        "type" : "object",
+        "properties" : {
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "limit" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "content" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "object",
+                "additionalProperties" : {
+                  "type" : "object"
+                }
+              }
+            }
+          }
+        }
+      },
+      "RootIdentifierResponse" : {
+        "type" : "object",
+        "properties" : {
+          "arkID" : {
+            "type" : "string"
+          },
+          "expedition" : {
+            "$ref" : "#/components/schemas/Expedition"
+          },
+          "entityIdentifier" : {
+            "$ref" : "#/components/schemas/EntityIdentifier"
+          }
+        }
+      },
+      "SraUploadCreateResponse" : {
+        "type" : "object",
+        "properties" : {
+          "uploadId" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }
+      },
+      "SraUploadMetadata" : {
+        "type" : "object",
+        "properties" : {
+          "expeditionCode" : {
+            "type" : "string"
+          },
+          "projectId" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "bioProjectAccession" : {
+            "type" : "string"
+          },
+          "bioProjectTitle" : {
+            "type" : "string"
+          },
+          "bioProjectDescription" : {
+            "type" : "string"
+          },
+          "releaseDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "sraUsername" : {
+            "type" : "string"
+          },
+          "sraEmail" : {
+            "type" : "string"
+          },
+          "sraFirstName" : {
+            "type" : "string"
+          },
+          "sraLastName" : {
+            "type" : "string"
+          },
+          "bioSampleType" : {
+            "type" : "string",
+            "enum" : [ "Model.organism.animal.1.0", "Invertebrate.1.0", "Plant.1.0", "Metagenome.environmental.1.0", "Virus.1.0", "Microbe.1.0", "Human.1.0" ]
+          },
+          "bioSamples" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "userSraProfile" : {
+            "type" : "boolean",
+            "writeOnly" : true
+          }
+        }
+      },
+      "SraUploadResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        }
+      },
+      "DynamicViewResponseUser_Detailed" : {
+        "type" : "object",
+        "properties" : {
+          "entity" : {
+            "$ref" : "#/components/schemas/User_Detailed"
+          }
+        }
+      }
+    }
+  }
+}
