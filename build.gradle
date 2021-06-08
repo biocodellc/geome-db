@@ -106,6 +106,17 @@ dependencies {
 //=============================
 mainClassName = ''
 
+task harvestSraBioSamples(type: JavaExec) {
+    classpath = configurations.compile + sourceSets.main.runtimeClasspath
+
+    main = "biocode.fims.run.SraAccessionHarvesterRunner"
+}
+
+task reportSraSubmissions(type: JavaExec) {
+    classpath = configurations.compile + sourceSets.main.runtimeClasspath
+
+    main = "biocode.fims.run.SraSubmissionReporterRunner"
+}
 
 startScripts {
     classpath = files(jar.archivePath, configurations.compile, configurations.runtime)
