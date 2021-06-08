@@ -2922,17 +2922,17 @@
           "conceptURI" : {
             "type" : "string"
           },
-          "attributes" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/Attribute"
-            }
-          },
           "rules" : {
             "uniqueItems" : true,
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/Rule"
+            }
+          },
+          "attributes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Attribute"
             }
           },
           "type" : {
@@ -3305,17 +3305,17 @@
           "conceptURI" : {
             "type" : "string"
           },
-          "attributes" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/Attribute_Detailed"
-            }
-          },
           "rules" : {
             "uniqueItems" : true,
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/Rule_Detailed"
+            }
+          },
+          "attributes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Attribute_Detailed"
             }
           },
           "type" : {
@@ -3977,17 +3977,17 @@
           "conceptURI" : {
             "type" : "string"
           },
-          "attributes" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/Attribute_DetailedConfig"
-            }
-          },
           "rules" : {
             "uniqueItems" : true,
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/Rule_DetailedConfig"
+            }
+          },
+          "attributes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Attribute_DetailedConfig"
             }
           },
           "type" : {
