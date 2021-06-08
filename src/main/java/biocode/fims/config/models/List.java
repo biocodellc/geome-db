@@ -1,6 +1,7 @@
 package biocode.fims.config.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -18,7 +19,7 @@ public class List {
     private boolean isNetworkList = false;
 
     @JsonCreator
-    public List(String alias) {
+    public List(@JsonProperty("alias")String alias) {
         this.alias = alias;
     }
 
