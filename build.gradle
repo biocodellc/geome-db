@@ -1,6 +1,17 @@
 plugins {
     id 'java'
     id 'war'
+    id "io.swagger.core.v3.swagger-gradle-plugin" version "2.1.9"
+}
+
+// build API endpoint and stores in swagger directory
+resolve {
+    outputFileName = 'geomeAPI'
+    outputFormat = 'JSON'
+    prettyPrint = 'TRUE'
+    classpath = sourceSets.main.runtimeClasspath
+    resourcePackages = ['biocode.fims']
+    outputDir = file('swagger')
 }
 
 repositories {
@@ -106,6 +117,17 @@ dependencies {
 //=============================
 mainClassName = ''
 
+task harvestSraBioSamples(type: JavaExec) {
+    classpath = configurations.compile + sourceSets.main.runtimeClasspath
+
+    main = "biocode.fims.run.SraAccessionHarvesterRunner"
+}
+
+task reportSraSubmissions(type: JavaExec) {
+    classpath = configurations.compile + sourceSets.main.runtimeClasspath
+
+    main = "biocode.fims.run.SraSubmissionReporterRunner"
+}
 
 startScripts {
     classpath = files(jar.archivePath, configurations.compile, configurations.runtime)
@@ -133,9 +155,9 @@ tasks.war.dependsOn("copyEnvironmentProps")
 tasks["copyEnvironmentProps"].dependsOn("copyApiDocs")
 tasks["copyApiDocs"].dependsOn("copyDocs")
 tasks["copyDocs"].dependsOn("processResources")
-
 war {
     enabled = true
     webXml = file('src/main/environment/' + project.findProperty("environment") + '/web.xml')
+    from 'swagger/' 
 }
 
