@@ -74,7 +74,11 @@ class WriterSheetGenerator {
             if (sheetResults.containsKey(worksheet)) {
                 Entity e2 = sheetResults.get(worksheet).getLast().entity();
 
-                if (e2.isChildEntity() && e2.getParentEntity().equals(e.getConceptAlias())) {
+                // Original line: only child entity
+                //if (e2.isChildEntity() && e2.getParentEntity().equals(e.getConceptAlias())) {
+                // New line, gives siblings
+                if (e2.isChildEntity() && (e2.getParentEntity().equals(e.getConceptAlias())
+                        || e2.getParentEntity().equals(e.getParentEntity()))) {
                     // previous entity was a child of this entity
                     sheetResults.get(worksheet).add(queryResult);
                 } else {
@@ -200,8 +204,10 @@ class WriterSheetGenerator {
                     // b/c first record should be most atomic entity, we don't need to add recordKey for this record
                     this.records.add(r);
 
+                     boolean childEntity = e.isChildEntity();
+
                     if (e.isChildEntity() && sheetEntities.containsKey(e.getParentEntity())) {
-                        String parentUniqueKey = sheetEntities.get(e.getParentEntity()).getUniqueKey();
+                            String parentUniqueKey = sheetEntities.get(e.getParentEntity()).getUniqueKey();
                         MultiKey pk = new MultiKey(e.getParentEntity(), r.get("projectId"), r.get("expeditionCode"), r.get(parentUniqueKey));
                         this.recordKeys.computeIfAbsent(pk, x -> new ArrayList<>()).add(r);
                     }
@@ -213,7 +219,23 @@ class WriterSheetGenerator {
             // for each record, join to any existing records that match the key (conceptAlias, projectId, expeditionCode, uniqueKey)
             // otherwise add to records list
             for (Map<String, Object> r : records) {
-                MultiKey k = new MultiKey(conceptAlias, r.get("projectId"), r.get("expeditionCode"), r.get(uniqueKey));
+
+                // Following code is a work-around for entities of Tissue which are NOT
+                // the most root-level entity.
+                // Match tissue identifiers when tissue ID's are not the only
+                // child entity of sample but occur on the same sheet.
+                String thisUniqueKey = r.get(uniqueKey).toString();
+                String thisConceptAlias = conceptAlias;
+                if (conceptAlias.equals("Tissue")) {
+                     thisUniqueKey = r.get(uniqueKey).toString();
+                    int endIndex = thisUniqueKey.lastIndexOf(".");
+                        if (endIndex != -1)
+                        {
+                            thisUniqueKey = thisUniqueKey.substring(0, endIndex );
+                            thisConceptAlias = e.getParentEntity();
+                        }
+                }
+                MultiKey k = new MultiKey(thisConceptAlias, r.get("projectId"), r.get("expeditionCode"), thisUniqueKey);
 
                 if (!e.isHashed()) {
                     r.put(e.getConceptAlias() + "_bcid", r.get("bcid"));
