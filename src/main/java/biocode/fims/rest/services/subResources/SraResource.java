@@ -173,7 +173,7 @@ public class SraResource extends ResumableUploadResource {
         Map<String, File> fileMap = new HashMap<>();
         fileMap.put("bioSample-attributes.tsv", bioSampleFile);
         fileMap.put("sra-metadata.tsv", sraMetadataFile);
-        fileMap.put("sra-step-by-step-instructions.pdf", new File(defaultOutputDirectory() + context.getRealPath("/docs/sra-step-by-step-instructions.pdf")));
+        fileMap.put("sra-step-by-step-instructions.pdf", new File(context.getRealPath("/docs/sra-step-by-step-instructions.pdf")));
 
         File zip = FileUtils.zip(fileMap, defaultOutputDirectory());
         String fileId = fileCache.cacheFileForUser(zip, userContext.getUser(), "sra-files.zip");
