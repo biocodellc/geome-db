@@ -174,15 +174,6 @@ public class SraResource extends ResumableUploadResource {
         fileMap.put("bioSample-attributes.tsv", bioSampleFile);
         fileMap.put("sra-metadata.tsv", sraMetadataFile);
         fileMap.put("sra-step-by-step-instructions.pdf", new File(context.getRealPath("docs/sra-step-by-step-instructions.pdf")));
-	//NOTE: context.getRealPath is pointing to /tmp/jetty-0_0_0_0-8080-geome-db_war-_-www_api_geome-db_org-4526046000378300552.dir/webapp/
-	// However, this path doesn't really exist on our filesystem... the following path DOES exist:
-	// /tmp/systemd-private-9c9ec8290b8c439c96be13b382ac224e-jetty9.service-HmE5Yf/tmp/jetty-0_0_0_0-8080-geome-db_war-_-www_api_geome-db_org-4526046000378300552.dir/webapp/
-	// jetty however is deployed with -Djava.io.tmpdir=/tmp
-	// appears that the deployment is living under a special system deployed tmp directory.
-	// meanwhile, java.out.tmpdir returns simply '/tmp'
-	//logger.info("defaultOutputDirectory" + defaultOutputDirectory());
-	//logger.info("java.out.tmpdir" + System.getProperty("java.io.tmpdir"));
-	
 
         File zip = FileUtils.zip(fileMap, defaultOutputDirectory());
         String fileId = fileCache.cacheFileForUser(zip, userContext.getUser(), "sra-files.zip");
