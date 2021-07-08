@@ -447,7 +447,7 @@ public class ExcelWorkbookWriter {
     }
 
     private void styleWrapped(StyleSetter styleSetter, boolean set) {
-        styleSetter.wrapText(true).verticalAlignment("Top");
+        styleSetter.wrapText(true).verticalAlignment("top");
         if (set) styleSetter.set();
     }
 
