@@ -4,6 +4,9 @@ plugins {
     id "io.swagger.core.v3.swagger-gradle-plugin" version "2.1.9"
 }
 
+compileJava {
+    options.compilerArgs << '-parameters'
+}
 // build API endpoint and stores in swagger directory
 resolve {
     outputFileName = 'geomeAPI'
@@ -133,16 +136,6 @@ startScripts {
     classpath = files(jar.archivePath, configurations.compile, configurations.runtime)
 }
 
-task copyDocs(type: Copy) {
-    from('src/main/web/docs')
-    into 'build/classes/docs'
-}
-
-task copyApiDocs(type: Copy) {
-    from('src/main/web/apidocs/current')
-    into 'build/classes/apidocs/current'
-}
-
 task copyEnvironmentProps(type: Copy) {
     from('src/main/environment/' + project.findProperty("environment")) {
         include '**/*.properties'
@@ -152,12 +145,22 @@ task copyEnvironmentProps(type: Copy) {
 }
 
 tasks.war.dependsOn("copyEnvironmentProps")
-tasks["copyEnvironmentProps"].dependsOn("copyApiDocs")
-tasks["copyApiDocs"].dependsOn("copyDocs")
-tasks["copyDocs"].dependsOn("processResources")
+
 war {
     enabled = true
     webXml = file('src/main/environment/' + project.findProperty("environment") + '/web.xml')
     from 'swagger/' 
+    from('src/main/web/'){
+        include 'docs/**'
+        into ''
+    }
+    from('docs/'){
+        include 'helpDocumentation.pdf'
+        into 'docs'
+    }
+    from('src/main/web/'){
+        include 'apidocs/**'
+        into ''
+    }
 }
 
