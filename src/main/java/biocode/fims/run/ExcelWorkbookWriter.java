@@ -264,6 +264,10 @@ public class ExcelWorkbookWriter {
 
             if (val != null && !val.equals("")) {
                 worksheet.value(row, cellNum, val);
+
+            	StyleSetter style = worksheet.style(row, cellNum);
+        	style.verticalAlignment("center");
+		style.set();
             }
 
             cellNum++;
@@ -364,7 +368,9 @@ public class ExcelWorkbookWriter {
                     // Write cell values
                     row++;
                     listsSheet.value(row, col, f.getValue());
-
+            	    StyleSetter style = listsSheet.style(row, col);
+        	    style.verticalAlignment("center");
+		    style.set();
                 }
 
                 Range listRange = listsSheet.range(1, col, fields.size(), col);
@@ -429,6 +435,7 @@ public class ExcelWorkbookWriter {
 
     private void styleHeading(StyleSetter styleSetter, boolean set) {
         styleSetter.bold().fontSize(14);
+        styleSetter.verticalAlignment("center");
         if (set) styleSetter.set();
     }
 
@@ -439,6 +446,7 @@ public class ExcelWorkbookWriter {
     private void styleRequired(StyleSetter styleSetter, boolean set) {
         styleHeading(styleSetter);
         styleSetter.fontColor(RED_FONT);
+        styleSetter.verticalAlignment("center");
         if (set) styleSetter.set();
     }
 
@@ -447,7 +455,7 @@ public class ExcelWorkbookWriter {
     }
 
     private void styleWrapped(StyleSetter styleSetter, boolean set) {
-        styleSetter.wrapText(true).verticalAlignment("top");
+        styleSetter.wrapText(true).verticalAlignment("center");
         if (set) styleSetter.set();
     }
 
@@ -457,6 +465,7 @@ public class ExcelWorkbookWriter {
 
     private void styleCentered(StyleSetter styleSetter, boolean set) {
         styleSetter.horizontalAlignment("center");
+        styleSetter.verticalAlignment("center");
         if (set) styleSetter.set();
     }
 
