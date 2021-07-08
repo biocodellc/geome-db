@@ -4,6 +4,9 @@ plugins {
     id "io.swagger.core.v3.swagger-gradle-plugin" version "2.1.9"
 }
 
+compileJava {
+    options.compilerArgs << '-parameters'
+}
 // build API endpoint and stores in swagger directory
 resolve {
     outputFileName = 'geomeAPI'
