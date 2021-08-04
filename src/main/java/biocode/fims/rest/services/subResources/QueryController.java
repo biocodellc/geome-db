@@ -200,7 +200,7 @@ public class QueryController extends FimsController {
             File temp = null;
             try {
                 // Create temp file.
-                temp = new File("meta.txt");
+                temp = new File(System.getProperty("java.io.tmpdir"),"meta.txt");
 
                 // Delete temp file when program exits.
                 temp.deleteOnExit();
