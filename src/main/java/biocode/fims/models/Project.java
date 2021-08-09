@@ -60,6 +60,7 @@ public class Project {
     private String projectDataGuid;
     private String recommendedCitation;
     private String license;
+    private String localcontextsId;
     private static final String LINEBREAK = "\n"; // or "\r\n";
 
 
@@ -228,6 +229,16 @@ public class Project {
         this.license = license;
     }
 
+    @JsonView(Views.Detailed.class)
+    @Column(name = "localcontexts_id")
+    public String getLocalcontextsId() {
+        return localcontextsId;
+    }
+
+    public void setLocalcontextsId(String localcontextsId) {
+        this.localcontextsId = localcontextsId;
+    }
+
     @Column(updatable = false)
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
@@ -339,6 +350,7 @@ public class Project {
                 ", projectDataGuid=" + projectDataGuid +
                 ", recommendedCitation=" + recommendedCitation +
                 ", license=" + license +
+                ", localcontextsId=" + localcontextsId +
                 ", public=" + isPublic() +
                 '}';
     }
@@ -368,6 +380,9 @@ public class Project {
         }
         if (!isNullOrEmpty(this.getLicense())) {
             sb.append("license: " + this.getLicense() + "\n");
+        }
+        if (!isNullOrEmpty(this.getLocalcontextsId())) {
+            sb.append("localcontexts Id: " + this.getLocalcontextsId() + "\n");
         }
         if (!isNullOrEmpty(this.getProjectContact())) {
             sb.append("contact: " + this.getProjectContact() + "\n");

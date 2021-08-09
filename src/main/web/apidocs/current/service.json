@@ -1320,6 +1320,9 @@
                 "recommendedCitation": {
                     "type": "string"
                 },
+                "localContextsId": {
+                    "type": "string"
+                },
                 "user": {
                     "$ref": "#/definitions/User"
                 }
@@ -1390,6 +1393,9 @@
                     "type": "string"
                 },
                 "recommendedCitation": {
+                    "type": "string"
+                },
+                "localContextsId": {
                     "type": "string"
                 },
                 "user": {
@@ -1749,6 +1755,9 @@
                     "type": "string"
                 },
                 "recommendedCitation": {
+                    "type": "string"
+                },
+                "localcontextsId": {
                     "type": "string"
                 },
                 "user": {

@@ -206,6 +206,7 @@ public class ProjectsResource extends FimsController {
         existingProject.setPublicationGuid(updatedProject.getPublicationGuid());
         existingProject.setProjectDataGuid(updatedProject.getProjectDataGuid());
         existingProject.setRecommendedCitation(updatedProject.getRecommendedCitation());
+        existingProject.setLocalcontextsId(updatedProject.getLocalcontextsId());
         existingProject.setLicense(updatedProject.getLicense());
         existingProject.setDiscoverable(updatedProject.isDiscoverable());
 
