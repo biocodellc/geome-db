@@ -56,7 +56,7 @@ public abstract class AbstractRule implements Rule {
         } catch (FimsRuntimeException e) {
             if (e.getErrorCode() == ConfigCode.MISSING_ATTRIBUTE) {
                 messages.add(
-                        "Invalid " + name() + " Rule configuration. Could not find Attribute for column: " + column + " in entity: " + entity.getConceptAlias()
+                        "Invalid or existing " + name() + " rule configuration. Can not find or remove Attribute for column: " + column + " in entity: " + entity.getConceptAlias() + ". Try removing rule associated with this column"
                 );
 
                 return false;
