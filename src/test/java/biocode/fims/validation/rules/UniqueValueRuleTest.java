@@ -56,7 +56,7 @@ public class UniqueValueRuleTest extends AbstractRuleTest {
         EntityMessages expectedMessages = new EntityMessages("Samples");
         expectedMessages.addErrorMessage(
                 "Invalid Rule Configuration. Contact Project Administrator.",
-                new Message("Invalid UniqueValue Rule configuration. Could not find Attribute for column: fake_column in entity: Samples")
+                new Message("Invalid or existing UniqueValue rule configuration. Can not find or remove Attribute for column: fake_column in entity: Samples. Try removing rule associated with this column")
         );
 
         assertEquals(expectedMessages, messages);
