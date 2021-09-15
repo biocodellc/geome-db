@@ -62,7 +62,7 @@ public class RecordsResource extends FimsController {
      * @responseMessage 400 Invalid request. The provided ark id is missing a suffix `biocode.fims.utils.ErrorInfo
      */
     @DELETE
-    @Path("{identifier: ark:\\/[0-9]{5}\\/.+}")
+    @Path("/delete/{identifier: ark:\\/[0-9]{5}\\/.+}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public ConfirmationResponse delete(@PathParam("identifier") String arkID) {

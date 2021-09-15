@@ -6,6 +6,7 @@ import biocode.fims.plugins.evolution.processing.EvolutionRetrievalTask;
 import biocode.fims.plugins.evolution.processing.EvolutionTaskExecutor;
 import biocode.fims.plugins.evolution.service.EvolutionService;
 import biocode.fims.rest.FimsController;
+import biocode.fims.rest.responses.ConfirmationResponse;
 import biocode.fims.rest.responses.RecordResponse;
 import biocode.fims.rest.services.subResources.QueryController;
 import biocode.fims.rest.services.subResources.RecordsResource;
@@ -42,11 +43,26 @@ public class RecordController extends FimsController {
     /**
      * @responseType biocode.fims.rest.services.subResources.RecordsResource
      */
+    @GET
     @Path("/")
     public Class<RecordsResource> getRecordsResource() {
         return RecordsResource.class;
     }
 
+    /**
+     * Delete a Record by ark id
+     *
+     * @param identifier The ark id of the Record to delete
+     * @responseMessage 400 Invalid request. The provided ark id is missing a suffix `biocode.fims.utils.ErrorInfo
+     */
+    @DELETE
+       @Path("delete/{identifier: ark:\\/[0-9]{5}\\/.+}")
+       @Produces(MediaType.APPLICATION_JSON)
+       @Consumes(MediaType.APPLICATION_JSON)
+       public ConfirmationResponse delete(@PathParam("identifier") String arkID) {
+           ConfirmationResponse response = recordsResource.delete(arkID);
+           return response;
+       }
     /**
      * Get a Record by ark id
      *
