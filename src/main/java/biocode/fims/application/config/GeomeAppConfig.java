@@ -124,7 +124,8 @@ public class GeomeAppConfig {
     @Bean
     public List<DatasetAction> datasetActions(EvolutionAppConfig evolutionAppConfig) {
         List<DatasetAction> actions = new ArrayList<>();
-        actions.add(evolutionAppConfig.evolutionDatasetAction());
+	//JBD commented out this line to remove references to evolutiondb
+        //actions.add(evolutionAppConfig.evolutionDatasetAction());
         return actions;
     }
 
