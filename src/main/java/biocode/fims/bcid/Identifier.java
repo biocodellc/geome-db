@@ -38,7 +38,10 @@ public class Identifier {
     private void decode(String identifier) {
         // Pull off potential last piece of string which would represent the local Identifier
         // The piece to decode is ark:/NAAN/bcidIdentifer (anything else after a last trailing "/" not decoded)
-        String bits[] = identifier.split("/", 3);
+
+        // truncate identifier to everything after ark:
+        String truncatedIdentifier = identifier.substring(identifier.indexOf("ark"));
+        String bits[] = truncatedIdentifier.split("/", 3);
 
         // the scheme is the first chunk
         scheme = bits[0];
