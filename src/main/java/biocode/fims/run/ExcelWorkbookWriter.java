@@ -223,6 +223,17 @@ public class ExcelWorkbookWriter {
 
         styleWrapped(instructionsSheet.style(row, 0));
         instructionsSheet.value(row, 0, "This tab contains controlled vocabulary lists for certain fields.  DO NOT EDIT this sheet!");
+        row++;
+        row++;
+
+        //Additional Instructions
+        styleHeading(instructionsSheet.style(row, 0));
+        instructionsSheet.value(row, 0, "Additional Instructions");
+        row++;
+
+        styleWrapped(instructionsSheet.style(row, 0));
+        instructionsSheet.value(row, 0, "If additional fields are needed to capture all data collected for a project, refer to the Geome Workbench Template Generator (https://geome-db.org/workbench/template) for your project or team. Any of those fields may be added to Samples as long as the data conform to the listed definition and data type.");
+        row++;
 
     }
 
