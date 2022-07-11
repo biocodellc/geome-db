@@ -9,6 +9,7 @@ import biocode.fims.validation.messages.EntityMessages;
 import biocode.fims.validation.messages.Message;
 import org.springframework.util.Assert;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +42,7 @@ public class PhotoFileRule extends AbstractRule {
             if (record.bulkLoad()) continue;
             else if (!record.originalUrl().equals("")) continue;
             else if (record.get(PhotoEntityProps.PROCESSED.uri()).equalsIgnoreCase("true")) continue;
+            else if (!record.get(PhotoEntityProps.IMG_1024.uri()).equals("")) continue;
 
             photosMissingFile.add(record.photoID());
             if (level().equals(RuleLevel.ERROR)) r.setError();
