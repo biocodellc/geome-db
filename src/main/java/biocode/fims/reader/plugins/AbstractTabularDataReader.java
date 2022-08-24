@@ -49,7 +49,13 @@ abstract class AbstractTabularDataReader implements DataReader {
     public List<RecordSet> getRecordSets() {
 
         if (recordSets == null) {
-            init();
+           try {
+               init();
+           } catch(Exception e) {
+               throw new FimsRuntimeException("Unable to parse workbook. If you are " +
+                         "attempting to validate against multiple expeditions, be sure to" +
+                         "supply an expeditionCode for each record.",500);
+           }
             instantiateRecords();
             recordSets = generateRecordSets();
         }
