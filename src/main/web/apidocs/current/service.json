@@ -1323,6 +1323,9 @@
                 "localContextsId": {
                     "type": "string"
                 },
+                "permitGuid": {
+                    "type": "string"
+                },
                 "user": {
                     "$ref": "#/definitions/User"
                 }
@@ -1396,6 +1399,9 @@
                     "type": "string"
                 },
                 "localContextsId": {
+                    "type": "string"
+                },
+                "permitGuid": {
                     "type": "string"
                 },
                 "user": {
@@ -1758,6 +1764,9 @@
                     "type": "string"
                 },
                 "localcontextsId": {
+                    "type": "string"
+                },
+                "permitGuid": {
                     "type": "string"
                 },
                 "user": {

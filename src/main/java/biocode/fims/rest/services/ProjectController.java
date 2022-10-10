@@ -224,6 +224,7 @@ public class ProjectController extends FimsController {
                     project.put("projectDataGuid", rs.getString("projectDataGuid"));
                     project.put("recommendedCitation", rs.getString("recommendedCitation"));
                     project.put("localcontextsId", rs.getString("localcontextsId"));
+                    project.put("permitGuid", rs.getString("permitGuid"));
                     project.put("license", rs.getString("license"));
                     project.put("discoverable", rs.getBoolean("discoverable"));
 

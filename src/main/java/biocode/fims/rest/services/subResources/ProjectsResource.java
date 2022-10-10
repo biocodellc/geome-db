@@ -171,10 +171,24 @@ public class ProjectsResource extends FimsController {
         if (existingProject == null) {
             throw new FimsRuntimeException("project not found", 404);
         }
+          /*
+          Alternate method which searches for a particular user among a list of users.
+        Boolean userPartOfProject = false;
+        for (User user : existingProject.getProjectMembers()){
+                 if (user.equals(userContext.getUser())){
+                     userPartOfProject = true;
+                     //System.out.println(element);
+                 }
+              }
+        if (!userPartOfProject) {
+            throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
+        }
+        */
 
         if (!existingProject.getUser().equals(userContext.getUser())) {
             throw new ForbiddenRequestException("You must be this project's admin in order to update the metadata");
         }
+
 
         updateExistingProject(existingProject, project);
         projectService.update(existingProject);
@@ -207,6 +221,7 @@ public class ProjectsResource extends FimsController {
         existingProject.setProjectDataGuid(updatedProject.getProjectDataGuid());
         existingProject.setRecommendedCitation(updatedProject.getRecommendedCitation());
         existingProject.setLocalcontextsId(updatedProject.getLocalcontextsId());
+        existingProject.setPermitGuid(updatedProject.getPermitGuid());
         existingProject.setLicense(updatedProject.getLicense());
         existingProject.setDiscoverable(updatedProject.isDiscoverable());
 

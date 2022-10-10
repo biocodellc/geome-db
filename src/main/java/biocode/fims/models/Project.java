@@ -61,6 +61,7 @@ public class Project {
     private String recommendedCitation;
     private String license;
     private String localcontextsId;
+    private String permitGuid;
     private static final String LINEBREAK = "\n"; // or "\r\n";
 
 
@@ -239,6 +240,15 @@ public class Project {
         this.localcontextsId = localcontextsId;
     }
 
+    @JsonView(Views.Detailed.class)
+      @Column(name = "permit_guid")
+      public String getPermitGuid() {
+          return permitGuid;
+      }
+
+      public void setPermitGuid(String permitGuid) {
+          this.permitGuid = permitGuid;
+      }
     @Column(updatable = false)
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
@@ -351,6 +361,7 @@ public class Project {
                 ", recommendedCitation=" + recommendedCitation +
                 ", license=" + license +
                 ", localcontextsId=" + localcontextsId +
+                ", pemitGuid=" + permitGuid +
                 ", public=" + isPublic() +
                 '}';
     }
@@ -384,6 +395,9 @@ public class Project {
         if (!isNullOrEmpty(this.getLocalcontextsId())) {
             sb.append("localcontexts Id: " + this.getLocalcontextsId() + "\n");
         }
+        if (!isNullOrEmpty(this.getPermitGuid())) {
+                sb.append("permit GUID: " + this.getPermitGuid() + "\n");
+            }
         if (!isNullOrEmpty(this.getProjectContact())) {
             sb.append("contact: " + this.getProjectContact() + "\n");
         }

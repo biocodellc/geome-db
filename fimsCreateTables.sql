@@ -283,6 +283,7 @@ CREATE TABLE projects
     recommended_citation TEXT,
     license TEXT,
     localcontexts_id TEXT,
+    permit_guid TEXT,
     discoverable BOOLEAN NOT NULL DEFAULT '0'
 );
 
