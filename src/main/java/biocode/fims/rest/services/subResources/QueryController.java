@@ -110,9 +110,13 @@ public class QueryController extends FimsController {
             @FormParam("query") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
-            @QueryParam("source") String s) {
-        return json(queryString, page, limit, s);
-    }
+            @QueryParam("source") String s,
+            @DefaultValue("true") @QueryParam("includeEmptyProperties") String includeEmptyProperties) {
+        if (includeEmptyProperties.equalsIgnoreCase("true")) {
+                    return json(queryString, page, limit, s, true);
+                }else {
+                    return json(queryString, page, limit, s, false);
+                    }    }
 
     /**
      * @param source comma separated list of columns to return
@@ -132,15 +136,20 @@ public class QueryController extends FimsController {
             @QueryParam("q") String queryString,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("limit") @DefaultValue("100") int limit,
-            @QueryParam("source") String s) {
-        return json(queryString, page, limit, s);
+            @QueryParam("source") String s,
+            @DefaultValue("true") @QueryParam("includeEmptyProperties") String includeEmptyProperties) {
+        if (includeEmptyProperties.equalsIgnoreCase("true")) {
+            return json(queryString, page, limit, s, true);
+        }else {
+            return json(queryString, page, limit, s, false);
+            }
     }
 
-    private PaginatedResponse<Map<String, List<Map<String, Object>>>> json(String queryString, int page, int limit, String s) {
+    private PaginatedResponse<Map<String, List<Map<String, Object>>>> json(String queryString, int page, int limit, String s, Boolean includeEmptyProperties) {
         List<String> sources = s != null ? Arrays.asList(s.split(",")) : Collections.emptyList();
 
         Query query = buildQuery(queryString, page, limit);
-        PaginatedResponse<Map<String, List<Map<String, Object>>>> response = recordRepository.query(query, RecordSources.factory(sources, entity), true, false);
+        PaginatedResponse<Map<String, List<Map<String, Object>>>> response = recordRepository.query(query, RecordSources.factory(sources, entity), includeEmptyProperties, false);
 
         try {
             String eventId = UUID.randomUUID().toString();
