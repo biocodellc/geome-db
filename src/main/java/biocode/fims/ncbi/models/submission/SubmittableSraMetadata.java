@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  *
  * @author rjewing
  */
-@XmlType(propOrder = {"files", "attributes", "refs", "identifier"})
+//@XmlType(propOrder = {"files", "attributes", "refs", "identifier"})
 public class SubmittableSraMetadata {
     private static ArrayList<String> IGNOREABLE_ATTRIBUTES = new ArrayList<String>() {{
         add("sample_name");
