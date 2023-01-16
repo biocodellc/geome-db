@@ -5,6 +5,7 @@ import biocode.fims.ncbi.models.submission.BioSampleTypeAdaptor;
 import biocode.fims.rest.models.SraUploadMetadata;
 import org.eclipse.persistence.oxm.annotations.XmlPath;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.*;
@@ -34,25 +35,35 @@ public class SubmittableBioSample {
     // on the FastqMetadata. A quick hack would be to make another query to pull the bioSample.accession
     // for any fastqMetadata children of a given BioSample
     @XmlPath("AddData/Data/XmlContent/BioSample/SampleId/PrimaryId/text()")
+    @XMLElement("bioSampleAccession")
     private String bioSampleAccession;
+    
     @XmlPath("AddData/Data/XmlContent/BioSample/SampleId/SPUID/text()")
+    @XMLElement("sampleName")
     private String sampleName;
 
     @XmlPath("AddData/Data/XmlContent/BioSample/Descriptor/Title/text()")
+    @XMLElement("sampleTitle")
     private String sampleTitle;
 
     @XmlPath("AddData/Data/XmlContent/BioSample/Organism/OrganismName/text()")
+    @XMLElement("organism")
     private String organism;
 
     @XmlPath("AddData/Data/XmlContent/BioSample/BioProject/PrimaryId/text()")
+    @XMLElement("bioProjectAccession")
     private String bioProjectAccession;
+
     @XmlPath("AddData/Data/XmlContent/BioSample/BioProject/SPUID/text()")
+    @XMLElement("bioProjectId")
     private String bioProjectId;
+    
     @XmlPath("AddData/Data/XmlContent/BioSample/Package/text()")
     @XmlJavaTypeAdapter(BioSampleTypeAdaptor.class)
     private SraUploadMetadata.BioSampleType type;
 
     @XmlPath("AddData/Data/XmlContent/BioSample/Attributes/Attribute")
+    @XMLElement("attributes")
     private List<BioSampleAttribute> attributes;
 
     private SubmittableBioSample() {
@@ -92,6 +103,7 @@ public class SubmittableBioSample {
     }
 
     @XmlPath("AddData/Identifier/SPUID/text()")
+    @XMLElement("identifier")
     public String getIdentifier() {
         return sampleName;
     }
