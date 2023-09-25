@@ -310,9 +310,7 @@ public class Project {
     @JsonView(Views.Detailed.class)
     @Column(name = "enforce_expedition_access", nullable = false)
     public boolean isEnforceExpeditionAccess() {
-        // temporarily removing ability to enforce expedition access
-        return false;
-        //return enforceExpeditionAccess;
+        return enforceExpeditionAccess;
     }
 
     public void setEnforceExpeditionAccess(boolean enforceExpeditionAccess) {
