@@ -96,9 +96,10 @@ public class ExpeditionsResource extends FimsController {
             throw new UnauthorizedRequestException("You must be logged in to view your expeditions");
         }
 
+        // Try setting user expeditions to find all user expeditions and private and isPublic
         return expeditions
                 .stream()
-                .filter(e -> e.getUser().equals(userContext.getUser()) && (e.isPublic() || includePrivate))
+                .filter(e -> e.getUser().equals(userContext.getUser()) || (e.isPublic() || includePrivate))
                 .collect(Collectors.toList());
     }
 
