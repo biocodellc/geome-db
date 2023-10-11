@@ -7,6 +7,7 @@ import biocode.fims.photos.PhotoEntityProps;
 import biocode.fims.application.config.PhotosProperties;
 import biocode.fims.photos.PhotoRecord;
 import biocode.fims.utils.FileUtils;
+import org.apache.commons.io.output.NullOutputStream;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 
@@ -66,7 +67,10 @@ public class BasicPhotoProcessor implements PhotoProcessor {
 
             // strip any query params from the url
             String originalFile = record.bulkLoad() ? record.bulkLoadFile() : record.originalUrl().replaceFirst("\\?.*", "");
-            String formatName = FileUtils.getExtension(originalFile, "jpg");
+
+            // try and determine format from the file itself and use that as the default
+            String formatName = determineFormatName(orig);
+            //String formatName = FileUtils.getExtension(originalFile, determinedFormatName);
 
             String img_128 = this.resize(scaler, dir.toString(), record.expeditionCode() + "_" + record.photoID(), formatName, 128);
             String img_512 = this.resize(scaler, dir.toString(), record.expeditionCode() + "_" + record.photoID(), formatName, 512);
@@ -106,7 +110,23 @@ public class BasicPhotoProcessor implements PhotoProcessor {
             record.set(PhotoEntityProps.PROCESSED.uri(), "true");
         }
     }
+    // Add a method to determine formatName from BufferedImage
+    private String determineFormatName(BufferedImage image) throws IOException {
+        String formatName = "jpg"; // Default to jpg
 
+        // Try to determine formatName based on image properties
+        String[] formatNames = ImageIO.getWriterFormatNames();
+        for (String name : formatNames) {
+            if (ImageIO.getImageWritersByFormatName(name).hasNext()) {
+                if (ImageIO.write(image, name, new NullOutputStream())) {
+                    formatName = name;
+                    break;
+                }
+            }
+        }
+
+        return formatName;
+    }
     private void deleteBulkLoadFile(PhotoRecord record) {
         try {
             File img = new File(record.bulkLoadFile());
