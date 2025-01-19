@@ -36,7 +36,7 @@ projectStats: >
     p.localcontexts_id AS "localcontextsId",
     p.permit_guid AS "permitGuid",
     pc.id AS "configId", pc.name AS "configName", pc.description AS "configDescription", pc.network_approved AS "configNetworkApproved",
-    u.id AS "userId", u.username AS "username", u.email AS "email"
+    u.id AS "userId", u.username AS "username", u.email AS "email", u.first_name AS "firstName", u.last_name AS "lastName"
     ${entityCounts}
   FROM projects AS p
   LEFT JOIN users AS u on p.user_id = u.id
