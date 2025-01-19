@@ -196,6 +196,9 @@ public class ProjectController extends FimsController {
         params.put("includePublic", includePublic.toString());
         params.put("userId", userContext.getUser() == null ? "0" : String.valueOf(userContext.getUser().getUserId()));
 
+        String finalSql = StrSubstitutor.replace(sql, params);
+        System.out.println("Executing SQL: " + finalSql);
+
         return recordRepository.query (
                 StrSubstitutor.replace(sql, params),
                 null,
@@ -234,8 +237,8 @@ public class ProjectController extends FimsController {
                     user.put("userId", rs.getInt("userId"));
                     user.put("username", rs.getString("username"));
                     user.put("email", rs.getString("email"));
-                    user.put("first_name", rs.getString("firstName"));
-                    user.put("last_name", rs.getString("lastName"));
+                    //user.put("first_name", rs.getString("first_name"));
+                    //user.put("last_name", rs.getString("last_name"));
 
                     config.put("id", rs.getInt("configId"));
                     config.put("name", rs.getString("configName"));
