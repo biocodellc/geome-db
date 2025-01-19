@@ -234,8 +234,8 @@ public class ProjectController extends FimsController {
                     user.put("userId", rs.getInt("userId"));
                     user.put("username", rs.getString("username"));
                     user.put("email", rs.getString("email"));
-                    user.put("first_name", rs.getString("first_name"));
-                    user.put("last_name", rs.getString("last_name"));
+                    user.put("first_name", rs.getString("firstName"));
+                    user.put("last_name", rs.getString("lastName"));
 
                     config.put("id", rs.getInt("configId"));
                     config.put("name", rs.getString("configName"));
