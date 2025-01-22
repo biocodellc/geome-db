@@ -249,7 +249,7 @@ public class QueryBuilder implements QueryBuildingExpressionVisitor {
 
         addColumn(queryColumn);
         whereBuilder
-                .append(" = ")
+                .append(" ILIKE ")
                 .append(putParam(expression.term()));
     }
 

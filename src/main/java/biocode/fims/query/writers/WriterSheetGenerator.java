@@ -189,7 +189,8 @@ class WriterSheetGenerator {
          * The following assumptions are made when adding records...
          * <p>
          * 1. called in order of entity relation, with most atomic entity coming first
-         * 2. records to add are a direct parent-child relation with previously added records.
+         * 2. records to add are a direct parent-child relation with
+         * previously added records.
          * sibling relationships are not supported.
          *
          * @param conceptAlias
