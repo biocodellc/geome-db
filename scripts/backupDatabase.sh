@@ -1,6 +1,8 @@
 # backup databases
-pg_dump --no-password -U biscicol -h 127.0.0.1 -p5432 biscicol > /opt/backups/archives/offsite/biscicol.pgsql
-pg_dump --no-password -U bcid -h 127.0.0.1 -p5432 bcid > /opt/backups/archives/offsite/bcid.pgsql
+#pg_dump --no-password -U biscicol -h 127.0.0.1 -p5432 biscicol > /opt/backups/archives/offsite/biscicol.pgsql
+pg_dump --clean --if-exists --no-password -U biscicol -h 127.0.0.1 -p 5432 -n public biscicol > /opt/backups/archives/offsite/biscicol_public.pgsql
+pg_dump --clean --if-exists --no-password -U biscicol -h 127.0.0.1 -p 5432 -n network_1 biscicol > /opt/backups/archives/offsite/biscicol_network_1.pgsql
+pg_dump --clean --if-exists --no-password -U bcid -h 127.0.0.1 -p 5432 bcid > /opt/backups/archives/offsite/bcid.pgsql
 
 # tar and zip PGSQL backup files 
 tar -czvf /opt/backups/archives/offsite/"`date +"%Y-%m-%d"`"-backups.tar.gz /opt/backups/archives/offsite/*.pgsql
