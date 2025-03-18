@@ -43,14 +43,35 @@ public class BioSampleAttributesGenerator {
             if (headers == null || headers.isEmpty()) {
                 logger.warn("Header values are null or empty");
             } else {
-                logger.info("Writing {} headers to file", headers.size());
-                Iterator<String> it = headers.iterator();
-                while (it.hasNext()) {
-                    fw.write(it.next());
-                    if (it.hasNext()) fw.write(DELIMITER);
+                logger.info("Writing {} headers to file: {}", headers.size(), attributesFile.getAbsolutePath());
+
+                try {
+                    Iterator<String> it = headers.iterator();
+                    int index = 0;  // Track index for debugging
+
+                    while (it.hasNext()) {
+                        String header = it.next();
+
+                        if (header == null) {
+                            logger.error("Encountered null header at index {}", index);
+                        } else {
+                            logger.debug("Writing header[{}]: {}", index, header);
+                            fw.write(header);
+                        }
+
+                        if (it.hasNext()) {
+                            fw.write(DELIMITER);
+                        }
+                        index++;
+                    }
+
+                    fw.write("\n");
+                } catch (IOException e) {
+                    logger.error("IOException occurred while writing headers to file: {}", attributesFile.getAbsolutePath(), e);
+                    throw new FimsRuntimeException(SraCode.METADATA_FILE_CREATION_FAILED, 500);
                 }
-                fw.write("\n");
             }
+
 
             int sampleCount = 0;
             while (mapper.hasNextSample()) {
