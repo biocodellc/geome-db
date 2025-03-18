@@ -38,6 +38,8 @@ public class BioSampleAttributesGenerator {
             }
 
             List<String> headers = mapper.getHeaderValues();
+            logger.info("Headers: {}", headers);
+
             if (headers == null || headers.isEmpty()) {
                 logger.warn("Header values are null or empty");
             } else {
@@ -51,8 +53,8 @@ public class BioSampleAttributesGenerator {
                         String header = it.next();
 
                         if (header == null) {
-                            logger.warn("Encountered null header at index {}, writing empty string to preserve column alignment", index);
-                            fw.write("");  // Ensure column alignment
+                            logger.warn("Encountered null header at index {}", index);
+                            //fw.write("");  // Ensure column alignment
                         } else {
                             logger.debug("Writing header[{}]: {}", index, header);
                             fw.write(header);
@@ -90,7 +92,7 @@ public class BioSampleAttributesGenerator {
 
                         if (attribute == null) {
                             logger.warn("Encountered null attribute at sample index {}, writing empty string to maintain column alignment", sampleCount);
-                            fw.write("");
+                            //fw.write("");
                         } else {
                             fw.write(attribute);
                         }
