@@ -75,9 +75,14 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
     protected void logException(Exception e) {
         Integer status = e instanceof FimsAbstractException ? ((FimsAbstractException) e).getHttpStatusCode() : 0;
 
-        // don't log BadRequestexceptions or UnauthorizedRequestExceptions or ForbiddenRequestExceptions
+        // Don't log BadRequestExceptions (400), Unauthorized (401), or Forbidden (403) exceptions
         if (status == 400 || status == 403 || status == 401) return;
 
-        logger.error("{} thrown.", e.getClass().toString(), e);
+        // Log the exception with more details
+        logger.error("Exception thrown: {}\nMessage: {}\nStack Trace:",
+                     e.getClass().getName(),
+                     e.getMessage(),
+                     e);
     }
+
 }
