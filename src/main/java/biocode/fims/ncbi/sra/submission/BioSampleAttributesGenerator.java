@@ -25,8 +25,6 @@ public class BioSampleAttributesGenerator {
      * @param mapper {@link BioSampleMapper} implementation
      * @return
      */
-
-
     public static File generateFile(BioSampleMapper mapper) {
         Logger logger = LoggerFactory.getLogger(BioSampleAttributesGenerator.class);
 
@@ -53,7 +51,8 @@ public class BioSampleAttributesGenerator {
                         String header = it.next();
 
                         if (header == null) {
-                            logger.error("Encountered null header at index {}", index);
+                            logger.warn("Encountered null header at index {}, writing empty string to preserve column alignment", index);
+                            fw.write("");  // Ensure column alignment
                         } else {
                             logger.debug("Writing header[{}]: {}", index, header);
                             fw.write(header);
@@ -72,7 +71,6 @@ public class BioSampleAttributesGenerator {
                 }
             }
 
-
             int sampleCount = 0;
             while (mapper.hasNextSample()) {
                 List<String> bioSampleAttributes = mapper.getBioSampleAttributes();
@@ -85,10 +83,24 @@ public class BioSampleAttributesGenerator {
                 if (!bioSampleAttributes.isEmpty()) {
                     sampleCount++;
                     Iterator<String> it = bioSampleAttributes.iterator();
+                    int attrIndex = 0; // Track index for debugging
+
                     while (it.hasNext()) {
-                        fw.write(it.next());
-                        if (it.hasNext()) fw.write(DELIMITER);
+                        String attribute = it.next();
+
+                        if (attribute == null) {
+                            logger.warn("Encountered null attribute at sample index {}, writing empty string to maintain column alignment", sampleCount);
+                            fw.write("");
+                        } else {
+                            fw.write(attribute);
+                        }
+
+                        if (it.hasNext()) {
+                            fw.write(DELIMITER);
+                        }
+                        attrIndex++;
                     }
+
                     fw.write("\n");
                 }
             }
@@ -100,5 +112,8 @@ public class BioSampleAttributesGenerator {
 
         return attributesFile;
     }
+
+
+
 
 }
