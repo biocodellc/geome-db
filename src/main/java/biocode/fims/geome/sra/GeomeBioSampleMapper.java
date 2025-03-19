@@ -43,7 +43,7 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
 
         // The following attributes aren't an exact mapping and are typically a combination of multiple attributes
         // I don't think we're reading this line
-        //add("sample_title");
+        add("sample_title");
         add("organism");
         add("collection_date");
         add("geo_loc_name");
