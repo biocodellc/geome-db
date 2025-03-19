@@ -27,83 +27,73 @@ public class BioSampleAttributesGenerator {
      */
     public static File generateFile(BioSampleMapper mapper) {
         Logger logger = LoggerFactory.getLogger(BioSampleAttributesGenerator.class);
-
+    
         File attributesFile = FileUtils.createUniqueFile("bioSample-attributes.tsv", System.getProperty("java.io.tmpdir"));
         logger.info("Creating file: {}", attributesFile.getAbsolutePath());
-
+    
         try (FileWriter fw = new FileWriter(attributesFile)) {
             if (mapper == null) {
                 logger.error("BioSampleMapper is null");
                 throw new FimsRuntimeException(SraCode.METADATA_FILE_CREATION_FAILED, 500);
             }
-
+    
             List<String> headers = mapper.getHeaderValues();
-            logger.info("Headers: {}", headers);
-
-            if (headers == null || headers.isEmpty()) {
-                logger.warn("Header values are null or empty");
-            } else {
-                logger.info("Writing {} headers to file: {}", headers.size(), attributesFile.getAbsolutePath());
-
-                try {
-                    Iterator<String> it = headers.iterator();
-                    int index = 0;  // Track index for debugging
-
-                    while (it.hasNext()) {
-                        String header = it.next();
-
-                        if (header == null) {
-                            logger.warn("Encountered null header at index {}", index);
-                            //fw.write("");  // Ensure column alignment
-                        } else {
-                            logger.debug("Writing header[{}]: {}", index, header);
-                            fw.write(header);
-                        }
-
-                        if (it.hasNext()) {
-                            fw.write(DELIMITER);
-                        }
-                        index++;
+            logger.info("Original Headers: {}", headers);
+    
+            // Filter out null or empty headers
+            List<String> validHeaders = headers.stream()
+                    .filter(h -> h != null && !h.trim().isEmpty())
+                    .collect(Collectors.toList());
+    
+            logger.info("Filtered Headers (non-empty): {}", validHeaders);
+    
+            // Write valid headers
+            try {
+                for (int i = 0; i < validHeaders.size(); i++) {
+                    fw.write(validHeaders.get(i));
+                    if (i < validHeaders.size() - 1) {
+                        fw.write(DELIMITER);
                     }
-
-                    fw.write("\n");
-                } catch (IOException e) {
-                    logger.error("IOException occurred while writing headers to file: {}", attributesFile.getAbsolutePath(), e);
-                    throw new FimsRuntimeException(SraCode.METADATA_FILE_CREATION_FAILED, 500);
                 }
+                fw.write("\n");
+            } catch (IOException e) {
+                logger.error("IOException occurred while writing headers to file: {}", attributesFile.getAbsolutePath(), e);
+                throw new FimsRuntimeException(SraCode.METADATA_FILE_CREATION_FAILED, 500);
             }
-
+    
             int sampleCount = 0;
             while (mapper.hasNextSample()) {
                 List<String> bioSampleAttributes = mapper.getBioSampleAttributes();
-
+    
                 if (bioSampleAttributes == null) {
                     logger.error("BioSample attributes list is null at sample index {}", sampleCount);
                     continue;
                 }
-
-                if (!bioSampleAttributes.isEmpty()) {
-                    sampleCount++;
-                    Iterator<String> it = bioSampleAttributes.iterator();
-                    int attrIndex = 0; // Track index for debugging
-
-                    while (it.hasNext()) {
-                        String attribute = it.next();
-
-                        if (attribute == null) {
-                            logger.warn("Encountered null attribute at sample index {}, writing empty string to maintain column alignment", sampleCount);
-                            //fw.write("");
-                        } else {
-                            fw.write(attribute);
-                        }
-
-                        if (it.hasNext()) {
-                            fw.write(DELIMITER);
-                        }
-                        attrIndex++;
+    
+                // Ensure only non-null corresponding attributes are written
+                List<String> filteredAttributes = new ArrayList<>();
+                for (int i = 0; i < headers.size(); i++) {
+                    if (headers.get(i) != null && !headers.get(i).trim().isEmpty()) {
+                        // Ensure attribute exists, or write empty
+                        String attribute = (i < bioSampleAttributes.size()) ? bioSampleAttributes.get(i) : "";
+                        filteredAttributes.add(attribute != null ? attribute : "");
                     }
-
-                    fw.write("\n");
+                }
+    
+                if (!filteredAttributes.isEmpty()) {
+                    sampleCount++;
+                    try {
+                        for (int i = 0; i < filteredAttributes.size(); i++) {
+                            fw.write(filteredAttributes.get(i));
+                            if (i < filteredAttributes.size() - 1) {
+                                fw.write(DELIMITER);
+                            }
+                        }
+                        fw.write("\n");
+                    } catch (IOException e) {
+                        logger.error("IOException occurred while writing sample {} to file", sampleCount, e);
+                        throw new FimsRuntimeException(SraCode.METADATA_FILE_CREATION_FAILED, 500);
+                    }
                 }
             }
             logger.info("Successfully wrote {} samples to file", sampleCount);
@@ -111,10 +101,10 @@ public class BioSampleAttributesGenerator {
             logger.error("IOException occurred while writing BioSample attributes file", e);
             throw new FimsRuntimeException(SraCode.METADATA_FILE_CREATION_FAILED, 500);
         }
-
+    
         return attributesFile;
     }
-
+   
 
 
 
