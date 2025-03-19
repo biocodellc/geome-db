@@ -101,6 +101,8 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
                 .collect(Collectors.toList());
         headers.addAll(additionalDataUris.stream().map(uriToColumns::get).collect(Collectors.toList()));
 
+        System.out.println("Final Headers (" + headers.size() + " total): " + String.join(" | ", headers));
+
         return headers;
     }
 
