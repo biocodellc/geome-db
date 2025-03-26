@@ -1,0 +1,38 @@
+server {
+
+	server_name photos.geome-db.org;
+
+	root /var/www/html;
+
+        location / {
+                #root /opt/test/;
+                #index index.html;
+                #original
+                root /opt/prod/geome/photos/;
+                sendfile           on;
+                sendfile_max_chunk 1m;
+                tcp_nopush	   on;
+                #
+                # other working example
+                # alias /opt/swagger/;
+                index index.html;
+        }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/photos.geome-db.org/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/photos.geome-db.org/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+
+}
+
+server {
+    if ($host = photos.geome-db.org) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+	server_name photos.geome-db.org;
+    listen 80;
+    return 404; # managed by Certbot
+}
