@@ -15,6 +15,8 @@ The following end-points / repos are associated with this codebase and are used 
 The GEOME database is built using Gradle scripts (contained in this repository) and running on Jetty Server that stores data in a postgres database. GEOME is supported from the Gordon and Betty Moore Foundation as part of the Moorea Biocode Project (http://biocode.berkeley.edu/), the National Science Foundation as part of the Diversity of the IndoPacific (http://indopacificnetwork.wikispaces.com/), the Barcode of Wildlife Project (http://www.barcodeofwildlife.org/), the Smithsonian Museum of Natural History (http://www.mnh.si.edu/),  the Berkeley Natural History Museums (http://bnhm.berkeley.edu/), and the Autonomous Reef Monitoring Network (website coming soon).
 
 # Restoring database
+The dump file is stored in a non-text format, which reduces the size of the dump and allows us to 
+temporarily disable triggers during reoload.
 ```
 pg_restore --disable-triggers -d bcid bcid.pgsql
 pg_restore --disable-triggers -d biscicol biscicol_all.pgsql
