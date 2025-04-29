@@ -90,7 +90,8 @@ dependencies {
     compile group: 'org.hibernate.javax.persistence', name: 'hibernate-jpa-2.1-api', version: '1.0.0.Final'
     // https://mvnrepository.com/artifact/org.eclipse.persistence/org.eclipse.persistence.moxy
     compile group: 'org.hibernate', name: 'hibernate-java8', version: '5.1.0.Final'
-    compile group: 'org.eclipse.persistence', name: 'org.eclipse.persistence.moxy', version: '2.7.6'
+    compile group: 'org.eclipse.persistence', name: 'org.eclipse.persistence.moxy', version: '2.7.13'
+    implementation group: 'org.eclipse.jetty', name: 'jetty-servlets', version: '9.4.56.v20240826'
     compile 'org.hibernate:hibernate-entitymanager:5.1.0.Final'
     compile group: 'org.postgresql', name: 'postgresql', version: '42.2.1'
 
@@ -112,6 +113,8 @@ dependencies {
     // tried 0.7.5 failed
     // tried 0.8.7 failed
     implementation group: 'org.dhatim', name: 'fastexcel', version: '0.9.13'
+    implementation 'org.glassfish.jersey.core:jersey-common:2.27'
+
 
 }
 
@@ -149,16 +152,21 @@ tasks.war.dependsOn("copyEnvironmentProps")
 war {
     enabled = true
     webXml = file('src/main/environment/' + project.findProperty("environment") + '/web.xml')
-    from 'swagger/' 
-    from('src/main/web/'){
+
+    from('swagger/') {
+        include 'geomeAPI.json'
+        into 'docs'
+    }
+
+    from('src/main/web/') {
         include 'docs/**'
         into ''
     }
-    from('docs/'){
+    from('docs/') {
         include 'helpDocumentation.pdf'
         into 'docs'
     }
-    from('src/main/web/'){
+    from('src/main/web/') {
         include 'apidocs/**'
         into ''
     }

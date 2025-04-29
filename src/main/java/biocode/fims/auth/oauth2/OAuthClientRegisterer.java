@@ -1,6 +1,6 @@
 package biocode.fims.auth.oauth2;
 
-import biocode.fims.application.config.FimsAppConfig;
+import biocode.fims.application.config.GeomeAppConfig;
 import biocode.fims.models.OAuthClient;
 import biocode.fims.service.OAuthProviderService;
 import org.apache.commons.cli.*;
@@ -19,7 +19,7 @@ public class OAuthClientRegisterer {
      * @param args
      */
     public static void main(String args[]) {
-        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(FimsAppConfig.class);
+        ApplicationContext applicationContext = new AnnotationConfigApplicationContext(GeomeAppConfig.class);
         OAuthProviderService providerService = applicationContext.getBean(OAuthProviderService.class);
 
         // Some classes to help us
