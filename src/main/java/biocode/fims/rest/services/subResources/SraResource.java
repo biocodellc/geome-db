@@ -1,5 +1,8 @@
 package biocode.fims.rest.services.subResources;
 
+import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.Response;
+
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.application.config.TissueProperties;
 import biocode.fims.authorizers.QueryAuthorizer;
@@ -175,10 +178,32 @@ public class SraResource extends ResumableUploadResource {
         fileMap.put("sra-metadata.tsv", sraMetadataFile);
         fileMap.put("sra-step-by-step-instructions.pdf", new File(context.getRealPath("docs/sra-step-by-step-instructions.pdf")));
 
+	/*
         File zip = FileUtils.zip(fileMap, defaultOutputDirectory());
         String fileId = fileCache.cacheFileForUser(zip, userContext.getUser(), "sra-files.zip");
 
         return new FileResponse(uriInfo.getBaseUriBuilder(), fileId);
+	*/
+File zip = FileUtils.zip(fileMap, defaultOutputDirectory());
+
+StreamingOutput stream = new StreamingOutput() {
+    @Override
+    public void write(java.io.OutputStream output) throws IOException {
+        try (InputStream in = new java.io.FileInputStream(zip)) {
+            byte[] buffer = new byte[4096];
+            int len;
+            while ((len = in.read(buffer)) != -1) {
+                output.write(buffer, 0, len);
+            }
+        }
+    }
+};
+
+return Response.ok(stream)
+        .header("Content-Disposition", "attachment; filename=\"sra-files.zip\"")
+        .header("Content-Type", "application/zip")
+        .build();
+
     }
 
 
