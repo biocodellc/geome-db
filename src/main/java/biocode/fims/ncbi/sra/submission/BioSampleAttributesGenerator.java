@@ -2,17 +2,19 @@ package biocode.fims.ncbi.sra.submission;
 
 import biocode.fims.exceptions.SraCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
+import biocode.fims.geome.sra.GeomeBioSampleMapper;
+import biocode.fims.records.Record;
 import biocode.fims.utils.FileUtils;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,7 +34,8 @@ public class BioSampleAttributesGenerator {
      */
     public static File generateFile(BioSampleMapper mapper) {
         Logger logger = LoggerFactory.getLogger(BioSampleAttributesGenerator.class);
-    
+        System.out.println(">>> BioSampleAttributesGenerator.generateFile() received mapper instance: " + mapper.hashCode());
+
         File attributesFile = FileUtils.createUniqueFile("bioSample-attributes.tsv", System.getProperty("java.io.tmpdir"));
         logger.info("Creating file: {}", attributesFile.getAbsolutePath());
     
@@ -42,65 +45,52 @@ public class BioSampleAttributesGenerator {
                 throw new FimsRuntimeException(SraCode.METADATA_FILE_CREATION_FAILED, 500);
             }
     
-            List<String> headers = mapper.getHeaderValues();
-            logger.info("Original Headers: {}", headers);
-    
-            // Filter out null or empty headers
-            List<String> validHeaders = headers.stream()
-                    .filter(h -> h != null && !h.trim().isEmpty())
-                    .collect(Collectors.toList());
-    
-            logger.info("Filtered Headers (non-empty): {}", validHeaders);
-    
-            // Write valid headers
-            try {
-                for (int i = 0; i < validHeaders.size(); i++) {
-                    fw.write(validHeaders.get(i));
-                    if (i < validHeaders.size() - 1) {
-                        fw.write(DELIMITER);
-                    }
-                }
-                fw.write("\n");
-            } catch (IOException e) {
-                logger.error("IOException occurred while writing headers to file: {}", attributesFile.getAbsolutePath(), e);
-                throw new FimsRuntimeException(SraCode.METADATA_FILE_CREATION_FAILED, 500);
+            List<String> headers = mapper.getHeaderValues(); // Friendly labels
+            Map<String, String> labelToUri = mapper.getLabelToUriMap();
+
+            logger.info("Writing headers: {}", headers);
+
+            // Write header row (labels)
+            for (int i = 0; i < headers.size(); i++) {
+                fw.write(headers.get(i));
+                if (i < headers.size() - 1) fw.write(DELIMITER);
             }
-    
+            fw.write("\n");
+
+            // Write each row using uri mapping
             int sampleCount = 0;
+            Set<String> requiredFields = mapper.getRequiredHeaders();
+
+            System.out.println(">>> Ready to write rows?");
+            System.out.println(">>> mapper.hasNextSample(): " + mapper.hasNextSample());
+            System.out.println(">>> mapper.getRecordCount(): " + (mapper instanceof GeomeBioSampleMapper ? ((GeomeBioSampleMapper) mapper).getRecordCount() : "unknown"));
+
             while (mapper.hasNextSample()) {
-                List<String> bioSampleAttributes = mapper.getBioSampleAttributes();
-    
-                if (bioSampleAttributes == null) {
-                    logger.error("BioSample attributes list is null at sample index {}", sampleCount);
+                Record record = mapper.nextRecord();
+                if (record == null) {
+                    System.out.println(">>> Skipped null record.");
                     continue;
                 }
-    
-                // Ensure only non-null corresponding attributes are written
-                List<String> filteredAttributes = new ArrayList<>();
-                for (int i = 0; i < headers.size(); i++) {
-                    if (headers.get(i) != null && !headers.get(i).trim().isEmpty()) {
-                        // Ensure attribute exists, or write empty
-                        String attribute = (i < bioSampleAttributes.size()) ? bioSampleAttributes.get(i) : "";
-                        filteredAttributes.add(attribute != null ? attribute : "");
+
+                List<String> row = new ArrayList<>();
+
+                for (String label : headers) {
+                    String value = record.get(label); // <-- use the label directly
+
+                    if (requiredFields.contains(label)) {
+                        row.add(StringUtils.isBlank(value) ? "missing" : value);
+                    } else {
+                        row.add(value != null ? value : "");
                     }
                 }
-    
-                if (!filteredAttributes.isEmpty()) {
-                    sampleCount++;
-                    try {
-                        for (int i = 0; i < filteredAttributes.size(); i++) {
-                            fw.write(filteredAttributes.get(i));
-                            if (i < filteredAttributes.size() - 1) {
-                                fw.write(DELIMITER);
-                            }
-                        }
-                        fw.write("\n");
-                    } catch (IOException e) {
-                        logger.error("IOException occurred while writing sample {} to file", sampleCount, e);
-                        throw new FimsRuntimeException(SraCode.METADATA_FILE_CREATION_FAILED, 500);
-                    }
-                }
+
+
+                fw.write(String.join(DELIMITER, row));
+                fw.write("\n");
+                sampleCount++;
             }
+
+
             logger.info("Successfully wrote {} samples to file", sampleCount);
         } catch (IOException e) {
             logger.error("IOException occurred while writing BioSample attributes file", e);

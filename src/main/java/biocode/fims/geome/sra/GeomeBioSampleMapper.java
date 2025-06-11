@@ -7,10 +7,11 @@ import biocode.fims.config.models.FastqEntity;
 import biocode.fims.exceptions.SraCode;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.ncbi.models.GeomeBioSample;
-import biocode.fims.records.Record;
 import biocode.fims.ncbi.sra.submission.BioSampleMapper;
 import biocode.fims.query.QueryResult;
 import biocode.fims.query.QueryResults;
+import biocode.fims.records.GenericRecord;
+import biocode.fims.records.Record;
 import biocode.fims.records.RecordJoiner;
 import biocode.fims.tissues.TissueProps;
 import org.apache.commons.lang3.StringUtils;
@@ -19,14 +20,9 @@ import java.text.DateFormatSymbols;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Class that maps geome project attributes to sra BioSample attributes
- */
 public class GeomeBioSampleMapper implements BioSampleMapper {
     private static final String BLANK_ATTRIBUTE = "missing";
-    private static final List<String> BIOSAMPLE_HEADERS_TO_EXCLUDE = new ArrayList<String>() {{
-        add("urn:country");
-    }};
+    private static final List<String> BIOSAMPLE_HEADERS_TO_EXCLUDE = Collections.singletonList("urn:country");
 
     private static final Map<String, String> BIOSAMPLE_MAPPING = new LinkedHashMap<String, String>() {{
         put("sample_name", TissueProps.IDENTIFIER.uri());
@@ -40,9 +36,6 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
 
     private static final List<String> BIOSAMPLE_HEADERS = new ArrayList<String>() {{
         addAll(BIOSAMPLE_MAPPING.keySet());
-
-        // The following attributes aren't an exact mapping and are typically a combination of multiple attributes
-        // I don't think we're reading this line
         add("sample_title");
         add("organism");
         add("collection_date");
@@ -56,6 +49,7 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
     }};
 
     private Iterator<Record> recordsIt;
+    private int recordIndex = 0;
     private String parentEntity;
     private BcidBuilder bcidBuilder;
     private List<Record> records;
@@ -73,55 +67,101 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
             throw new FimsRuntimeException(SraCode.MISSING_DATASET, 400);
         }
 
-
         this.parentEntity = fastqEntity.getParentEntity();
         Entity parent = config.entity(parentEntity);
         this.bcidBuilder = new BcidBuilder(parent, config.entity(parent.getParentEntity()), bcidResolverPrefix);
-
         this.recordJoiner = new RecordJoiner(config, fastqEntity, queryResults);
-        this.records = queryResults.getResult(parentEntity).records().stream().map(recordJoiner::joinRecords).collect(Collectors.toList());
-        this.recordsIt = records.iterator();
+        this.records = queryResults.getResult(parentEntity).records().stream()
+            .map(recordJoiner::joinRecords)
+            .collect(Collectors.toList());
+        System.out.println(">>> GeomeBioSampleMapper initialized");
+        System.out.println(">>> records size: " + records.size());
+
+        this.recordIndex = 0; // IMPORTANT
+
+        //this.records = queryResults.getResult(parentEntity).records().stream().map(recordJoiner::joinRecords).collect(Collectors.toList());
+        //this.recordsIt = records.iterator();
     }
 
-    public GeomeBioSampleMapper() {
+    public GeomeBioSampleMapper() {}
+    public int getRecordCount() {
+        return records != null ? records.size() : 0;
     }
-
     @Override
     public boolean hasNextSample() {
-        return recordsIt.hasNext();
+        System.out.println(">>> hasNextSample() called: recordIndex=" + recordIndex + ", records.size()=" + records.size());
+
+        return recordIndex < records.size();
     }
+    @Override
+    public Set<String> getRequiredHeaders() {
+        return new HashSet<>(BIOSAMPLE_HEADERS); // Or keep a cached static copy
+    }
+
+    private Map<String, String> labelToUri = new LinkedHashMap<>();
 
     @Override
     public List<String> getHeaderValues() {
         if (headers != null) return headers;
+
+        headers = new ArrayList<>();
+        labelToUri = new LinkedHashMap<>();
+
+        // Step 1: Fixed BIOSAMPLE_MAPPING headers
+        for (Map.Entry<String, String> entry : BIOSAMPLE_MAPPING.entrySet()) {
+            String label = entry.getKey();
+            String uri = entry.getValue();
+            headers.add(label);
+            labelToUri.put(label, uri);
+        }
+
+        // Step 2: Fixed synthetic fields
+        headers.add("sample_title");
+        headers.add("organism");
+        headers.add("collection_date");
+        headers.add("geo_loc_name");
+        headers.add("depth");
+        headers.add("lat_lon");
+        headers.add("breed");
+        headers.add("host");
+        headers.add("age");
+        headers.add("bcid");
+
+        // Step 3: Dynamic columns
         Map<String, String> uriToColumns = new HashMap<>();
-
-        // Get all attributes that contain a value, excluding fastqMetadata attributes
         queryResults.stream()
-                .filter(qr -> !qr.entity().type().equals(FastqEntity.TYPE))
-                .forEach(qr -> {
-                            Set<String> uris = new HashSet<>();
-                            qr.records()
-                                    .forEach(r ->
-                                            uris.addAll(r.properties().keySet())
-                                    );
+            .filter(qr -> !qr.entity().type().equals(FastqEntity.TYPE))
+            .forEach(qr -> {
+                Entity e = qr.entity();
+                for (Record r : qr.records()) {
+                    for (String uri : r.properties().keySet()) {
+                        uriToColumns.put(uri, e.getAttributeColumn(uri));
+                    }
+                }
+            });
 
-                            Entity e = qr.entity();
-                            uris.forEach(uri -> uriToColumns.put(uri, e.getAttributeColumn(uri)));
-                        }
-                );
-
-        headers = new ArrayList<>(BIOSAMPLE_HEADERS);
-
-        Collection<String> existingValues = BIOSAMPLE_MAPPING.values();
+        Collection<String> mappedUris = BIOSAMPLE_MAPPING.values();
         additionalDataUris = uriToColumns.keySet().stream()
-                .filter(uri -> !existingValues.contains(uri) && !BIOSAMPLE_HEADERS_TO_EXCLUDE.contains(uri))
-                .sorted()
-                .collect(Collectors.toList());
-        headers.addAll(additionalDataUris.stream().map(uriToColumns::get).collect(Collectors.toList()));
+            .filter(uri -> !mappedUris.contains(uri) && !BIOSAMPLE_HEADERS_TO_EXCLUDE.contains(uri))
+            .sorted()
+            .collect(Collectors.toList());
+
+        for (String uri : additionalDataUris) {
+            String label = uriToColumns.get(uri);
+            if (label != null) {
+                headers.add(label);
+                labelToUri.put(label, uri);
+            }
+        }
 
         return headers;
     }
+
+
+    public Map<String, String> getLabelToUriMap() {
+        return labelToUri;
+    }
+
 
     @Override
     public List<GeomeBioSample> getBioSamples() {
@@ -130,7 +170,43 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
 
     @Override
     public List<String> getBioSampleAttributes() {
-        return new ArrayList<>(recordToBioSample(recordsIt.next()).values());
+          return new ArrayList<>(recordToBioSample(recordsIt.next()).values());
+      }
+
+    @Override
+    public Record nextRecord() {
+        while (recordIndex < records.size()) {
+            System.out.println(">>> Processing record at index: " + recordIndex);
+            Record original = records.get(recordIndex++);
+            GeomeBioSample bioSample = recordToBioSample(original);
+
+            if (bioSample.isEmpty()) {
+                System.out.println(">>> Skipping empty biosample.");
+                continue;
+            }
+
+            return new GenericRecord(
+                    new LinkedHashMap<>(bioSample),
+                    original.rootIdentifier(),
+                    original.projectId(),
+                    original.expeditionCode(),
+                    true
+            );
+        }
+        System.out.println(">>> nextRecord() returned null (no more records)");
+        return null;
+    }
+
+
+
+
+    @Override
+    public void reset() {
+        this.recordIndex = 0;
+    }
+
+    public GeomeBioSampleMapper newInstance(Config config, Entity fastqEntity, QueryResults queryResults, String bcidResolverPrefix) {
+        return new GeomeBioSampleMapper(config, fastqEntity, queryResults, bcidResolverPrefix);
     }
 
     private GeomeBioSample recordToBioSample(Record record) {
@@ -138,167 +214,145 @@ public class GeomeBioSampleMapper implements BioSampleMapper {
 
         GeomeBioSample bioSample = new GeomeBioSample();
 
-        // don't output duplicate tissues
+        // Avoid duplicate tissues
         String tissueID = record.get(TissueProps.IDENTIFIER.uri());
         if (existingTissues.contains(tissueID)) return bioSample;
         existingTissues.add(tissueID);
 
-        int i = 0;
-        for (String uri : BIOSAMPLE_MAPPING.values()) {
-            bioSample.put(headers.get(i), modifyBlankAttribute(record.get(uri)));
-            i++;
+        // Mapped BIOSAMPLE fields
+        for (Map.Entry<String, String> entry : BIOSAMPLE_MAPPING.entrySet()) {
+            String label = entry.getKey();
+            String uri = entry.getValue();
+            String value = record.get(uri);
+            bioSample.put(label, StringUtils.isBlank(value) ? "missing" : value);
         }
 
-        String organism;
+        // Organism composite
         String species = record.get("urn:species");
         String genus = record.get("urn:genus");
         String scientificName = record.get("urn:scientificName");
-
-        if (!scientificName.equals("")) {
+        String organism;
+        if (!StringUtils.isBlank(scientificName)) {
             organism = scientificName;
-        } else if (!genus.equals("")) {
-            organism = genus;
-            if (!species.equals("")) {
-                organism += " " + species;
-            }
+        } else if (!StringUtils.isBlank(genus)) {
+            organism = StringUtils.isBlank(species) ? genus : genus + " " + species;
         } else {
             organism = record.get("urn:phylum");
         }
 
-        bioSample.put(headers.get(i), organism.replace(" ", "_"));
-        i++;
-        bioSample.put(headers.get(i), organism);
-        i++;
-        bioSample.put(headers.get(i), getCollectionDate(record));
-        i++;
+        bioSample.put("sample_title", StringUtils.isBlank(organism) ? "missing" : organism.replace(" ", "_"));
+        bioSample.put("organism", StringUtils.isBlank(organism) ? "missing" : organism);
+        bioSample.put("collection_date", getCollectionDate(record));
 
-        StringBuilder geoLocSb = new StringBuilder();
-        geoLocSb.append(record.get("urn:country"));
-        // must start with a country, otherwise sra validation fails
-        if (!StringUtils.isBlank(record.get("urn:locality")) & !StringUtils.isBlank(geoLocSb.toString())) {
-            geoLocSb.append(": ");
-            geoLocSb.append(record.get("urn:locality"));
-        }
-        bioSample.put(headers.get(i), modifyBlankAttribute(geoLocSb.toString()));
-        i++;
-
-        StringBuilder depthSb = new StringBuilder();
-        if (!StringUtils.isBlank(record.get("urn:minimumDepthInMeters"))) {
-            depthSb.append(record.get("urn:minimumDepthInMeters"));
-
-            if (!StringUtils.isBlank(record.get("urn:maximumDepthInMeters"))) {
-                depthSb.append(", ");
-                depthSb.append(record.get("urn:maximumDepthInMeters"));
+        // geo_loc_name
+        String country = record.get("urn:country");
+        String locality = record.get("urn:locality");
+        String geoLoc = "";
+        if (!StringUtils.isBlank(country)) {
+            geoLoc = country;
+            if (!StringUtils.isBlank(locality)) {
+                geoLoc += ": " + locality;
             }
         }
-        bioSample.put(headers.get(i), modifyBlankAttribute(depthSb.toString()));
-        i++;
+        bioSample.put("geo_loc_name", StringUtils.isBlank(geoLoc) ? "missing" : geoLoc);
 
-        bioSample.put(headers.get(i), modifyBlankAttribute(getLatLong(record)));
-        i++;
+        // depth
+        String min = record.get("urn:minimumDepthInMeters");
+        String max = record.get("urn:maximumDepthInMeters");
+        String depth = "";
+        if (!StringUtils.isBlank(min)) {
+            depth = min;
+            if (!StringUtils.isBlank(max)) depth += ", " + max;
+        }
+        bioSample.put("depth", StringUtils.isBlank(depth) ? "missing" : depth);
 
-        bioSample.put(headers.get(i), BLANK_ATTRIBUTE);
-        i++;
-        bioSample.put(headers.get(i), BLANK_ATTRIBUTE);
-        i++;
-        bioSample.put(headers.get(i), BLANK_ATTRIBUTE);
-        i++;
+        // lat_lon
+        String latLon = getLatLong(record);
+        bioSample.put("lat_lon", StringUtils.isBlank(latLon) ? "missing" : latLon);
 
-        // this is the BioSample bcid, which in our case should be the Tissue
+        // breed, host, age → hardcoded
+        bioSample.put("breed", "missing");
+        bioSample.put("host", "missing");
+        bioSample.put("age", "missing");
+
+        // bcid
         Record tissue = recordJoiner.getParent(this.parentEntity, record);
-        bioSample.put(headers.get(i), bcidBuilder.build(tissue));
-        i++;
+        String bcid = bcidBuilder.build(tissue);
+        bioSample.put("bcid", StringUtils.isBlank(bcid) ? "missing" : bcid);
 
-        // add all non-empty data
-        for (String uri : additionalDataUris) {
-            bioSample.put(headers.get(i), record.get(uri));
-            i++;
+        // Dynamic fields
+        for (Map.Entry<String, String> entry : labelToUri.entrySet()) {
+            String label = entry.getKey();
+            String uri = entry.getValue();
+
+            // Skip if already written as part of BIOSAMPLE_MAPPING or fixed fields
+            if (bioSample.containsKey(label)) continue;
+
+            String value = record.get(uri);
+            bioSample.put(label, value != null ? value : "");
         }
 
         return bioSample;
     }
 
-    private String modifyBlankAttribute(String attribute) {
-        if (StringUtils.isBlank(attribute)) {
-            return BLANK_ATTRIBUTE;
-        }
 
-        return attribute;
+    private String getOrganism(Record record) {
+        String species = record.get("urn:species");
+        String genus = record.get("urn:genus");
+        String scientificName = record.get("urn:scientificName");
+        if (!StringUtils.isBlank(scientificName)) return scientificName;
+        if (!StringUtils.isBlank(genus)) return StringUtils.isBlank(species) ? genus : genus + " " + species;
+        return record.get("urn:phylum");
+    }
+
+    private String getGeoLoc(Record record) {
+        String country = record.get("urn:country");
+        String locality = record.get("urn:locality");
+        if (StringUtils.isBlank(country)) return BLANK_ATTRIBUTE;
+        if (!StringUtils.isBlank(locality)) return country + ": " + locality;
+        return country;
+    }
+
+    private String getDepth(Record record) {
+        String min = record.get("urn:minimumDepthInMeters");
+        String max = record.get("urn:maximumDepthInMeters");
+        if (StringUtils.isBlank(min)) return BLANK_ATTRIBUTE;
+        return StringUtils.isBlank(max) ? min : min + ", " + max;
     }
 
     private String getCollectionDate(Record record) {
-        StringBuilder collectionDate = new StringBuilder();
-
         String yearCollected = record.get("urn:yearCollected");
-
         if (StringUtils.isBlank(yearCollected)) return BLANK_ATTRIBUTE;
 
+        StringBuilder sb = new StringBuilder();
         String monthCollected = record.get("urn:monthCollected");
         String dayCollected = record.get("urn:dayCollected");
 
         if (!StringUtils.isBlank(dayCollected) && !StringUtils.isBlank(monthCollected)) {
-            collectionDate.append(dayCollected);
-            collectionDate.append("-");
-
-            collectionDate.append(new DateFormatSymbols().getShortMonths()[Integer.parseInt(monthCollected) - 1]);
-            collectionDate.append("-");
+            sb.append(dayCollected).append("-");
+            sb.append(new DateFormatSymbols().getShortMonths()[Integer.parseInt(monthCollected) - 1]).append("-");
         } else if (!StringUtils.isBlank(monthCollected)) {
-            collectionDate.append(new DateFormatSymbols().getShortMonths()[Integer.parseInt(monthCollected) - 1]);
-            collectionDate.append("-");
+            sb.append(new DateFormatSymbols().getShortMonths()[Integer.parseInt(monthCollected) - 1]).append("-");
         }
 
-        collectionDate.append(yearCollected);
-
-        return modifyBlankAttribute(collectionDate.toString());
+        sb.append(yearCollected);
+        return sb.toString();
     }
 
-    /**
-     * if both lat and long are present, return a string containing the abs(decimalDegree) + Compass Direction
-     * <p>
-     * ex.
-     * <p>
-     * lat = -8, long = 140 would return "8 S 140 W"
-     *
-     * @param parent
-     */
-    private String getLatLong(Record parent) {
-        StringBuilder latLongSb = new StringBuilder();
+    private String getLatLong(Record record) {
+        String latText = record.get("urn:decimalLatitude");
+        String lngText = record.get("urn:decimalLongitude");
 
-        if (!StringUtils.isBlank(parent.get("urn:decimalLatitude")) &&
-                !StringUtils.isBlank(parent.get("urn:decimalLongitude"))) {
-
-            String latText = parent.get("urn:decimalLatitude");
-            String lngText = parent.get("urn:decimalLongitude");
+        if (!StringUtils.isBlank(latText) && !StringUtils.isBlank(lngText)) {
             try {
                 Double lat = Double.parseDouble(latText);
-
-                if (lat < 0) {
-                    latLongSb.append(Math.abs(lat)).append(" S");
-                } else {
-                    latLongSb.append(lat).append(" N");
-                }
-
-                latLongSb.append(" ");
-
                 Double lng = Double.parseDouble(lngText);
-
-                if (lng < 0) {
-                    latLongSb.append(Math.abs(lng)).append(" W");
-                } else {
-                    latLongSb.append(lng).append(" E");
-                }
+                return Math.abs(lat) + (lat < 0 ? " S" : " N") + " " + Math.abs(lng) + (lng < 0 ? " W" : " E");
             } catch (NumberFormatException e) {
-                latLongSb = new StringBuilder()
-                        .append(latText)
-                        .append(" ")
-                        .append(lngText);
+                return latText + " " + lngText;
             }
         }
 
-        return latLongSb.toString();
-    }
-
-    public GeomeBioSampleMapper newInstance(Config config, Entity fastqEntity, QueryResults queryResults, String bcidResolverPrefix) {
-        return new GeomeBioSampleMapper(config, fastqEntity, queryResults, bcidResolverPrefix);
+        return BLANK_ATTRIBUTE;
     }
 }
