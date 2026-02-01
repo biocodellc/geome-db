@@ -25,3 +25,7 @@ logs/
 
 # local photo cleaning artifacts
 scripts/photo_cleaning/
+scripts/slow_query_test/
+.classpath
+.project
+bin/
