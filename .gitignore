@@ -19,3 +19,9 @@ biscicol-fims.iws
 out/
 triples/
 src/main/web/WEB-INF/web.xml
+.settings/
+.vscode/
+logs/
+
+# local photo cleaning artifacts
+scripts/photo_cleaning/
