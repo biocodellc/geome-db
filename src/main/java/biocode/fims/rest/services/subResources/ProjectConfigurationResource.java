@@ -36,6 +36,7 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 @Singleton
 public class ProjectConfigurationResource extends FimsController {
+    private static final int BIOCODE_ADMIN_USER_ID = 1;
 
     @Context
     private NetworkId networkId;
@@ -149,7 +150,7 @@ public class ProjectConfigurationResource extends FimsController {
         }
 
 
-        if (!user.equals(configuration.getUser())) {
+        if (!user.equals(configuration.getUser()) && !isBiocodeAdmin(user)) {
             throw new ForbiddenRequestException("You must be this configuration's admin in order to update");
         }
 
@@ -182,5 +183,9 @@ public class ProjectConfigurationResource extends FimsController {
         if (isNetworkAdmin) {
             existing.setNetworkApproved(updated.isNetworkApproved());
         }
+    }
+
+    private boolean isBiocodeAdmin(User user) {
+        return user != null && user.getUserId() == BIOCODE_ADMIN_USER_ID;
     }
 }
