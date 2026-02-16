@@ -12,6 +12,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -53,6 +54,13 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
         if (e instanceof FimsAbstractException) {
             usrMessage = ((FimsAbstractException) e).getUsrMessage();
             developerMessage = ((FimsAbstractException) e).getDeveloperMessage();
+        } else if (e instanceof WebApplicationException) {
+            Status status = Status.fromStatusCode(httpStatusCode);
+            usrMessage = status == null ? "Request Error" : status.getReasonPhrase();
+
+            if (httpStatusCode == 415) {
+                developerMessage = buildUnsupportedMediaTypeDeveloperMessage();
+            }
         } else {
             usrMessage = "Server Error";
         }
@@ -83,6 +91,21 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
                      e.getClass().getName(),
                      e.getMessage(),
                      e);
+    }
+
+    private String buildUnsupportedMediaTypeDeveloperMessage() {
+        String method = request != null ? request.getMethod() : "<unknown>";
+        String path = request != null ? request.getRequestURI() : "<unknown>";
+        String contentType = request != null ? request.getContentType() : null;
+        String received = contentType == null ? "<missing>" : contentType;
+
+        String expectedTypes = "application/json";
+        if ("PUT".equalsIgnoreCase(method) && path != null && path.matches(".*/photos/[^/]+/upload/?$")) {
+            expectedTypes = "application/zip, application/octet-stream, application/x-zip-compressed, application/x-zip";
+        }
+
+        return "Unsupported Content-Type \"" + received + "\" for " + method + " " + path +
+                ". Expected one of: " + expectedTypes + ".";
     }
 
 }

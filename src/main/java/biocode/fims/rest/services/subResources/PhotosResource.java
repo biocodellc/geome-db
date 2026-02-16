@@ -71,7 +71,7 @@ public class PhotosResource extends ResumableUploadResource {
     @Authenticated
     @Path("{entity: [a-zA-Z0-9_]+}/upload")
     @PUT
-    @Consumes({"application/zip", "application/octet-stream"})
+    @Consumes({"application/zip", "application/octet-stream", "application/x-zip-compressed", "application/x-zip"})
     public UploadResponse bulkUpload(@QueryParam("projectId") Integer projectId,
                                      @QueryParam("expeditionCode") String expeditionCode,
                                      @QueryParam("type") UploadType uploadType,
