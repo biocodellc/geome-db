@@ -2,7 +2,6 @@ package biocode.fims.rest.services.subResources;
 
 import biocode.fims.application.config.FimsProperties;
 import biocode.fims.application.config.PhotosProperties;
-import biocode.fims.authorizers.ProjectAuthorizer;
 import biocode.fims.config.models.Entity;
 import biocode.fims.config.models.PhotoEntity;
 import biocode.fims.config.project.ProjectConfig;
@@ -49,7 +48,6 @@ public class PhotosResource extends ResumableUploadResource {
 
     private final ProjectService projectService;
     private final ExpeditionService expeditionService;
-    private final ProjectAuthorizer projectAuthorizer;
     private final PhotosProperties photosProps;
     private final RecordRepository recordRepository;
     private final BulkPhotoLoader photoLoader;
@@ -57,12 +55,11 @@ public class PhotosResource extends ResumableUploadResource {
 
     @Autowired
     public PhotosResource(FimsProperties props, ProjectService projectService, ExpeditionService expeditionService,
-                          ProjectAuthorizer projectAuthorizer, PhotosProperties photosProps, RecordRepository recordRepository,
+                          PhotosProperties photosProps, RecordRepository recordRepository,
                           BulkPhotoLoader photoLoader) {
         super(props);
         this.projectService = projectService;
         this.expeditionService = expeditionService;
-        this.projectAuthorizer = projectAuthorizer;
         this.photosProps = photosProps;
         this.recordRepository = recordRepository;
         this.photoLoader = photoLoader;
@@ -199,6 +196,7 @@ public class PhotosResource extends ResumableUploadResource {
             throw new BadRequestException("Specified entity is not a PhotoEntity");
         }
 
+        boolean enforceExpeditionAccess = project.isEnforceExpeditionAccess();
         Expedition expedition;
         if (expeditionCode == null) {
             Entity parentEntity = config.entity(entity.getParentEntity());
@@ -206,16 +204,41 @@ public class PhotosResource extends ResumableUploadResource {
                 throw new BadRequestException("The expeditionCode queryParam is missing. however the uniqueKey for parent:\"" + parentEntity.getConceptAlias() + "\" of entity: \"" + conceptAlias + "\" is not uniqueAcrossProject.");
             }
 
-            if (!projectAuthorizer.userHasAccess(user, project)) {
-                throw new ForbiddenRequestException("You do not have permission to upload to this project");
+            // When expedition access is enforced and no expeditionCode is provided, only project owner can be authorized.
+            if (enforceExpeditionAccess) {
+                if (!project.getUser().equals(user)) {
+                    throw new ForbiddenRequestException(
+                            "Photo upload denied. This project has Enforce Expedition Access Control=true, so uploads require expedition ownership or project ownership. " +
+                                    "Provide expeditionCode for an expedition you own, or ask the project owner to set Enforce Expedition Access Control=false to allow project members."
+                    );
+                }
+            } else if (!isProjectMemberOrOwner(user, project)) {
+                throw new ForbiddenRequestException(
+                        "Photo upload denied. This project has Enforce Expedition Access Control=false, but only project members can upload photos. " +
+                                "Ask the project owner to add you as a project member."
+                );
             }
         } else if ((expedition = expeditionService.getExpedition(expeditionCode, projectId)) == null) {
             throw new BadRequestException("Invalid expeditionCode queryParam. That expedition does not exist in this project.");
-        } else if (!expedition.getUser().equals(user) && !project.getUser().equals(user)) {
-            throw new ForbiddenRequestException("You do not have permission to upload to this expedition. You must be either the expedition owner or the project owner.");
+        } else if (enforceExpeditionAccess) {
+            if (!expedition.getUser().equals(user) && !project.getUser().equals(user)) {
+                throw new ForbiddenRequestException(
+                        "Photo upload denied. This project has Enforce Expedition Access Control=true, so only the expedition owner or project owner can upload to expedition \"" +
+                                expeditionCode + "\". Ask the project owner to set Enforce Expedition Access Control=false to allow project members."
+                );
+            }
+        } else if (!isProjectMemberOrOwner(user, project)) {
+            throw new ForbiddenRequestException(
+                    "Photo upload denied. This project has Enforce Expedition Access Control=false, but only project members can upload photos. " +
+                            "Ask the project owner to add you as a project member."
+            );
         }
 
         return new UploadRequestContext(project, entity);
+    }
+
+    private boolean isProjectMemberOrOwner(User user, Project project) {
+        return project.getUser().equals(user) || projectService.isUserMemberOfProject(user, project.getProjectId());
     }
 
     private static class UploadRequestContext {
