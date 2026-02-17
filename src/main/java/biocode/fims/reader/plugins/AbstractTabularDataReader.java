@@ -51,10 +51,16 @@ abstract class AbstractTabularDataReader implements DataReader {
         if (recordSets == null) {
            try {
                init();
+           } catch(FimsRuntimeException e) {
+               throw e;
            } catch(Exception e) {
                throw new FimsRuntimeException("Unable to parse workbook. If you are " +
                          "attempting to validate against multiple expeditions, be sure to" +
-                         "supply an expeditionCode for each record.",500);
+                         "supply an expeditionCode for each record.",
+                       "Failed to parse tabular input \"" + file.getName() + "\" in " + getClass().getSimpleName() +
+                               ".init(): " + describeException(e),
+                       400,
+                       e);
            }
             instantiateRecords();
             recordSets = generateRecordSets();
@@ -174,5 +180,16 @@ abstract class AbstractTabularDataReader implements DataReader {
     @Override
     public DataReaderType readerType() {
         return TabularDataReaderType.READER_TYPE;
+    }
+
+    private String describeException(Exception e) {
+        if (e == null) return "<unknown>";
+
+        String message = e.getMessage();
+        if (message == null || message.trim().isEmpty()) {
+            return e.getClass().getName();
+        }
+
+        return e.getClass().getName() + ": " + message;
     }
 }

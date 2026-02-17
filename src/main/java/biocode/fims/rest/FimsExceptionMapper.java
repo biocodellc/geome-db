@@ -54,6 +54,9 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
         if (e instanceof FimsAbstractException) {
             usrMessage = ((FimsAbstractException) e).getUsrMessage();
             developerMessage = ((FimsAbstractException) e).getDeveloperMessage();
+            if (developerMessage == null || developerMessage.trim().isEmpty()) {
+                developerMessage = describeThrowable(e.getCause());
+            }
         } else if (e instanceof WebApplicationException) {
             Status status = Status.fromStatusCode(httpStatusCode);
             usrMessage = status == null ? "Request Error" : status.getReasonPhrase();
@@ -106,6 +109,17 @@ public class FimsExceptionMapper implements ExceptionMapper<Exception> {
 
         return "Unsupported Content-Type \"" + received + "\" for " + method + " " + path +
                 ". Expected one of: " + expectedTypes + ".";
+    }
+
+    private String describeThrowable(Throwable t) {
+        if (t == null) return null;
+
+        String msg = t.getMessage();
+        if (msg == null || msg.trim().isEmpty()) {
+            return t.getClass().getName();
+        }
+
+        return t.getClass().getName() + ": " + msg;
     }
 
 }
