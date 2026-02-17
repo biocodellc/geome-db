@@ -183,6 +183,7 @@ public class BulkPhotoPackage {
 
     private File generateMetadataFile() {
         List<String[]> data = new ArrayList<>();
+        Set<String> knownParentIdentifiers = fetchKnownParentIdentifiers();
 
         data.add(new String[]{
                 parentEntity.getUniqueKey(),
@@ -197,6 +198,13 @@ public class BulkPhotoPackage {
 
             if (matcher.matches()) {
                 String parentIdentifier = matcher.group(1);
+                if (!knownParentIdentifiers.contains(parentIdentifier)) {
+                    invalidFiles.add("Filename \"" + entry.getKey() + "\" does not match a known " +
+                            parentEntity.getConceptAlias() + " name");
+                    deleteImages(entry.getValue());
+                    continue;
+                }
+
                 // setting id to empty string here will cause an id to be generated
                 String photoId = this.ignoreId && ((PhotoEntity) this.entity).isGenerateID() ? "" : matcher.group(2);
 
@@ -211,15 +219,8 @@ public class BulkPhotoPackage {
                 }
 
             } else {
-                invalidFiles.add(entry.getKey());
-
-                for (File img : entry.getValue()) {
-                    try {
-                        img.delete();
-                    } catch (Exception exp) {
-                        logger.debug("Failed to delete bulk loaded img file", exp);
-                    }
-                }
+                invalidFiles.add("Filename \"" + entry.getKey() + "\" does not follow file naming convention <parentIdentifier>+<photoID>.<ext>");
+                deleteImages(entry.getValue());
             }
         }
 
@@ -367,6 +368,45 @@ public class BulkPhotoPackage {
     private String normalizeZipEntryName(String entryName) {
         String normalized = entryName.replace('\\', '/');
         return normalized.startsWith("./") ? normalized.substring(2) : normalized;
+    }
+
+    private Set<String> fetchKnownParentIdentifiers() {
+        Set<String> identifiers = new HashSet<>();
+
+        List<? extends Record> records;
+        if (expeditionCode != null) {
+            records = recordRepository.getRecords(
+                    project,
+                    expeditionCode,
+                    parentEntity.getConceptAlias(),
+                    GenericRecord.class
+            );
+        } else {
+            records = recordRepository.getRecords(
+                    project,
+                    parentEntity.getConceptAlias(),
+                    GenericRecord.class
+            );
+        }
+
+        for (Record record : records) {
+            String identifier = record.get(parentEntity.getUniqueKeyURI());
+            if (identifier != null && !identifier.trim().isEmpty()) {
+                identifiers.add(identifier);
+            }
+        }
+
+        return identifiers;
+    }
+
+    private void deleteImages(List<File> images) {
+        for (File img : images) {
+            try {
+                img.delete();
+            } catch (Exception exp) {
+                logger.debug("Failed to delete bulk loaded img file", exp);
+            }
+        }
     }
 
     public static class Builder {
