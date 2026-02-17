@@ -166,7 +166,9 @@ public class ProjectService {
         List<Project> filteredProjects = new ArrayList<>();
 
         for (Project project : projects) {
+            boolean isOwner = user != null && project.getUser().equals(user);
             if ((inludePublic && project.isPublic()) ||
+                    isOwner ||
                     isUserMemberOfProject(user, project.getProjectId())) {
                 filteredProjects.add(project);
             }
@@ -189,5 +191,4 @@ public class ProjectService {
         }
     }
 }
-
 
