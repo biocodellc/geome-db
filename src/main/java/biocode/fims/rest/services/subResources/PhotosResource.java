@@ -81,40 +81,9 @@ public class PhotosResource extends ResumableUploadResource {
         clearExpiredUploadEntries();
 
         User user = userContext.getUser();
-        Project project = projectService.getProject(projectId);
-
-        // valid request logic
-
-        if (project == null) {
-            String msg = projectId == null ? "Missing required projectId queryParam" : "Invalid projectId queryParam";
-            throw new BadRequestException(msg);
-        }
-
-        ProjectConfig config = project.getProjectConfig();
-        Entity entity = config.entity(conceptAlias);
-
-        if (entity == null) {
-            throw new BadRequestException("Invalid entity path param");
-        } else if (!(Objects.equals(entity.type(), PhotoEntity.TYPE))) {
-            throw new BadRequestException("Specified entity is not a PhotoEntity");
-        }
-
-        Expedition expedition;
-        if (expeditionCode == null) {
-            Entity parentEntity = config.entity(entity.getParentEntity());
-            if (!parentEntity.getUniqueAcrossProject()) {
-                throw new BadRequestException("The expeditionCode queryParam is missing. however the uniqueKey for parent:\"" + parentEntity.getConceptAlias() + "\" of entity: \"" + conceptAlias + "\" is not uniqueAcrossProject.");
-            }
-
-            if (!projectAuthorizer.userHasAccess(user, project)) {
-                throw new ForbiddenRequestException("You do not have permission to upload to this project");
-            }
-
-        } else if ((expedition = expeditionService.getExpedition(expeditionCode, projectId)) == null) {
-            throw new BadRequestException("Invalid expeditionCode queryParam. That expedition does not exist in this project.");
-        } else if (!expedition.getUser().equals(user) && !project.getUser().equals(user)) {
-            throw new ForbiddenRequestException("You do not have permission to upload to this project or expedition");
-        }
+        UploadRequestContext uploadContext = validateUploadRequest(user, projectId, expeditionCode, conceptAlias);
+        Project project = uploadContext.project;
+        Entity entity = uploadContext.entity;
 
         // process file upload
 
@@ -175,6 +144,24 @@ public class PhotosResource extends ResumableUploadResource {
 
     @Authenticated
     @GET
+    @Path("{entity: [a-zA-Z0-9_]+}/upload/precheck")
+    public java.util.Map<String, Object> precheckUpload(@QueryParam("projectId") Integer projectId,
+                                                         @QueryParam("expeditionCode") String expeditionCode,
+                                                         @PathParam("entity") String conceptAlias) {
+        User user = userContext.getUser();
+        UploadRequestContext uploadContext = validateUploadRequest(user, projectId, expeditionCode, conceptAlias);
+
+        java.util.Map<String, Object> response = new LinkedHashMap<>();
+        response.put("allowed", true);
+        response.put("projectId", uploadContext.project.getProjectId());
+        response.put("entity", uploadContext.entity.getConceptAlias());
+        response.put("expeditionCode", expeditionCode);
+        response.put("message", "Upload permission check passed");
+        return response;
+    }
+
+    @Authenticated
+    @GET
     @Path("{entity: [a-zA-Z0-9_]+}/upload/progress")
     public UploadEntry status(@QueryParam("projectId") Integer projectId,
                               @QueryParam("expeditionCode") String expeditionCode,
@@ -193,5 +180,51 @@ public class PhotosResource extends ResumableUploadResource {
 
     private MultiKey getKey(User user, int projectId, String expeditionCode, String conceptAlias) {
         return new MultiKey(user.getUserId(), projectId, expeditionCode, conceptAlias);
+    }
+
+    private UploadRequestContext validateUploadRequest(User user, Integer projectId, String expeditionCode, String conceptAlias) {
+        Project project = projectService.getProject(projectId);
+
+        if (project == null) {
+            String msg = projectId == null ? "Missing required projectId queryParam" : "Invalid projectId queryParam";
+            throw new BadRequestException(msg);
+        }
+
+        ProjectConfig config = project.getProjectConfig();
+        Entity entity = config.entity(conceptAlias);
+
+        if (entity == null) {
+            throw new BadRequestException("Invalid entity path param");
+        } else if (!(Objects.equals(entity.type(), PhotoEntity.TYPE))) {
+            throw new BadRequestException("Specified entity is not a PhotoEntity");
+        }
+
+        Expedition expedition;
+        if (expeditionCode == null) {
+            Entity parentEntity = config.entity(entity.getParentEntity());
+            if (!parentEntity.getUniqueAcrossProject()) {
+                throw new BadRequestException("The expeditionCode queryParam is missing. however the uniqueKey for parent:\"" + parentEntity.getConceptAlias() + "\" of entity: \"" + conceptAlias + "\" is not uniqueAcrossProject.");
+            }
+
+            if (!projectAuthorizer.userHasAccess(user, project)) {
+                throw new ForbiddenRequestException("You do not have permission to upload to this project");
+            }
+        } else if ((expedition = expeditionService.getExpedition(expeditionCode, projectId)) == null) {
+            throw new BadRequestException("Invalid expeditionCode queryParam. That expedition does not exist in this project.");
+        } else if (!expedition.getUser().equals(user) && !project.getUser().equals(user)) {
+            throw new ForbiddenRequestException("You do not have permission to upload to this expedition. You must be either the expedition owner or the project owner.");
+        }
+
+        return new UploadRequestContext(project, entity);
+    }
+
+    private static class UploadRequestContext {
+        private final Project project;
+        private final Entity entity;
+
+        private UploadRequestContext(Project project, Entity entity) {
+            this.project = project;
+            this.entity = entity;
+        }
     }
 }
