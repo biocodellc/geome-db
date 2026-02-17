@@ -72,4 +72,16 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenCustomOperations {
             return null;
         }
     }
+
+    @Override
+    public OAuthToken getAccessToken(String accessToken) {
+        try {
+            return em.createQuery("SELECT t FROM OAuthToken t WHERE t.token = :accessToken", OAuthToken.class)
+                    .setParameter("accessToken", accessToken)
+                    .setMaxResults(1)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
 }

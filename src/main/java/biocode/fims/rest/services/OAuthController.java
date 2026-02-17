@@ -26,6 +26,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * OAuth api endpoints
@@ -231,6 +233,50 @@ public class OAuthController extends FimsController {
     }
 
     /**
+     * Introspect an access token. This endpoint always returns 200 and indicates token state in the response body.
+     */
+    @GET
+    @Path("/introspect")
+    public Response introspect(@QueryParam("access_token") String accessToken) {
+        Map<String, Object> response = new HashMap<>();
+        String token = resolveAccessToken(accessToken);
+
+        if (token == null || token.trim().isEmpty()) {
+            response.put("active", false);
+            response.put("reason", "missing_access_token");
+            response.put("developerMessage", "Supply access_token query param or Authorization: Bearer <token>");
+            return Response.ok(response).build();
+        }
+
+        OAuthToken oAuthToken = oAuthProviderService.getAccessToken(token.trim());
+        if (oAuthToken == null) {
+            response.put("active", false);
+            response.put("reason", "unknown_access_token");
+            response.put("developerMessage", "Access token not found");
+            return Response.ok(response).build();
+        }
+
+        long ageSeconds = Math.max(0, (System.currentTimeMillis() - oAuthToken.getCreated().getTime()) / 1000);
+        long expiresIn = Math.max(0, OAuthProviderService.ACCESS_TOKEN_EXPIRATION_INTEVAL - ageSeconds);
+        long expiresAt = oAuthToken.getCreated().getTime() + (OAuthProviderService.ACCESS_TOKEN_EXPIRATION_INTEVAL * 1000);
+        boolean active = expiresIn > 0;
+
+        response.put("active", active);
+        response.put("reason", active ? "ok" : "expired_access_token");
+        response.put("expiresIn", expiresIn);
+        response.put("expiresAt", expiresAt);
+        response.put("issuedAt", oAuthToken.getCreated().getTime());
+        response.put("tokenType", OAuthToken.TOKEN_TYPE);
+
+        if (active && oAuthToken.getUser() != null) {
+            response.put("userId", oAuthToken.getUser().getUserId());
+            response.put("username", oAuthToken.getUser().getUsername());
+        }
+
+        return Response.ok(response).build();
+    }
+
+    /**
      * Invalidate access and refresh tokens
      *
      * @param token refresh or access token to invalidate
@@ -247,5 +293,18 @@ public class OAuthController extends FimsController {
 
         oAuthProviderService.invalidateToken(token);
         return new AcknowledgedResponse(true);
+    }
+
+    private String resolveAccessToken(String accessToken) {
+        if (accessToken != null && !accessToken.trim().isEmpty()) {
+            return accessToken.trim();
+        }
+
+        String authHeader = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            return authHeader.substring(7).trim();
+        }
+
+        return null;
     }
 }

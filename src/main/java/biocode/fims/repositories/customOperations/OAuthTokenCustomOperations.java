@@ -10,4 +10,6 @@ public interface OAuthTokenCustomOperations {
     User getUser(String accessToken, long expirationInterval, String userEntityGraph);
 
     OAuthToken getOAuthToken(String refreshToken, long expirationInteval);
+
+    OAuthToken getAccessToken(String accessToken);
 }

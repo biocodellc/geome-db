@@ -59,6 +59,11 @@ public class OAuthProviderService {
         return oAuthTokenRepository.getOAuthToken(refreshToken, REFRESH_TOKEN_EXPIRATION_INTEVAL);
     }
 
+    @Transactional(readOnly = true)
+    public OAuthToken getAccessToken(String accessToken) {
+        return oAuthTokenRepository.getAccessToken(accessToken);
+    }
+
     public OAuthToken generateToken(OAuthToken expiredOAuthToken) {
         OAuthToken newOAuthToken = generateToken(expiredOAuthToken.getoAuthClient(), expiredOAuthToken.getUser(), null);
 

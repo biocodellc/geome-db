@@ -5,6 +5,7 @@ import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.fimsExceptions.BadRequestException;
 import biocode.fims.fimsExceptions.FimsRuntimeException;
 import biocode.fims.fimsExceptions.ForbiddenRequestException;
+import biocode.fims.fimsExceptions.UnauthorizedRequestException;
 import biocode.fims.fimsExceptions.errorCodes.ConfigCode;
 import biocode.fims.models.Network;
 import biocode.fims.models.Project;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Controller;
 import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -78,7 +80,20 @@ public class ProjectsResource extends FimsController {
     public List<Project> getProjects(@QueryParam("includePublic") @DefaultValue("true") Boolean includePublic,
                                      @QueryParam("projectTitle") String projectTitle,
                                      @QueryParam("admin") @DefaultValue("false") Flag admin) {
+        if (userContext.getUser() == null && !includePublic && authTokenProvided()) {
+            throw new UnauthorizedRequestException(
+                    "You must be logged in to access this service",
+                    "Possible Invalid/Expired access_token"
+            );
+        }
+
         if (admin.isPresent()) {
+            if (userContext.getUser() == null) {
+                throw new UnauthorizedRequestException(
+                        "You must be logged in to access this service",
+                        "Possible Invalid/Expired access_token"
+                );
+            }
             return new ArrayList<>(userContext.getUser().getProjects());
         }
 
@@ -87,6 +102,18 @@ public class ProjectsResource extends FimsController {
         return projectTitle == null
                 ? projects
                 : projects.stream().filter(p -> projectTitle.equals(p.getProjectTitle())).collect(Collectors.toList());
+    }
+
+    private boolean authTokenProvided() {
+        boolean hasQueryToken = uriInfo != null
+                && uriInfo.getQueryParameters().containsKey("access_token")
+                && uriInfo.getQueryParameters().getFirst("access_token") != null
+                && !uriInfo.getQueryParameters().getFirst("access_token").isEmpty();
+
+        String authHeader = headers == null ? null : headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        boolean hasBearerHeader = authHeader != null && authHeader.toLowerCase().startsWith("bearer ");
+
+        return hasQueryToken || hasBearerHeader;
     }
 
     /**

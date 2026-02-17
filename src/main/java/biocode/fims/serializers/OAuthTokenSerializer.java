@@ -18,7 +18,7 @@ public class OAuthTokenSerializer extends JsonSerializer<OAuthToken> {
         jgen.writeStringField("access_token", token.getToken());
         jgen.writeStringField("refresh_token", token.getRefreshToken());
         jgen.writeStringField("token_type", token.TOKEN_TYPE);
-        jgen.writeStringField("expires_in", String.valueOf(token.EXPIRES_IN));
+        jgen.writeNumberField("expires_in", token.EXPIRES_IN);
         if (token.getState() != null) {
             jgen.writeStringField("state", token.getState());
         }

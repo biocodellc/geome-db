@@ -5,6 +5,7 @@ import biocode.fims.application.config.GeomeProperties;
 import biocode.fims.application.config.GeomeSql;
 import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.UnauthorizedRequestException;
 import biocode.fims.models.Network;
 import biocode.fims.models.Project;
 import biocode.fims.query.PostgresUtils;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Controller;
 
 import javax.inject.Singleton;
 import javax.ws.rs.*;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.List;
@@ -171,6 +173,13 @@ public class ProjectController extends FimsController {
     public List<Map> projectStats(@QueryParam("includePublic") @DefaultValue("true") Boolean includePublic) {
         Network network = networkService.getNetwork(geomeProps.networkId());
 
+        if (!includePublic && userContext.getUser() == null && authTokenProvided()) {
+            throw new UnauthorizedRequestException(
+                    "You must be logged in to access this service",
+                    "Possible Invalid/Expired access_token"
+            );
+        }
+
         if (!includePublic && userContext.getUser() == null) includePublic = true;
 
         String countsSql = geomeSql.statsEntityCounts();
@@ -248,5 +257,17 @@ public class ProjectController extends FimsController {
                     return project;
                 }
         );
+    }
+
+    private boolean authTokenProvided() {
+        boolean hasQueryToken = uriInfo != null
+                && uriInfo.getQueryParameters().containsKey("access_token")
+                && uriInfo.getQueryParameters().getFirst("access_token") != null
+                && !uriInfo.getQueryParameters().getFirst("access_token").isEmpty();
+
+        String authHeader = headers == null ? null : headers.getHeaderString(HttpHeaders.AUTHORIZATION);
+        boolean hasBearerHeader = authHeader != null && authHeader.toLowerCase().startsWith("bearer ");
+
+        return hasQueryToken || hasBearerHeader;
     }
 }
