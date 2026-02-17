@@ -82,7 +82,7 @@ public class BulkPhotoLoader {
 
             processor.upload();
         } catch (FimsRuntimeException e) {
-            if (!e.getErrorCode().equals(DataReaderCode.NO_DATA)) {
+            if (!DataReaderCode.NO_DATA.equals(e.getErrorCode())) {
                 throw e;
             }
         }
