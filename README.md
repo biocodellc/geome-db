@@ -65,3 +65,50 @@ Notes:
 - First startup can take 1-2 minutes while Spring initializes.
 - Logs are under `/usr/local/opt/jetty/libexec/logs/geome-db.log`.
 - If you see warnings about Jersey resources, they are not fatal to startup.
+
+# Team Search Indexing (Project Configuration Scoped)
+This backend supports API-triggered indexing of all projects under a single "team" (`project_configurations.id`) into an external Elasticsearch endpoint.
+
+## Endpoints
+- `POST /geome-db/projects/configs/{id}/search-index/run`
+  - Starts an async indexing run for team `{id}`.
+- `GET /geome-db/projects/configs/{id}/search-index/status`
+  - Returns run status (`running`, last run timestamps, counts, error message, etc.).
+
+Access is restricted to:
+- configuration owner (`project_configurations.user_id`)
+- or `user_id = 1` (biocode admin)
+
+## Concurrency and Incremental Behavior
+- Only one indexing run can execute at a time per app instance.
+- The indexer compares row-hash state and only sends changed/new docs.
+- Docs no longer present in DB are deleted from Elasticsearch.
+
+State tables (auto-created):
+- `team_index_runs`
+- `team_index_state`
+
+## Configuration
+Set these in your runtime props file:
+```
+teamIndex.enabled=true
+teamIndex.elasticsearch.baseUrl=https://your-es-host:9200
+teamIndex.elasticsearch.index=geome-team-projects
+teamIndex.elasticsearch.apiKey=...
+# or basic auth:
+# teamIndex.elasticsearch.username=...
+# teamIndex.elasticsearch.password=...
+teamIndex.bulk.batchSize=500
+```
+
+## Field Mapping
+Indexed fields are derived directly from the team's project configuration (`project_configurations.config`):
+- Each configured entity under the team is indexed.
+- Each entity document includes values for that entity's configured attribute columns.
+- No separate mapping file is required.
+
+## Example Calls
+```
+curl -X POST "https://api.geome-db.org/geome-db/projects/configs/2/search-index/run?access_token=<token>"
+curl "https://api.geome-db.org/geome-db/projects/configs/2/search-index/status?access_token=<token>"
+```

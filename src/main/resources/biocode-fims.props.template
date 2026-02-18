@@ -49,3 +49,12 @@ replaceHeader = false
 
 # get you're access token by visiting https://www.mapbox.com/account/apps/
 mapboxAccessToken = your_access_token
+
+# team search indexing (project configuration/team scoped)
+teamIndex.enabled = false
+teamIndex.elasticsearch.baseUrl =
+teamIndex.elasticsearch.index =
+teamIndex.elasticsearch.apiKey =
+teamIndex.elasticsearch.username =
+teamIndex.elasticsearch.password =
+teamIndex.bulk.batchSize = 500

@@ -17,6 +17,7 @@ import biocode.fims.rest.responses.InvalidConfigurationResponse;
 import biocode.fims.serializers.Views;
 import biocode.fims.service.NetworkService;
 import biocode.fims.service.ProjectConfigurationService;
+import biocode.fims.service.TeamSearchIndexService;
 import biocode.fims.utils.Flag;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,13 +44,15 @@ public class ProjectConfigurationResource extends FimsController {
 
     private final ProjectConfigurationService projectConfigurationService;
     private final NetworkService networkService;
+    private final TeamSearchIndexService teamSearchIndexService;
 
     @Autowired
     public ProjectConfigurationResource(ProjectConfigurationService projectConfigurationService, NetworkService networkService,
-                                        FimsProperties props) {
+                                        TeamSearchIndexService teamSearchIndexService, FimsProperties props) {
         super(props);
         this.projectConfigurationService = projectConfigurationService;
         this.networkService = networkService;
+        this.teamSearchIndexService = teamSearchIndexService;
     }
 
     /**
@@ -168,6 +171,58 @@ public class ProjectConfigurationResource extends FimsController {
         }
 
         return Response.ok(config).build();
+    }
+
+    /**
+     * Trigger async team indexing run for this project configuration ("team").
+     * Only the configuration owner (project_configurations.user_id) or user_id=1 can trigger.
+     */
+    @POST
+    @Path("{id}/search-index/run")
+    @Authenticated
+    @Produces(MediaType.APPLICATION_JSON)
+    public TeamSearchIndexService.TeamIndexStatus runTeamIndex(@PathParam("id") Integer id) {
+        User user = userContext.getUser();
+        ProjectConfiguration configuration = projectConfigurationService.getProjectConfiguration(id);
+
+        if (configuration == null) {
+            throw new BadRequestException("Invalid config id");
+        }
+
+        if (!user.equals(configuration.getUser()) && !isBiocodeAdmin(user)) {
+            throw new ForbiddenRequestException(
+                    "You do not have permission to trigger indexing for this team. " +
+                            "Only the configuration owner (project_configurations.user_id) or user_id=1 may trigger runs."
+            );
+        }
+
+        return teamSearchIndexService.triggerIndex(id, user.getUserId());
+    }
+
+    /**
+     * Fetch status for the team indexing run.
+     * Only the configuration owner (project_configurations.user_id) or user_id=1 can view.
+     */
+    @GET
+    @Path("{id}/search-index/status")
+    @Authenticated
+    @Produces(MediaType.APPLICATION_JSON)
+    public TeamSearchIndexService.TeamIndexStatus teamIndexStatus(@PathParam("id") Integer id) {
+        User user = userContext.getUser();
+        ProjectConfiguration configuration = projectConfigurationService.getProjectConfiguration(id);
+
+        if (configuration == null) {
+            throw new BadRequestException("Invalid config id");
+        }
+
+        if (!user.equals(configuration.getUser()) && !isBiocodeAdmin(user)) {
+            throw new ForbiddenRequestException(
+                    "You do not have permission to view indexing status for this team. " +
+                            "Only the configuration owner (project_configurations.user_id) or user_id=1 may access status."
+            );
+        }
+
+        return teamSearchIndexService.getStatus(id);
     }
 
 
