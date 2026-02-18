@@ -100,6 +100,10 @@ public class TissueEntity extends PropEntity<TissueProps> {
                 addRule(requiredValueRule);
             }
 
+            if (!isGenerateID()) {
+                requiredValueRule.addColumn(getUniqueKey());
+            }
+
             Entity parentEntity = config.entity(getParentEntity());
             requiredValueRule.addColumn(parentEntity.getUniqueKey());
             addRule(new UniqueValueRule(getUniqueKey(), getUniqueAcrossProject(), RuleLevel.ERROR));
@@ -145,4 +149,3 @@ public class TissueEntity extends PropEntity<TissueProps> {
     static class TissueEntitySanitizer extends PropEntitySanitizer<TissueEntity> {
     }
 }
-
