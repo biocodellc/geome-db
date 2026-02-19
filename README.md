@@ -69,7 +69,7 @@ java -jar /usr/local/opt/jetty/libexec/start.jar \
 
 5) Check app health:
 ```
-curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/geome-db/
+curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8081/geome-db/
 ```
 
 Notes:
@@ -77,3 +77,33 @@ Notes:
 - Logs are under `/usr/local/opt/jetty/libexec/logs/geome-db.log`.
 - `403` from `/geome-db/` is acceptable and usually means the app is up and auth is being enforced.
 - If you see warnings about Jersey resources, they are not fatal to startup.
+
+# Generate report.json for geome-configurations
+Use the reports endpoint to generate a JSON report file that can be consumed by geome-configurations.
+Detailed service docs: `docs/reporting-service.md`.
+
+Local (Jetty on `8081`):
+```
+curl -sS "http://127.0.0.1:8081/geome-db/reports/summary?includePublic=true&includePrivate=true" > report.json
+```
+
+Production API:
+```
+curl -sS "https://api.geome-db.org/geome-db/reports/summary?includePublic=true&includePrivate=true&access_token=YOUR_TOKEN" > report.json
+```
+
+Optional filters:
+- `teamId=<project_configurations.id>`
+- `projectId=<projects.id>`
+- `includePrivate=true|false` (default `true`; requires authenticated user to include private/member projects)
+- `topUsersLimit=<int>` (default `25`, max `500`)
+- `fieldLimit=<int>`
+
+Example with team filter:
+```
+curl -sS "https://api.geome-db.org/geome-db/reports/summary?includePublic=true&includePrivate=true&teamId=321&topUsersLimit=100&access_token=YOUR_TOKEN" > report.json
+```
+
+`projectSummary` rows include:
+- `latestDataModification` (ISO timestamp from `projects.latest_data_modification`)
+- `public` (project visibility flag)

@@ -83,6 +83,7 @@ public class ReportingController extends FimsController {
     @Path("/summary")
     public Map<String, Object> reportingSummary(
             @QueryParam("includePublic") @DefaultValue("true") Boolean includePublic,
+            @QueryParam("includePrivate") @DefaultValue("true") Boolean includePrivate,
             @QueryParam("teamId") Integer teamId,
             @QueryParam("projectId") Integer projectId,
             @QueryParam("topUsersLimit") @DefaultValue("25") Integer topUsersLimit,
@@ -93,7 +94,7 @@ public class ReportingController extends FimsController {
             throw new BadRequestException("Network doesn't exist");
         }
 
-        ReportFilters filters = buildFilters(includePublic, teamId, projectId, topUsersLimit, fieldLimit);
+        ReportFilters filters = buildFilters(includePublic, includePrivate, teamId, projectId, topUsersLimit, fieldLimit);
         Integer userId = userContext.getUser() == null ? null : userContext.getUser().getUserId();
 
         ParsedEntities parsedEntities = parseNetworkEntitiesAndFields(network.getNetworkConfig());
@@ -120,10 +121,22 @@ public class ReportingController extends FimsController {
         return response;
     }
 
-    private ReportFilters buildFilters(Boolean includePublic, Integer teamId, Integer projectId, Integer topUsersLimit, Integer fieldLimit) {
+    private ReportFilters buildFilters(
+            Boolean includePublic,
+            Boolean includePrivate,
+            Integer teamId,
+            Integer projectId,
+            Integer topUsersLimit,
+            Integer fieldLimit
+    ) {
         boolean includePublicFlag = includePublic == null || includePublic;
+        boolean includePrivateFlag = includePrivate == null || includePrivate;
+
         if (userContext.getUser() == null && !includePublicFlag) {
             includePublicFlag = true;
+        }
+        if (userContext.getUser() == null) {
+            includePrivateFlag = false;
         }
 
         Integer normalizedTeamId = positiveOrNull(teamId);
@@ -133,7 +146,7 @@ public class ReportingController extends FimsController {
         int limit = topUsersLimit == null || topUsersLimit < 1 ? 25 : topUsersLimit;
         limit = Math.min(limit, 500);
 
-        return new ReportFilters(includePublicFlag, normalizedTeamId, normalizedProjectId, limit, normalizedFieldLimit);
+        return new ReportFilters(includePublicFlag, includePrivateFlag, normalizedTeamId, normalizedProjectId, limit, normalizedFieldLimit);
     }
 
     private Integer positiveOrNull(Integer value) {
@@ -217,6 +230,8 @@ public class ReportingController extends FimsController {
                 "SELECT " +
                 "  p.id AS \"projectId\", " +
                 "  p.project_title AS \"projectTitle\", " +
+                "  p.latest_data_modification AS \"latestDataModification\", " +
+                "  p.public AS \"public\", " +
                 "  pc.id AS \"teamId\", " +
                 "  to_jsonb(pc)->>'name' AS \"teamName\", " +
                 "  tu.id AS \"teamOwnerUserId\", " +
@@ -237,6 +252,8 @@ public class ReportingController extends FimsController {
                     LinkedHashMap<String, Object> row = new LinkedHashMap<>();
                     row.put("projectId", rs.getInt("projectId"));
                     row.put("projectTitle", rs.getString("projectTitle"));
+                    row.put("latestDataModification", toInstantString(rs, "latestDataModification"));
+                    row.put("public", rs.getBoolean("public"));
 
                     LinkedHashMap<String, Object> team = new LinkedHashMap<>();
                     team.put("teamId", rs.getInt("teamId"));
@@ -486,9 +503,20 @@ public class ReportingController extends FimsController {
         List<String> clauses = new ArrayList<>();
 
         if (userId != null) {
-            params.addValue("includePublic", filters.includePublic);
             params.addValue("userId", userId);
-            clauses.add("(p.discoverable = true OR p.public = :includePublic OR p.user_id = :userId OR p.id IN (SELECT project_id FROM user_projects WHERE user_id = :userId))");
+
+            List<String> visibilityClauses = new ArrayList<>();
+            if (filters.includePublic) {
+                visibilityClauses.add("(p.discoverable = true OR p.public = true)");
+            }
+            if (filters.includePrivate) {
+                visibilityClauses.add("(p.user_id = :userId OR p.id IN (SELECT project_id FROM user_projects WHERE user_id = :userId))");
+            }
+            if (visibilityClauses.isEmpty()) {
+                visibilityClauses.add("1 = 0");
+            }
+
+            clauses.add("(" + String.join(" OR ", visibilityClauses) + ")");
         } else {
             clauses.add("(p.discoverable = true OR p.public = true)");
         }
@@ -513,6 +541,11 @@ public class ReportingController extends FimsController {
         return new VisibilitySql(cteSql, params);
     }
 
+    private String toInstantString(ResultSet rs, String column) throws SQLException {
+        java.sql.Timestamp timestamp = rs.getTimestamp(column);
+        return timestamp == null ? null : timestamp.toInstant().toString();
+    }
+
     private MapSqlParameterSource copyParams(MapSqlParameterSource source) {
         MapSqlParameterSource target = new MapSqlParameterSource();
         for (Map.Entry<String, Object> entry : source.getValues().entrySet()) {
@@ -531,13 +564,15 @@ public class ReportingController extends FimsController {
 
     private static class ReportFilters {
         final boolean includePublic;
+        final boolean includePrivate;
         final Integer teamId;
         final Integer projectId;
         final Integer topUsersLimit;
         final Integer fieldLimit;
 
-        ReportFilters(boolean includePublic, Integer teamId, Integer projectId, Integer topUsersLimit, Integer fieldLimit) {
+        ReportFilters(boolean includePublic, boolean includePrivate, Integer teamId, Integer projectId, Integer topUsersLimit, Integer fieldLimit) {
             this.includePublic = includePublic;
+            this.includePrivate = includePrivate;
             this.teamId = teamId;
             this.projectId = projectId;
             this.topUsersLimit = topUsersLimit;
@@ -547,6 +582,7 @@ public class ReportingController extends FimsController {
         Map<String, Object> toMap() {
             LinkedHashMap<String, Object> map = new LinkedHashMap<>();
             map.put("includePublic", includePublic);
+            map.put("includePrivate", includePrivate);
             map.put("teamId", teamId);
             map.put("projectId", projectId);
             map.put("topUsersLimit", topUsersLimit);
@@ -585,4 +621,3 @@ public class ReportingController extends FimsController {
         }
     }
 }
-
