@@ -27,7 +27,15 @@ We want to restore crontab and nginx configuration files.  These configurations 
 under deploy/production
 
 # Local startup (Jetty)
-This app runs as a WAR in Jetty. The local flow is: build the WAR, deploy it into Jetty's `webapps`, then run Jetty.
+This app runs as a WAR in Jetty. The local flow is: use remote database credentials, build the WAR, deploy it into Jetty's `webapps`, then run Jetty.
+
+Remote database notes:
+- A local Postgres instance is not required if `src/main/environment/local/biocode-fims-database.properties` points to a remote `bcidUrl`.
+- Current local env uses remote DB URL: `jdbc:postgresql://149.165.170.158:5432/biscicol`.
+- If needed, confirm DB access before startup:
+```
+psql -h 149.165.170.158 -p 5432 -U biscicol -d biscicol -c "select 1;"
+```
 
 1) Build the WAR (uses `environment = local` from `gradle.properties`):
 ```
@@ -51,17 +59,21 @@ EOF
 cp build/libs/geome-db.war /usr/local/opt/jetty/libexec/webapps/geome-db.war
 ```
 
-4) Run Jetty:
+4) Run Jetty (use `start.jar` with `servlets` module):
 ```
-/usr/local/bin/jetty run jetty.http.port=8080
+java -jar /usr/local/opt/jetty/libexec/start.jar \
+  --module=servlets \
+  jetty.base=/usr/local/opt/jetty/libexec \
+  jetty.http.port=8081
 ```
 
-5) Visit:
+5) Check app health:
 ```
-http://localhost:8080/geome-db/
+curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8080/geome-db/
 ```
 
 Notes:
 - First startup can take 1-2 minutes while Spring initializes.
 - Logs are under `/usr/local/opt/jetty/libexec/logs/geome-db.log`.
+- `403` from `/geome-db/` is acceptable and usually means the app is up and auth is being enforced.
 - If you see warnings about Jersey resources, they are not fatal to startup.

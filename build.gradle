@@ -4,8 +4,16 @@ plugins {
     id "io.swagger.core.v3.swagger-gradle-plugin" version "2.1.9"
 }
 
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
 compileJava {
     options.compilerArgs << '-parameters'
+    options.encoding = 'UTF-8'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
 }
 // build API endpoint and stores in swagger directory
 resolve {
