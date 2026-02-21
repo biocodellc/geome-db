@@ -1,0 +1,7 @@
+.env
+README-generate_dwca_biocode.md
+__pycache__/
+node_modules/
+output/
+package-lock.json
+package.json

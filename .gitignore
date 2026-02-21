@@ -32,3 +32,7 @@ scripts/slow_query_test/
 .classpath
 .project
 bin/
+
+# requested local ignores
+node-backend/
+package-lock.json
