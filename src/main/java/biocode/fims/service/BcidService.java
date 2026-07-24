@@ -25,7 +25,7 @@ public class BcidService {
     public Bcid create(Bcid bcid, User user) {
 
         // if the user is demo, never create ezid's
-        if (bcid.ezidRequest() && user.getUsername().equals("demo"))
+        if (bcid.ezidRequest() && user.getUsername().equalsIgnoreCase("demo"))
             bcid.setEzidRequest(false);
 
         return bcidRepository.create(bcid);

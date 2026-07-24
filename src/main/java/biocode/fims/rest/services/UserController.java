@@ -77,7 +77,7 @@ public class UserController extends FimsController {
 
         User authenticatedUser = userContext.getUser();
         if (authenticatedUser != null && (
-                authenticatedUser.getUsername().equals(username) || userService.isAProjectAdmin(authenticatedUser))) {
+                authenticatedUser.getUsername().equalsIgnoreCase(username) || userService.isAProjectAdmin(authenticatedUser))) {
             return new DynamicViewResponse<>(user, Views.Detailed.class);
         }
         return new DynamicViewResponse<>(user, Views.Public.class);
@@ -134,7 +134,7 @@ public class UserController extends FimsController {
     public User updateUser(@PathParam("username") String username,
                            User updatedUser) {
         User user = userContext.getUser();
-        if (!user.getUsername().equals(username)) {
+        if (!user.getUsername().equalsIgnoreCase(username)) {
             throw new ForbiddenRequestException("You cannot update another user's profile.");
         }
 
@@ -168,7 +168,7 @@ public class UserController extends FimsController {
                 org.apache.commons.lang3.StringUtils.isBlank(newPassword)) {
             throw new BadRequestException("currentPassword and newPassword must not be blank");
         }
-        if (!user.getUsername().equals(username)) {
+        if (!user.getUsername().equalsIgnoreCase(username)) {
             throw new ForbiddenRequestException("You cannot update another users password.");
         }
 

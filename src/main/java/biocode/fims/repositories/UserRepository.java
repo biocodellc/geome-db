@@ -26,7 +26,8 @@ public interface UserRepository extends Repository<User, Integer>, JpaSpecificat
 
     User findByUserId(int userId);
 
-    User findByUsername(String username);
+    @Query("select u from User u where lower(u.username) = lower(:username)")
+    User findByUsername(@Param("username") String username);
 
     @Query("select u from User u where u.passwordResetToken = :resetToken and u.passwordResetExpiration > current_timestamp")
     User findOneByResetToken(@Param("resetToken") String resetToken);
@@ -34,11 +35,11 @@ public interface UserRepository extends Repository<User, Integer>, JpaSpecificat
     List<User> findAll();
 
     @EntityGraph(value = "User.withProjectsMemberOf", type = EntityGraph.EntityGraphType.LOAD)
-    @Query("select u from User u where u.username = :username")
+    @Query("select u from User u where lower(u.username) = lower(:username)")
     User getUserWithMemberProjects(@Param("username") String username);
 
     @EntityGraph(value = "User.withProjects", type = EntityGraph.EntityGraphType.LOAD)
-    @Query("select u from User u where u.username = :username")
+    @Query("select u from User u where lower(u.username) = lower(:username)")
     User getUserWithProjects(@Param("username") String username);
 
     @Query("select (COUNT(u) > 0) from User u where u.email = :email")

@@ -200,7 +200,8 @@ CREATE TABLE users
     sra_email                    TEXT,
     sra_first_name               TEXT,
     sra_last_name                TEXT,
-    last_login                   TIMESTAMP
+    last_login                   TIMESTAMP,
+    CONSTRAINT users_username_lowercase_check CHECK (username = lower(username))
 );
 
 COMMENT ON COLUMN users.password_reset_token IS 'Unique token used to reset a users password';

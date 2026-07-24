@@ -14,6 +14,7 @@ import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -359,12 +360,13 @@ public class User {
         if (!(o instanceof User)) return false;
 
         User that = (User) o;
-        return getUsername().equals(that.getUsername());
+        if (getUsername() == null) return that.getUsername() == null;
+        return getUsername().equalsIgnoreCase(that.getUsername());
     }
 
     @Override
     public int hashCode() {
-        return getUsername().hashCode();
+        return getUsername() == null ? 0 : getUsername().toLowerCase(Locale.ROOT).hashCode();
     }
 
     @Override

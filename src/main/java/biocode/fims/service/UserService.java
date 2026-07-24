@@ -60,6 +60,7 @@ public class UserService {
 
 
     public User create(User user, String password, UUID inviteId) {
+        user.setUsername(normalizeUsername(user.getUsername()));
 
         if (!user.isValid(true)) {
             throw new FimsRuntimeException(UserCode.INVALID, 400);
@@ -99,7 +100,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public User getUser(String username) {
-        return userRepository.findByUsername(username);
+        return userRepository.findByUsername(normalizeUsername(username));
     }
 
     @Transactional(readOnly = true)
@@ -181,11 +182,11 @@ public class UserService {
     }
 
     public User getUserWithMemberProjects(String username) {
-        return userRepository.getUserWithMemberProjects(username);
+        return userRepository.getUserWithMemberProjects(normalizeUsername(username));
     }
 
     public User getUserWithProjects(String username) {
-        return userRepository.getUserWithProjects(username);
+        return userRepository.getUserWithProjects(normalizeUsername(username));
     }
 
     /**
@@ -244,5 +245,9 @@ public class UserService {
         } catch (DataIntegrityViolationException e) {
             throw new FimsRuntimeException(UserCode.DUPLICATE_INVITE, 400);
         }
+    }
+
+    private static String normalizeUsername(String username) {
+        return username == null ? null : username.toLowerCase(Locale.ROOT);
     }
 }
