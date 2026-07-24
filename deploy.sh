@@ -1,13 +1,30 @@
-# instructions for development and deployment which is done on the command-line
-# first make sure we add localhost referrer in:
-# https://console.cloud.google.com/apis/credentials?project=berkeleymapper
-# add the following:
-# http://localhost:8080/*
-# make sure you disable this when done developing
+#!/usr/bin/env bash
+set -euo pipefail
 
-# build the war file
-./gradlew war
-# copy it into place on this machine
-cp build/libs/geome-db.war /usr/local/Cellar/jetty/9.4.50.v20221201/libexec/webapps/geome-db.war
-# open a test page
-#/usr/bin/open -a "/Applications/Google Chrome.app" 'http://localhost:8080/index.html?tabfile=https://raw.githubusercontent.com/BNHM/berkeleymapper/master/examples/awtest.txt&configfile=https://raw.githubusercontent.com/BNHM/berkeleymapper/master/examples/awtest.xml'
+cd "$(dirname "$0")"
+
+target="${1:-auto}"
+if [[ $# -gt 0 ]]; then
+    shift
+fi
+
+if [[ "$target" == "auto" ]]; then
+    if [[ -d /usr/share/jetty9 && ! -d /usr/local/opt/jetty/libexec ]]; then
+        target="server"
+    else
+        target="local"
+    fi
+fi
+
+case "$target" in
+    local)
+        exec ./deploy-local.sh "$@"
+        ;;
+    server|production|prod)
+        exec ./deploy-server.sh "$@"
+        ;;
+    *)
+        echo "Usage: $0 [local|server]" >&2
+        exit 2
+        ;;
+esac

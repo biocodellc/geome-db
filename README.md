@@ -26,6 +26,22 @@ pg_restore --disable-triggers -d biscicol biscicol_all.pgsql
 We want to restore crontab and nginx configuration files.  These configurations are stored
 under deploy/production
 
+# Deploy scripts
+The root deploy wrapper auto-detects the current environment:
+```
+./deploy.sh
+```
+
+Use explicit scripts when needed:
+```
+./deploy-local.sh
+./deploy-server.sh
+```
+
+Local defaults target Homebrew Jetty at `/usr/local/opt/jetty/libexec` and build with
+`-Penvironment=local`. Server defaults target `/usr/share/jetty9`, build with
+`-Penvironment=production`, install the WAR with `sudo`, and restart `jetty9`.
+
 # Local startup (Jetty)
 This app runs as a WAR in Jetty. The local flow is: use remote database credentials, build the WAR, deploy it into Jetty's `webapps`, then run Jetty.
 
