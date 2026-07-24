@@ -46,6 +46,7 @@ fi
 
 if [[ "$restart_service" == "1" ]]; then
     if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files "${service_name}.service" >/dev/null 2>&1; then
+        sudo systemctl daemon-reload
         sudo systemctl restart "$service_name"
     else
         sudo service "$service_name" restart
@@ -58,7 +59,7 @@ echo "Context file: ${context_file}"
 if command -v curl >/dev/null 2>&1; then
     echo "Checking ${health_url}"
     for _ in $(seq 1 30); do
-        status="$(curl -sS -o /dev/null -w '%{http_code}' "$health_url" || true)"
+        status="$(curl -s -o /dev/null -w '%{http_code}' "$health_url" 2>/dev/null || true)"
         if [[ "$status" =~ ^(200|302|401|403)$ ]]; then
             echo "Jetty responded with HTTP ${status}"
             exit 0
