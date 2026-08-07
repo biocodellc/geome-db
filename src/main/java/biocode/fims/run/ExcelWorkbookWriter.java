@@ -384,7 +384,7 @@ public class ExcelWorkbookWriter {
 		    style.set();
                 }
 
-                Range listRange = listsSheet.range(1, col, fields.size(), col);
+                Range listRange = new AbsoluteRange(listsSheet, 1, col, fields.size(), col);
 
                 // DATA VALIDATION COMPONENT
                 for (WriterWorksheet sheet : sheets) {
@@ -487,4 +487,3 @@ public class ExcelWorkbookWriter {
         private static final int DATA_FORMAT = 3;
     }
 }
-
