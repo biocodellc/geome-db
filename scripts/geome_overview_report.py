@@ -72,14 +72,29 @@ FIELD_USAGE_COLUMNS = (
     "coverage_pct",
 )
 
+ADDITIONAL_TEAM_FIELD_REPORTS: Sequence[Tuple[str, str, str]] = (
+    (
+        "smithsonian_bggi_top_fields.csv",
+        "Smithsonian BGGI Top Fields",
+        "Smithsonian Barcoding and Global Genome Initiative",
+    ),
+    (
+        "amphibiaweb_disease_portal_top_fields.csv",
+        "AmphibiaWeb Disease Portal Top Fields",
+        "AmphibiaWeb's Disease Portal",
+    ),
+)
+
 TABLE_DESCRIPTIONS = {
     "overview_metrics.csv": "High-level GEOME counts for projects, records, users, public teams, and Local Contexts adoption.",
     "top_fields.csv": "The top field-data columns across all GEOME projects ranked by percent coverage.",
     "biocode_top_fields.csv": "The top field-data columns in the Biocode team ranked by percent coverage.",
+    "smithsonian_bggi_top_fields.csv": "The top field-data columns in the Smithsonian Barcoding and Global Genome Initiative team ranked by percent coverage.",
+    "amphibiaweb_disease_portal_top_fields.csv": "The top field-data columns in the AmphibiaWeb Disease Portal team ranked by percent coverage.",
     "project_metadata_coverage.csv": "Project-level metadata fields ranked by how often they are filled across all GEOME projects.",
     "local_contexts_projects.csv": "Public or discoverable GEOME projects that contain a Local Contexts project ID.",
     "local_contexts_record_counts.csv": "Counts and coverage percentages for records covered by project-level Local Contexts IDs.",
-    "team_growth_summary.csv": "Public-team record growth over the last six complete months compared with the prior six complete months.",
+    "team_growth_summary.csv": "Public-team record additions in the last complete year as a percent of additions in the previous complete year.",
     "record_accumulation_by_month.csv": "Monthly all-GEOME record additions and cumulative record totals over time.",
 }
 
@@ -87,10 +102,12 @@ TABLE_VISUALIZATIONS = {
     "overview_metrics.csv": {"kind": "metric_cards", "label": "metric", "value": "value"},
     "top_fields.csv": {"kind": "bar", "x": "field_name", "y": "coverage_pct", "group": "entity"},
     "biocode_top_fields.csv": {"kind": "bar", "x": "field_name", "y": "coverage_pct", "group": "entity"},
+    "smithsonian_bggi_top_fields.csv": {"kind": "bar", "x": "field_name", "y": "coverage_pct", "group": "entity"},
+    "amphibiaweb_disease_portal_top_fields.csv": {"kind": "bar", "x": "field_name", "y": "coverage_pct", "group": "entity"},
     "project_metadata_coverage.csv": {"kind": "bar", "x": "field", "y": "coverage_pct"},
     "local_contexts_projects.csv": {"kind": "table"},
     "local_contexts_record_counts.csv": {"kind": "bar", "x": "entity", "y": "coverage_pct"},
-    "team_growth_summary.csv": {"kind": "bar", "x": "team_name", "y": "pct_growth_last_6_months"},
+    "team_growth_summary.csv": {"kind": "bar", "x": "team_name", "y": "pct_growth_last_year"},
     "record_accumulation_by_month.csv": {"kind": "line", "x": "month", "y": "cumulative_records"},
 }
 
@@ -112,7 +129,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--team-name", default="Biocode", help="Team/config name to summarize.")
     parser.add_argument("--team-id", type=int, help="Project configuration id to use for team tables.")
     parser.add_argument("--field-limit", type=int, default=50, help="Top field rows to render.")
-    parser.add_argument("--months", type=int, default=24, help="Months of team activity to report.")
+    parser.add_argument("--months", type=int, default=24, help="Deprecated; ignored by the current yearly team growth summary.")
     parser.add_argument(
         "--out-dir",
         help="Output directory. Defaults to scripts/output/geome-overview-YYYYMMDD.",
@@ -637,9 +654,38 @@ def resolve_team(
         )
 
     warnings.append(
-        "No project configuration matched team name '{}'; biocode_top_fields.csv is empty.".format(team_name)
+        "No project configuration matched team name '{}'; the team top-fields table is empty.".format(team_name)
     )
     return None, warnings
+
+
+def load_team_field_usage(
+    client: PsqlClient,
+    network_id: int,
+    requested_team_name: str,
+    requested_team_id: Optional[int],
+    entities: Sequence[str],
+    labels: Dict[Tuple[str, str], Dict[str, str]],
+    excluded_fields_by_entity: Dict[str, Set[str]],
+    limit: int,
+) -> Tuple[List[Dict[str, object]], str, List[str]]:
+    team, warnings = resolve_team(client, network_id, requested_team_name, requested_team_id)
+    if not team:
+        return [], requested_team_name, warnings
+
+    resolved_team_id = int_value(team.get("team_id"))
+    resolved_team_name = clean(team.get("team_name")) or requested_team_name
+    log_step("Computing top fields for {}".format(resolved_team_name))
+    rows = load_field_usage(
+        client,
+        network_id,
+        entities,
+        project_filter(network_id, "team", resolved_team_id),
+        labels,
+        excluded_fields_by_entity,
+        limit,
+    )
+    return rows, resolved_team_name, warnings
 
 
 def local_contexts_project_rows(project_rows: Sequence[Dict[str, str]]) -> Tuple[List[Dict[str, object]], Set[int]]:
@@ -812,16 +858,16 @@ def distinct_audit_user_count(
     )
 
 
-def load_team_activity(
+def load_team_growth_summary(
     client: PsqlClient,
     network_id: int,
     metric_entities: Dict[str, Optional[str]],
-    months: int,
-    public_only: bool = False,
 ) -> List[Dict[str, object]]:
     parts = []
-    months_back = max(months - 1, 0)
-    public_clause = " AND p.public = TRUE" if public_only else ""
+    current_month = dt.date.today().replace(day=1)
+    last_year_start = add_months(current_month, -12)
+    previous_year_start = add_months(current_month, -24)
+
     for metric, _display, _candidates in METRIC_CANDIDATES:
         entity = metric_entities.get(metric)
         if not entity:
@@ -829,40 +875,76 @@ def load_team_activity(
         parts.append(
             """
             SELECT
-              date_trunc('month', r.created)::date::text AS month,
               p.config_id AS team_id,
               COALESCE(to_jsonb(pc)->>'name', '') AS team_name,
-              COUNT(*)::bigint AS records_created
+              COUNT(*) FILTER (
+                WHERE r.created >= {previous_year_start}
+                  AND r.created < {last_year_start}
+              )::bigint AS records_previous_year,
+              COUNT(*) FILTER (
+                WHERE r.created >= {last_year_start}
+                  AND r.created < {current_month}
+              )::bigint AS records_last_year
             FROM {table} r
             JOIN expeditions e ON e.id = r.expedition_id
             JOIN projects p ON p.id = e.project_id
             LEFT JOIN project_configurations pc ON pc.id = p.config_id
             WHERE p.network_id = {network_id}
-              {public_clause}
-              AND r.created >= date_trunc('month', CURRENT_DATE) - INTERVAL {months}
-            GROUP BY 1, 2, 3
+              AND p.public = TRUE
+              AND r.created >= {previous_year_start}
+              AND r.created < {current_month}
+            GROUP BY 1, 2
             """.format(
                 table=safe_entity_table(network_id, entity),
                 network_id=network_id,
-                public_clause=public_clause,
-                months=sql_literal(str(months_back) + " months"),
+                previous_year_start=sql_literal(previous_year_start.isoformat()),
+                last_year_start=sql_literal(last_year_start.isoformat()),
+                current_month=sql_literal(current_month.isoformat()),
             )
         )
 
     if not parts:
         return []
 
-    sql = """
+    rows = client.query(
+        """
         SELECT
-          month,
           team_id,
           team_name,
-          SUM(records_created)::bigint AS records_created
-        FROM ({union_sql}) activity
-        GROUP BY month, team_id, team_name
-        ORDER BY month DESC, records_created DESC, lower(team_name)
-    """.format(union_sql=" UNION ALL ".join(parts))
-    return client.query(sql)
+          SUM(records_previous_year)::bigint AS records_previous_year,
+          SUM(records_last_year)::bigint AS records_last_year
+        FROM ({union_sql}) growth
+        GROUP BY team_id, team_name
+        ORDER BY records_last_year DESC, lower(team_name)
+        """.format(union_sql=" UNION ALL ".join(parts))
+    )
+
+    summaries: List[Dict[str, object]] = []
+    for row in rows:
+        previous = int_value(row.get("records_previous_year"))
+        last = int_value(row.get("records_last_year"))
+        if previous == 0 or last == 0:
+            continue
+
+        summaries.append(
+            {
+                "team_id": int_value(row.get("team_id")),
+                "team_name": clean(row.get("team_name")),
+                "records_previous_year": previous,
+                "records_last_year": last,
+                "accumulated_records_last_two_years": previous + last,
+                "pct_growth_last_year": "{:.1f}".format((float(last) / float(previous)) * 100.0),
+            }
+        )
+
+    summaries.sort(
+        key=lambda r: (
+            -float(clean(r["pct_growth_last_year"]) or "0"),
+            -int_value(r["records_last_year"]),
+            clean(r["team_name"]).lower(),
+        )
+    )
+    return summaries
 
 
 def load_record_accumulation(
@@ -926,85 +1008,6 @@ def add_months(month: dt.date, offset: int) -> dt.date:
     return dt.date(year, month_num, 1)
 
 
-def parse_month(value: object) -> Optional[dt.date]:
-    text = clean(value)
-    if not text:
-        return None
-    try:
-        parsed = dt.datetime.strptime(text[:10], "%Y-%m-%d").date()
-        return dt.date(parsed.year, parsed.month, 1)
-    except ValueError:
-        return None
-
-
-def team_growth_summary(activity_rows: Sequence[Dict[str, object]]) -> List[Dict[str, object]]:
-    current = dt.date.today().replace(day=1)
-    last6 = {add_months(current, -i) for i in range(1, 7)}
-    previous6 = {add_months(current, -i) for i in range(7, 13)}
-
-    team_totals: Dict[Tuple[str, str], Dict[str, object]] = {}
-
-    for row in activity_rows:
-        key = (clean(row.get("team_id")), clean(row.get("team_name")))
-        if key not in team_totals:
-            team_totals[key] = {
-                "team_id": key[0],
-                "team_name": key[1],
-                "records_last_6_months": 0,
-                "records_previous_6_months": 0,
-                "total_records_in_window": 0,
-                "last_activity_month": "",
-            }
-
-        count = int_value(row.get("records_created"))
-        month = parse_month(row.get("month"))
-        team_totals[key]["total_records_in_window"] = int_value(
-            team_totals[key]["total_records_in_window"]
-        ) + count
-
-        last_month = clean(team_totals[key]["last_activity_month"])
-        if clean(row.get("month")) > last_month:
-            team_totals[key]["last_activity_month"] = clean(row.get("month"))[:7]
-
-        if month in last6:
-            team_totals[key]["records_last_6_months"] = int_value(
-                team_totals[key]["records_last_6_months"]
-            ) + count
-        elif month in previous6:
-            team_totals[key]["records_previous_6_months"] = int_value(
-                team_totals[key]["records_previous_6_months"]
-            ) + count
-
-    rows: List[Dict[str, object]] = []
-    for key, summary in team_totals.items():
-        last = int_value(summary["records_last_6_months"])
-        previous = int_value(summary["records_previous_6_months"])
-        if last == 0 or previous == 0:
-            continue
-
-        change = last - previous
-        growth_pct = "{:.1f}".format((float(change) / float(previous)) * 100.0)
-
-        rows.append(
-            {
-                "team_id": summary["team_id"],
-                "team_name": summary["team_name"],
-                "records_last_6_months": last,
-                "records_previous_6_months": previous,
-                "pct_growth_last_6_months": growth_pct,
-            }
-        )
-
-    rows.sort(
-        key=lambda r: (
-            -float(clean(r["pct_growth_last_6_months"]) or "0"),
-            -int_value(r["records_last_6_months"]),
-            clean(r["team_name"]).lower(),
-        )
-    )
-    return rows
-
-
 def load_expedition_count(client: PsqlClient, network_id: int, filter_sql: str) -> int:
     return client.one_int(
         """
@@ -1033,7 +1036,7 @@ def overview_metrics(
         if nonempty(p.get("localcontexts_id"))
         and (bool_value(p.get("public")) or bool_value(p.get("discoverable")))
     )
-    active_teams_last6 = len(growth_rows)
+    active_growth_teams = len(growth_rows)
 
     rows: List[Dict[str, object]] = [
         {"metric": "Projects", "value": all_projects, "notes": "All projects in network"},
@@ -1078,8 +1081,8 @@ def overview_metrics(
             },
             {
                 "metric": "Public teams in growth summary",
-                "value": active_teams_last6,
-                "notes": "Public-project teams with records in both current and previous 6-month windows",
+                "value": active_growth_teams,
+                "notes": "Public-project teams with records in both last-year and previous-year windows",
             },
         ]
     )
@@ -1101,7 +1104,10 @@ def table_id(filename: str) -> str:
 
 def column_label(field: str) -> str:
     labels = {
-        "pct_growth_last_6_months": "Pct Growth Last 6 Months",
+        "pct_growth_last_year": "Pct Growth Last Year",
+        "records_previous_year": "Records Previous Year",
+        "records_last_year": "Records Last Year",
+        "accumulated_records_last_two_years": "Accumulated Records Last Two Years",
         "coverage_pct": "Coverage Pct",
         "localcontexts_id": "Local Contexts ID",
     }
@@ -1119,7 +1125,7 @@ def column_type(field: str) -> str:
         return "number"
     if field in ("rank", "project_id", "team_id", "value", "filled_count", "total_records", "cumulative_records"):
         return "integer"
-    if field.endswith("_count") or field.startswith("records_"):
+    if field.endswith("_count") or field.startswith("records_") or field.startswith("accumulated_records"):
         return "integer"
     return "string"
 
@@ -1393,9 +1399,6 @@ def main() -> int:
         raise RuntimeError("--network-id must be positive")
     if args.field_limit < 1:
         raise RuntimeError("--field-limit must be positive")
-    if args.months < 1:
-        raise RuntimeError("--months must be positive")
-
     out_dir = Path(args.out_dir) if args.out_dir else default_out_dir()
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1418,10 +1421,6 @@ def main() -> int:
 
     log_step("Loading projects and resolving team")
     project_rows = load_project_rows(client, args.network_id)
-    team, team_warnings = resolve_team(client, args.network_id, args.team_name, args.team_id)
-    warnings.extend(team_warnings)
-    team_id = int_value(team.get("team_id")) if team else None
-    team_name = clean(team.get("team_name")) if team else args.team_name
 
     log_step("Computing top fields across all projects")
     top_fields = load_field_usage(
@@ -1434,17 +1433,33 @@ def main() -> int:
         args.field_limit,
     )
 
-    biocode_top_fields: List[Dict[str, object]] = []
-    if team_id is not None:
-        log_step("Computing top fields for {}".format(team_name))
-        biocode_top_fields = load_field_usage(
+    biocode_top_fields, _biocode_resolved_name, team_warnings = load_team_field_usage(
+        client,
+        args.network_id,
+        args.team_name,
+        args.team_id,
+        field_entities,
+        labels,
+        excluded_fields,
+        args.field_limit,
+    )
+    warnings.extend(team_warnings)
+
+    additional_team_field_tables = []
+    for filename, title, requested_team_name in ADDITIONAL_TEAM_FIELD_REPORTS:
+        rows, _resolved_team_name, team_warnings = load_team_field_usage(
             client,
             args.network_id,
+            requested_team_name,
+            None,
             field_entities,
-            project_filter(args.network_id, "team", team_id),
             labels,
             excluded_fields,
             args.field_limit,
+        )
+        warnings.extend(team_warnings)
+        additional_team_field_tables.append(
+            (filename, rows, FIELD_USAGE_COLUMNS, title, args.field_limit)
         )
 
     log_step("Computing Local Contexts coverage")
@@ -1462,8 +1477,7 @@ def main() -> int:
     owner_user_count = distinct_owner_count(client, args.network_id, metric_entity_list)
     audit_user_count = distinct_audit_user_count(client, args.network_id, metric_entity_list, existing_tables)
     log_step("Computing public team growth")
-    team_activity_rows = load_team_activity(client, args.network_id, metric_entities, args.months, public_only=True)
-    growth_rows = team_growth_summary(team_activity_rows)
+    growth_rows = load_team_growth_summary(client, args.network_id, metric_entities)
     log_step("Computing record accumulation curves")
     accumulation_rows = load_record_accumulation(client, args.network_id, metric_entities)
     log_step("Computing overview metrics")
@@ -1499,6 +1513,7 @@ def main() -> int:
             "Biocode Top Fields",
             args.field_limit,
         ),
+        *additional_team_field_tables,
         (
             "project_metadata_coverage.csv",
             metadata_rows,
@@ -1540,9 +1555,10 @@ def main() -> int:
             (
                 "team_id",
                 "team_name",
-                "records_last_6_months",
-                "records_previous_6_months",
-                "pct_growth_last_6_months",
+                "records_previous_year",
+                "records_last_year",
+                "accumulated_records_last_two_years",
+                "pct_growth_last_year",
             ),
             "Team Growth Summary",
             30,
