@@ -2,7 +2,7 @@
   "schema_version": 1,
   "title": "GEOME Overview Report",
   "description": "Presentation-ready GEOME overview data for rendering tables, charts, and slide-oriented summaries.",
-  "generated_at": "2026-08-09T05:06:55+00:00",
+  "generated_at": "2026-08-09T05:16:46+00:00",
   "network_id": 1,
   "warnings": [],
   "outputs": {
@@ -2224,7 +2224,7 @@
     {
       "id": "local_contexts_projects",
       "title": "Local Contexts Projects",
-      "description": "Public or discoverable GEOME projects that contain a Local Contexts project ID.",
+      "description": "Public or discoverable GEOME projects that contain a Local Contexts project ID, with the number of associated samples.",
       "csv": "local_contexts_projects.csv",
       "row_count": 6,
       "columns": [
@@ -2267,6 +2267,11 @@
           "key": "localcontexts_id",
           "label": "Local Contexts ID",
           "type": "string"
+        },
+        {
+          "key": "sample_count",
+          "label": "Sample Count",
+          "type": "integer"
         }
       ],
       "visualization": {
@@ -2281,7 +2286,8 @@
           "team_name": "Auckland Museum Tissue Archive",
           "public": true,
           "discoverable": false,
-          "localcontexts_id": "dc2bc754-65e6-46a8-98ec-7954dd9f929a"
+          "localcontexts_id": "dc2bc754-65e6-46a8-98ec-7954dd9f929a",
+          "sample_count": 1016
         },
         {
           "project_id": 638,
@@ -2291,7 +2297,8 @@
           "team_name": "Biocode",
           "public": true,
           "discoverable": true,
-          "localcontexts_id": "54be05d7-aa5c-4886-abd9-dc45b2fa8df4"
+          "localcontexts_id": "54be05d7-aa5c-4886-abd9-dc45b2fa8df4",
+          "sample_count": 242
         },
         {
           "project_id": 118,
@@ -2301,7 +2308,8 @@
           "team_name": "Multi-sheet Generic",
           "public": true,
           "discoverable": false,
-          "localcontexts_id": "35449cb1-7ae9-410d-a6c0-1d2deb874e6b"
+          "localcontexts_id": "35449cb1-7ae9-410d-a6c0-1d2deb874e6b",
+          "sample_count": 3672
         },
         {
           "project_id": 586,
@@ -2311,7 +2319,8 @@
           "team_name": "DNA Reference Libraries of Aotearoa New Zealand",
           "public": true,
           "discoverable": false,
-          "localcontexts_id": "3a6342f1-4b61-41a9-b4c5-3797d8cd4a22"
+          "localcontexts_id": "3a6342f1-4b61-41a9-b4c5-3797d8cd4a22",
+          "sample_count": 1222
         },
         {
           "project_id": 537,
@@ -2321,7 +2330,8 @@
           "team_name": "Biocode",
           "public": true,
           "discoverable": false,
-          "localcontexts_id": "03818172-23c1-4dd1-a662-f11aa07cccda"
+          "localcontexts_id": "03818172-23c1-4dd1-a662-f11aa07cccda",
+          "sample_count": 1276
         },
         {
           "project_id": 75,
@@ -2331,97 +2341,8 @@
           "team_name": "Biocode",
           "public": true,
           "discoverable": false,
-          "localcontexts_id": "71b32571-0176-4627-8e01-4d78818432a7"
-        }
-      ]
-    },
-    {
-      "id": "local_contexts_record_counts",
-      "title": "Local Contexts Record Counts",
-      "description": "Counts and coverage percentages for records covered by project-level Local Contexts IDs.",
-      "csv": "local_contexts_record_counts.csv",
-      "row_count": 9,
-      "columns": [
-        {
-          "key": "entity",
-          "label": "Entity",
-          "type": "string"
-        },
-        {
-          "key": "projects_with_local_contexts_id",
-          "label": "Projects With Local Contexts Id",
-          "type": "string"
-        },
-        {
-          "key": "records_covered_by_local_contexts_id",
-          "label": "Records Covered By Local Contexts Id",
-          "type": "integer"
-        },
-        {
-          "key": "coverage_pct",
-          "label": "Coverage Pct",
-          "type": "number"
-        }
-      ],
-      "visualization": {
-        "kind": "bar",
-        "x": "entity",
-        "y": "coverage_pct"
-      },
-      "rows": [
-        {
-          "entity": "Events",
-          "projects_with_local_contexts_id": "6",
-          "records_covered_by_local_contexts_id": 6323,
-          "coverage_pct": 2.5
-        },
-        {
-          "entity": "Samples",
-          "projects_with_local_contexts_id": "6",
-          "records_covered_by_local_contexts_id": 58148,
-          "coverage_pct": 8.9
-        },
-        {
-          "entity": "Tissues / extractions",
-          "projects_with_local_contexts_id": "6",
-          "records_covered_by_local_contexts_id": 45469,
-          "coverage_pct": 10.8
-        },
-        {
-          "entity": "Event photos",
-          "projects_with_local_contexts_id": "6",
-          "records_covered_by_local_contexts_id": 177,
-          "coverage_pct": 8.8
-        },
-        {
-          "entity": "Sample photos",
-          "projects_with_local_contexts_id": "6",
-          "records_covered_by_local_contexts_id": 42803,
-          "coverage_pct": 23.1
-        },
-        {
-          "entity": "Diagnostics",
-          "projects_with_local_contexts_id": "6",
-          "records_covered_by_local_contexts_id": 0,
-          "coverage_pct": 0.0
-        },
-        {
-          "entity": "FASTA",
-          "projects_with_local_contexts_id": "6",
-          "records_covered_by_local_contexts_id": 2164,
-          "coverage_pct": 3.9
-        },
-        {
-          "entity": "FASTQ",
-          "projects_with_local_contexts_id": "6",
-          "records_covered_by_local_contexts_id": 4,
-          "coverage_pct": 0.0
-        },
-        {
-          "entity": "All classes total",
-          "projects_with_local_contexts_id": "6",
-          "records_covered_by_local_contexts_id": 155088,
-          "coverage_pct": 8.3
+          "localcontexts_id": "71b32571-0176-4627-8e01-4d78818432a7",
+          "sample_count": 50720
         }
       ]
     },

@@ -92,8 +92,7 @@ TABLE_DESCRIPTIONS = {
     "smithsonian_bggi_top_fields.csv": "The top field-data columns in the Smithsonian Barcoding and Global Genome Initiative team ranked by percent coverage.",
     "amphibiaweb_disease_portal_top_fields.csv": "The top field-data columns in the AmphibiaWeb Disease Portal team ranked by percent coverage.",
     "project_metadata_coverage.csv": "Project-level metadata fields ranked by how often they are filled across all GEOME projects.",
-    "local_contexts_projects.csv": "Public or discoverable GEOME projects that contain a Local Contexts project ID.",
-    "local_contexts_record_counts.csv": "Counts and coverage percentages for records covered by project-level Local Contexts IDs.",
+    "local_contexts_projects.csv": "Public or discoverable GEOME projects that contain a Local Contexts project ID, with the number of associated samples.",
     "team_growth_summary.csv": "Public-team record additions in the last complete year as a percent of additions in the previous complete year.",
     "record_accumulation_by_month.csv": "Monthly all-GEOME record additions and cumulative record totals over time.",
 }
@@ -106,7 +105,6 @@ TABLE_VISUALIZATIONS = {
     "amphibiaweb_disease_portal_top_fields.csv": {"kind": "bar", "x": "field_name", "y": "coverage_pct", "group": "entity"},
     "project_metadata_coverage.csv": {"kind": "bar", "x": "field", "y": "coverage_pct"},
     "local_contexts_projects.csv": {"kind": "table"},
-    "local_contexts_record_counts.csv": {"kind": "bar", "x": "entity", "y": "coverage_pct"},
     "team_growth_summary.csv": {"kind": "bar", "x": "team_name", "y": "pct_growth_last_year"},
     "record_accumulation_by_month.csv": {"kind": "line", "x": "month", "y": "cumulative_records"},
 }
@@ -720,53 +718,38 @@ def local_contexts_project_rows(project_rows: Sequence[Dict[str, str]]) -> Tuple
     return rows, lc_project_ids
 
 
-def local_contexts_record_counts(
+def local_contexts_sample_counts_by_project(
     client: PsqlClient,
     network_id: int,
-    metric_entities: Dict[str, Optional[str]],
+    sample_entity: Optional[str],
     lc_project_ids: Set[int],
-) -> List[Dict[str, object]]:
-    rows: List[Dict[str, object]] = []
-    project_count = len(lc_project_ids)
-    total_covered = 0
-    total_records = 0
+) -> Dict[int, int]:
+    if not sample_entity or not lc_project_ids:
+        return {}
 
-    for metric, display, _candidates in METRIC_CANDIDATES:
-        entity = metric_entities.get(metric)
-        if not entity:
-            continue
-
-        all_total = count_entity(client, network_id, entity, project_filter(network_id, "all"))
-        covered = 0
-        if lc_project_ids:
-            covered = count_entity(
-                client,
-                network_id,
-                entity,
-                "p.network_id = {} AND p.id IN {}".format(network_id, sql_in(sorted(lc_project_ids))),
-            )
-
-        total_covered += covered
-        total_records += all_total
-        rows.append(
-            {
-                "entity": display,
-                "projects_with_local_contexts_id": project_count,
-                "records_covered_by_local_contexts_id": covered,
-                "coverage_pct": pct(covered, all_total),
-            }
+    rows = client.query(
+        """
+        SELECT
+          p.id AS project_id,
+          COUNT(*)::bigint AS sample_count
+        FROM {table} r
+        JOIN expeditions e ON e.id = r.expedition_id
+        JOIN projects p ON p.id = e.project_id
+        WHERE p.network_id = {network_id}
+          AND p.id IN {project_ids}
+        GROUP BY p.id
+        """.format(
+            table=safe_entity_table(network_id, sample_entity),
+            network_id=network_id,
+            project_ids=sql_in(sorted(lc_project_ids)),
         )
-
-    rows.append(
-        {
-            "entity": "All classes total",
-            "projects_with_local_contexts_id": project_count,
-            "records_covered_by_local_contexts_id": total_covered,
-            "coverage_pct": pct(total_covered, total_records),
-        }
     )
 
-    return rows
+    return {
+        int_value(row.get("project_id")): int_value(row.get("sample_count"))
+        for row in rows
+        if int_value(row.get("project_id"))
+    }
 
 
 def project_metadata_coverage(project_rows: Sequence[Dict[str, str]]) -> List[Dict[str, object]]:
@@ -1210,7 +1193,7 @@ def html_table(rows: Sequence[Dict[str, object]], fieldnames: Sequence[str], max
         return "<p>No rows.</p>"
     parts = ["<table><thead><tr>"]
     for field in fieldnames:
-        parts.append("<th>{}</th>".format(html.escape(field.replace("_", " ").title())))
+        parts.append("<th>{}</th>".format(html.escape(column_label(field))))
     parts.append("</tr></thead><tbody>")
     for row in shown:
         parts.append("<tr>")
@@ -1464,12 +1447,14 @@ def main() -> int:
 
     log_step("Computing Local Contexts coverage")
     lc_projects, lc_project_ids = local_contexts_project_rows(project_rows)
-    lc_record_counts = local_contexts_record_counts(
+    lc_sample_counts = local_contexts_sample_counts_by_project(
         client,
         args.network_id,
-        metric_entities,
+        metric_entities.get("samples"),
         lc_project_ids,
     )
+    for row in lc_projects:
+        row["sample_count"] = lc_sample_counts.get(int_value(row.get("project_id")), 0)
 
     log_step("Computing project metadata coverage")
     metadata_rows = project_metadata_coverage(project_rows)
@@ -1533,21 +1518,10 @@ def main() -> int:
                 "public",
                 "discoverable",
                 "localcontexts_id",
+                "sample_count",
             ),
             "Local Contexts Projects",
             30,
-        ),
-        (
-            "local_contexts_record_counts.csv",
-            lc_record_counts,
-            (
-                "entity",
-                "projects_with_local_contexts_id",
-                "records_covered_by_local_contexts_id",
-                "coverage_pct",
-            ),
-            "Local Contexts Record Counts",
-            20,
         ),
         (
             "team_growth_summary.csv",
@@ -1572,7 +1546,13 @@ def main() -> int:
         ),
     ]
 
-    for obsolete in ("published_top_fields.csv", "local_contexts_fields.csv", "team_activity_by_month.csv", "users_overview.csv"):
+    for obsolete in (
+        "published_top_fields.csv",
+        "local_contexts_fields.csv",
+        "local_contexts_record_counts.csv",
+        "team_activity_by_month.csv",
+        "users_overview.csv",
+    ):
         obsolete_path = out_dir / obsolete
         if obsolete_path.exists():
             obsolete_path.unlink()
