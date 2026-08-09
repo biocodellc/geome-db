@@ -1,0 +1,2068 @@
+{
+  "schema_version": 1,
+  "title": "GEOME Overview Report",
+  "description": "Presentation-ready GEOME overview data for rendering tables, charts, and slide-oriented summaries.",
+  "generated_at": "2026-08-09T04:29:51+00:00",
+  "network_id": 1,
+  "warnings": [],
+  "outputs": {
+    "html": "index.html",
+    "json": "report.json"
+  },
+  "tables": [
+    {
+      "id": "overview_metrics",
+      "title": "Overview Metrics",
+      "description": "High-level GEOME counts for projects, records, users, public teams, and Local Contexts adoption.",
+      "csv": "overview_metrics.csv",
+      "row_count": 16,
+      "columns": [
+        {
+          "key": "metric",
+          "label": "Metric",
+          "type": "string"
+        },
+        {
+          "key": "value",
+          "label": "Value",
+          "type": "integer"
+        },
+        {
+          "key": "notes",
+          "label": "Notes",
+          "type": "string"
+        }
+      ],
+      "visualization": {
+        "kind": "metric_cards",
+        "label": "metric",
+        "value": "value"
+      },
+      "rows": [
+        {
+          "metric": "Projects",
+          "value": 448,
+          "notes": "All projects in network"
+        },
+        {
+          "metric": "Projects with Local Contexts ID",
+          "value": 6,
+          "notes": "Non-empty projects.localcontexts_id and public or discoverable"
+        },
+        {
+          "metric": "Public teams",
+          "value": 69,
+          "notes": "Distinct project configurations with public projects"
+        },
+        {
+          "metric": "Expeditions",
+          "value": 1835,
+          "notes": null
+        },
+        {
+          "metric": "Events",
+          "value": 256613,
+          "notes": "Event"
+        },
+        {
+          "metric": "Samples",
+          "value": 650441,
+          "notes": "Sample"
+        },
+        {
+          "metric": "Tissues / extractions",
+          "value": 420974,
+          "notes": "Tissue"
+        },
+        {
+          "metric": "Event photos",
+          "value": 2007,
+          "notes": "Event_Photo"
+        },
+        {
+          "metric": "Sample photos",
+          "value": 185379,
+          "notes": "Sample_Photo"
+        },
+        {
+          "metric": "Diagnostics",
+          "value": 258515,
+          "notes": "Diagnostics"
+        },
+        {
+          "metric": "FASTA",
+          "value": 56132,
+          "notes": "fastaSequence"
+        },
+        {
+          "metric": "FASTQ",
+          "value": 40328,
+          "notes": "fastqMetadata"
+        },
+        {
+          "metric": "Record rows",
+          "value": 1870389,
+          "notes": "Sum of discovered metric entity tables"
+        },
+        {
+          "metric": "Record-owner users",
+          "value": 154,
+          "notes": "Based on current record rows joined to expeditions.user_id"
+        },
+        {
+          "metric": "Audit insert users",
+          "value": 52,
+          "notes": "Based on network audit insert rows when available"
+        },
+        {
+          "metric": "Public teams in growth summary",
+          "value": 6,
+          "notes": "Public-project teams with records in both current and previous 6-month windows"
+        }
+      ]
+    },
+    {
+      "id": "top_fields",
+      "title": "Top Fields In All Projects",
+      "description": "The top field-data columns across all GEOME projects ranked by percent coverage.",
+      "csv": "top_fields.csv",
+      "row_count": 50,
+      "columns": [
+        {
+          "key": "rank",
+          "label": "Rank",
+          "type": "integer"
+        },
+        {
+          "key": "entity",
+          "label": "Entity",
+          "type": "string"
+        },
+        {
+          "key": "field_name",
+          "label": "Field Name",
+          "type": "string"
+        },
+        {
+          "key": "field_uri",
+          "label": "Field Uri",
+          "type": "string"
+        },
+        {
+          "key": "filled_count",
+          "label": "Filled Count",
+          "type": "integer"
+        },
+        {
+          "key": "total_records",
+          "label": "Total Records",
+          "type": "integer"
+        },
+        {
+          "key": "coverage_pct",
+          "label": "Coverage Pct",
+          "type": "number"
+        }
+      ],
+      "visualization": {
+        "kind": "bar",
+        "x": "field_name",
+        "y": "coverage_pct",
+        "group": "entity"
+      },
+      "rows": [
+        {
+          "rank": 1,
+          "entity": "Event",
+          "field_name": "yearCollected",
+          "field_uri": "urn:yearCollected",
+          "filled_count": 256613,
+          "total_records": 256613,
+          "coverage_pct": 100.0
+        },
+        {
+          "rank": 2,
+          "entity": "Event",
+          "field_name": "locality",
+          "field_uri": "urn:locality",
+          "filled_count": 256332,
+          "total_records": 256613,
+          "coverage_pct": 99.9
+        },
+        {
+          "rank": 3,
+          "entity": "Event",
+          "field_name": "country",
+          "field_uri": "urn:country",
+          "filled_count": 256091,
+          "total_records": 256613,
+          "coverage_pct": 99.8
+        },
+        {
+          "rank": 4,
+          "entity": "Event",
+          "field_name": "samplingProtocol",
+          "field_uri": "urn:samplingProtocol",
+          "filled_count": 178722,
+          "total_records": 256613,
+          "coverage_pct": 69.6
+        },
+        {
+          "rank": 5,
+          "entity": "Event",
+          "field_name": "decimalLatitude",
+          "field_uri": "urn:decimalLatitude",
+          "filled_count": 177452,
+          "total_records": 256613,
+          "coverage_pct": 69.2
+        },
+        {
+          "rank": 6,
+          "entity": "Event",
+          "field_name": "decimalLongitude",
+          "field_uri": "urn:decimalLongitude",
+          "filled_count": 177452,
+          "total_records": 256613,
+          "coverage_pct": 69.2
+        },
+        {
+          "rank": 7,
+          "entity": "Sample",
+          "field_name": "scientificName",
+          "field_uri": "urn:scientificName",
+          "filled_count": 433272,
+          "total_records": 650441,
+          "coverage_pct": 66.6
+        },
+        {
+          "rank": 8,
+          "entity": "Sample",
+          "field_name": "institutionCode",
+          "field_uri": "urn:sampleOwnerInstitutionCode",
+          "filled_count": 380723,
+          "total_records": 650441,
+          "coverage_pct": 58.5
+        },
+        {
+          "rank": 9,
+          "entity": "Sample",
+          "field_name": "phylum",
+          "field_uri": "urn:phylum",
+          "filled_count": 354962,
+          "total_records": 650441,
+          "coverage_pct": 54.6
+        },
+        {
+          "rank": 10,
+          "entity": "Sample",
+          "field_name": "genus",
+          "field_uri": "urn:genus",
+          "filled_count": 351813,
+          "total_records": 650441,
+          "coverage_pct": 54.1
+        },
+        {
+          "rank": 11,
+          "entity": "Event",
+          "field_name": "verbatimLocality",
+          "field_uri": "urn:verbatimLocality",
+          "filled_count": 131888,
+          "total_records": 256613,
+          "coverage_pct": 51.4
+        },
+        {
+          "rank": 12,
+          "entity": "Sample",
+          "field_name": "specificEpithet",
+          "field_uri": "urn:species",
+          "filled_count": 306275,
+          "total_records": 650441,
+          "coverage_pct": 47.1
+        },
+        {
+          "rank": 13,
+          "entity": "Tissue",
+          "field_name": "tissuePlate",
+          "field_uri": "urn:plateID",
+          "filled_count": 196041,
+          "total_records": 420974,
+          "coverage_pct": 46.6
+        },
+        {
+          "rank": 14,
+          "entity": "Tissue",
+          "field_name": "tissueWell",
+          "field_uri": "urn:wellID",
+          "filled_count": 195965,
+          "total_records": 420974,
+          "coverage_pct": 46.6
+        },
+        {
+          "rank": 15,
+          "entity": "Sample",
+          "field_name": "catalogNumber",
+          "field_uri": "urn:catalogNumber",
+          "filled_count": 265548,
+          "total_records": 650441,
+          "coverage_pct": 40.8
+        },
+        {
+          "rank": 16,
+          "entity": "Sample",
+          "field_name": "sampleEnteredBy",
+          "field_uri": "urn:EnteredBy",
+          "filled_count": 264284,
+          "total_records": 650441,
+          "coverage_pct": 40.6
+        },
+        {
+          "rank": 17,
+          "entity": "Event",
+          "field_name": "verbatimEventDate",
+          "field_uri": "urn:verbatimEventDate",
+          "filled_count": 102937,
+          "total_records": 256613,
+          "coverage_pct": 40.1
+        },
+        {
+          "rank": 18,
+          "entity": "Sample",
+          "field_name": "basisOfRecord",
+          "field_uri": "urn:basisOfRecord",
+          "filled_count": 252341,
+          "total_records": 650441,
+          "coverage_pct": 38.8
+        },
+        {
+          "rank": 19,
+          "entity": "Sample",
+          "field_name": "class",
+          "field_uri": "urn:class",
+          "filled_count": 221087,
+          "total_records": 650441,
+          "coverage_pct": 34.0
+        },
+        {
+          "rank": 20,
+          "entity": "Sample",
+          "field_name": "family",
+          "field_uri": "urn:family",
+          "filled_count": 215136,
+          "total_records": 650441,
+          "coverage_pct": 33.1
+        },
+        {
+          "rank": 21,
+          "entity": "Sample",
+          "field_name": "order",
+          "field_uri": "urn:order",
+          "filled_count": 203468,
+          "total_records": 650441,
+          "coverage_pct": 31.3
+        },
+        {
+          "rank": 22,
+          "entity": "Sample",
+          "field_name": "sex",
+          "field_uri": "urn:sex",
+          "filled_count": 180324,
+          "total_records": 650441,
+          "coverage_pct": 27.7
+        },
+        {
+          "rank": 23,
+          "entity": "Tissue",
+          "field_name": "tissueType",
+          "field_uri": "urn:geneticTissueType",
+          "filled_count": 106930,
+          "total_records": 420974,
+          "coverage_pct": 25.4
+        },
+        {
+          "rank": 24,
+          "entity": "Event",
+          "field_name": "monthCollected",
+          "field_uri": "urn:monthCollected",
+          "filled_count": 62309,
+          "total_records": 256613,
+          "coverage_pct": 24.3
+        },
+        {
+          "rank": 25,
+          "entity": "Event",
+          "field_name": "collectorList",
+          "field_uri": "urn:recordedBy",
+          "filled_count": 61411,
+          "total_records": 256613,
+          "coverage_pct": 23.9
+        },
+        {
+          "rank": 26,
+          "entity": "Tissue",
+          "field_name": "tissueCatalogNumber",
+          "field_uri": "urn:previousTissueID",
+          "filled_count": 93001,
+          "total_records": 420974,
+          "coverage_pct": 22.1
+        },
+        {
+          "rank": 27,
+          "entity": "Event",
+          "field_name": "stateProvince",
+          "field_uri": "urn:stateProvince",
+          "filled_count": 55941,
+          "total_records": 256613,
+          "coverage_pct": 21.8
+        },
+        {
+          "rank": 28,
+          "entity": "Event",
+          "field_name": "coordinateUncertaintyInMeters",
+          "field_uri": "urn:coordinateUncertaintyInMeters",
+          "filled_count": 55507,
+          "total_records": 256613,
+          "coverage_pct": 21.6
+        },
+        {
+          "rank": 29,
+          "entity": "Sample",
+          "field_name": "collectionCode",
+          "field_uri": "urn:collectionCode",
+          "filled_count": 139844,
+          "total_records": 650441,
+          "coverage_pct": 21.5
+        },
+        {
+          "rank": 30,
+          "entity": "Sample",
+          "field_name": "taxonRank",
+          "field_uri": "urn:taxonRank",
+          "filled_count": 139718,
+          "total_records": 650441,
+          "coverage_pct": 21.5
+        },
+        {
+          "rank": 31,
+          "entity": "Event",
+          "field_name": "dayCollected",
+          "field_uri": "urn:dayCollected",
+          "filled_count": 55295,
+          "total_records": 256613,
+          "coverage_pct": 21.5
+        },
+        {
+          "rank": 32,
+          "entity": "Sample",
+          "field_name": "kingdom",
+          "field_uri": "urn:kingdom",
+          "filled_count": 127899,
+          "total_records": 650441,
+          "coverage_pct": 19.7
+        },
+        {
+          "rank": 33,
+          "entity": "Tissue",
+          "field_name": "tissueInstitution",
+          "field_uri": "urn:tissueInstitution",
+          "filled_count": 81969,
+          "total_records": 420974,
+          "coverage_pct": 19.5
+        },
+        {
+          "rank": 34,
+          "entity": "Event",
+          "field_name": "georeferenceProtocol",
+          "field_uri": "urn:georeferenceProtocol",
+          "filled_count": 47360,
+          "total_records": 256613,
+          "coverage_pct": 18.5
+        },
+        {
+          "rank": 35,
+          "entity": "Sample",
+          "field_name": "identifiedBy",
+          "field_uri": "urn:identifiedBy",
+          "filled_count": 119004,
+          "total_records": 650441,
+          "coverage_pct": 18.3
+        },
+        {
+          "rank": 36,
+          "entity": "Sample",
+          "field_name": "associatedReferences",
+          "field_uri": "urn:associatedReferences",
+          "filled_count": 117079,
+          "total_records": 650441,
+          "coverage_pct": 18.0
+        },
+        {
+          "rank": 37,
+          "entity": "Event",
+          "field_name": "principalInvestigator",
+          "field_uri": "urn:principalInvestigator",
+          "filled_count": 45880,
+          "total_records": 256613,
+          "coverage_pct": 17.9
+        },
+        {
+          "rank": 38,
+          "entity": "Event",
+          "field_name": "continentOcean",
+          "field_uri": "urn:continentOcean",
+          "filled_count": 43966,
+          "total_records": 256613,
+          "coverage_pct": 17.1
+        },
+        {
+          "rank": 39,
+          "entity": "Tissue",
+          "field_name": "tissueSamplingYear",
+          "field_uri": "urn:tissueSamplingYear",
+          "filled_count": 69703,
+          "total_records": 420974,
+          "coverage_pct": 16.6
+        },
+        {
+          "rank": 40,
+          "entity": "Sample",
+          "field_name": "lifeStage",
+          "field_uri": "urn:lifeStage",
+          "filled_count": 105736,
+          "total_records": 650441,
+          "coverage_pct": 16.3
+        },
+        {
+          "rank": 41,
+          "entity": "Sample",
+          "field_name": "voucherCatalogNumber",
+          "field_uri": "urn:voucherCatalogNumber",
+          "filled_count": 104588,
+          "total_records": 650441,
+          "coverage_pct": 16.1
+        },
+        {
+          "rank": 42,
+          "entity": "Sample",
+          "field_name": "preservative",
+          "field_uri": "urn:preservative",
+          "filled_count": 103299,
+          "total_records": 650441,
+          "coverage_pct": 15.9
+        },
+        {
+          "rank": 43,
+          "entity": "Sample",
+          "field_name": "occurrenceRemarks",
+          "field_uri": "urn:occurrenceRemarks",
+          "filled_count": 101862,
+          "total_records": 650441,
+          "coverage_pct": 15.7
+        },
+        {
+          "rank": 44,
+          "entity": "Sample",
+          "field_name": "individualCount",
+          "field_uri": "urn:individualCount",
+          "filled_count": 91981,
+          "total_records": 650441,
+          "coverage_pct": 14.1
+        },
+        {
+          "rank": 45,
+          "entity": "Tissue",
+          "field_name": "tissuePreservative",
+          "field_uri": "urn:tissuePreservative",
+          "filled_count": 59218,
+          "total_records": 420974,
+          "coverage_pct": 14.1
+        },
+        {
+          "rank": 46,
+          "entity": "Sample",
+          "field_name": "establishmentMeans",
+          "field_uri": "urn:establishmentMeans",
+          "filled_count": 91011,
+          "total_records": 650441,
+          "coverage_pct": 14.0
+        },
+        {
+          "rank": 47,
+          "entity": "Event",
+          "field_name": "minimumElevationInMeters",
+          "field_uri": "urn:minimumDistanceAboveSurfaceInMeters",
+          "filled_count": 34579,
+          "total_records": 256613,
+          "coverage_pct": 13.5
+        },
+        {
+          "rank": 48,
+          "entity": "Event",
+          "field_name": "habitat",
+          "field_uri": "urn:habitat",
+          "filled_count": 34509,
+          "total_records": 256613,
+          "coverage_pct": 13.4
+        },
+        {
+          "rank": 49,
+          "entity": "Event",
+          "field_name": "maximumElevationInMeters",
+          "field_uri": "urn:maximumDistanceAboveSurfaceInMeters",
+          "filled_count": 32380,
+          "total_records": 256613,
+          "coverage_pct": 12.6
+        },
+        {
+          "rank": 50,
+          "entity": "Event",
+          "field_name": "eventRemarks",
+          "field_uri": "urn:eventRemarks",
+          "filled_count": 32203,
+          "total_records": 256613,
+          "coverage_pct": 12.5
+        }
+      ]
+    },
+    {
+      "id": "biocode_top_fields",
+      "title": "Biocode Top Fields",
+      "description": "The top field-data columns in the Biocode team ranked by percent coverage.",
+      "csv": "biocode_top_fields.csv",
+      "row_count": 50,
+      "columns": [
+        {
+          "key": "rank",
+          "label": "Rank",
+          "type": "integer"
+        },
+        {
+          "key": "entity",
+          "label": "Entity",
+          "type": "string"
+        },
+        {
+          "key": "field_name",
+          "label": "Field Name",
+          "type": "string"
+        },
+        {
+          "key": "field_uri",
+          "label": "Field Uri",
+          "type": "string"
+        },
+        {
+          "key": "filled_count",
+          "label": "Filled Count",
+          "type": "integer"
+        },
+        {
+          "key": "total_records",
+          "label": "Total Records",
+          "type": "integer"
+        },
+        {
+          "key": "coverage_pct",
+          "label": "Coverage Pct",
+          "type": "number"
+        }
+      ],
+      "visualization": {
+        "kind": "bar",
+        "x": "field_name",
+        "y": "coverage_pct",
+        "group": "entity"
+      },
+      "rows": [
+        {
+          "rank": 1,
+          "entity": "Event",
+          "field_name": "country",
+          "field_uri": "urn:country",
+          "filled_count": 23411,
+          "total_records": 23411,
+          "coverage_pct": 100.0
+        },
+        {
+          "rank": 2,
+          "entity": "Event",
+          "field_name": "locality",
+          "field_uri": "urn:locality",
+          "filled_count": 23411,
+          "total_records": 23411,
+          "coverage_pct": 100.0
+        },
+        {
+          "rank": 3,
+          "entity": "Event",
+          "field_name": "yearCollected",
+          "field_uri": "urn:yearCollected",
+          "filled_count": 23411,
+          "total_records": 23411,
+          "coverage_pct": 100.0
+        },
+        {
+          "rank": 4,
+          "entity": "Sample",
+          "field_name": "phylum",
+          "field_uri": "urn:phylum",
+          "filled_count": 190206,
+          "total_records": 191574,
+          "coverage_pct": 99.3
+        },
+        {
+          "rank": 5,
+          "entity": "Sample",
+          "field_name": "institutionCode",
+          "field_uri": "urn:sampleOwnerInstitutionCode",
+          "filled_count": 190135,
+          "total_records": 191574,
+          "coverage_pct": 99.2
+        },
+        {
+          "rank": 6,
+          "entity": "Sample",
+          "field_name": "sampleEnteredBy",
+          "field_uri": "urn:EnteredBy",
+          "filled_count": 188835,
+          "total_records": 191574,
+          "coverage_pct": 98.6
+        },
+        {
+          "rank": 7,
+          "entity": "Event",
+          "field_name": "eventEnteredBy",
+          "field_uri": "urn:enteredBy",
+          "filled_count": 22016,
+          "total_records": 23411,
+          "coverage_pct": 94.0
+        },
+        {
+          "rank": 8,
+          "entity": "Sample",
+          "field_name": "scientificName",
+          "field_uri": "urn:scientificName",
+          "filled_count": 177134,
+          "total_records": 191574,
+          "coverage_pct": 92.5
+        },
+        {
+          "rank": 9,
+          "entity": "Event",
+          "field_name": "decimalLatitude",
+          "field_uri": "urn:decimalLatitude",
+          "filled_count": 21016,
+          "total_records": 23411,
+          "coverage_pct": 89.8
+        },
+        {
+          "rank": 10,
+          "entity": "Event",
+          "field_name": "decimalLongitude",
+          "field_uri": "urn:decimalLongitude",
+          "filled_count": 21016,
+          "total_records": 23411,
+          "coverage_pct": 89.8
+        },
+        {
+          "rank": 11,
+          "entity": "Event",
+          "field_name": "monthCollected",
+          "field_uri": "urn:monthCollected",
+          "filled_count": 19843,
+          "total_records": 23411,
+          "coverage_pct": 84.8
+        },
+        {
+          "rank": 12,
+          "entity": "Tissue",
+          "field_name": "tissueWell",
+          "field_uri": "urn:wellID",
+          "filled_count": 131131,
+          "total_records": 155071,
+          "coverage_pct": 84.6
+        },
+        {
+          "rank": 13,
+          "entity": "Tissue",
+          "field_name": "tissuePlate",
+          "field_uri": "urn:plateID",
+          "filled_count": 131127,
+          "total_records": 155071,
+          "coverage_pct": 84.6
+        },
+        {
+          "rank": 14,
+          "entity": "Event",
+          "field_name": "dayCollected",
+          "field_uri": "urn:dayCollected",
+          "filled_count": 18283,
+          "total_records": 23411,
+          "coverage_pct": 78.1
+        },
+        {
+          "rank": 15,
+          "entity": "Event",
+          "field_name": "collectorList",
+          "field_uri": "urn:recordedBy",
+          "filled_count": 16468,
+          "total_records": 23411,
+          "coverage_pct": 70.3
+        },
+        {
+          "rank": 16,
+          "entity": "Event",
+          "field_name": "samplingProtocol",
+          "field_uri": "urn:samplingProtocol",
+          "filled_count": 15988,
+          "total_records": 23411,
+          "coverage_pct": 68.3
+        },
+        {
+          "rank": 17,
+          "entity": "Event",
+          "field_name": "continentOcean",
+          "field_uri": "urn:continentOcean",
+          "filled_count": 15462,
+          "total_records": 23411,
+          "coverage_pct": 66.0
+        },
+        {
+          "rank": 18,
+          "entity": "Sample",
+          "field_name": "taxonRank",
+          "field_uri": "urn:taxonRank",
+          "filled_count": 118720,
+          "total_records": 191574,
+          "coverage_pct": 62.0
+        },
+        {
+          "rank": 19,
+          "entity": "Sample",
+          "field_name": "catalogNumber",
+          "field_uri": "urn:catalogNumber",
+          "filled_count": 114995,
+          "total_records": 191574,
+          "coverage_pct": 60.0
+        },
+        {
+          "rank": 20,
+          "entity": "Tissue",
+          "field_name": "tissueCatalogNumber",
+          "field_uri": "urn:previousTissueID",
+          "filled_count": 89203,
+          "total_records": 155071,
+          "coverage_pct": 57.5
+        },
+        {
+          "rank": 21,
+          "entity": "Sample",
+          "field_name": "class",
+          "field_uri": "urn:class",
+          "filled_count": 98047,
+          "total_records": 191574,
+          "coverage_pct": 51.2
+        },
+        {
+          "rank": 22,
+          "entity": "Sample",
+          "field_name": "family",
+          "field_uri": "urn:family",
+          "filled_count": 85967,
+          "total_records": 191574,
+          "coverage_pct": 44.9
+        },
+        {
+          "rank": 23,
+          "entity": "Sample",
+          "field_name": "order",
+          "field_uri": "urn:order",
+          "filled_count": 85703,
+          "total_records": 191574,
+          "coverage_pct": 44.7
+        },
+        {
+          "rank": 24,
+          "entity": "Event",
+          "field_name": "maximumDepthInMeters",
+          "field_uri": "urn:maximumDepthInMeters",
+          "filled_count": 10318,
+          "total_records": 23411,
+          "coverage_pct": 44.1
+        },
+        {
+          "rank": 25,
+          "entity": "Sample",
+          "field_name": "kingdom",
+          "field_uri": "urn:kingdom",
+          "filled_count": 80940,
+          "total_records": 191574,
+          "coverage_pct": 42.2
+        },
+        {
+          "rank": 26,
+          "entity": "Event",
+          "field_name": "horizontalDatum",
+          "field_uri": "urn:geodeticDatum",
+          "filled_count": 9854,
+          "total_records": 23411,
+          "coverage_pct": 42.1
+        },
+        {
+          "rank": 27,
+          "entity": "Event",
+          "field_name": "taxTeam",
+          "field_uri": "urn:taxTeam",
+          "filled_count": 9749,
+          "total_records": 23411,
+          "coverage_pct": 41.6
+        },
+        {
+          "rank": 28,
+          "entity": "Event",
+          "field_name": "minimumDepthInMeters",
+          "field_uri": "urn:minimumDepthInMeters",
+          "filled_count": 9266,
+          "total_records": 23411,
+          "coverage_pct": 39.6
+        },
+        {
+          "rank": 29,
+          "entity": "Event",
+          "field_name": "island",
+          "field_uri": "urn:island",
+          "filled_count": 9056,
+          "total_records": 23411,
+          "coverage_pct": 38.7
+        },
+        {
+          "rank": 30,
+          "entity": "Sample",
+          "field_name": "genus",
+          "field_uri": "urn:genus",
+          "filled_count": 73660,
+          "total_records": 191574,
+          "coverage_pct": 38.4
+        },
+        {
+          "rank": 31,
+          "entity": "Event",
+          "field_name": "habitat",
+          "field_uri": "urn:habitat",
+          "filled_count": 8762,
+          "total_records": 23411,
+          "coverage_pct": 37.4
+        },
+        {
+          "rank": 32,
+          "entity": "Sample",
+          "field_name": "identifiedBy",
+          "field_uri": "urn:identifiedBy",
+          "filled_count": 66953,
+          "total_records": 191574,
+          "coverage_pct": 34.9
+        },
+        {
+          "rank": 33,
+          "entity": "Event",
+          "field_name": "stateProvince",
+          "field_uri": "urn:stateProvince",
+          "filled_count": 7078,
+          "total_records": 23411,
+          "coverage_pct": 30.2
+        },
+        {
+          "rank": 34,
+          "entity": "Event",
+          "field_name": "islandGroup",
+          "field_uri": "urn:islandGroup",
+          "filled_count": 6333,
+          "total_records": 23411,
+          "coverage_pct": 27.1
+        },
+        {
+          "rank": 35,
+          "entity": "Tissue",
+          "field_name": "tissueInstitution",
+          "field_uri": "urn:tissueInstitution",
+          "filled_count": 39041,
+          "total_records": 155071,
+          "coverage_pct": 25.2
+        },
+        {
+          "rank": 36,
+          "entity": "Event",
+          "field_name": "timeOfDay",
+          "field_uri": "urn:timeCollected",
+          "filled_count": 5906,
+          "total_records": 23411,
+          "coverage_pct": 25.2
+        },
+        {
+          "rank": 37,
+          "entity": "Event",
+          "field_name": "eventRemarks",
+          "field_uri": "urn:eventRemarks",
+          "filled_count": 5829,
+          "total_records": 23411,
+          "coverage_pct": 24.9
+        },
+        {
+          "rank": 38,
+          "entity": "Sample",
+          "field_name": "specificEpithet",
+          "field_uri": "urn:species",
+          "filled_count": 45984,
+          "total_records": 191574,
+          "coverage_pct": 24.0
+        },
+        {
+          "rank": 39,
+          "entity": "Sample",
+          "field_name": "subProject",
+          "field_uri": "urn:subProject",
+          "filled_count": 43937,
+          "total_records": 191574,
+          "coverage_pct": 22.9
+        },
+        {
+          "rank": 40,
+          "entity": "Sample",
+          "field_name": "voucherCatalogNumber",
+          "field_uri": "urn:voucherCatalogNumber",
+          "filled_count": 43210,
+          "total_records": 191574,
+          "coverage_pct": 22.6
+        },
+        {
+          "rank": 41,
+          "entity": "Tissue",
+          "field_name": "tissuePreservative",
+          "field_uri": "urn:tissuePreservative",
+          "filled_count": 33705,
+          "total_records": 155071,
+          "coverage_pct": 21.7
+        },
+        {
+          "rank": 42,
+          "entity": "Tissue",
+          "field_name": "tissueSamplingYear",
+          "field_uri": "urn:tissueSamplingYear",
+          "filled_count": 33541,
+          "total_records": 155071,
+          "coverage_pct": 21.6
+        },
+        {
+          "rank": 43,
+          "entity": "Sample",
+          "field_name": "subPhylum",
+          "field_uri": "urn:subphylum",
+          "filled_count": 37786,
+          "total_records": 191574,
+          "coverage_pct": 19.7
+        },
+        {
+          "rank": 44,
+          "entity": "Sample",
+          "field_name": "subClass",
+          "field_uri": "urn:subclass",
+          "filled_count": 36640,
+          "total_records": 191574,
+          "coverage_pct": 19.1
+        },
+        {
+          "rank": 45,
+          "entity": "Sample",
+          "field_name": "occurrenceRemarks",
+          "field_uri": "urn:occurrenceRemarks",
+          "filled_count": 35190,
+          "total_records": 191574,
+          "coverage_pct": 18.4
+        },
+        {
+          "rank": 46,
+          "entity": "Sample",
+          "field_name": "individualCount",
+          "field_uri": "urn:individualCount",
+          "filled_count": 33831,
+          "total_records": 191574,
+          "coverage_pct": 17.7
+        },
+        {
+          "rank": 47,
+          "entity": "Tissue",
+          "field_name": "tissueSamplingMonth",
+          "field_uri": "urn:tissueSamplingMonth",
+          "filled_count": 27014,
+          "total_records": 155071,
+          "coverage_pct": 17.4
+        },
+        {
+          "rank": 48,
+          "entity": "Tissue",
+          "field_name": "tissueRecordedBy",
+          "field_uri": "urn:tissueRecordedBy",
+          "filled_count": 26406,
+          "total_records": 155071,
+          "coverage_pct": 17.0
+        },
+        {
+          "rank": 49,
+          "entity": "Sample",
+          "field_name": "yearIdentified",
+          "field_uri": "urn:yearIdentified",
+          "filled_count": 31912,
+          "total_records": 191574,
+          "coverage_pct": 16.7
+        },
+        {
+          "rank": 50,
+          "entity": "Sample",
+          "field_name": "preservative",
+          "field_uri": "urn:preservative",
+          "filled_count": 30648,
+          "total_records": 191574,
+          "coverage_pct": 16.0
+        }
+      ]
+    },
+    {
+      "id": "project_metadata_coverage",
+      "title": "Project Metadata Coverage",
+      "description": "Project-level metadata fields ranked by how often they are filled across all GEOME projects.",
+      "csv": "project_metadata_coverage.csv",
+      "row_count": 15,
+      "columns": [
+        {
+          "key": "field",
+          "label": "Field",
+          "type": "string"
+        },
+        {
+          "key": "filled_or_true_count",
+          "label": "Filled Or True Count",
+          "type": "integer"
+        },
+        {
+          "key": "total_projects",
+          "label": "Total Projects",
+          "type": "string"
+        },
+        {
+          "key": "coverage_pct",
+          "label": "Coverage Pct",
+          "type": "number"
+        },
+        {
+          "key": "notes",
+          "label": "Notes",
+          "type": "string"
+        }
+      ],
+      "visualization": {
+        "kind": "bar",
+        "x": "field",
+        "y": "coverage_pct"
+      },
+      "rows": [
+        {
+          "field": "Project title",
+          "filled_or_true_count": 448,
+          "total_projects": "448",
+          "coverage_pct": 100.0,
+          "notes": "Project display title"
+        },
+        {
+          "field": "Description",
+          "filled_or_true_count": 447,
+          "total_projects": "448",
+          "coverage_pct": 99.8,
+          "notes": "Project description"
+        },
+        {
+          "field": "Public",
+          "filled_or_true_count": 168,
+          "total_projects": "448",
+          "coverage_pct": 37.5,
+          "notes": "Projects marked public"
+        },
+        {
+          "field": "Project contact email",
+          "filled_or_true_count": 122,
+          "total_projects": "448",
+          "coverage_pct": 27.2,
+          "notes": "Project contact email present"
+        },
+        {
+          "field": "Principal investigator",
+          "filled_or_true_count": 120,
+          "total_projects": "448",
+          "coverage_pct": 26.8,
+          "notes": "PI name"
+        },
+        {
+          "field": "Project contact",
+          "filled_or_true_count": 116,
+          "total_projects": "448",
+          "coverage_pct": 25.9,
+          "notes": "Project contact name"
+        },
+        {
+          "field": "PI affiliation",
+          "filled_or_true_count": 115,
+          "total_projects": "448",
+          "coverage_pct": 25.7,
+          "notes": "PI affiliation"
+        },
+        {
+          "field": "Recommended citation",
+          "filled_or_true_count": 53,
+          "total_projects": "448",
+          "coverage_pct": 11.8,
+          "notes": "Citation text"
+        },
+        {
+          "field": "License",
+          "filled_or_true_count": 43,
+          "total_projects": "448",
+          "coverage_pct": 9.6,
+          "notes": "Project license"
+        },
+        {
+          "field": "Project data GUID",
+          "filled_or_true_count": 41,
+          "total_projects": "448",
+          "coverage_pct": 9.2,
+          "notes": "Dataset identifier"
+        },
+        {
+          "field": "Project code",
+          "filled_or_true_count": 34,
+          "total_projects": "448",
+          "coverage_pct": 7.6,
+          "notes": "Short project identifier"
+        },
+        {
+          "field": "Publication GUID",
+          "filled_or_true_count": 32,
+          "total_projects": "448",
+          "coverage_pct": 7.1,
+          "notes": "Publication identifier"
+        },
+        {
+          "field": "Discoverable",
+          "filled_or_true_count": 19,
+          "total_projects": "448",
+          "coverage_pct": 4.2,
+          "notes": "Projects marked discoverable"
+        },
+        {
+          "field": "Local Contexts ID",
+          "filled_or_true_count": 10,
+          "total_projects": "448",
+          "coverage_pct": 2.2,
+          "notes": "Local Contexts Hub project ID"
+        },
+        {
+          "field": "Permit GUID",
+          "filled_or_true_count": 1,
+          "total_projects": "448",
+          "coverage_pct": 0.2,
+          "notes": "Permit identifier"
+        }
+      ]
+    },
+    {
+      "id": "local_contexts_projects",
+      "title": "Local Contexts Projects",
+      "description": "Public or discoverable GEOME projects that contain a Local Contexts project ID.",
+      "csv": "local_contexts_projects.csv",
+      "row_count": 6,
+      "columns": [
+        {
+          "key": "project_id",
+          "label": "Project Id",
+          "type": "integer"
+        },
+        {
+          "key": "project_code",
+          "label": "Project Code",
+          "type": "string"
+        },
+        {
+          "key": "project_title",
+          "label": "Project Title",
+          "type": "string"
+        },
+        {
+          "key": "team_id",
+          "label": "Team Id",
+          "type": "integer"
+        },
+        {
+          "key": "team_name",
+          "label": "Team Name",
+          "type": "string"
+        },
+        {
+          "key": "public",
+          "label": "Public",
+          "type": "boolean"
+        },
+        {
+          "key": "discoverable",
+          "label": "Discoverable",
+          "type": "boolean"
+        },
+        {
+          "key": "localcontexts_id",
+          "label": "Local Contexts ID",
+          "type": "string"
+        }
+      ],
+      "visualization": {
+        "kind": "table"
+      },
+      "rows": [
+        {
+          "project_id": 597,
+          "project_code": null,
+          "project_title": "Auckland Museum Tissue Archive",
+          "team_id": 285,
+          "team_name": "Auckland Museum Tissue Archive",
+          "public": true,
+          "discoverable": false,
+          "localcontexts_id": "dc2bc754-65e6-46a8-98ec-7954dd9f929a"
+        },
+        {
+          "project_id": 638,
+          "project_code": null,
+          "project_title": "BIOCODE 2.0",
+          "team_id": 2,
+          "team_name": "Biocode",
+          "public": true,
+          "discoverable": true,
+          "localcontexts_id": "54be05d7-aa5c-4886-abd9-dc45b2fa8df4"
+        },
+        {
+          "project_id": 118,
+          "project_code": null,
+          "project_title": "Crandall Lab",
+          "team_id": 9,
+          "team_name": "Multi-sheet Generic",
+          "public": true,
+          "discoverable": false,
+          "localcontexts_id": "35449cb1-7ae9-410d-a6c0-1d2deb874e6b"
+        },
+        {
+          "project_id": 586,
+          "project_code": null,
+          "project_title": "DNA Reference Libraries of Aotearoa New Zealand",
+          "team_id": 275,
+          "team_name": "DNA Reference Libraries of Aotearoa New Zealand",
+          "public": true,
+          "discoverable": false,
+          "localcontexts_id": "3a6342f1-4b61-41a9-b4c5-3797d8cd4a22"
+        },
+        {
+          "project_id": 537,
+          "project_code": null,
+          "project_title": "ISP Class Projects",
+          "team_id": 2,
+          "team_name": "Biocode",
+          "public": true,
+          "discoverable": false,
+          "localcontexts_id": "03818172-23c1-4dd1-a662-f11aa07cccda"
+        },
+        {
+          "project_id": 75,
+          "project_code": "75",
+          "project_title": "Moorea Biocode",
+          "team_id": 2,
+          "team_name": "Biocode",
+          "public": true,
+          "discoverable": false,
+          "localcontexts_id": "71b32571-0176-4627-8e01-4d78818432a7"
+        }
+      ]
+    },
+    {
+      "id": "local_contexts_record_counts",
+      "title": "Local Contexts Record Counts",
+      "description": "Counts and coverage percentages for records covered by project-level Local Contexts IDs.",
+      "csv": "local_contexts_record_counts.csv",
+      "row_count": 9,
+      "columns": [
+        {
+          "key": "entity",
+          "label": "Entity",
+          "type": "string"
+        },
+        {
+          "key": "projects_with_local_contexts_id",
+          "label": "Projects With Local Contexts Id",
+          "type": "string"
+        },
+        {
+          "key": "records_covered_by_local_contexts_id",
+          "label": "Records Covered By Local Contexts Id",
+          "type": "integer"
+        },
+        {
+          "key": "coverage_pct",
+          "label": "Coverage Pct",
+          "type": "number"
+        }
+      ],
+      "visualization": {
+        "kind": "bar",
+        "x": "entity",
+        "y": "coverage_pct"
+      },
+      "rows": [
+        {
+          "entity": "Events",
+          "projects_with_local_contexts_id": "6",
+          "records_covered_by_local_contexts_id": 6323,
+          "coverage_pct": 2.5
+        },
+        {
+          "entity": "Samples",
+          "projects_with_local_contexts_id": "6",
+          "records_covered_by_local_contexts_id": 58148,
+          "coverage_pct": 8.9
+        },
+        {
+          "entity": "Tissues / extractions",
+          "projects_with_local_contexts_id": "6",
+          "records_covered_by_local_contexts_id": 45469,
+          "coverage_pct": 10.8
+        },
+        {
+          "entity": "Event photos",
+          "projects_with_local_contexts_id": "6",
+          "records_covered_by_local_contexts_id": 177,
+          "coverage_pct": 8.8
+        },
+        {
+          "entity": "Sample photos",
+          "projects_with_local_contexts_id": "6",
+          "records_covered_by_local_contexts_id": 42803,
+          "coverage_pct": 23.1
+        },
+        {
+          "entity": "Diagnostics",
+          "projects_with_local_contexts_id": "6",
+          "records_covered_by_local_contexts_id": 0,
+          "coverage_pct": 0.0
+        },
+        {
+          "entity": "FASTA",
+          "projects_with_local_contexts_id": "6",
+          "records_covered_by_local_contexts_id": 2164,
+          "coverage_pct": 3.9
+        },
+        {
+          "entity": "FASTQ",
+          "projects_with_local_contexts_id": "6",
+          "records_covered_by_local_contexts_id": 4,
+          "coverage_pct": 0.0
+        },
+        {
+          "entity": "All classes total",
+          "projects_with_local_contexts_id": "6",
+          "records_covered_by_local_contexts_id": 155088,
+          "coverage_pct": 8.3
+        }
+      ]
+    },
+    {
+      "id": "team_growth_summary",
+      "title": "Team Growth Summary",
+      "description": "Public-team record growth over the last six complete months compared with the prior six complete months.",
+      "csv": "team_growth_summary.csv",
+      "row_count": 6,
+      "columns": [
+        {
+          "key": "team_id",
+          "label": "Team Id",
+          "type": "integer"
+        },
+        {
+          "key": "team_name",
+          "label": "Team Name",
+          "type": "string"
+        },
+        {
+          "key": "records_last_6_months",
+          "label": "Records Last 6 Months",
+          "type": "integer"
+        },
+        {
+          "key": "records_previous_6_months",
+          "label": "Records Previous 6 Months",
+          "type": "integer"
+        },
+        {
+          "key": "pct_growth_last_6_months",
+          "label": "Pct Growth Last 6 Months",
+          "type": "number"
+        }
+      ],
+      "visualization": {
+        "kind": "bar",
+        "x": "team_name",
+        "y": "pct_growth_last_6_months"
+      },
+      "rows": [
+        {
+          "team_id": 5,
+          "team_name": "Smithsonian BOEM Project",
+          "records_last_6_months": 1519,
+          "records_previous_6_months": 75,
+          "pct_growth_last_6_months": 1925.3
+        },
+        {
+          "team_id": 6,
+          "team_name": "Smithsonian Barcoding and Global Genome Initiative",
+          "records_last_6_months": 4800,
+          "records_previous_6_months": 1034,
+          "pct_growth_last_6_months": 364.2
+        },
+        {
+          "team_id": 2,
+          "team_name": "Biocode",
+          "records_last_6_months": 42257,
+          "records_previous_6_months": 20363,
+          "pct_growth_last_6_months": 107.5
+        },
+        {
+          "team_id": 45,
+          "team_name": "AmphibiaWeb's Disease Portal",
+          "records_last_6_months": 943,
+          "records_previous_6_months": 1218,
+          "pct_growth_last_6_months": -22.6
+        },
+        {
+          "team_id": 1,
+          "team_name": "Diversity of the IndoPacific (DIPNet)",
+          "records_last_6_months": 7057,
+          "records_previous_6_months": 21279,
+          "pct_growth_last_6_months": -66.8
+        },
+        {
+          "team_id": 154,
+          "team_name": "Reef Restoration and Adaptation Project (RRAP)",
+          "records_last_6_months": 866,
+          "records_previous_6_months": 7072,
+          "pct_growth_last_6_months": -87.8
+        }
+      ]
+    },
+    {
+      "id": "record_accumulation_by_month",
+      "title": "Record Accumulation Over Time",
+      "description": "Monthly all-GEOME record additions and cumulative record totals over time.",
+      "csv": "record_accumulation_by_month.csv",
+      "row_count": 95,
+      "columns": [
+        {
+          "key": "month",
+          "label": "Month",
+          "type": "date"
+        },
+        {
+          "key": "records_created",
+          "label": "Records Created",
+          "type": "integer"
+        },
+        {
+          "key": "cumulative_records",
+          "label": "Cumulative Records",
+          "type": "integer"
+        }
+      ],
+      "visualization": {
+        "kind": "line",
+        "x": "month",
+        "y": "cumulative_records"
+      },
+      "rows": [
+        {
+          "month": "2018-09-01",
+          "records_created": 116761,
+          "cumulative_records": 116761
+        },
+        {
+          "month": "2018-10-01",
+          "records_created": 967,
+          "cumulative_records": 117728
+        },
+        {
+          "month": "2018-11-01",
+          "records_created": 9077,
+          "cumulative_records": 126805
+        },
+        {
+          "month": "2018-12-01",
+          "records_created": 3526,
+          "cumulative_records": 130331
+        },
+        {
+          "month": "2019-02-01",
+          "records_created": 229596,
+          "cumulative_records": 359927
+        },
+        {
+          "month": "2019-03-01",
+          "records_created": 67090,
+          "cumulative_records": 427017
+        },
+        {
+          "month": "2019-04-01",
+          "records_created": 17557,
+          "cumulative_records": 444574
+        },
+        {
+          "month": "2019-05-01",
+          "records_created": 30247,
+          "cumulative_records": 474821
+        },
+        {
+          "month": "2019-06-01",
+          "records_created": 34417,
+          "cumulative_records": 509238
+        },
+        {
+          "month": "2019-07-01",
+          "records_created": 7653,
+          "cumulative_records": 516891
+        },
+        {
+          "month": "2019-08-01",
+          "records_created": 6180,
+          "cumulative_records": 523071
+        },
+        {
+          "month": "2019-09-01",
+          "records_created": 7326,
+          "cumulative_records": 530397
+        },
+        {
+          "month": "2019-10-01",
+          "records_created": 6968,
+          "cumulative_records": 537365
+        },
+        {
+          "month": "2019-11-01",
+          "records_created": 26565,
+          "cumulative_records": 563930
+        },
+        {
+          "month": "2019-12-01",
+          "records_created": 6967,
+          "cumulative_records": 570897
+        },
+        {
+          "month": "2020-01-01",
+          "records_created": 15072,
+          "cumulative_records": 585969
+        },
+        {
+          "month": "2020-02-01",
+          "records_created": 51999,
+          "cumulative_records": 637968
+        },
+        {
+          "month": "2020-03-01",
+          "records_created": 1227,
+          "cumulative_records": 639195
+        },
+        {
+          "month": "2020-04-01",
+          "records_created": 250209,
+          "cumulative_records": 889404
+        },
+        {
+          "month": "2020-05-01",
+          "records_created": 3413,
+          "cumulative_records": 892817
+        },
+        {
+          "month": "2020-06-01",
+          "records_created": 24561,
+          "cumulative_records": 917378
+        },
+        {
+          "month": "2020-07-01",
+          "records_created": 1736,
+          "cumulative_records": 919114
+        },
+        {
+          "month": "2020-08-01",
+          "records_created": 5045,
+          "cumulative_records": 924159
+        },
+        {
+          "month": "2020-09-01",
+          "records_created": 4354,
+          "cumulative_records": 928513
+        },
+        {
+          "month": "2020-10-01",
+          "records_created": 9242,
+          "cumulative_records": 937755
+        },
+        {
+          "month": "2020-11-01",
+          "records_created": 26364,
+          "cumulative_records": 964119
+        },
+        {
+          "month": "2020-12-01",
+          "records_created": 13649,
+          "cumulative_records": 977768
+        },
+        {
+          "month": "2021-01-01",
+          "records_created": 6705,
+          "cumulative_records": 984473
+        },
+        {
+          "month": "2021-02-01",
+          "records_created": 39172,
+          "cumulative_records": 1023645
+        },
+        {
+          "month": "2021-03-01",
+          "records_created": 5390,
+          "cumulative_records": 1029035
+        },
+        {
+          "month": "2021-04-01",
+          "records_created": 12007,
+          "cumulative_records": 1041042
+        },
+        {
+          "month": "2021-05-01",
+          "records_created": 894,
+          "cumulative_records": 1041936
+        },
+        {
+          "month": "2021-06-01",
+          "records_created": 135397,
+          "cumulative_records": 1177333
+        },
+        {
+          "month": "2021-07-01",
+          "records_created": 3443,
+          "cumulative_records": 1180776
+        },
+        {
+          "month": "2021-08-01",
+          "records_created": 6779,
+          "cumulative_records": 1187555
+        },
+        {
+          "month": "2021-09-01",
+          "records_created": 16334,
+          "cumulative_records": 1203889
+        },
+        {
+          "month": "2021-10-01",
+          "records_created": 14123,
+          "cumulative_records": 1218012
+        },
+        {
+          "month": "2021-11-01",
+          "records_created": 34379,
+          "cumulative_records": 1252391
+        },
+        {
+          "month": "2021-12-01",
+          "records_created": 2267,
+          "cumulative_records": 1254658
+        },
+        {
+          "month": "2022-01-01",
+          "records_created": 10340,
+          "cumulative_records": 1264998
+        },
+        {
+          "month": "2022-02-01",
+          "records_created": 13098,
+          "cumulative_records": 1278096
+        },
+        {
+          "month": "2022-03-01",
+          "records_created": 1259,
+          "cumulative_records": 1279355
+        },
+        {
+          "month": "2022-04-01",
+          "records_created": 2239,
+          "cumulative_records": 1281594
+        },
+        {
+          "month": "2022-05-01",
+          "records_created": 9664,
+          "cumulative_records": 1291258
+        },
+        {
+          "month": "2022-06-01",
+          "records_created": 7216,
+          "cumulative_records": 1298474
+        },
+        {
+          "month": "2022-07-01",
+          "records_created": 8635,
+          "cumulative_records": 1307109
+        },
+        {
+          "month": "2022-08-01",
+          "records_created": 13787,
+          "cumulative_records": 1320896
+        },
+        {
+          "month": "2022-09-01",
+          "records_created": 4326,
+          "cumulative_records": 1325222
+        },
+        {
+          "month": "2022-10-01",
+          "records_created": 9832,
+          "cumulative_records": 1335054
+        },
+        {
+          "month": "2022-11-01",
+          "records_created": 5623,
+          "cumulative_records": 1340677
+        },
+        {
+          "month": "2022-12-01",
+          "records_created": 1998,
+          "cumulative_records": 1342675
+        },
+        {
+          "month": "2023-01-01",
+          "records_created": 7320,
+          "cumulative_records": 1349995
+        },
+        {
+          "month": "2023-02-01",
+          "records_created": 2323,
+          "cumulative_records": 1352318
+        },
+        {
+          "month": "2023-03-01",
+          "records_created": 9522,
+          "cumulative_records": 1361840
+        },
+        {
+          "month": "2023-04-01",
+          "records_created": 112822,
+          "cumulative_records": 1474662
+        },
+        {
+          "month": "2023-05-01",
+          "records_created": 798,
+          "cumulative_records": 1475460
+        },
+        {
+          "month": "2023-06-01",
+          "records_created": 3583,
+          "cumulative_records": 1479043
+        },
+        {
+          "month": "2023-07-01",
+          "records_created": 67393,
+          "cumulative_records": 1546436
+        },
+        {
+          "month": "2023-08-01",
+          "records_created": 62868,
+          "cumulative_records": 1609304
+        },
+        {
+          "month": "2023-09-01",
+          "records_created": 2932,
+          "cumulative_records": 1612236
+        },
+        {
+          "month": "2023-10-01",
+          "records_created": 4954,
+          "cumulative_records": 1617190
+        },
+        {
+          "month": "2023-11-01",
+          "records_created": 5955,
+          "cumulative_records": 1623145
+        },
+        {
+          "month": "2023-12-01",
+          "records_created": 1500,
+          "cumulative_records": 1624645
+        },
+        {
+          "month": "2024-01-01",
+          "records_created": 4090,
+          "cumulative_records": 1628735
+        },
+        {
+          "month": "2024-02-01",
+          "records_created": 3072,
+          "cumulative_records": 1631807
+        },
+        {
+          "month": "2024-03-01",
+          "records_created": 5194,
+          "cumulative_records": 1637001
+        },
+        {
+          "month": "2024-04-01",
+          "records_created": 5908,
+          "cumulative_records": 1642909
+        },
+        {
+          "month": "2024-05-01",
+          "records_created": 16121,
+          "cumulative_records": 1659030
+        },
+        {
+          "month": "2024-06-01",
+          "records_created": 6077,
+          "cumulative_records": 1665107
+        },
+        {
+          "month": "2024-07-01",
+          "records_created": 11895,
+          "cumulative_records": 1677002
+        },
+        {
+          "month": "2024-08-01",
+          "records_created": 6799,
+          "cumulative_records": 1683801
+        },
+        {
+          "month": "2024-09-01",
+          "records_created": 5193,
+          "cumulative_records": 1688994
+        },
+        {
+          "month": "2024-10-01",
+          "records_created": 4164,
+          "cumulative_records": 1693158
+        },
+        {
+          "month": "2024-11-01",
+          "records_created": 14873,
+          "cumulative_records": 1708031
+        },
+        {
+          "month": "2024-12-01",
+          "records_created": 4174,
+          "cumulative_records": 1712205
+        },
+        {
+          "month": "2025-01-01",
+          "records_created": 6208,
+          "cumulative_records": 1718413
+        },
+        {
+          "month": "2025-02-01",
+          "records_created": 2136,
+          "cumulative_records": 1720549
+        },
+        {
+          "month": "2025-03-01",
+          "records_created": 2727,
+          "cumulative_records": 1723276
+        },
+        {
+          "month": "2025-04-01",
+          "records_created": 5749,
+          "cumulative_records": 1729025
+        },
+        {
+          "month": "2025-05-01",
+          "records_created": 1910,
+          "cumulative_records": 1730935
+        },
+        {
+          "month": "2025-06-01",
+          "records_created": 15160,
+          "cumulative_records": 1746095
+        },
+        {
+          "month": "2025-07-01",
+          "records_created": 5481,
+          "cumulative_records": 1751576
+        },
+        {
+          "month": "2025-08-01",
+          "records_created": 7894,
+          "cumulative_records": 1759470
+        },
+        {
+          "month": "2025-09-01",
+          "records_created": 6860,
+          "cumulative_records": 1766330
+        },
+        {
+          "month": "2025-10-01",
+          "records_created": 19126,
+          "cumulative_records": 1785456
+        },
+        {
+          "month": "2025-11-01",
+          "records_created": 6781,
+          "cumulative_records": 1792237
+        },
+        {
+          "month": "2025-12-01",
+          "records_created": 6028,
+          "cumulative_records": 1798265
+        },
+        {
+          "month": "2026-01-01",
+          "records_created": 7095,
+          "cumulative_records": 1805360
+        },
+        {
+          "month": "2026-02-01",
+          "records_created": 8659,
+          "cumulative_records": 1814019
+        },
+        {
+          "month": "2026-03-01",
+          "records_created": 7499,
+          "cumulative_records": 1821518
+        },
+        {
+          "month": "2026-04-01",
+          "records_created": 14406,
+          "cumulative_records": 1835924
+        },
+        {
+          "month": "2026-05-01",
+          "records_created": 12575,
+          "cumulative_records": 1848499
+        },
+        {
+          "month": "2026-06-01",
+          "records_created": 9190,
+          "cumulative_records": 1857689
+        },
+        {
+          "month": "2026-07-01",
+          "records_created": 8322,
+          "cumulative_records": 1866011
+        },
+        {
+          "month": "2026-08-01",
+          "records_created": 4378,
+          "cumulative_records": 1870389
+        }
+      ]
+    }
+  ]
+}
