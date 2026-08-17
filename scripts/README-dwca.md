@@ -33,7 +33,7 @@ npm install pg
 Create/update `.env` at repo root:
 
 ```dotenv
-# GEOME auth (required)
+# GEOME auth (optional; used only when all four settings are present)
 GEOME_API_BASE=https://api.geome-db.org
 GEOME_USERNAME=biocode
 GEOME_PASSWORD=YOUR_PASSWORD
@@ -102,9 +102,10 @@ Example:
 {"local_contexts_project_id":"https://localcontextshub.org/projects/71b32571-0176-4627-8e01-4d78818432a7/","access_and_benefits_sharing":"https://doi.org/10.5281/zenodo.7150710"}
 ```
 
-## Notes on `references`
+## Notes on occurrence identifiers
 
-`occurrence.txt` `references` is set from **Sample BCID** (`entity_identifiers` concept alias `Sample`) as requested.
+`occurrence.txt` `references` is set from the **Sample/Occurrence BCID** (`entity_identifiers` concept alias `Sample` plus the sample identifier).
+When source data does not already provide `occurrenceID`, `occurrenceID` is set to that same resolvable Sample/Occurrence BCID rather than an Event BCID.
 
 ## Notes on `catalogNumber`
 

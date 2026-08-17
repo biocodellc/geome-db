@@ -744,10 +744,11 @@ function rowForOccurrence(project, row, dynamicProps) {
 
   const sampleId = clean(row.sample_id);
   const sampleBcid = buildSampleBcid(row.sample_prefix, sampleId, sampleData);
+  const occurrenceIdentifier = toN2t(sampleBcid);
 
   const record = Object.fromEntries(OCCURRENCE_HEADERS.map((h) => [h, '']));
   record.id = sampleId;
-  record.references = toN2t(sampleBcid);
+  record.references = occurrenceIdentifier;
   record.dynamicProperties = dynamicProps;
   record.eventID = clean(row.parent_event_id) || firstNonEmpty(eventData, EVENT_ALIASES.eventID);
 
@@ -771,7 +772,7 @@ function rowForOccurrence(project, row, dynamicProps) {
     record[field] = firstNonEmpty(eventData, EVENT_ALIASES[field]);
   });
 
-  if (!record.occurrenceID) record.occurrenceID = sampleId;
+  if (!record.occurrenceID) record.occurrenceID = occurrenceIdentifier || sampleId;
   if (!record.catalogNumber) record.catalogNumber = sampleId;
   if (!record.accessRights) record.accessRights = clean(project.license);
   if (!record.basisOfRecord) record.basisOfRecord = 'MaterialSample';
@@ -916,20 +917,31 @@ async function main() {
   const appendTimestamp = asBool(env.DWCA_APPEND_TIMESTAMP, false);
   fs.mkdirSync(outputDir, { recursive: true });
 
-  if (args.verbose) {
-    console.log(`Authenticating against ${apiBase} as ${clean(env.GEOME_USERNAME)}...`);
-  }
+  const hasAuthSettings = [
+    'GEOME_USERNAME',
+    'GEOME_PASSWORD',
+    'GEOME_CLIENT_ID',
+    'GEOME_CLIENT_SECRET'
+  ].every((name) => clean(env[name]));
 
-  const token = await authToken(
-    apiBase,
-    required(env, 'GEOME_USERNAME'),
-    required(env, 'GEOME_PASSWORD'),
-    required(env, 'GEOME_CLIENT_ID'),
-    required(env, 'GEOME_CLIENT_SECRET')
-  );
+  if (hasAuthSettings) {
+    if (args.verbose) {
+      console.log(`Authenticating against ${apiBase} as ${clean(env.GEOME_USERNAME)}...`);
+    }
 
-  if (args.verbose) {
-    console.log(`OAuth token acquired (length=${token.length}). Querying project ${projectId}...`);
+    const token = await authToken(
+      apiBase,
+      clean(env.GEOME_USERNAME),
+      clean(env.GEOME_PASSWORD),
+      clean(env.GEOME_CLIENT_ID),
+      clean(env.GEOME_CLIENT_SECRET)
+    );
+
+    if (args.verbose) {
+      console.log(`OAuth token acquired (length=${token.length}). Querying project ${projectId}...`);
+    }
+  } else if (args.verbose) {
+    console.log('GEOME OAuth settings not found; skipping authentication and querying PostgreSQL directly.');
   }
 
   const emlOverrides = loadEmlOverrides(args.emlOverridesJson || clean(env.DWCA_EML_OVERRIDES_JSON));
