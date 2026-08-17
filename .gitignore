@@ -36,3 +36,10 @@ bin/
 # requested local ignores
 node-backend/
 package-lock.json
+
+# generated database seed artifacts
+/dev-seed.sql
+/dev-seed.sql.gz
+/dev-seed.tar.gz
+/dev-seed-bcid.sql
+/dev-seed-biscicol.sql

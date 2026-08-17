@@ -22,6 +22,55 @@ pg_restore --disable-triggers -d bcid bcid.pgsql
 pg_restore --disable-triggers -d biscicol biscicol_all.pgsql
 ```
 
+# Creating a development seed
+Use `scripts/dev-seed/create-dev-seed.sh` to turn a production backup archive
+into a smaller, scrubbed local seed for onboarding or local development:
+```
+scripts/dev-seed/create-dev-seed.sh ~/Downloads/2026-08-17-backups.tar.gz dev-seed.tar.gz
+```
+
+The script requires PostgreSQL 16 tools. It starts a temporary PostgreSQL 16
+server, restores `bcid.pgsql` and `biscicol_all.pgsql`, trims/scrubs the
+restored databases, writes `dev-seed-bcid.sql` and `dev-seed-biscicol.sql`,
+packages them as `dev-seed.tar.gz`, and removes the temporary server data
+directory. The generated seed archive and extracted SQL files are ignored by git.
+
+Defaults:
+- keeps 5 small public/discoverable projects
+- keeps at most 3 non-empty expeditions per retained project
+- replaces all GeOMe users with one local user
+- replaces OAuth and BCID client secrets with deterministic fake values
+- removes OAuth tokens/nonces, invites, SRA submissions, and config history
+- drops accidental backup tables in `network_1`
+
+Local credentials created by the seed:
+```
+username: dev
+password: password
+oauth client id: geome-dev-client
+oauth client secret: geome-dev-secret
+bcid client id: geome-dev-client
+bcid client secret: geome-dev-secret
+```
+
+To keep specific projects instead of the automatic small-project selection:
+```
+DEV_SEED_PROJECT_IDS=650,692 scripts/dev-seed/create-dev-seed.sh ~/Downloads/2026-08-17-backups.tar.gz dev-seed.tar.gz
+```
+
+To change the automatic size:
+```
+DEV_SEED_PROJECT_LIMIT=10 DEV_SEED_EXPEDITIONS_PER_PROJECT=5 \
+  scripts/dev-seed/create-dev-seed.sh ~/Downloads/2026-08-17-backups.tar.gz dev-seed.tar.gz
+```
+
+Restore the generated seed into PostgreSQL 16 with:
+```
+tar -xzf dev-seed.tar.gz
+/usr/local/opt/postgresql@16/bin/psql -f dev-seed-bcid.sql
+/usr/local/opt/postgresql@16/bin/psql -f dev-seed-biscicol.sql
+```
+
 # Restoring Other Connections
 We want to restore crontab and nginx configuration files.  These configurations are stored
 under deploy/production
