@@ -43,3 +43,6 @@ package-lock.json
 /dev-seed.tar.gz
 /dev-seed-bcid.sql
 /dev-seed-biscicol.sql
+
+# generated legacy ARK repair audit files
+/scripts/output/legacy-r2-ark-repair/
