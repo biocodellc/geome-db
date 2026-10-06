@@ -46,3 +46,4 @@ package-lock.json
 
 # generated legacy ARK repair audit files
 /scripts/output/legacy-r2-ark-repair/
+/scripts/output/legacy-q2-ark-repair/
