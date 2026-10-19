@@ -1,9 +1,10 @@
--- Apply once to an existing database. Existing entity-table triggers already call
--- set_project_last_modified(), so replacing the function updates every entity type.
+-- Install a companion trigger in the existing network_1 schema. The production
+-- application role owns network_1 and its entity tables, but not the existing
+-- public.set_project_last_modified() function (which continues to update projects).
 -- Run with psql -v ON_ERROR_STOP=1 -f scripts/updateExpeditionLastModified.sql.
 BEGIN;
 
-CREATE OR REPLACE FUNCTION public.set_project_last_modified()
+CREATE OR REPLACE FUNCTION network_1.set_expedition_last_modified()
     RETURNS TRIGGER AS
 $body$
 DECLARE
@@ -12,12 +13,12 @@ DECLARE
 BEGIN
     IF TG_WHEN <> 'AFTER'
     THEN
-        RAISE EXCEPTION 'set_project_last_modified() may only run as an AFTER trigger';
+        RAISE EXCEPTION 'set_expedition_last_modified() may only run as an AFTER trigger';
     END IF;
 
     IF TG_LEVEL = 'STATEMENT'
     THEN
-        RAISE EXCEPTION 'set_project_last_modified() does not support being a STATEMENT trigger';
+        RAISE EXCEPTION 'set_expedition_last_modified() does not support being a STATEMENT trigger';
     END IF;
 
     IF TG_OP = 'DELETE'
@@ -32,10 +33,6 @@ BEGIN
 
     FOREACH expedition_id IN ARRAY affected_expeditions
     LOOP
-        UPDATE public.projects
-        SET latest_data_modification = CURRENT_TIMESTAMP
-        WHERE id = (SELECT project_id FROM public.expeditions WHERE id = expedition_id);
-
         UPDATE public.expeditions
         SET modified = CURRENT_TIMESTAMP
         WHERE id = expedition_id;
@@ -45,14 +42,44 @@ BEGIN
 END;
 $body$
     LANGUAGE plpgsql
-    SECURITY DEFINER;
+    SECURITY DEFINER
+    SET search_path = pg_catalog, public;
 
-COMMENT ON FUNCTION public.set_project_last_modified() IS $body$
-Update the project's latest_data_modification and the expedition's modified timestamp when a record is inserted, updated, or deleted.
+COMMENT ON FUNCTION network_1.set_expedition_last_modified() IS $body$
+Update the expedition's modified timestamp when a record is inserted, updated, or deleted.
 $body$;
 
--- Make the new trigger behavior visible before scanning audit history. Uploads
--- made during the scan will then update their expedition immediately.
+DO $body$
+DECLARE
+    entity_table record;
+BEGIN
+    FOR entity_table IN
+        SELECT n.nspname AS schema_name, c.relname AS table_name, c.oid AS table_oid
+        FROM pg_catalog.pg_class c
+        JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'network_1' AND c.relkind = 'r'
+          AND EXISTS (
+              SELECT 1 FROM pg_catalog.pg_trigger t
+              WHERE t.tgrelid = c.oid AND t.tgname = 'set_project_last_modified'
+                AND t.tgenabled = 'O'
+          )
+    LOOP
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_catalog.pg_trigger t
+            WHERE t.tgrelid = entity_table.table_oid
+              AND t.tgname = 'set_expedition_last_modified'
+        ) THEN
+            EXECUTE format(
+                'CREATE TRIGGER set_expedition_last_modified AFTER INSERT OR DELETE OR UPDATE ON %I.%I FOR EACH ROW EXECUTE PROCEDURE network_1.set_expedition_last_modified()',
+                entity_table.schema_name, entity_table.table_name
+            );
+        END IF;
+    END LOOP;
+END;
+$body$;
+
+-- Make the new triggers visible before scanning audit history. Uploads made
+-- during the scan will then update their expedition immediately.
 COMMIT;
 BEGIN;
 

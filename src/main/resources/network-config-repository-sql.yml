@@ -23,6 +23,7 @@ createEntityTable: >
   CREATE TRIGGER set_createdtime BEFORE INSERT ON ${table} FOR EACH ROW EXECUTE PROCEDURE set_created_column();
   CREATE TRIGGER entity_audit AFTER INSERT OR DELETE OR UPDATE ON ${table} FOR EACH ROW EXECUTE PROCEDURE entity_history();
   CREATE TRIGGER set_project_last_modified AFTER INSERT OR DELETE OR UPDATE ON ${table} FOR EACH ROW EXECUTE PROCEDURE set_project_last_modified();
+  CREATE TRIGGER set_expedition_last_modified AFTER INSERT OR DELETE OR UPDATE ON ${table} FOR EACH ROW EXECUTE PROCEDURE network_${networkId}.set_expedition_last_modified();
 
   CREATE INDEX idx_network_${networkId}_${conceptAlias}_data ON ${table} USING GIN (data);
   CREATE INDEX idx_network_${networkId}_${conceptAlias}_tsv ON ${table} USING GIN (tsv);
@@ -40,6 +41,39 @@ createChildEntityTable: >
 
 createNetworkSchema: >
   CREATE SCHEMA network_${networkId};
+
+  CREATE FUNCTION network_${networkId}.set_expedition_last_modified()
+    RETURNS trigger AS $body$
+  DECLARE
+    expedition_id int;
+    affected_expeditions int[];
+  BEGIN
+    IF TG_WHEN <> 'AFTER' THEN
+      RAISE EXCEPTION 'set_expedition_last_modified() may only run as an AFTER trigger';
+    END IF;
+
+    IF TG_LEVEL = 'STATEMENT' THEN
+      RAISE EXCEPTION 'set_expedition_last_modified() does not support being a STATEMENT trigger';
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+      affected_expeditions = ARRAY[OLD.expedition_id];
+    ELSIF TG_OP = 'UPDATE' AND OLD.expedition_id IS DISTINCT FROM NEW.expedition_id THEN
+      affected_expeditions = ARRAY[OLD.expedition_id, NEW.expedition_id];
+    ELSE
+      affected_expeditions = ARRAY[NEW.expedition_id];
+    END IF;
+
+    FOREACH expedition_id IN ARRAY affected_expeditions LOOP
+      UPDATE public.expeditions SET modified = CURRENT_TIMESTAMP WHERE id = expedition_id;
+    END LOOP;
+
+    RETURN NULL;
+  END;
+  $body$
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+    SET search_path = pg_catalog, public;
 
   CREATE TABLE network_${networkId}.audit_table
   (

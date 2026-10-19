@@ -618,12 +618,13 @@ BEGIN
 END
 $function$;
 
-CREATE OR REPLACE FUNCTION public.set_project_last_modified()
+-- Record changes update expedition.modified through a companion trigger
+-- installed per network in network-config-repository-sql.yml.
+CREATE OR REPLACE FUNCTION set_project_last_modified()
     RETURNS TRIGGER AS
 $body$
 DECLARE
     expedition_id int;
-    affected_expeditions int[];
 BEGIN
     IF TG_WHEN <> 'AFTER'
     THEN
@@ -637,24 +638,14 @@ BEGIN
 
     IF TG_OP = 'DELETE'
     THEN
-        affected_expeditions = ARRAY[OLD.expedition_id];
-    ELSIF TG_OP = 'UPDATE' AND OLD.expedition_id IS DISTINCT FROM NEW.expedition_id
-    THEN
-        affected_expeditions = ARRAY[OLD.expedition_id, NEW.expedition_id];
+        expedition_id = OLD.expedition_id;
     ELSE
-        affected_expeditions = ARRAY[NEW.expedition_id];
-    END IF;
+        expedition_id = NEW.expedition_id;
+    end if;
 
-    FOREACH expedition_id IN ARRAY affected_expeditions
-    LOOP
-        UPDATE public.projects
-        SET latest_data_modification = CURRENT_TIMESTAMP
-        WHERE id = (SELECT project_id FROM public.expeditions WHERE id = expedition_id);
-
-        UPDATE public.expeditions
-        SET modified = CURRENT_TIMESTAMP
-        WHERE id = expedition_id;
-    END LOOP;
+    EXECUTE
+                'UPDATE projects set latest_data_modification = CURRENT_TIMESTAMP where id = (select project_id from expeditions where id = '
+                || quote_literal(expedition_id) || ')';
 
     RETURN NULL;
 END;
@@ -662,8 +653,8 @@ $body$
     LANGUAGE plpgsql
     SECURITY DEFINER;
 
-COMMENT ON FUNCTION public.set_project_last_modified() IS $body$
-Update the project's latest_data_modification and the expedition's modified timestamp when a record is inserted, updated, or deleted.
+COMMENT ON FUNCTION set_project_last_modified() IS $body$
+Update the project's latest_data_modification timestamp when a record is inserted, updated, or deleted.
 $body$;
 
 CREATE OR REPLACE FUNCTION entity_history()
