@@ -36,7 +36,11 @@ public class RecordValidator {
 
         this.messages = new EntityMessages(recordSet.conceptAlias(), recordSet.entity().getWorksheet());
 
-        Set<Rule> rules = recordSet.entity().getRules();
+        List<Rule> rules = new ArrayList<>(recordSet.entity().getRules());
+        // Error rules remove invalid records from subsequent rules' recordsToPersist().
+        // Report missing required values before format or plate/well errors can hide them.
+        rules.sort(Comparator.comparing(rule ->
+                !(rule instanceof RequiredValueRule && rule.level() == RuleLevel.ERROR)));
 
         for (Rule r : rules) {
 
