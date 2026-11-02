@@ -23,7 +23,7 @@ expeditionStatsEntityJoins: >
 
 projectStats: >
   SELECT
-    p.id AS "projectId", p.project_title AS "projectTitle", p.latest_data_modification as "latestDataModification", p.description AS "description", p.public AS "public",
+    p.id AS "projectId", p.project_title AS "projectTitle", timezone('UTC', p.latest_data_modification) as "latestDataModification", p.description AS "description", p.public AS "public",
     p.discoverable AS "discoverable",
     p.principal_investigator AS "principalInvestigator",
     p.principal_investigator_affiliation AS "principalInvestigatorAffiliation",

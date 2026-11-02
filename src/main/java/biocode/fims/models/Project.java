@@ -4,10 +4,12 @@ import biocode.fims.config.project.ProjectConfig;
 import biocode.fims.models.dataTypes.JsonBinaryType;
 import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -271,8 +273,10 @@ public class Project {
     }
 
     @JsonView(Views.Detailed.class)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "latest_data_modification")
+    // The database owns this value and stores it as a timestamp without a zone in UTC.
+    @Formula("timezone('UTC', latest_data_modification)")
     public Date getLatestDataModification() {
         return latestDataModification;
     }

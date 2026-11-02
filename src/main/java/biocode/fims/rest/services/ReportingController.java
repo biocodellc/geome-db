@@ -230,7 +230,7 @@ public class ReportingController extends FimsController {
                 "SELECT " +
                 "  p.id AS \"projectId\", " +
                 "  p.project_title AS \"projectTitle\", " +
-                "  p.latest_data_modification AS \"latestDataModification\", " +
+                "  timezone('UTC', p.latest_data_modification) AS \"latestDataModification\", " +
                 "  p.public AS \"public\", " +
                 "  pc.id AS \"teamId\", " +
                 "  to_jsonb(pc)->>'name' AS \"teamName\", " +

@@ -25,6 +25,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -224,7 +225,8 @@ public class ProjectController extends FimsController {
 
                     project.put("projectId", rs.getInt("projectId"));
                     project.put("projectTitle", rs.getString("projectTitle"));
-                    project.put("latestDataModification", rs.getString("latestDataModification"));
+                    Timestamp latestActivity = rs.getTimestamp("latestDataModification");
+                    project.put("latestDataModification", latestActivity == null ? null : latestActivity.toInstant().toString());
                     project.put("description", rs.getString("description"));
                     project.put("public", rs.getBoolean("public"));
                     project.put("user", user);
