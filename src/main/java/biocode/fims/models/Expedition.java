@@ -6,6 +6,7 @@ import biocode.fims.serializers.JsonViewOverride;
 import biocode.fims.serializers.Views;
 import com.fasterxml.jackson.annotation.*;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.Formula;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -25,6 +26,8 @@ public class Expedition {
     private String expeditionTitle;
     private Date created;
     private Date modified;
+    private String latestDataModificationUsername;
+    private Date latestDataModification;
     private boolean isPublic;
     private ExpeditionVisibility visibility;
     private URI identifier;
@@ -120,9 +123,10 @@ public class Expedition {
         this.expeditionTitle = expeditionTitle;
     }
 
-    @Column(updatable = false)
+    @Formula("timezone('UTC', created)")
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     public Date getCreated() {
         return created;
     }
@@ -130,6 +134,17 @@ public class Expedition {
     private void setCreated(Date created) {
         this.created = created;
     }
+
+    @JsonView(Views.Detailed.class)
+    @Column(name = "latest_data_modification_username", insertable = false, updatable = false)
+    public String getLatestDataModificationUsername() { return latestDataModificationUsername; }
+    private void setLatestDataModificationUsername(String username) { this.latestDataModificationUsername = username; }
+
+    @JsonView(Views.Detailed.class)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
+    @Formula("timezone('UTC', latest_data_modification)")
+    public Date getLatestDataModification() { return latestDataModification; }
+    private void setLatestDataModification(Date timestamp) { this.latestDataModification = timestamp; }
 
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)

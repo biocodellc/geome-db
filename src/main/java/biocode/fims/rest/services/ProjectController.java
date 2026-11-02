@@ -5,6 +5,7 @@ import biocode.fims.application.config.GeomeProperties;
 import biocode.fims.application.config.GeomeSql;
 import biocode.fims.config.models.Entity;
 import biocode.fims.fimsExceptions.BadRequestException;
+import biocode.fims.fimsExceptions.ForbiddenRequestException;
 import biocode.fims.fimsExceptions.UnauthorizedRequestException;
 import biocode.fims.models.Network;
 import biocode.fims.models.Project;
@@ -134,6 +135,10 @@ public class ProjectController extends FimsController {
             throw new BadRequestException("Project doesn't exist");
         }
 
+        boolean member = projectService.isProjectAdmin(userContext.getUser(), projectId)
+                || projectService.isUserMemberOfProject(userContext.getUser(), projectId);
+        if (!project.isPublic() && !member) throw new ForbiddenRequestException("You are not a member of this private project");
+
         String countsSql = geomeSql.statsEntityCounts();
         String joinsSql = geomeSql.expeditionStatsEntityJoins();
         String sql = expeditionCode == null ? geomeSql.expeditionStats() : geomeSql.singleExpeditionStats();
@@ -155,12 +160,19 @@ public class ProjectController extends FimsController {
         params.put("entityJoins", entityJoinsSql.toString());
         params.put("entityCounts", entityCountsSql.toString());
         params.put("projectId", String.valueOf(projectId));
-        params.put("includePrivate", String.valueOf(userContext.getUser() != null));
+        params.put("includePrivate", String.valueOf(member));
 
         return recordRepository.query(
                 StrSubstitutor.replace(sql, params),
-                expeditionCode == null ? null : new MapSqlParameterSource("expeditionCode", expeditionCode),
-                Map.class
+                new MapSqlParameterSource("projectId", projectId).addValue("expeditionCode", expeditionCode),
+                (rs, rowNum) -> {
+                    Map<String, Object> row = new org.springframework.jdbc.core.ColumnMapRowMapper().mapRow(rs, rowNum);
+                    for (String field : new String[]{"created", "latestDataModification"}) {
+                        Timestamp timestamp = rs.getTimestamp(field);
+                        row.put(field, timestamp == null ? null : timestamp.toInstant().toString());
+                    }
+                    return row;
+                }
         );
     }
 
@@ -224,6 +236,9 @@ public class ProjectController extends FimsController {
                     }
 
                     project.put("projectId", rs.getInt("projectId"));
+                    Timestamp created = rs.getTimestamp("created");
+                    project.put("created", created == null ? null : created.toInstant().toString());
+                    project.put("latestDataModificationUsername", rs.getString("latestDataModificationUsername"));
                     project.put("projectTitle", rs.getString("projectTitle"));
                     Timestamp latestActivity = rs.getTimestamp("latestDataModification");
                     project.put("latestDataModification", latestActivity == null ? null : latestActivity.toInstant().toString());

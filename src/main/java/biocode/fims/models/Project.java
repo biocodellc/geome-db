@@ -43,6 +43,7 @@ public class Project {
     private String projectTitle;
     private Date created;
     private Date modified;
+    private String latestDataModificationUsername;
     private Date latestDataModification;
     private String description;
     private ProjectConfiguration projectConfiguration;
@@ -251,9 +252,10 @@ public class Project {
       public void setPermitGuid(String permitGuid) {
           this.permitGuid = permitGuid;
       }
-    @Column(updatable = false)
+    @Formula("timezone('UTC', created)")
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     public Date getCreated() {
         return created;
     }
@@ -261,6 +263,11 @@ public class Project {
     private void setCreated(Date created) {
         this.created = created;
     }
+
+    @JsonView(Views.Detailed.class)
+    @Column(name = "latest_data_modification_username", insertable = false, updatable = false)
+    public String getLatestDataModificationUsername() { return latestDataModificationUsername; }
+    private void setLatestDataModificationUsername(String username) { this.latestDataModificationUsername = username; }
 
     @JsonView(Views.Detailed.class)
     @Temporal(TemporalType.TIMESTAMP)

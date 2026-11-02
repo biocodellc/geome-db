@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import java.sql.PreparedStatement;
 
 /**
  * AOP Advice methods affecting postgres repositories
@@ -28,9 +27,12 @@ public class PostgresRepositoryAuditAdvice {
      */
     @Before("@annotation(SetFimsUser)")
     public void setFimsUser() {
-        String user = "anon";
-        // if we are in the request scope (RequestContextHolder.getRequestAttributes() == null) attempt to set the authenticated user
-        if (RequestContextHolder.getRequestAttributes() != null) {
+        String user = DataActivityActor.current();
+        if (user == null) user = "anon";
+        // Explicit background attribution takes precedence; otherwise use the request identity.
+        if (DataActivityActor.current() != null) {
+            user = DataActivityActor.current();
+        } else if (RequestContextHolder.getRequestAttributes() != null) {
             if (userContext != null && userContext.getUser() != null) {
                 user = userContext.getUser().getUsername();
             }
@@ -38,6 +40,8 @@ public class PostgresRepositoryAuditAdvice {
             user = "GeOMe-DB System";
         }
 
-        jdbcTemplate.execute("SET LOCAL \"fims.username\" = '" + user + "';", PreparedStatement::execute);
+        jdbcTemplate.queryForObject("SELECT set_config('fims.username', :username, true)",
+                new org.springframework.jdbc.core.namedparam.MapSqlParameterSource("username", user), String.class);
+
     }
 }

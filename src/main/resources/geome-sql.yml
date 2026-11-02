@@ -1,16 +1,17 @@
 expeditionStats: >
-  SELECT e.expedition_code AS "expeditionCode", e.expedition_title AS "expeditionTitle", e.identifier as "expeditionIdentifier", u.first_name as "ownerFirstName", u.last_name as "ownerLastName", u.email as "ownerEmail" ${entityCounts}
+  SELECT e.id AS "expeditionId", timezone('UTC', e.created) AS "created", timezone('UTC', e.latest_data_modification) AS "latestDataModification", e.latest_data_modification_username AS "latestDataModificationUsername", e.expedition_code AS "expeditionCode", e.expedition_title AS "expeditionTitle", e.identifier as "expeditionIdentifier", u.username AS "ownerUsername", u.id AS "ownerUserId", u.first_name as "ownerFirstName", u.last_name as "ownerLastName", u.email as "ownerEmail" ${entityCounts}
   FROM expeditions AS e
   LEFT JOIN users AS u on e.user_id = u.id
   ${entityJoins}
-  WHERE e.project_id = ${projectId} AND (e.public = true OR e.public <> ${includePrivate})
+  WHERE e.project_id = :projectId AND (e.public = true OR e.public <> ${includePrivate})
   ORDER BY lower(e.expedition_code)
 
 singleExpeditionStats: >
-  SELECT e.expedition_code AS "expeditionCode", e.expedition_title AS "expeditionTitle", e.identifier as "expeditionIdentifier" ${entityCounts}
+  SELECT e.id AS "expeditionId", timezone('UTC', e.created) AS "created", timezone('UTC', e.latest_data_modification) AS "latestDataModification", e.latest_data_modification_username AS "latestDataModificationUsername", e.expedition_code AS "expeditionCode", e.expedition_title AS "expeditionTitle", e.identifier as "expeditionIdentifier", u.username AS "ownerUsername", u.id AS "ownerUserId" ${entityCounts}
   FROM expeditions AS e
+  LEFT JOIN users AS u on e.user_id = u.id
   ${entityJoins}
-  WHERE e.project_id = ${projectId} AND e.expedition_code = :expeditionCode
+  WHERE e.project_id = :projectId AND e.expedition_code = :expeditionCode AND (e.public = true OR e.public <> ${includePrivate})
   ORDER BY lower(e.expedition_code)
 
 statsEntityCounts: >
@@ -23,7 +24,7 @@ expeditionStatsEntityJoins: >
 
 projectStats: >
   SELECT
-    p.id AS "projectId", p.project_title AS "projectTitle", timezone('UTC', p.latest_data_modification) as "latestDataModification", p.description AS "description", p.public AS "public",
+    p.id AS "projectId", timezone('UTC', p.created) AS "created", p.latest_data_modification_username AS "latestDataModificationUsername", p.project_title AS "projectTitle", timezone('UTC', p.latest_data_modification) as "latestDataModification", p.description AS "description", p.public AS "public",
     p.discoverable AS "discoverable",
     p.principal_investigator AS "principalInvestigator",
     p.principal_investigator_affiliation AS "principalInvestigatorAffiliation",

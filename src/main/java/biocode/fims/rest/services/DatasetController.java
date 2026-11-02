@@ -175,7 +175,7 @@ public class DatasetController extends FimsController {
         UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
 
         // run validation asynchronously
-        CompletableFuture<ValidationResponse> future = CompletableFuture.supplyAsync(() -> {
+        CompletableFuture<ValidationResponse> future = CompletableFuture.supplyAsync(() -> biocode.fims.repositories.DataActivityActor.as(user == null ? null : user.getUsername(), () -> {
             // update the status
             processorStatus.appendStatus("Initializing...");
 
@@ -255,7 +255,7 @@ public class DatasetController extends FimsController {
                         null
                 );
             }
-        });
+        }));
 
         if (waitForCompletion) {
             try {
